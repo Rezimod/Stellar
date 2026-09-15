@@ -8,6 +8,15 @@
 // bending the right way, boots kept level with the ground. The one-sixth-g
 // controller moves it: long floating strides, slow arcs, a squat on
 // touchdown, dust off the boots.
+//
+// What the suit will and will not do is the point of the movement. A
+// pressure garment at a sixth of a g has almost no grip to push against,
+// so it takes a couple of strides to get going and a good three metres to
+// stop; it cannot turn on the spot at a run, only arc; it loses the hill
+// going up and gains it coming down, and on anything steeper than about
+// thirty degrees it starts to slide whatever the boots want. Land hard and
+// the crew stumbles, arms out, and has to get the feet back under them
+// before they are going anywhere. Crouch and all of it halves.
 
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
@@ -21,6 +30,8 @@ export interface WalkInput {
   moveZ: number;
   jump: boolean;
   run: boolean;
+  /** Down on one knee: slow, low, and steady. */
+  crouch: boolean;
 }
 
 export interface CosmonautState {
@@ -30,6 +41,14 @@ export interface CosmonautState {
   altitude: number;
   /** Set for one frame on a hard landing. */
   landed: boolean;
+  /** Down on one knee. */
+  crouched: boolean;
+  /** Seconds left of a stumble; the stick barely answers while it runs. */
+  stumble: number;
+  /** The grade under the boots in the direction of travel: + is uphill. */
+  grade: number;
+  /** Sliding down a slope the boots cannot hold. */
+  sliding: boolean;
 }
 
 export interface StepEvent { x: number; y: number; z: number; yaw: number; side: number; hard: number }
@@ -53,11 +72,20 @@ export interface CosmonautHandle {
   dispose: () => void;
 }
 
-const WALK = 2.1;
+const WALK = 2.05;
 const RUN = 4.6;
+const CROUCH = 0.95;
 const JUMP_V = 2.7;
-const GROUND_ACCEL = 9;
-const AIR_ACCEL = 1.2;
+/** What the boots can get out of regolith: pushing off, pulling up, and in
+ *  the air, where there is nothing to push against at all. */
+const GROUND_ACCEL = 5.0;
+const BRAKE = 3.4;
+const AIR_ACCEL = 1.1;
+/** How fast the suit can be turned, rad/s, standing and at a run. */
+const TURN_STILL = 3.6;
+const TURN_RUN = 1.5;
+/** Steeper than this and the boots stop holding. */
+const SLIP_GRADE = 0.58;
 const SUIT_RADIUS = 0.55;
 const HIP_H = 0.98;
 /** Leg segments, hip pivot → knee → ankle → sole. */
@@ -297,7 +325,7 @@ export function makeCosmonaut(dust: DustHandle): CosmonautHandle {
 
   const position = group.position;
   const vel = new THREE.Vector3();
-  const state: CosmonautState = { airborne: false, speed: 0, altitude: 0, landed: false };
+  const state: CosmonautState = { airborne: false, speed: 0, altitude: 0, landed: false, crouched: false, stumble: 0, grade: 0, sliding: false };
   let phase = 0;
   let squat = 0;
   let lean = 0;
@@ -306,6 +334,10 @@ export function makeCosmonaut(dust: DustHandle): CosmonautHandle {
   let lastStepPhase = 0;
   let idleT = 0;
   let lope = 0;
+  let crouch = 0;
+  let stumble = 0;
+  let stumbleRoll = 0;
+  let grade = 0;
   const eyeLocal = new THREE.Vector3(0, HC, 0.08);
   let lookYaw = 0;
   let lookPitch = 0;
@@ -318,19 +350,44 @@ export function makeCosmonaut(dust: DustHandle): CosmonautHandle {
     update(dt, input, heightAt, colliders, walkRadius) {
       state.landed = false;
       idleT += dt;
-      const wantX = input.moveX; const wantZ = input.moveZ;
+      // A stumble runs itself out; until it does the stick barely answers.
+      stumble = Math.max(0, stumble - dt);
+      state.stumble = stumble;
+      const authority = stumble > 0 ? 0.22 : 1;
+      const wantX = input.moveX * authority; const wantZ = input.moveZ * authority;
       const want = Math.min(1, Math.hypot(wantX, wantZ));
-      const top = input.run ? RUN : WALK;
       const ground = heightAt(position.x, position.z);
       const onGround = position.y <= ground + 0.001 && vel.y <= 0;
-      // Horizontal: chase the intent on the ground, only nudge it in the air.
-      const accel = onGround ? GROUND_ACCEL : AIR_ACCEL;
+      // Crouch: only on the ground, and it eases in and out of the pose.
+      const wantCrouch = input.crouch && onGround && stumble <= 0;
+      crouch += ((wantCrouch ? 1 : 0) - crouch) * (1 - Math.exp(-dt * 7));
+      state.crouched = wantCrouch;
+      // ── The hill. Sample the ground a stride ahead along the intent: up
+      // it the suit loses speed, down it gains a little. ──
+      if (want > 0.05 && onGround) {
+        const ax = position.x + (wantX / want) * 0.9;
+        const az = position.z + (wantZ / want) * 0.9;
+        grade += ((heightAt(ax, az) - ground) / 0.9 - grade) * (1 - Math.exp(-dt * 6));
+      } else {
+        grade += (0 - grade) * (1 - Math.exp(-dt * 4));
+      }
+      state.grade = grade;
+      const hill = THREE.MathUtils.clamp(1 - grade * 0.62, 0.42, 1.22);
+      const top = (wantCrouch ? CROUCH : input.run ? RUN : WALK) * hill;
+      // ── Traction. Regolith gives the boots very little to push against,
+      // so the suit takes a couple of strides to get going and rather more
+      // to stop; in the air there is nothing to push against at all. ──
       const tx = want > 0 ? (wantX / want) * top * want : 0;
       const tz = want > 0 ? (wantZ / want) * top * want : 0;
-      const k = 1 - Math.exp(-dt * accel / (onGround ? 1 : 0.6));
-      vel.x += (tx - vel.x) * k;
-      vel.z += (tz - vel.z) * k;
-      if (onGround && input.jump) {
+      const dvx = tx - vel.x; const dvz = tz - vel.z;
+      const dv = Math.hypot(dvx, dvz);
+      const rate = onGround ? (want > 0.05 ? GROUND_ACCEL : BRAKE) * (wantCrouch ? 1.5 : 1) : AIR_ACCEL;
+      if (dv > 1e-5) {
+        const step = Math.min(dv, rate * dt);
+        vel.x += dvx / dv * step;
+        vel.z += dvz / dv * step;
+      }
+      if (onGround && input.jump && !wantCrouch && stumble <= 0) {
         vel.y = JUMP_V + (input.run ? 0.4 : 0);
         // Push off: a little extra carry in the direction of travel.
         vel.x *= 1.1; vel.z *= 1.1;
@@ -365,6 +422,12 @@ export function makeCosmonaut(dust: DustHandle): CosmonautHandle {
         if (vel.y < -1.6) {
           state.landed = true;
           squat = Math.min(1, -vel.y / 4.5);
+          // Come down hard enough and the feet go out from under you.
+          if (vel.y < -3.4) {
+            stumble = Math.min(1.5, 0.5 + (-vel.y - 3.4) * 0.28);
+            stumbleRoll = Math.sign(vel.x * Math.cos(handle.yaw) - vel.z * Math.sin(handle.yaw) || 1);
+            vel.x *= 0.45; vel.z *= 0.45;
+          }
           handle.onStep?.({ x: position.x, y: g2, z: position.z, yaw: handle.yaw, side: 1, hard: 1 });
           handle.onStep?.({ x: position.x, y: g2, z: position.z, yaw: handle.yaw, side: -1, hard: 1 });
           if (!handle.indoors) dust.burst({ x: position.x, y: g2, z: position.z, count: Math.round(10 + squat * 40), speedMin: 0.8, speedMax: 2.2 + squat * 2, cone: 1.25, size: 0.14 });
@@ -372,23 +435,39 @@ export function makeCosmonaut(dust: DustHandle): CosmonautHandle {
         position.y = g2;
         vel.y = 0;
       }
+      // ── Steep ground. Past about thirty degrees the boots stop holding
+      // and the crew starts down the fall line whatever the stick says. ──
+      const slopeX = (heightAt(position.x + 0.7, position.z) - heightAt(position.x - 0.7, position.z)) / 1.4;
+      const slopeZ = (heightAt(position.x, position.z + 0.7) - heightAt(position.x, position.z - 0.7)) / 1.4;
+      const steep = Math.hypot(slopeX, slopeZ);
+      const sliding = position.y <= g2 + 0.02 && steep > SLIP_GRADE;
+      state.sliding = sliding;
+      if (sliding) {
+        const slip = (steep - SLIP_GRADE) * 7 * dt;
+        vel.x -= slopeX / steep * slip;
+        vel.z -= slopeZ / steep * slip;
+      }
       const speed = Math.hypot(vel.x, vel.z);
       const airborne = position.y > g2 + 0.02;
       state.airborne = airborne;
       state.speed = speed;
       state.altitude = position.y - g2;
       airT = airborne ? airT + dt : 0;
-      // Face where you go.
+      // Face where you go — but the suit turns at a rate, and the faster
+      // it is moving the wider the arc it has to take to do it.
       if (speed > 0.3) {
         const target = Math.atan2(vel.x, vel.z);
         let d = target - handle.yaw;
         while (d > Math.PI) d -= Math.PI * 2;
         while (d < -Math.PI) d += Math.PI * 2;
-        handle.yaw += d * (1 - Math.exp(-dt * (onGround ? 9 : 3)));
+        const ease = d * (1 - Math.exp(-dt * (onGround ? 9 : 3)));
+        const cap = THREE.MathUtils.lerp(TURN_STILL, TURN_RUN, Math.min(1, speed / RUN)) * (onGround ? 1 : 0.45) * dt;
+        handle.yaw += THREE.MathUtils.clamp(ease, -cap, cap);
       }
       group.rotation.y = handle.yaw;
       squat += (0 - squat) * (1 - Math.exp(-dt * 5));
-      const leanTarget = airborne ? 0.1 : speed / RUN * 0.3;
+      // Lean into the run, into the hill, and out of a stumble.
+      const leanTarget = airborne ? 0.1 : speed / RUN * 0.3 + Math.max(0, grade) * 0.45 + (stumble > 0 ? -0.35 : 0);
       lean += (leanTarget - lean) * (1 - Math.exp(-dt * 6));
 
       // ── Pose. Rotation about X: negative swings a limb forward, positive
@@ -404,9 +483,11 @@ export function makeCosmonaut(dust: DustHandle): CosmonautHandle {
       const amp = airborne ? 0 : THREE.MathUtils.lerp(0.28 + gait * 0.3, 0.4, lope) * moving;
       const legLag = THREE.MathUtils.lerp(Math.PI, 0.45, lope);
       const bob = airborne ? 0 : THREE.MathUtils.lerp(Math.abs(Math.cos(phase)) * 0.03 * gait, Math.max(0, Math.sin(phase)) * 0.09, lope) * moving;
-      body.position.y = bob - squat * 0.16;
-      torso.rotation.x = lean + squat * 0.3 + lope * 0.05 * Math.cos(phase) * moving;
-      torso.rotation.z = airborne ? 0 : -Math.sin(phase) * 0.035 * gait * (1 - lope);
+      body.position.y = bob - squat * 0.16 - crouch * 0.42;
+      torso.rotation.x = lean + squat * 0.3 + crouch * 0.28 + lope * 0.05 * Math.cos(phase) * moving;
+      // A stumble throws the shoulders the way the fall was going.
+      const flailRoll = stumble > 0 ? Math.sin(stumble * 22) * 0.16 * stumble * stumbleRoll : 0;
+      torso.rotation.z = (airborne ? 0 : -Math.sin(phase) * 0.035 * gait * (1 - lope)) + flailRoll;
       const breathe = Math.sin(idleT * 1.5) * 0.01;
       torso.scale.set(1, 1 + breathe * (speed < 0.3 ? 1 : 0), 1);
       const tuck = airborne ? Math.min(1, airT / 0.35) : 0;
@@ -419,16 +500,20 @@ export function makeCosmonaut(dust: DustHandle): CosmonautHandle {
         // The knee folds while the leg swings through (thigh travelling
         // forward), and stays a little soft in stance — suits don't lock.
         const flex = 0.1 + Math.max(0, Math.cos(p)) * (0.5 + lope * 0.35) * moving;
-        hips[i].rotation.x = -swing * free + tuck * (-0.6 - i * 0.12) - squat * 0.8;
-        hips[i].rotation.z = s * 0.035;
-        knees[i].rotation.x = flex * free + tuck * (1.0 + i * 0.15) + squat * 1.45;
+        // Crouching, one knee goes further down than the other.
+        const kneel = crouch * (i === 0 ? 1 : 0.7);
+        hips[i].rotation.x = -swing * free + tuck * (-0.6 - i * 0.12) - squat * 0.8 - kneel * 0.95;
+        hips[i].rotation.z = s * (0.035 + crouch * 0.12);
+        knees[i].rotation.x = flex * free + tuck * (1.0 + i * 0.15) + squat * 1.45 + kneel * 1.7;
         // Boots stay close to level with the ground.
         ankles[i].rotation.x = -(hips[i].rotation.x + knees[i].rotation.x) * 0.8;
         // Arms: a small counter-swing at a walk; carried forward for balance in the lope.
         const walkArm = swing * 0.45 - 0.08;
         const lopeArm = -0.3 + Math.sin(phase) * 0.08 * moving;
-        shoulders[i].rotation.x = THREE.MathUtils.lerp(walkArm, lopeArm, lope) * free + tuck * -0.55 + flail;
-        shoulders[i].rotation.z = s * (0.2 + tuck * 0.45);
+        // Arms come out wide to catch a stumble.
+        const catchArm = stumble > 0 ? stumble : 0;
+        shoulders[i].rotation.x = THREE.MathUtils.lerp(walkArm, lopeArm, lope) * free + tuck * -0.55 + flail - catchArm * 0.9;
+        shoulders[i].rotation.z = s * (0.2 + tuck * 0.45 + catchArm * 0.7);
         elbows[i].rotation.x = -(0.45 + lope * 0.35 + tuck * 0.3 + Math.max(0, -swing) * 0.25);
       }
       // Idle: a look about. In the helmet the head follows the view.
@@ -440,7 +525,7 @@ export function makeCosmonaut(dust: DustHandle): CosmonautHandle {
         neck.rotation.x = airborne ? -0.15 : 0.05;
       }
       // Footfalls on the ground raise a little dust.
-      if (!airborne && speed > 0.8) {
+      if (!airborne && speed > 0.8 && stumble <= 0) {
         const stepPhase = Math.sin(phase) * stepSide;
         if (lastStepPhase > 0 && stepPhase <= 0) {
           stepSide = -stepSide;

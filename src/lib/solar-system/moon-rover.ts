@@ -6,6 +6,13 @@
 // turn, headlights on while it is driven, dust off the wheels, tracks left
 // behind. Low gravity means little grip — it slides wide on a fast turn,
 // on purpose.
+//
+// Four gears. Creep is for working around the base and lining up on a
+// hatch: slow, and it turns inside its own length. Cruise is the drive out
+// to a site. Sprint is what you take across the mare when the oxygen clock
+// is running, and it will let go of the back end if you ask too much of it.
+// Ion is the fourth, and the crew does not have it until the thing in the
+// crater has been opened.
 
 import * as THREE from 'three';
 import type { Collider } from '@/lib/solar-system/moon-cosmonaut';
@@ -33,23 +40,50 @@ export interface RoverParts {
   brakeLight: THREE.MeshStandardMaterial;
 }
 
+/** The gears, slowest first. `ion` is the expedition's reward. */
+export type RoverGear = 'creep' | 'cruise' | 'sprint' | 'ion';
+export const ROVER_GEARS: RoverGear[] = ['creep', 'cruise', 'sprint', 'ion'];
+
+interface GearSpec {
+  /** Top speed, m/s, and how hard it gets there and stops. */
+  top: number;
+  accel: number;
+  brake: number;
+  /** Steering authority, and how much grip the back end keeps. */
+  steer: number;
+  grip: number;
+}
+const SPEC: Record<RoverGear, GearSpec> = {
+  creep: { top: 3.0, accel: 2.4, brake: 5.0, steer: 1.25, grip: 1 },
+  cruise: { top: 8.0, accel: 3.0, brake: 4.6, steer: 0.9, grip: 0.8 },
+  sprint: { top: 15.0, accel: 4.4, brake: 4.2, steer: 0.62, grip: 0.45 },
+  ion: { top: 26.0, accel: 7.0, brake: 5.4, steer: 0.5, grip: 0.3 },
+};
+
 export interface RoverHandle {
   speed: number;
   yaw: number;
   driving: boolean;
+  /** The gear it is in, and the ones this crew has earned. */
+  gear: RoverGear;
+  gears: RoverGear[];
+  /** Walk the gears up or down by one; clamped at the ends. */
+  shift: (dir: number) => void;
+  /** Go straight to a gear by its place in `gears`; clamped. */
+  select: (index: number) => void;
+  /** Top speed of the gear it is in, for the dial. */
+  top: number;
   update: (dt: number, throttle: number, steer: number, colliders: Collider[], walkRadius: number) => void;
 }
 
-const TOP = 7.5;
-const ACCEL = 2.6;
-const BRAKE = 4.5;
+const TOP = 15;
 const STEER_RATE = 0.9;
 /** How far a corner wheel turns at full lock, and how fast the body and
  *  the arms follow the ground (per second). */
 const STEER_LOCK = 0.42;
 const SUSPENSION = 7;
 
-export function makeRover(group: THREE.Group, collider: Collider, parts: RoverParts, terrain: TerrainHandle, dust: DustHandle, prints: PrintsHandle): RoverHandle {
+export function makeRover(group: THREE.Group, collider: Collider, parts: RoverParts, terrain: TerrainHandle, dust: DustHandle, prints: PrintsHandle, gears: RoverGear[] = ['creep', 'cruise', 'sprint']): RoverHandle {
   const up = new THREE.Vector3(0, 1, 0);
   const yawQ = new THREE.Quaternion();
   const tiltQ = new THREE.Quaternion();
@@ -68,21 +102,30 @@ export function makeRover(group: THREE.Group, collider: Collider, parts: RoverPa
   let lastSpeed = 0;
   const heights = new Float32Array(6);
   const handle: RoverHandle = {
-    speed: 0, yaw: group.rotation.y, driving: false,
+    speed: 0, yaw: group.rotation.y, driving: false, gear: 'cruise', gears, top: SPEC.cruise.top,
+    shift(dir) { handle.select(handle.gears.indexOf(handle.gear) + dir); },
+    select(index) {
+      const list = handle.gears;
+      handle.gear = list[THREE.MathUtils.clamp(Math.round(index), 0, list.length - 1)];
+      handle.top = SPEC[handle.gear].top;
+    },
     update(dt, throttle, steer, colliders, walkRadius) {
+      const spec = SPEC[handle.gear];
+      handle.top = spec.top;
       const s = handle.speed;
       if (handle.driving) {
-        const target = throttle * TOP;
-        const rate = Math.abs(target) < Math.abs(s) || Math.sign(target) !== Math.sign(s) ? BRAKE : ACCEL;
+        const target = throttle * spec.top;
+        const rate = Math.abs(target) < Math.abs(s) || Math.sign(target) !== Math.sign(s) ? spec.brake : spec.accel;
         handle.speed += THREE.MathUtils.clamp(target - s, -rate * dt, rate * dt);
       } else {
         handle.speed *= Math.exp(-dt * 2);
       }
       const v = handle.speed;
       // Steering authority grows with speed; grip fades with it (regolith slides).
-      const turn = -steer * STEER_RATE * THREE.MathUtils.clamp(Math.abs(v) / 2.5, 0, 1) * Math.sign(v || 1);
+      const turn = -steer * STEER_RATE * spec.steer * THREE.MathUtils.clamp(Math.abs(v) / 2.5, 0, 1) * Math.sign(v || 1);
       handle.yaw += turn * dt;
-      slide += ((Math.abs(turn) > 0.3 && Math.abs(v) > 5 ? 0.35 : 0) - slide) * (1 - Math.exp(-dt * 2));
+      const loose = (1 - spec.grip) * 0.7;
+      slide += ((Math.abs(turn) > 0.25 && Math.abs(v) > spec.top * 0.35 ? loose : 0) - slide) * (1 - Math.exp(-dt * 2));
       const fx = Math.sin(handle.yaw); const fz = Math.cos(handle.yaw);
       const sx = -Math.cos(handle.yaw) * slide * v * 0.2; const sz = Math.sin(handle.yaw) * slide * v * 0.2;
       let x = group.position.x + (fx * v + sx) * dt;
@@ -155,7 +198,7 @@ export function makeRover(group: THREE.Group, collider: Collider, parts: RoverPa
       for (const w of parts.spin) w.rotation.x = wheelSpin;
       // Dust off every wheel, more from the rear pair, tracks under all six.
       if (Math.abs(v) > 0.6) {
-        const kk = Math.abs(v) / TOP;
+        const kk = Math.min(1, Math.abs(v) / TOP);
         for (let i = 0; i < 6; i++) {
           const [lx, lz] = parts.wheelXZ[i];
           const rear = lz < -1;

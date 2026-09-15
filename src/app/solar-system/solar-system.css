@@ -1734,6 +1734,10 @@
 }
 
 /* ═══════════════════ Moon Mode: the surface ═══════════════════ */
+/* ── Moon Mode: the surface glass. The screen is the Moon; everything here
+   is a thin instrument laid over it — a compass ribbon at the top, the
+   suit down the left edge, the objective under the place name, and two
+   thumb stations at the bottom corners with nothing in between them. ── */
 .moon-surface {
   position: absolute;
   inset: 0;
@@ -1747,10 +1751,16 @@
 .moon-surface__canvas:active { cursor: grabbing; }
 .moon-hud {
   --hud-ink: #eef6ff;
-  --hud-dim: rgba(186, 214, 240, 0.6);
+  --hud-dim: rgba(186, 214, 240, 0.62);
   --hud-accent: #4db2ff;
+  --hud-warm: #ffc266;
   --hud-line: rgba(120, 180, 235, 0.3);
   --hud-glass: rgba(6, 14, 28, 0.52);
+  --hud-solid: rgba(5, 11, 22, 0.86);
+  --edge-top: max(14px, env(safe-area-inset-top));
+  --edge-right: max(14px, env(safe-area-inset-right));
+  --edge-bottom: max(14px, env(safe-area-inset-bottom));
+  --edge-left: max(14px, env(safe-area-inset-left));
   position: absolute;
   inset: 0;
   pointer-events: none;
@@ -1758,72 +1768,210 @@
   font: 400 12px var(--font-mono), monospace;
   letter-spacing: 0.04em;
   font-variant-numeric: tabular-nums;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
 .moon-hud button {
   pointer-events: auto;
-  min-height: 44px;
   border: 1px solid var(--hud-line);
-  border-radius: 4px;
+  border-radius: 10px;
   background: var(--hud-glass);
   color: var(--hud-ink);
   font: inherit;
   cursor: pointer;
   touch-action: none;
   padding: 0;
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
 .moon-hud button::before { content: none; }
 .moon-hud button:focus-visible { outline: 2px solid var(--hud-accent); outline-offset: 4px; }
-.moon-hud button:active { border-color: var(--hud-accent); }
-.moon-hud__head {
-  position: absolute;
-  top: max(20px, env(safe-area-inset-top));
-  left: max(20px, env(safe-area-inset-left));
-  display: grid;
-  gap: 6px;
-  padding: 10px 14px 10px 12px;
-  border-left: 2px solid var(--hud-accent);
-  border-radius: 0 4px 4px 0;
-  background: var(--hud-glass);
-  max-width: calc(100% - 200px);
-}
-.moon-hud__place { font-size: 13px; letter-spacing: 0.22em; text-transform: uppercase; }
-.moon-hud__reading { display: flex; gap: 10px; color: var(--hud-dim); }
+.moon-hud__reading { display: flex; gap: 8px; color: var(--hud-dim); }
 .moon-hud__reading > span:first-child { letter-spacing: 0.14em; text-transform: uppercase; font-size: 10px; align-self: baseline; }
 .moon-hud__reading > span:last-child { color: var(--hud-ink); }
+
+/* ── Top left: the place, and the three numbers that change. ── */
+.moon-hud__head {
+  position: absolute;
+  top: var(--edge-top);
+  left: var(--edge-left);
+  display: grid;
+  gap: 5px;
+  padding: 8px 12px 8px 10px;
+  border-left: 2px solid var(--hud-accent);
+  border-radius: 0 6px 6px 0;
+  background: var(--hud-glass);
+  max-width: 44vw;
+}
+.moon-hud__place { font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.moon-hud__head-rows { display: grid; gap: 3px; }
+
+/* ── The objective, right under it: a key you can press for the log. ── */
+.moon-hud__objective {
+  position: absolute;
+  top: calc(var(--edge-top) + 92px);
+  left: var(--edge-left);
+  display: grid;
+  gap: 2px;
+  padding: 8px 12px;
+  text-align: left;
+  border-left: 2px solid var(--hud-warm) !important;
+  border-radius: 0 6px 6px 0 !important;
+  max-width: min(320px, 62vw);
+}
+.moon-hud__objective[hidden] { display: none; }
+.moon-hud__objective-tag { font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--hud-warm); }
+.moon-hud__objective-text { font-size: 12px; line-height: 1.35; }
+.moon-hud__objective-range { font-size: 11px; color: var(--hud-dim); }
+
+/* ── The compass ribbon. ── */
+.moon-hud__compass {
+  position: absolute;
+  top: calc(var(--edge-top) + 9px);
+  left: 0;
+  right: 0;
+  margin-inline: auto;
+  width: min(300px, 44vw);
+  height: 26px;
+}
+.moon-hud__strip-wrap {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 4px;
+  background: linear-gradient(180deg, rgba(6, 14, 28, 0.62), rgba(6, 14, 28, 0.2));
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
+}
+.moon-hud__strip { position: absolute; top: 0; left: 50%; height: 100%; will-change: transform; }
+.moon-hud__tick { position: absolute; top: 6px; width: 1px; height: 6px; background: rgba(186, 214, 240, 0.45); }
+.moon-hud__tick[data-major='true'] { height: 9px; background: var(--hud-ink); }
+.moon-hud__tick b { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); font: 600 10px var(--font-mono), monospace; letter-spacing: 0.1em; }
+.moon-hud__needle {
+  position: absolute;
+  top: -3px;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border: 5px solid transparent;
+  border-top-color: var(--hud-warm);
+  transform: translateX(-50%);
+}
+.moon-hud__pip {
+  position: absolute;
+  bottom: -7px;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  background: #5eead4;
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  filter: drop-shadow(0 0 4px rgba(94, 234, 212, 0.8));
+}
+.moon-hud__pip[hidden] { display: none; }
+.moon-hud__pip[data-edge='true'] { background: var(--hud-warm); animation: moon-pulse 0.9s ease-in-out infinite; }
+
+/* ── Top right: three round keys, and the menu under them. ── */
 .moon-hud__top {
   position: absolute;
-  top: max(16px, env(safe-area-inset-top));
-  right: max(16px, env(safe-area-inset-right));
+  top: var(--edge-top);
+  right: var(--edge-right);
   display: flex;
-  gap: 8px;
-}
-.moon-hud__top button { width: 44px; display: grid; place-items: center; }
-.moon-hud__top .moon-hud__return { width: auto; display: flex; align-items: center; gap: 8px; padding: 0 14px; white-space: nowrap; }
-.moon-hud__help {
-  position: absolute;
-  top: max(20px, env(safe-area-inset-top));
-  left: max(20px, env(safe-area-inset-left));
-  width: min(330px, calc(100% - 40px));
-  display: grid;
   gap: 7px;
-  padding: 12px 14px 14px;
-  border: 1px solid var(--hud-line);
-  border-radius: 6px;
-  background: rgba(6, 14, 28, 0.86);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-  pointer-events: auto;
-  z-index: 4;
 }
-.moon-hud__help-head { display: flex; align-items: center; justify-content: space-between; letter-spacing: 0.22em; text-transform: uppercase; color: var(--hud-accent); }
-.moon-hud__help-head button { min-height: 26px; width: 26px; display: grid; place-items: center; border: 0; background: transparent; color: var(--hud-dim); }
-.moon-hud__help p { margin: 0; font-size: 11px; line-height: 1.5; color: var(--hud-dim); }
+.moon-hud__round {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 50% !important;
+}
+.moon-hud__round:active { border-color: var(--hud-accent); }
+.moon-hud__unhide { position: absolute; top: var(--edge-top); right: var(--edge-right); display: none; }
+.moon-hud__menu {
+  position: absolute;
+  top: 52px;
+  right: 0;
+  width: 210px;
+  display: grid;
+  gap: 4px;
+  padding: 6px;
+  border: 1px solid var(--hud-line);
+  border-radius: 10px;
+  background: var(--hud-solid);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  pointer-events: auto;
+  z-index: 5;
+}
+.moon-hud__menu button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--hud-dim);
+  text-align: left;
+}
+.moon-hud__menu button:hover, .moon-hud__menu button:active { background: rgba(77, 178, 255, 0.14); color: var(--hud-ink); }
+.moon-hud__menu-exit { color: var(--hud-warm) !important; }
+
+/* ── Left edge: the suit, as small as it can be and still be read. ── */
+.moon-hud__vitals {
+  position: absolute;
+  min-width: 112px;
+  left: var(--edge-left);
+  top: 50%;
+  transform: translateY(-50%);
+  display: grid;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: var(--hud-glass);
+  font-size: 11px;
+}
+.moon-hud__vital { display: grid; grid-template-columns: auto 1fr; gap: 3px 10px; align-items: baseline; }
+.moon-hud__vital > span { text-align: right; }
+.moon-hud__vital i { font-style: normal; font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--hud-dim); }
+.moon-hud__bar { grid-column: 1 / -1; display: block; height: 2px; border-radius: 2px; background: rgba(186, 214, 240, 0.2); }
+.moon-hud__bar i { display: block; height: 100%; border-radius: 2px; background: var(--hud-accent); }
+
+/* ── The middle of the glass. ── */
+.moon-hud__foot {
+  position: absolute;
+  left: 50%;
+  bottom: calc(var(--edge-bottom) + 130px);
+  transform: translateX(-50%);
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  width: min(520px, calc(100% - 200px));
+  text-align: center;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.85);
+}
+.moon-hud__poi, .moon-hud__hint, .moon-hud__airlock, .moon-hud__stance {
+  padding: 6px 12px;
+  border-radius: 4px;
+  background: var(--hud-glass);
+}
+.moon-hud__poi { font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; }
+.moon-hud__hint { margin: 0; font-size: 11px; color: var(--hud-dim); }
+.moon-hud__airlock { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--hud-accent); }
+.moon-hud__stance { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--hud-warm); }
+.moon-hud__poi[hidden], .moon-hud__hint[hidden], .moon-hud__airlock[hidden], .moon-hud__stance[hidden] { display: none; }
+
 .moon-hud__impact {
   position: absolute;
-  top: calc(max(20px, env(safe-area-inset-top)) + 120px);
+  top: calc(var(--edge-top) + 54px);
   left: 50%;
   transform: translateX(-50%);
-  padding: 8px 12px;
+  padding: 7px 12px;
   border: 1px solid rgba(255, 179, 71, 0.5);
   border-radius: 4px;
   background: var(--hud-glass);
@@ -1836,97 +1984,228 @@
 }
 .moon-hud__impact[hidden] { display: none; }
 @keyframes moon-impact { from { opacity: 0; transform: translate(-50%, -6px); } to { opacity: 1; transform: translate(-50%, 0); } }
-.moon-hud__foot {
+
+/* The banner an act ends on. */
+.moon-hud__banner {
   position: absolute;
   left: 50%;
-  bottom: max(28px, calc(env(safe-area-inset-bottom) + 20px));
+  top: 22%;
   transform: translateX(-50%);
-  display: grid;
-  justify-items: center;
-  gap: 8px;
-  width: min(560px, calc(100% - 32px));
+  width: min(420px, calc(100% - 48px));
   text-align: center;
-  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.85);
+  animation: moon-banner 0.7s ease-out both;
 }
-.moon-hud__poi, .moon-hud__hint { padding: 8px 12px; border-radius: 4px; background: var(--hud-glass); }
-.moon-hud__poi { font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; }
-.moon-hud__poi[hidden], .moon-hud__hint[hidden] { display: none; }
-.moon-hud__hint { margin: 0; font-size: 12px; color: var(--hud-dim); }
-.moon-hud__aux {
+.moon-hud__banner[hidden] { display: none; }
+.moon-hud__banner span {
+  display: inline-block;
+  padding: 10px 18px;
+  border-top: 1px solid var(--hud-warm);
+  border-bottom: 1px solid var(--hud-warm);
+  background: rgba(6, 14, 28, 0.7);
+  font-size: clamp(11px, 3vw, 14px);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #ffe6bd;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.9);
+}
+@keyframes moon-banner { from { opacity: 0; letter-spacing: 0.3em; } to { opacity: 1; letter-spacing: 0.14em; } }
+
+/* ── The two thumb stations. ── */
+.moon-hud__move {
   position: absolute;
-  right: max(16px, env(safe-area-inset-right));
-  bottom: max(16px, env(safe-area-inset-bottom));
+  left: var(--edge-left);
+  bottom: var(--edge-bottom);
+  display: grid;
+  justify-items: start;
+  gap: 8px;
+}
+.moon-hud__stance-keys { display: flex; gap: 8px; order: -1; }
+.moon-hud__key {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  gap: 8px;
-}
-.moon-hud__aux button {
-  display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 0 14px;
-  height: 48px;
-  min-width: 96px;
-  font-size: 10px;
-  letter-spacing: 0.14em;
+  gap: 2px;
+  width: 54px;
+  height: 46px;
+  font-size: 9px;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--hud-dim);
 }
-.moon-hud__aux button.is-on { color: var(--hud-ink); border-color: var(--hud-accent); }
-.moon-hud__aux .moon-hud__jump { width: 84px; height: 84px; border-radius: 50%; color: var(--hud-ink); font-size: 11px; }
-.moon-hud__aux .moon-hud__jump:active { background: rgba(77, 178, 255, 0.22); }
-.moon-hud__descent {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-content: center;
-  gap: 10px;
-  text-align: center;
-  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.7));
-}
-.moon-hud__descent[hidden] { display: none; }
-.moon-hud__descent-title { font-size: 15px; letter-spacing: 0.26em; text-transform: uppercase; animation: moon-pulse 2.4s ease-in-out infinite; }
-.moon-hud__descent-count { color: var(--hud-dim); }
-@keyframes moon-pulse { 0%, 100% { opacity: 0.7; } 50% { opacity: 1; } }
-.moon-surface[data-phase='surface'] .moon-hud__foot { animation: moon-impact 0.6s ease-out both; }
-@media (max-width: 599px) {
-  .moon-hud__head { max-width: calc(100% - 140px); }
-  .moon-hud__top .moon-hud__return span { display: none; }
-  .moon-hud__top .moon-hud__return { width: 44px; padding: 0; }
-  .moon-hud__foot { bottom: 120px; }
-}
+.moon-hud__key[data-on='true'] { color: var(--hud-ink); border-color: var(--hud-accent); background: rgba(77, 178, 255, 0.18); }
+.moon-hud__key[hidden] { display: none; }
 
-/* ── Moon Mode v2: the suit panel, the helmet, the rover ── */
-.moon-hud__suit {
+.moon-hud__thumb {
   position: absolute;
-  top: max(20px, env(safe-area-inset-top));
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 16px;
-  padding: 8px 14px;
-  border-radius: 4px;
-  background: var(--hud-glass);
-  border: 1px solid var(--hud-line);
-  white-space: nowrap;
+  right: var(--edge-right);
+  bottom: var(--edge-bottom);
+  display: grid;
+  grid-template-columns: auto auto;
+  align-items: end;
+  justify-items: end;
+  gap: 10px;
 }
-.moon-hud__suit .moon-hud__reading { gap: 6px; }
+.moon-hud__gear { grid-column: 1; grid-row: 1; }
+.moon-hud__gear[data-gear='ion'] { color: #8ff0ff; border-color: rgba(143, 240, 255, 0.6); }
 .moon-hud__action {
-  padding: 0 16px;
-  letter-spacing: 0.14em;
+  grid-column: 2;
+  grid-row: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  width: 74px;
+  height: 74px;
+  border-radius: 50% !important;
+  border-color: rgba(255, 194, 102, 0.7) !important;
+  color: var(--hud-warm) !important;
+  font-size: 9px;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  font-size: 11px;
-  border-color: rgba(255, 179, 71, 0.6) !important;
-  color: #ffd9a0 !important;
-  animation: moon-impact 0.4s ease-out both;
+  line-height: 1.1;
+  text-align: center;
+  animation: moon-impact 0.3s ease-out both;
 }
 .moon-hud__action[hidden] { display: none; }
-.moon-hud__airlock { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--hud-accent); padding: 6px 10px; border-radius: 4px; background: var(--hud-glass); }
-.moon-hud__airlock[hidden] { display: none; }
-/* Inside the helmet: the visor's edge, a faint reflection of the crew's own
-   face lights, and the sun visor's gold cast at the top of the glass. */
+.moon-hud__action:active { background: rgba(255, 194, 102, 0.22); }
+.moon-hud__action span { padding: 0 6px; }
+.moon-hud__ico-work, .moon-hud__ico-use { display: none; }
+.moon-hud__action[data-mode='work'] .moon-hud__ico-work { display: block; }
+.moon-hud__action[data-mode='use'] .moon-hud__ico-use { display: block; }
+.moon-hud__jump, .moon-hud__throttle {
+  grid-column: 2;
+  grid-row: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  width: 88px;
+  height: 88px;
+  border-radius: 50% !important;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.moon-hud__jump:active { background: rgba(77, 178, 255, 0.22); }
+.moon-hud__throttle { position: relative; overflow: hidden; border-color: rgba(255, 194, 102, 0.7) !important; color: var(--hud-warm) !important; }
+.moon-hud__throttle > * { position: relative; }
+.moon-hud__throttle-fill { position: absolute; inset: 0; display: flex; align-items: flex-end; }
+.moon-hud__throttle-fill i { display: block; width: 100%; background: rgba(255, 150, 60, 0.28); }
+/* The work meter sits over the action key while a tool is running. */
+.moon-hud__work {
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: center;
+  align-self: center;
+  width: 92px;
+  height: 92px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: conic-gradient(var(--hud-warm) calc(var(--work, 0) * 360deg), rgba(186, 214, 240, 0.14) 0);
+  -webkit-mask: radial-gradient(circle, transparent 41px, #000 42px);
+  mask: radial-gradient(circle, transparent 41px, #000 42px);
+  pointer-events: none;
+  z-index: 2;
+}
+.moon-hud__work[hidden] { display: none; }
+.moon-hud__work span { display: none; }
+
+/* ── The way down. ── */
+.moon-hud__landing { position: absolute; inset: 0; pointer-events: none; }
+.moon-hud__land-card {
+  position: absolute;
+  top: var(--edge-top);
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(300px, 76vw);
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  padding: 10px 16px 12px;
+  border: 1px solid var(--hud-line);
+  border-radius: 10px;
+  background: var(--hud-solid);
+  text-align: center;
+}
+.moon-hud__land-title { font-size: 10px; letter-spacing: 0.24em; text-transform: uppercase; color: var(--hud-accent); }
+.moon-hud__land-alt { font-size: clamp(26px, 8vw, 38px); line-height: 1; letter-spacing: 0.02em; }
+.moon-hud__land-rows { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px 10px; width: 100%; }
+.moon-hud__land-rows .moon-hud__reading { flex-direction: column; align-items: center; gap: 1px; }
+.moon-hud__land-rows .moon-hud__reading > span:first-child { white-space: nowrap; }
+.moon-hud__land-fuel { width: 100%; height: 3px; border-radius: 3px; background: rgba(186, 214, 240, 0.2); overflow: hidden; }
+.moon-hud__land-fuel i { display: block; height: 100%; background: var(--hud-warm); transition: width 0.2s linear; }
+.moon-hud__land-fuel-label { font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--hud-dim); }
+.moon-hud__assist {
+  position: absolute;
+  top: calc(var(--edge-top) + 150px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 7px 14px;
+  border: 1px solid rgba(255, 194, 102, 0.6);
+  border-radius: 4px;
+  background: var(--hud-glass);
+  color: #ffe6bd;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  animation: moon-pulse 1.6s ease-in-out infinite;
+}
+.moon-hud__assist[hidden] { display: none; }
+.moon-hud__plaque {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  transform: translateX(-50%);
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding: 14px 26px;
+  border-top: 1px solid var(--hud-accent);
+  border-bottom: 1px solid var(--hud-accent);
+  background: rgba(6, 14, 28, 0.72);
+  text-align: center;
+  animation: moon-banner 0.8s ease-out both;
+}
+.moon-hud__plaque[hidden] { display: none; }
+.moon-hud__plaque-grade { font-size: clamp(15px, 4.6vw, 21px); letter-spacing: 0.18em; text-transform: uppercase; }
+.moon-hud__plaque-speed { font-size: 12px; color: var(--hud-dim); }
+
+/* ── Panels. ── */
+.moon-hud__help, .moon-hud__log {
+  position: absolute;
+  top: var(--edge-top);
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(360px, calc(100% - 28px));
+  max-height: min(70vh, 520px);
+  overflow-y: auto;
+  display: grid;
+  gap: 7px;
+  padding: 12px 14px 14px;
+  border: 1px solid var(--hud-line);
+  border-radius: 10px;
+  background: rgba(6, 14, 28, 0.92);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  pointer-events: auto;
+  z-index: 6;
+  -webkit-user-select: text;
+  user-select: text;
+}
+.moon-hud__help-head { display: flex; align-items: center; justify-content: space-between; letter-spacing: 0.2em; text-transform: uppercase; color: var(--hud-accent); }
+.moon-hud__help-head button { min-height: 26px; width: 26px; display: grid; place-items: center; border: 0; background: transparent; color: var(--hud-dim); }
+.moon-hud__help p, .moon-hud__log p { margin: 0; font-size: 11px; line-height: 1.55; color: var(--hud-dim); }
+.moon-hud__log-brief { color: var(--hud-ink) !important; }
+.moon-hud__log-rewards { display: grid; gap: 8px; padding-top: 6px; border-top: 1px solid var(--hud-line); }
+.moon-hud__reward { display: flex; gap: 8px; align-items: flex-start; color: var(--hud-warm) !important; }
+
+/* ── Inside the helmet: the visor's edge, a faint reflection of the crew's
+   own face lights, and the sun visor's gold cast at the top of the glass. ── */
 .moon-hud__visor {
   position: absolute;
   inset: 0;
@@ -1944,16 +2223,60 @@
   border-radius: 50% / 46%;
   box-shadow: inset 0 0 0 2px rgba(200, 210, 220, 0.12), inset 0 0 60px rgba(0, 0, 0, 0.5);
 }
-.moon-surface[data-view='helmet'] .moon-hud__visor { opacity: 1; }
+.moon-surface[data-view='helmet'] .moon-hud__visor,
+.moon-surface[data-view='cockpit'] .moon-hud__visor { opacity: 1; }
 .moon-surface[data-view='helmet'] .moon-surface__canvas { cursor: crosshair; }
-.moon-surface[data-view='rover'] .moon-hud__hint { display: none; }
-@media (max-width: 899px) {
-  .moon-hud__suit { top: auto; bottom: max(96px, calc(env(safe-area-inset-bottom) + 90px)); left: max(16px, env(safe-area-inset-left)); transform: none; gap: 10px; padding: 6px 10px; font-size: 11px; }
-  .moon-hud__suit .moon-hud__reading > span:first-child { display: none; }
-}
+.moon-surface[data-driving='true'] .moon-hud__hint,
+.moon-surface[data-driving='true'] .moon-hud__stance-keys { display: none; }
+
+/* ── What each phase shows. ── */
+.moon-surface[data-phase='surface'] .moon-hud__landing,
+.moon-surface[data-phase='surface'] .moon-hud__throttle { display: none; }
+.moon-surface:not([data-phase='surface']) .moon-hud__head,
+.moon-surface:not([data-phase='surface']) .moon-hud__objective,
+.moon-surface:not([data-phase='surface']) .moon-hud__compass,
+.moon-surface:not([data-phase='surface']) .moon-hud__vitals,
+.moon-surface:not([data-phase='surface']) .moon-hud__foot,
+.moon-surface:not([data-phase='surface']) .moon-hud__top,
+.moon-surface:not([data-phase='surface']) .moon-hud__stance-keys,
+.moon-surface:not([data-phase='surface']) .moon-hud__jump,
+.moon-surface:not([data-phase='surface']) .moon-hud__gear,
+.moon-surface:not([data-phase='surface']) .moon-hud__action { display: none; }
+.moon-surface[data-phase='touchdown'] .moon-hud__move,
+.moon-surface[data-phase='touchdown'] .moon-hud__throttle { display: none; }
+.moon-surface[data-phase='surface'] .moon-hud__foot { animation: moon-impact 0.6s ease-out both; }
+
+/* ── The immersive view: the Moon, and one key to come back. ── */
+.moon-surface[data-immersive='true'] .moon-hud > *:not(.moon-hud__unhide):not(.moon-hud__visor) { display: none; }
+.moon-surface[data-immersive='true'] .moon-hud__unhide { display: grid; }
+@keyframes moon-pulse { 0%, 100% { opacity: 0.7; } 50% { opacity: 1; } }
+
 @media (max-width: 599px) {
-  .moon-hud__suit { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 12px; }
-  .moon-hud__foot { bottom: 150px; }
+  /* The top row is the compass and the three keys; the cards run down the
+     left under it, and the messages sit clear above the thumbs. */
+  .moon-hud__compass { left: var(--edge-left); right: auto; margin-inline: 0; width: calc(100vw - 172px); max-width: 220px; }
+  .moon-hud__head { top: calc(var(--edge-top) + 44px); max-width: 60vw; padding: 7px 10px 7px 8px; }
+  .moon-hud__place { letter-spacing: 0.12em; }
+  .moon-hud__head-rows { grid-auto-flow: column; grid-template-columns: repeat(3, auto); gap: 10px; }
+  .moon-hud__head-rows .moon-hud__reading { flex-direction: column; gap: 0; }
+  .moon-hud__objective { top: calc(var(--edge-top) + 118px); max-width: min(300px, 70vw); }
+  .moon-hud__vitals { top: auto; bottom: calc(var(--edge-bottom) + 182px); transform: none; grid-template-columns: repeat(3, auto); gap: 2px 14px; padding: 5px 9px; font-size: 10px; }
+  .moon-hud__vitals { min-width: 0; }
+  .moon-hud__vital { grid-template-columns: auto auto; justify-content: start; gap: 6px; }
+  .moon-hud__vital > span { text-align: left; }
+  .moon-hud__vitals .moon-hud__bar { display: none; }
+  .moon-hud__foot { bottom: calc(var(--edge-bottom) + 236px); width: calc(100% - 32px); }
+  .moon-hud__move .game-stick { width: 112px; height: 112px; }
+  .moon-hud__key { width: 50px; height: 40px; }
+  .moon-hud__jump, .moon-hud__throttle { width: 78px; height: 78px; }
+  .moon-hud__action { width: 66px; height: 66px; }
+  .moon-hud__work { width: 82px; height: 82px; -webkit-mask: radial-gradient(circle, transparent 37px, #000 38px); mask: radial-gradient(circle, transparent 37px, #000 38px); }
+  .moon-hud__banner { top: 20%; }
+  .moon-hud__impact { top: calc(var(--edge-top) + 200px); }
+}
+@media (max-height: 460px) {
+  .moon-hud__objective { display: none; }
+  .moon-hud__vitals { font-size: 10px; }
 }
 
 .game-stick {
@@ -1990,40 +2313,8 @@
   transform: translate(var(--stick-x, 0px), var(--stick-y, 0px));
   pointer-events: none;
 }
-.moon-hud__station {
-  position: absolute;
-  left: max(16px, env(safe-area-inset-left));
-  bottom: max(20px, env(safe-area-inset-bottom));
-  display: grid;
-  justify-items: center;
-  gap: 10px;
-}
-.moon-hud__station button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 0 12px;
-  max-width: 140px;
-  font-size: 12px;
-  letter-spacing: 0;
-}
-.moon-hud__station button.is-on { color: var(--seafoam); border-color: var(--seafoam); }
-.moon-surface[data-phase='descent'] :is(.moon-hud__station, .moon-hud__aux) { visibility: hidden; }
-.moon-hud__foot { width: min(560px, calc(100% - 340px)); }
-@media (max-width: 899px) {
-  .moon-hud__suit { top: 170px; bottom: auto; }
-  .moon-hud__foot { bottom: 210px; width: calc(100% - 32px); }
-  .moon-hud__head { max-width: calc(100% - 176px); }
-  .moon-hud__place { letter-spacing: 0; overflow-wrap: anywhere; }
-}
-@media (min-width: 900px) and (max-width: 1199px) {
-  .moon-hud__suit { top: 76px; left: auto; right: 16px; transform: none; display: grid; }
-}
+/* The stick's thumb sits where the finger left it; the moon layout above
+   places the stick itself. */
 @media (max-height: 500px) {
   .game-stick { width: 104px; height: 104px; }
-  .moon-hud__station { bottom: max(12px, env(safe-area-inset-bottom)); gap: 6px; }
-  .moon-hud__suit { top: 76px; left: auto; right: 16px; display: grid; grid-template-columns: 1fr 1fr; }
-  .moon-hud__foot { bottom: 20px; width: calc(100% - 320px); }
-  .moon-hud__head { gap: 3px; top: 12px; }
 }

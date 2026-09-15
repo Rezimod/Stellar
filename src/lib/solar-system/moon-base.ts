@@ -135,7 +135,7 @@ export function makeMoonBase(heightAt: (x: number, z: number) => number, lite: b
   const lamp = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: new THREE.Color(0xfff2d0), emissiveIntensity: 1.6 });
   const airlockLight = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: new THREE.Color(0x4db2ff), emissiveIntensity: 1.5 });
   // Inside the habitats.
-  const innerWall = new THREE.MeshStandardMaterial({ color: 0xd8d6cf, roughness: 0.92, metalness: 0, side: THREE.BackSide });
+  const innerWall = new THREE.MeshStandardMaterial({ color: 0xb4b2ab, roughness: 0.95, metalness: 0, side: THREE.BackSide });
   const deck = new THREE.MeshStandardMaterial({ color: 0x4c5158, roughness: 0.55, metalness: 0.35 });
   const locker = new THREE.MeshStandardMaterial({ color: 0xb9bdc3, roughness: 0.5, metalness: 0.3 });
   const lockerDark = new THREE.MeshStandardMaterial({ color: 0x2e3238, roughness: 0.5, metalness: 0.4 });
@@ -180,8 +180,14 @@ export function makeMoonBase(heightAt: (x: number, z: number) => number, lite: b
   const rampY = (lz: number) => LANDING - (lz - 6.7) * (1.56 / 5.2);
   /** Sphere phi runs from -X, so π/2 is straight ahead (+Z): the doorway
    *  is a gap in the lower band of the dome, centred on the airlock. */
-  const DOOR_GAP = 0.26;
+  const DOOR_GAP = 0.42;
   const DOOR_THETA = 1.05;
+  /** Half the width of the way in — ramp, airlock and doorway all take it.
+   *  Wide enough that walking at the door is enough to go through it. */
+  const DOOR_HALF = 1.05;
+  /** The apron at the foot of the ramp, where an approach is gathered onto
+   *  the centreline so nobody has to thread a needle to get indoors. */
+  const APRON = 3.4;
   const habitat = (x: number, z: number, yaw: number, id: string) => {
     const g = place(x, z, yaw);
     // Four legs and a ring skirt, then the dome on top.
@@ -207,26 +213,46 @@ export function makeMoonBase(heightAt: (x: number, z: number) => number, lite: b
       mesh(g, new THREE.TorusGeometry(r, 0.05, 6, seg), skirt, 0, yh, 0).rotation.x = Math.PI / 2;
     }
     // Airlock: a hard module on the front with the door and a stair-ramp.
-    mesh(g, new THREE.BoxGeometry(2.4, 2.6, 2.2), white, 0, 2.7, 5.6);
+    mesh(g, new THREE.BoxGeometry(3.0, 2.8, 2.2), white, 0, 2.8, 5.6);
     // A lit chamber behind the door — it reaches back through the doorway
     // into the dome — and the door itself slides up into the frame.
-    mesh(g, new THREE.BoxGeometry(1.3, 2.0, 2.5), skirt, 0, 2.95, 5.5).material = new THREE.MeshStandardMaterial({ color: 0x9aa0a8, roughness: 0.6, side: THREE.BackSide });
-    mesh(g, new THREE.BoxGeometry(1.3, 0.06, 2.5), deck, 0, FLOOR, 5.5);
-    mesh(g, new THREE.BoxGeometry(0.6, 0.04, 0.6), airlockLight, 0, 3.55, 5.9);
-    const door = mesh(g, new THREE.BoxGeometry(1.1, 1.9, 0.1), skirt, 0, 2.55, 6.72);
-    mesh(door, new THREE.BoxGeometry(0.28, 0.28, 0.06), glass, 0.0, 0.45, 0.06);
-    mesh(g, new THREE.BoxGeometry(1.3, 0.12, 0.16), dark, 0, 3.6, 6.72);
+    const chamber = new THREE.MeshStandardMaterial({ color: 0x9aa0a8, roughness: 0.6, side: THREE.BackSide });
+    owned.push(chamber);
+    mesh(g, new THREE.BoxGeometry(DOOR_HALF * 2, 2.2, 2.5), chamber, 0, 3.05, 5.5);
+    mesh(g, new THREE.BoxGeometry(DOOR_HALF * 2, 0.06, 2.5), deck, 0, FLOOR, 5.5);
+    mesh(g, new THREE.BoxGeometry(0.8, 0.04, 0.8), airlockLight, 0, 3.7, 5.9);
+    const door = mesh(g, new THREE.BoxGeometry(DOOR_HALF * 2 - 0.1, 2.1, 0.1), skirt, 0, 2.65, 6.72);
+    mesh(door, new THREE.BoxGeometry(0.34, 0.34, 0.06), glass, 0.0, 0.55, 0.06);
+    mesh(g, new THREE.BoxGeometry(DOOR_HALF * 2 + 0.2, 0.12, 0.16), dark, 0, 3.8, 6.72);
     airlocks.push({ x: x + Math.sin(yaw) * 6.9, z: z + Math.cos(yaw) * 6.9, yaw, panel: door, open: 0 });
-    mesh(g, new THREE.BoxGeometry(0.5, 0.06, 0.06), airlockLight, 0, 3.85, 6.74);
-    const ramp = mesh(g, new THREE.BoxGeometry(1.6, 0.12, 5.2), alu, 0, 0.9, 9.3);
+    mesh(g, new THREE.BoxGeometry(0.7, 0.06, 0.06), airlockLight, 0, 4.05, 6.74);
+    const ramp = mesh(g, new THREE.BoxGeometry(DOOR_HALF * 2 + 0.3, 0.12, 5.2), alu, 0, 0.9, 9.3);
     ramp.rotation.x = Math.atan2(1.5, 5);
-    for (const s of [-1, 1]) {
-      const rail = mesh(g, new THREE.CylinderGeometry(0.03, 0.03, 5.3, 6), steel, s * 0.8, 1.75, 9.3);
-      rail.rotation.x = Math.PI / 2 + Math.atan2(1.5, 5);
+    // Cleats across the ramp, so it reads as something to walk up.
+    for (let i = 0; i < 9; i++) {
+      const cleat = mesh(g, new THREE.BoxGeometry(DOOR_HALF * 2, 0.04, 0.09), steel, 0, 1.63 - i * 0.174, 7.1 + i * 0.58);
+      cleat.rotation.x = Math.atan2(1.5, 5);
+      cleat.castShadow = false;
     }
-    mesh(g, new THREE.BoxGeometry(1.6, 0.12, 1.2), alu, 0, 1.68, 6.9);
+    for (const s of [-1, 1]) {
+      const rail = mesh(g, new THREE.CylinderGeometry(0.03, 0.03, 5.3, 6), steel, s * (DOOR_HALF + 0.12), 1.75, 9.3);
+      rail.rotation.x = Math.PI / 2 + Math.atan2(1.5, 5);
+      for (let i = 0; i < 4; i++) mesh(g, new THREE.CylinderGeometry(0.025, 0.025, 0.7, 6), steel, s * (DOOR_HALF + 0.12), 1.2 - i * 0.26, 7.6 + i * 1.3);
+    }
+    mesh(g, new THREE.BoxGeometry(DOOR_HALF * 2 + 0.3, 0.12, 1.2), alu, 0, 1.68, 6.9);
     const rampX = x + Math.sin(yaw) * 9.3; const rampZ = z + Math.cos(yaw) * 9.3;
     habCollider({ x: rampX, z: rampZ, r: 2.2 });
+    // Two portholes in the flank, so the room has somewhere to look out of.
+    for (const pa of [-1.15, 1.15]) {
+      const ph = new THREE.Group();
+      ph.position.set(Math.sin(pa) * 5.3, 3.5, Math.cos(pa) * 5.3);
+      ph.rotation.y = pa;
+      ph.rotation.x = Math.PI / 2;
+      g.add(ph);
+      mesh(ph, new THREE.TorusGeometry(0.62, 0.09, 8, 20), alu);
+      const pane = mesh(ph, new THREE.CircleGeometry(0.58, 20), glass);
+      pane.castShadow = false;
+    }
     // Beacon on top.
     mesh(g, new THREE.SphereGeometry(0.16, 10, 8), beacon, 0, 6.75, 0);
     habCollider({ x: x, z: z, r: 5.9 });
@@ -253,8 +279,8 @@ export function makeMoonBase(heightAt: (x: number, z: number) => number, lite: b
     }
     mesh(g, new THREE.TorusGeometry(2.7, 0.06, 8, seg), roomLight, 0, 5.5, 0).rotation.x = Math.PI / 2;
     mesh(g, new THREE.CylinderGeometry(0.5, 0.5, 0.04, 20), roomLight, 0, 6.0, 0);
-    const habLamp = new THREE.PointLight(0xfff1dc, 0, 18, 1.6);
-    habLamp.position.set(0, 4.9, 0);
+    const habLamp = new THREE.PointLight(0xfff1dc, 0, 22, 1.5);
+    habLamp.position.set(0, 4.6, 0);
     g.add(habLamp);
     for (let i = 0; i < 12; i++) {
       const a = (i / 12) * Math.PI * 2;
@@ -300,6 +326,14 @@ export function makeMoonBase(heightAt: (x: number, z: number) => number, lite: b
       at(Math.PI, 3.6, new THREE.CylinderGeometry(0.22, 0.22, 0.08, 16), steel, 0.95, 0.7);
       at(Math.PI, 3.6, new THREE.BoxGeometry(0.34, 0.42, 0.34), lockerDark, 1.15, -0.8);
       at(Math.PI, 3.6, new THREE.BoxGeometry(0.12, 0.12, 0.02), screen, 1.25, -0.8);
+      // The mission board: the wall the expedition is planned against, with
+      // the mare drawn on it and the anomaly ringed in red.
+      at(-0.95, 4.3, new THREE.BoxGeometry(2.4, 1.5, 0.08), lockerDark, 1.85).rotation.y = -0.95 + Math.PI;
+      const boardTex = plaque(['DEEP CORE', 'MAGNETIC ANOMALY 3', 'BEARING 312 \u00b7 118 M'], 512, 320, '#07141c', '#5eead4', 40);
+      textures.push(boardTex);
+      const boardMat = new THREE.MeshStandardMaterial({ map: boardTex, emissiveMap: boardTex, emissive: new THREE.Color(0xffffff), emissiveIntensity: 0.55, roughness: 0.4 });
+      owned.push(boardMat);
+      at(-0.95, 4.24, new THREE.PlaneGeometry(2.2, 1.34), boardMat, 1.85).rotation.y = -0.95 + Math.PI;
     } else {
       // Medical bay and gym: a bed under its monitor, a treadmill, a cabinet.
       at(2.3, 3.4, new THREE.BoxGeometry(2.0, 0.55, 0.85), pillow, 0.5);
@@ -635,8 +669,9 @@ export function makeMoonBase(heightAt: (x: number, z: number) => number, lite: b
     owned.push(m);
     mesh(g, new THREE.PlaneGeometry(2.8, 1.4), m, 0, 1.75, -0.03).rotation.y = Math.PI;
     mesh(g, new THREE.BoxGeometry(2.9, 1.5, 0.04), dark, 0, 1.75, 0);
-    colliders.push({ x: px - 1.3, z: pz + 12, r: 0.2 });
-    colliders.push({ x: px + 1.3, z: pz + 12, r: 0.2 });
+    // One collider for the whole board: a camera that can be pushed between
+    // the posts ends up looking at the back of it.
+    colliders.push({ x: px, z: pz + 12, r: 1.7 });
     pois.push({ id: 'sign', x: px, z: pz + 13, r: 3 });
   }
 
@@ -686,7 +721,7 @@ export function makeMoonBase(heightAt: (x: number, z: number) => number, lite: b
   /** The floor under a point of a habitat, or null off its structure. */
   const structure = (h: Hab, lx: number, lz: number): number | null => {
     if (Math.hypot(lx, lz) < DOME_R) return h.cy + FLOOR;
-    if (Math.abs(lx) < 0.75) {
+    if (Math.abs(lx) < DOOR_HALF) {
       if (lz >= 4.2 && lz < 6.75) return h.cy + FLOOR;
       if (lz >= 6.75 && lz < 7.5) return h.cy + LANDING;
       if (lz >= 7.5 && lz <= RAMP_END) return h.cy + rampY(lz);
@@ -702,29 +737,42 @@ export function makeMoonBase(heightAt: (x: number, z: number) => number, lite: b
     }
     return null;
   };
+  /** Keep a walker on the way in and off everything else. The one rule that
+   *  matters is that going indoors should take nothing but walking at the
+   *  door: the apron in front of the ramp gathers an approach onto the
+   *  centreline, and from there the corridor is wide enough to stroll. */
+  const RAIL = DOOR_HALF - 0.14;
   const confine = (p: { x: number; z: number }) => {
     for (const h of habs) {
       local(h, p.x, p.z);
       let lx = lp.x; let lz = lp.z;
       const r = Math.hypot(lx, lz);
-      if (r > 13) continue;
+      if (r > 16) continue;
       let moved = false;
       if (structure(h, lx, lz) !== null) {
         if (r < DOME_R) {
           // On the deck: the wall, open only where the doorway is.
-          const doorway = Math.abs(lx) < 0.75 && lz > 3.8;
+          const doorway = Math.abs(lx) < DOOR_HALF && lz > 3.8;
           if (!doorway && r > DOME_R - 0.55) { const k = (DOME_R - 0.55) / r; lx *= k; lz *= k; moved = true; }
-        } else if (Math.abs(lx) > 0.62) {
+        } else if (Math.abs(lx) > RAIL) {
           // The airlock's walls and the ramp's rails.
-          lx = Math.sign(lx) * 0.62; moved = true;
+          lx = Math.sign(lx) * RAIL; moved = true;
         }
-      } else if (r < 5.95 && !(Math.abs(lx) < 0.75 && lz > 4.0)) {
+      } else if (r < 5.95 && !(Math.abs(lx) < DOOR_HALF && lz > 4.0)) {
         // Outside: off the skirt and the legs …
         const k = 5.95 / r; lx *= k; lz *= k; moved = true;
-      } else if (Math.abs(lx) < 1.25 && lz > 4.0 && lz < 11.5) {
-        // … and off the sides of the airlock module and the ramp — the ramp
-        // is climbed from its foot.
-        lx = Math.sign(lx || 1) * 1.25; moved = true;
+      } else if (Math.abs(lx) < 1.6 && lz > 4.0 && lz < RAMP_END - 0.4) {
+        // … and off the sides of the airlock module and the ramp. Drift of
+        // a hand's width puts you back on the cleats rather than beside
+        // them; anything wider and you are walking round the outside.
+        lx = Math.abs(lx) < 1.32 ? Math.sign(lx || 1) * (DOOR_HALF - 0.1) : Math.sign(lx || 1) * 1.6;
+        moved = true;
+      } else if (lz >= RAMP_END - 0.4 && lz < RAMP_END + APRON && Math.abs(lx) < 2.8) {
+        // The apron: the closer to the ramp, the harder it draws you to the
+        // middle of it, so the last step onto the cleats is always square.
+        const pull = 1 - (lz - (RAMP_END - 0.4)) / (APRON + 0.4);
+        lx *= 1 - 0.55 * pull * pull;
+        moved = true;
       }
       if (moved) {
         const c = Math.cos(h.yaw); const s = Math.sin(h.yaw);
@@ -742,9 +790,9 @@ export function makeMoonBase(heightAt: (x: number, z: number) => number, lite: b
       for (const h of habs) {
         local(h, crewX, crewZ);
         const r = Math.hypot(lp.x, lp.z);
-        const here = r < DOME_R || (Math.abs(lp.x) < 0.75 && lp.z >= 4.2 && lp.z < 6.75);
+        const here = r < DOME_R || (Math.abs(lp.x) < DOOR_HALF && lp.z >= 4.2 && lp.z < 6.75);
         if (here) inside = { id: h.id, x: h.x, z: h.z, y: h.cy + FLOOR };
-        h.lamp.intensity += ((here ? 1.6 : 0) - h.lamp.intensity) * (1 - Math.exp(-dt * 3));
+        h.lamp.intensity += ((here ? 1.9 : 0) - h.lamp.intensity) * (1 - Math.exp(-dt * 3));
       }
       handle.inside = inside;
       const blink = (Math.sin(t * 2.2) > 0.6 ? 1 : 0.15) * 2;
@@ -754,9 +802,9 @@ export function makeMoonBase(heightAt: (x: number, z: number) => number, lite: b
       dishHead.lookAt(tmp);
       // Airlock doors slide up when the crew comes to the foot of the ramp.
       for (const a of airlocks) {
-        const near = Math.hypot(crewX - a.x, crewZ - a.z) < 7;
-        a.open += ((near ? 1 : 0) - a.open) * (1 - Math.exp(-dt * 2.2));
-        a.panel.position.y = 2.55 + a.open * 1.75;
+        const near = Math.hypot(crewX - a.x, crewZ - a.z) < 7.5;
+        a.open += ((near ? 1 : 0) - a.open) * (1 - Math.exp(-dt * 2.8));
+        a.panel.position.y = 2.65 + a.open * 1.95;
       }
       roverPoi.x = roverCollider.x;
       roverPoi.z = roverCollider.z;

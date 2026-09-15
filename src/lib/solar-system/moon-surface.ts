@@ -5,20 +5,30 @@
 // either on a slow leash behind the cosmonaut, inside the helmet, or
 // behind the rover. The React overlay owns the DOM and feeds `input`; this
 // file owns the frame.
+//
+// It opens with the landing, which is flown rather than watched, and then
+// hands the crew the surface: six camera positions, a rover with four
+// gears, three habitats that are walked into, and an expedition that runs
+// from a drill site out to a crater nobody has opened.
 
 import * as THREE from 'three';
 import { makeMoonPost } from '@/lib/solar-system/moon-post';
 import { softSpriteTexture } from '@/lib/solar-system/soft-sprite';
-import { makeMoonTerrain, makeMoonHorizon, TERRAIN_WALK_RADIUS } from '@/lib/solar-system/moon-terrain';
+import { makeMoonTerrain, makeMoonHorizon, TERRAIN_WALK_RADIUS, PAD_CENTER } from '@/lib/solar-system/moon-terrain';
 import { makeMoonDust } from '@/lib/solar-system/moon-fx';
 import { makeCosmonaut, type WalkInput } from '@/lib/solar-system/moon-cosmonaut';
 import { makeMoonBase } from '@/lib/solar-system/moon-base';
 import { makeMeteors } from '@/lib/solar-system/moon-meteors';
 import { makePrints } from '@/lib/solar-system/moon-prints';
 import { makeSuitAudio } from '@/lib/solar-system/moon-audio';
-import { makeRover } from '@/lib/solar-system/moon-rover';
+import { makeRover, type RoverGear } from '@/lib/solar-system/moon-rover';
+import { makeLander, type LanderTelemetry } from '@/lib/solar-system/moon-lander';
+import { makeMission, missionComplete, type MissionTelemetry } from '@/lib/solar-system/moon-mission';
 
-export type SurfaceView = 'chase' | 'helmet' | 'rover';
+/** Three ways to watch the crew, three to ride the rover. */
+export type SurfaceView = 'chase' | 'helmet' | 'wide' | 'rover' | 'cockpit' | 'mast';
+const FOOT_VIEWS: SurfaceView[] = ['chase', 'helmet', 'wide'];
+const ROVER_VIEWS: SurfaceView[] = ['rover', 'cockpit', 'mast'];
 
 export interface SurfaceInput {
   /** Stick, camera frame: x right, y forward, each in [-1, 1]. */
@@ -26,6 +36,8 @@ export interface SurfaceInput {
   moveY: number;
   jump: boolean;
   run: boolean;
+  /** Down on one knee. */
+  crouch: boolean;
   /** Pointer drag since last frame, CSS px; consumed by the camera. */
   orbitDX: number;
   orbitDY: number;
@@ -34,12 +46,23 @@ export interface SurfaceInput {
   /** Edge-triggered: E / the action key, and C / the view key. Consumed. */
   interact: boolean;
   viewToggle: boolean;
+  /** Held: the tool at a work site — the drill, the brush. */
+  work: boolean;
+  /** Held: the descent engine, 0…1, while there is still a vehicle to fly. */
+  throttle: number;
+  /** Edge-triggered: the gear to put the rover in, by its place in
+   *  `telemetry.gears`. Consumed. */
+  gearRequest: number | null;
 }
 
 export interface SurfaceTelemetry {
-  phase: 'descent' | 'surface';
-  /** Seconds to touchdown during descent. */
+  phase: 'descent' | 'touchdown' | 'surface';
+  /** Seconds to touchdown during descent — an estimate off the rate. */
   touchdownIn: number;
+  /** Everything on the landing panel. */
+  landing: LanderTelemetry;
+  /** How the touchdown went, once it has: a key under `moon.grades`. */
+  grade: string;
   view: SurfaceView;
   poiId: string;
   poiDist: number;
@@ -61,6 +84,18 @@ export interface SurfaceTelemetry {
   /** Standing by the rover; the action key mounts it. */
   canDrive: boolean;
   roverSpeed: number;
+  /** The gear the rover is in, its top speed, and every gear this crew has. */
+  gear: RoverGear;
+  gears: RoverGear[];
+  roverTop: number;
+  /** The suit's stance, for the glass. */
+  crouched: boolean;
+  stumbling: boolean;
+  sliding: boolean;
+  /** Where the crew is looking, degrees clockwise from north. */
+  heading: number;
+  /** The expedition. */
+  mission: MissionTelemetry;
   /** An airlock within reach is open. */
   airlockOpen: boolean;
   /** The habitat the crew is standing in, or ''. */
@@ -72,9 +107,14 @@ export interface MoonSurfaceHandle {
   telemetry: SurfaceTelemetry;
   /** Call from a user gesture to let the suit be heard. */
   startAudio: () => void;
-  /** Development only: fire the next meteoroid now; put the crew somewhere. */
+  /** Development only: fire the next meteoroid now; put the crew somewhere;
+   *  skip an act of the expedition; put the vehicle on the ground. */
   nudgeMeteor: () => void;
   teleport: (x: number, z: number) => void;
+  /** Where the crew ended up after the frame's confinement. */
+  where: () => { x: number; z: number; y: number };
+  advanceMission: () => void;
+  skipDescent: () => void;
   dispose: () => void;
 }
 
@@ -84,9 +124,10 @@ declare global {
   }
 }
 
-const DESCENT = 6;
 const CAM_MIN = 2.8;
 const CAM_MAX = 9.5;
+/** How long the touchdown plaque stays up before the crew steps out. */
+const EGRESS_HOLD = 4.2;
 const SUN_DIR = new THREE.Vector3(-0.62, 0.46, 0.64).normalize();
 const EARTH_DIR = new THREE.Vector3(0.28, 0.6, -0.75).normalize();
 
@@ -254,7 +295,19 @@ export function makeMoonSurface(mount: HTMLElement): MoonSurfaceHandle {
     if (!base.inside) prints.stamp(e.x, e.y, e.z, e.yaw, e.side);
     audio.step(e.hard);
   };
-  const rover = makeRover(base.rover, base.roverCollider, base.roverParts, terrain, dust, prints);
+  // The fourth gear is the expedition's; a crew that has made contact keeps it.
+  const gears: RoverGear[] = missionComplete() ? ['creep', 'cruise', 'sprint', 'ion'] : ['creep', 'cruise', 'sprint'];
+  const rover = makeRover(base.rover, base.roverCollider, base.roverParts, terrain, dust, prints, gears);
+  // The pad is aimed at open regolith south of the outpost: close enough to
+  // walk in from, far enough that nobody sets down on the sign.
+  const lander = makeLander(PAD_CENTER.x, PAD_CENTER.y + 26, terrain.heightAt, dust, lite);
+  scene.add(lander.group);
+  const mission = makeMission(terrain.heightAt, terrain.stampCrater, dust, lite);
+  scene.add(mission.group);
+  // The rig and the hull are solid: the crew walks round them, the rover and
+  // the meteoroids keep off them.
+  base.colliders.push(...mission.colliders);
+  base.walkColliders.push(...mission.colliders);
   const meteors = makeMeteors({
     heightAt: terrain.heightAt, stampCrater: terrain.stampCrater, dust, colliders: base.colliders,
     walkRadius: TERRAIN_WALK_RADIUS, first: 24, every: 58,
@@ -263,12 +316,22 @@ export function makeMoonSurface(mount: HTMLElement): MoonSurfaceHandle {
 
   const post = makeMoonPost(renderer, scene, camera, lite);
 
-  const input: SurfaceInput = { moveX: 0, moveY: 0, jump: false, run: false, orbitDX: 0, orbitDY: 0, zoom: 0, interact: false, viewToggle: false };
+  const input: SurfaceInput = {
+    moveX: 0, moveY: 0, jump: false, run: false, crouch: false, orbitDX: 0, orbitDY: 0, zoom: 0,
+    interact: false, viewToggle: false, work: false, throttle: 0, gearRequest: null,
+  };
   const telemetry: SurfaceTelemetry = {
-    phase: 'descent', touchdownIn: DESCENT, view: 'chase', poiId: '', poiDist: 0, impactDist: 0, impactHold: 0,
+    phase: 'descent', touchdownIn: 0, landing: lander.telemetry, grade: '',
+    view: 'chase', poiId: '', poiDist: 0, impactDist: 0, impactHold: 0,
     airborne: false, altitude: 0, speed: 0, hint: 'walk', craters: 0,
     o2: 97.4, heartRate: 64, suitTemp: 21.5, evaSeconds: 0, distanceM: 0,
-    canDrive: false, roverSpeed: 0, airlockOpen: false, inside: '',
+    canDrive: false, roverSpeed: 0, gear: rover.gear, gears: rover.gears, roverTop: rover.top,
+    crouched: false, stumbling: false, sliding: false, heading: 0, mission: mission.telemetry,
+    airlockOpen: false, inside: '',
+  };
+  mission.onEvent = (kind) => {
+    if (kind === 'bite') audio.step(0.45);
+    else audio.bleep();
   };
   /** The ground under the crew: the base's own floors where it has them. */
   const floorHeight = (x: number, z: number) => {
@@ -291,8 +354,8 @@ export function makeMoonSurface(mount: HTMLElement): MoonSurfaceHandle {
   let exertion = 0;
   const target = new THREE.Vector3().copy(cosmonaut.position).add(new THREE.Vector3(0, 1.35, 0));
   const camPos = new THREE.Vector3();
-  const descentFrom = new THREE.Vector3().copy(base.spawn).add(new THREE.Vector3(10, 110, 70));
-  const walk: WalkInput = { moveX: 0, moveZ: 0, jump: false, run: false };
+  let egressHold = 0;
+  const walk: WalkInput = { moveX: 0, moveZ: 0, jump: false, run: false, crouch: false };
   const tmp = new THREE.Vector3();
   const tmp2 = new THREE.Vector3();
   let jumpLatch = false;
@@ -329,6 +392,19 @@ export function makeMoonSurface(mount: HTMLElement): MoonSurfaceHandle {
     camPos.set(target.x + Math.sin(camYaw) * dist * cp, target.y + Math.sin(camPitch) * dist, target.z + Math.cos(camYaw) * dist * cp);
     const floor = floorHeight(camPos.x, camPos.z) + 0.55;
     if (camPos.y < floor) camPos.y = floor;
+    // Nor does it sit inside the sign, a tank or a dome: push it out of
+    // anything it would be looking through, low enough to matter.
+    if (camPos.y < target.y + 6) {
+      for (const c of base.colliders) {
+        const dx = camPos.x - c.x; const dz = camPos.z - c.z;
+        const d = Math.hypot(dx, dz);
+        const min = c.r + 0.9;
+        if (d < min && d > 1e-3) {
+          camPos.x = c.x + dx / d * min;
+          camPos.z = c.z + dz / d * min;
+        }
+      }
+    }
     // Indoors the camera stays under the dome with the crew.
     const room = base.inside;
     if (room) {
@@ -348,16 +424,57 @@ export function makeMoonSurface(mount: HTMLElement): MoonSurfaceHandle {
     tmp.copy(camera.position).add(tmp2.set(fx, Math.sin(helmetPitch), fz));
     camera.lookAt(tmp);
   };
+  /** The rover's own eye: the driver's seat, or the camera head on the mast. */
+  const placeRoverEye = (dt: number, mast: boolean) => {
+    const anchor = mast ? base.roverParts.mast : base.rover;
+    anchor.getWorldPosition(tmp);
+    if (mast) tmp.y += 0.1;
+    else tmp.y += 0.55;
+    // Sit the driver's eye a little forward of the seat, over the tiller.
+    if (!mast) {
+      tmp2.set(Math.sin(rover.yaw), 0, Math.cos(rover.yaw)).multiplyScalar(0.55);
+      tmp.add(tmp2);
+    }
+    camera.position.lerp(tmp, 1 - Math.exp(-dt * 22));
+    shakeCam();
+    const look = camYaw;
+    const fx = -Math.sin(look) * Math.cos(helmetPitch); const fz = -Math.cos(look) * Math.cos(helmetPitch);
+    tmp.copy(camera.position).add(tmp2.set(fx, Math.sin(helmetPitch), fz));
+    camera.lookAt(tmp);
+  };
+  /** The wide shot: a long way back and high up, for the look of the place. */
+  const placeWide = (dt: number, anchor: THREE.Vector3) => {
+    tmp.copy(anchor).y += 2.2;
+    target.lerp(tmp, 1 - Math.exp(-dt * 4));
+    const dist = camDist * 4.2 + 14;
+    const cp = Math.cos(camPitch + 0.22);
+    camPos.set(target.x + Math.sin(camYaw) * dist * cp, target.y + Math.sin(camPitch + 0.22) * dist + 5, target.z + Math.cos(camYaw) * dist * cp);
+    const floor = floorHeight(camPos.x, camPos.z) + 2.5;
+    if (camPos.y < floor) camPos.y = floor;
+    camera.position.lerp(camPos, 1 - Math.exp(-dt * 5));
+    shakeCam();
+    camera.lookAt(target);
+  };
   const setView = (next: SurfaceView) => {
     view = next;
     telemetry.view = next;
+    const onFoot = FOOT_VIEWS.includes(next);
     cosmonaut.setHelmetView(next === 'helmet');
-    cosmonaut.group.visible = next !== 'rover';
-    post.setHelmet(next === 'helmet' ? 1 : 0);
+    cosmonaut.group.visible = onFoot || next === 'wide';
+    post.setHelmet(next === 'helmet' || next === 'cockpit' ? 1 : 0);
     if (next === 'helmet') { camYaw = cosmonaut.yaw + Math.PI; helmetPitch = 0; }
+    if (next === 'cockpit' || next === 'mast') { camYaw = rover.yaw + Math.PI; helmetPitch = next === 'mast' ? -0.08 : -0.05; }
     if (next === 'rover') { camYaw = rover.yaw + Math.PI; camPitch = 0.3; }
     if (next === 'chase') camPitch = 0.34;
+    if (next === 'wide') camPitch = 0.42;
   };
+  /** Walk the camera round the set that belongs to where the crew is. */
+  const cycleView = (driving: boolean) => {
+    const set = driving ? ROVER_VIEWS : FOOT_VIEWS;
+    const i = set.indexOf(view);
+    setView(set[(i + 1) % set.length]);
+  };
+  const driving = () => ROVER_VIEWS.includes(view);
 
   let raf = 0;
   let last = performance.now();
@@ -377,28 +494,70 @@ export function makeMoonSurface(mount: HTMLElement): MoonSurfaceHandle {
     t += dt;
     const crew = cosmonaut.position;
 
-    if (telemetry.phase === 'descent') {
-      const k = Math.min(1, t / DESCENT);
-      telemetry.touchdownIn = Math.max(0, DESCENT - t);
-      const e = k * k * (3 - 2 * k);
+    if (telemetry.phase !== 'surface') {
+      // ── The landing. The vehicle is flown; the camera rides its quarter. ──
+      const lt = lander.telemetry;
+      if (!lt.landed) {
+        lander.update(dt, { throttle: input.throttle, moveX: input.moveX, moveY: input.moveY }, terrain.heightAt);
+        if (lt.landed) {
+          telemetry.phase = 'touchdown';
+          telemetry.grade = lt.touchdown < 0.9 ? 'feather' : lt.touchdown < 1.9 ? 'good' : lt.touchdown < 3.2 ? 'firm' : 'hard';
+          egressHold = EGRESS_HOLD;
+          audio.thump(lt.touchdown < 1.5 ? 40 : 6);
+          // The vehicle they came down in is a landmark from here on — and
+          // a solid one: nobody walks through their own ride.
+          base.pois.push({ id: 'ourLander', x: lander.position.x, z: lander.position.z, r: 8 });
+          const hull = { x: lander.position.x, z: lander.position.z, r: 3.4 };
+          base.colliders.push(hull);
+          base.walkColliders.push(hull);
+        }
+      } else {
+        lander.update(dt, { throttle: 0, moveX: 0, moveY: 0 }, terrain.heightAt);
+      }
+      telemetry.touchdownIn = lt.descent > 0.2 ? lt.altitude / lt.descent : 0;
       consumeOrbit(dt);
-      placeChase(dt, crew, cosmonaut.yaw, 1.35, camDist, false);
-      camPos.copy(descentFrom).lerp(camera.position, e);
-      camera.position.copy(camPos);
+      // Behind and above the vehicle, tipping over to look down as it settles.
+      // High up the camera sits nearly level with the vehicle so the mare and
+      // the horizon are in the frame; it tips over to look down the plume
+      // only as the ground comes up.
+      const close = THREE.MathUtils.clamp(1 - lt.altitude / 80, 0, 1);
+      tmp.copy(lander.position).y += 3.4;
+      target.lerp(tmp, 1 - Math.exp(-dt * 6));
+      const dist = 21 + close * 5;
+      const pitch = camPitch - 0.2 + close * 0.42;
+      camPos.set(target.x + Math.sin(camYaw) * dist * Math.cos(pitch), target.y + Math.sin(pitch) * dist, target.z + Math.cos(camYaw) * dist * Math.cos(pitch));
+      const floor = terrain.heightAt(camPos.x, camPos.z) + 2.2;
+      if (camPos.y < floor) camPos.y = floor;
+      camera.position.lerp(camPos, 1 - Math.exp(-dt * 7));
       camera.lookAt(target);
-      walk.moveX = walk.moveZ = 0; walk.jump = false; walk.run = false;
-      cosmonaut.update(dt, walk, floorHeight, base.walkColliders, TERRAIN_WALK_RADIUS);
-      base.confine(crew);
+      // The crew is still aboard; hold them at the ladder so the shadow map
+      // and the base's own lights know where the action is.
+      crew.set(lt.egressX, terrain.heightAt(lt.egressX, lt.egressZ), lt.egressZ);
+      cosmonaut.group.visible = false;
       rover.update(dt, 0, 0, base.colliders, TERRAIN_WALK_RADIUS);
-      if (k >= 1) telemetry.phase = 'surface';
+      if (telemetry.phase === 'touchdown') {
+        egressHold -= dt;
+        if (egressHold <= 0) {
+          telemetry.phase = 'surface';
+          cosmonaut.group.visible = true;
+          cosmonaut.position.set(lt.egressX, terrain.heightAt(lt.egressX, lt.egressZ), lt.egressZ);
+          // Off the ladder facing the outpost, with the camera behind the
+          // crew's shoulder rather than inside the vehicle they just left.
+          cosmonaut.yaw = Math.PI;
+          camYaw = 0;
+          setView('chase');
+          audio.bleep();
+        }
+      }
     } else {
       consumeOrbit(dt);
+      const onRover = driving();
       // Action key: mount or leave the rover.
       const nearRover = Math.hypot(crew.x - base.roverCollider.x, crew.z - base.roverCollider.z) < base.roverCollider.r + 2.2;
-      telemetry.canDrive = view !== 'rover' && nearRover;
+      telemetry.canDrive = !onRover && nearRover;
       if (input.interact) {
         input.interact = false;
-        if (view === 'rover' && Math.abs(rover.speed) < 1.2) {
+        if (onRover && Math.abs(rover.speed) < 1.2) {
           rover.driving = false;
           const side = base.rover.position;
           crew.set(side.x + Math.cos(rover.yaw) * 3.2, 0, side.z - Math.sin(rover.yaw) * 3.2);
@@ -406,7 +565,7 @@ export function makeMoonSurface(mount: HTMLElement): MoonSurfaceHandle {
           cosmonaut.yaw = rover.yaw;
           setView('chase');
           audio.bleep();
-        } else if (view !== 'rover' && nearRover) {
+        } else if (!onRover && nearRover) {
           rover.driving = true;
           setView('rover');
           audio.bleep();
@@ -415,14 +574,22 @@ export function makeMoonSurface(mount: HTMLElement): MoonSurfaceHandle {
       if (input.viewToggle) {
         input.viewToggle = false;
         autoHelmet = false;
-        if (view !== 'rover') setView(view === 'chase' ? 'helmet' : 'chase');
+        cycleView(driving());
+      }
+      if (input.gearRequest !== null) {
+        const want = input.gearRequest;
+        input.gearRequest = null;
+        const was = rover.gear;
+        rover.select(want);
+        if (rover.gear !== was) audio.bleep();
       }
 
-      if (view === 'rover') {
+      if (driving()) {
         rover.update(dt, input.moveY, input.moveX, base.colliders, TERRAIN_WALK_RADIUS);
         // The crew rides along, for the meteors, the labels and the shadow frustum.
         crew.copy(base.rover.position);
-        placeChase(dt, base.rover.position, rover.yaw, 1.9, Math.max(camDist, 6.2), Math.abs(rover.speed) > 0.5);
+        if (view === 'rover') placeChase(dt, base.rover.position, rover.yaw, 1.9, Math.max(camDist, 6.2), Math.abs(rover.speed) > 0.5);
+        else placeRoverEye(dt, view === 'mast');
         walk.moveX = walk.moveZ = 0; walk.jump = false;
       } else {
         rover.update(dt, 0, 0, base.colliders, TERRAIN_WALK_RADIUS);
@@ -431,13 +598,14 @@ export function makeMoonSurface(mount: HTMLElement): MoonSurfaceHandle {
         const rx = -fz; const rz = fx;
         walk.moveX = fx * input.moveY + rx * input.moveX;
         walk.moveZ = fz * input.moveY + rz * input.moveX;
-        walk.run = input.run;
+        walk.run = input.run && !input.crouch;
+        walk.crouch = input.crouch;
         walk.jump = input.jump && !jumpLatch;
         jumpLatch = input.jump;
         cosmonaut.update(dt, walk, floorHeight, base.walkColliders, TERRAIN_WALK_RADIUS);
         base.confine(crew);
         cosmonaut.indoors = !!base.inside;
-        if (base.inside && view === 'chase') { setView('helmet'); autoHelmet = true; }
+        if (base.inside && view !== 'helmet') { setView('helmet'); autoHelmet = true; }
         else if (!base.inside && autoHelmet) { autoHelmet = false; if (view === 'helmet') setView('chase'); }
         if (view === 'helmet') {
           // Standing still, the body follows the eyes once they turn far enough.
@@ -445,6 +613,8 @@ export function makeMoonSurface(mount: HTMLElement): MoonSurfaceHandle {
           if (cosmonaut.state.speed < 0.3 && Math.abs(rel) > 0.9) cosmonaut.yaw += rel * (1 - Math.exp(-dt * 4));
           cosmonaut.look(wrap(camYaw + Math.PI - cosmonaut.yaw), helmetPitch);
           placeHelmet();
+        } else if (view === 'wide' && !base.inside) {
+          placeWide(dt, crew);
         } else {
           placeChase(dt, crew, cosmonaut.yaw, 1.35, base.inside ? Math.min(camDist, 2.6) : camDist, cosmonaut.state.speed > 1);
         }
@@ -455,11 +625,24 @@ export function makeMoonSurface(mount: HTMLElement): MoonSurfaceHandle {
     }
     telemetry.airborne = cosmonaut.state.airborne;
     telemetry.altitude = cosmonaut.state.altitude;
-    telemetry.speed = view === 'rover' ? Math.abs(rover.speed) : cosmonaut.state.speed;
+    telemetry.speed = driving() ? Math.abs(rover.speed) : cosmonaut.state.speed;
     telemetry.roverSpeed = rover.speed;
+    telemetry.gear = rover.gear;
+    telemetry.roverTop = rover.top;
+    telemetry.crouched = cosmonaut.state.crouched;
+    telemetry.stumbling = cosmonaut.state.stumble > 0;
+    telemetry.sliding = cosmonaut.state.sliding;
+    // The compass reads where the camera is pointed, which is where the
+    // crew is looking whichever view they are in.
+    telemetry.heading = (THREE.MathUtils.radToDeg(Math.atan2(-Math.sin(camYaw), -Math.cos(camYaw))) + 360) % 360;
+
+    // ── The expedition. ──
+    if (telemetry.phase === 'surface') {
+      mission.update(dt, t, { crewX: crew.x, crewZ: crew.z, working: input.work, driving: driving() });
+    }
 
     // ── Life support: the suit works harder when you do. ──
-    const work = view === 'rover' ? 0.1 : Math.min(1, cosmonaut.state.speed / 4.6) + (cosmonaut.state.airborne ? 0.3 : 0);
+    const work = driving() ? 0.1 : Math.min(1, cosmonaut.state.speed / 4.6) + (cosmonaut.state.airborne ? 0.3 : 0) + (input.work ? 0.35 : 0);
     exertion += (work - exertion) * (1 - Math.exp(-dt * 0.35));
     if (telemetry.phase === 'surface') {
       telemetry.evaSeconds += dt;
@@ -468,7 +651,7 @@ export function makeMoonSurface(mount: HTMLElement): MoonSurfaceHandle {
       telemetry.heartRate += ((64 + exertion * 68 + (cosmonaut.state.landed ? 6 : 0)) - telemetry.heartRate) * (1 - Math.exp(-dt * 0.6));
       telemetry.suitTemp += ((21.5 + exertion * 1.8) - telemetry.suitTemp) * (1 - Math.exp(-dt * 0.2));
     }
-    audio.update(dt, exertion, view === 'helmet');
+    audio.update(dt, exertion, view === 'helmet' || view === 'cockpit');
 
     // Nearest point of interest; a bleep when a new one comes up.
     let best = ''; let bestD = 1e9;
@@ -480,7 +663,7 @@ export function makeMoonSurface(mount: HTMLElement): MoonSurfaceHandle {
     lastPoi = best;
     telemetry.poiId = best;
     telemetry.poiDist = best ? bestD : 0;
-    telemetry.airlockOpen = base.airlocks.some((a) => a.open > 0.6 && Math.hypot(a.x - crew.x, a.z - crew.z) < 7) && !base.inside;
+    telemetry.airlockOpen = base.airlocks.some((a) => a.open > 0.6 && Math.hypot(a.x - crew.x, a.z - crew.z) < 7.5) && !base.inside;
     telemetry.inside = base.inside?.id ?? '';
 
     const impact = telemetry.phase === 'surface' ? meteors.update(dt, crew.x, crew.z) : null;
@@ -523,7 +706,20 @@ export function makeMoonSurface(mount: HTMLElement): MoonSurfaceHandle {
     telemetry,
     startAudio: audio.start,
     nudgeMeteor: meteors.nudge,
-    teleport(x, z) { cosmonaut.position.set(x, terrain.heightAt(x, z), z); },
+    teleport(x, z) { cosmonaut.position.set(x, floorHeight(x, z), z); },
+    where: () => ({ x: cosmonaut.position.x, y: cosmonaut.position.y, z: cosmonaut.position.z }),
+    advanceMission: mission.advance,
+    skipDescent() {
+      if (telemetry.phase === 'surface') return;
+      lander.position.set(PAD_CENTER.x, terrain.heightAt(PAD_CENTER.x, PAD_CENTER.y + 26) + 0.35, PAD_CENTER.y + 26);
+      lander.telemetry.landed = true;
+      lander.telemetry.touchdown = 0.6;
+      lander.telemetry.egressX = lander.position.x;
+      lander.telemetry.egressZ = lander.position.z + 4.2;
+      telemetry.phase = 'touchdown';
+      telemetry.grade = 'feather';
+      egressHold = 0.2;
+    },
     dispose() {
       if (raf) cancelAnimationFrame(raf);
       if (window.__stellarMoon === handle) delete window.__stellarMoon;
@@ -531,6 +727,8 @@ export function makeMoonSurface(mount: HTMLElement): MoonSurfaceHandle {
       document.removeEventListener('visibilitychange', onVis);
       earthTexCancelled = true;
       audio.dispose();
+      lander.dispose();
+      mission.dispose();
       meteors.dispose();
       cosmonaut.dispose();
       base.dispose();

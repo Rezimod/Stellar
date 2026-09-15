@@ -1469,7 +1469,7 @@
       "gravity": "Gravity",
       "altitude": "Height",
       "speed": "Speed",
-      "craters": "New craters",
+      "craters": "Craters",
       "jump": "Jump",
       "run": "Lope",
       "move": "Move astronaut",
@@ -1480,24 +1480,31 @@
       "hints": {
         "walk": "W A S D — walk. Hold Shift to lope.",
         "jump": "Space — jump. One sixth g: you will be up there a while.",
-        "walkTouch": "Left half of the screen — walk.",
-        "jumpTouch": "Tap Jump. One sixth g: you will be up there a while."
+        "walkTouch": "Left stick — walk. Drag anywhere else to look around.",
+        "jumpTouch": "Jump is bottom right. One sixth g: you will be up there a while."
       },
       "keys": {
         "r1": "W A S D / arrows — walk",
         "r2": "Shift — lope (the fast gait)",
-        "r3": "Space — jump",
+        "r3": "Space — jump; on the way down it is the descent engine",
         "r4": "Mouse drag — look around · wheel — zoom",
-        "r5": "C — inside the helmet and back",
+        "r5": "V — walk the camera round: over the shoulder, in the helmet, wide",
         "r6": "E — drive the rover when you stand beside it",
         "r7": "Meteoroids land now and then. They never land on you.",
         "t1": "Left stick — walk",
         "t2": "Right half — drag to look around",
-        "t3": "Lope — above the left stick; jump — bottom right",
-        "t4": "Eye — inside the helmet and back",
+        "t3": "Lope and crouch — beside the stick; jump — bottom right",
+        "t4": "Camera — walk the view round: shoulder, helmet, wide",
         "t5": "Meteoroids land now and then. They never land on you.",
         "r8": "The habitats are open: up a ramp, through the airlock, and you are in",
-        "t6": "The habitats are open: up a ramp, through the airlock, and you are in"
+        "t6": "The habitats are open: up a ramp, through the airlock, and you are in",
+        "r9": "C — crouch: slow, low and steady",
+        "r10": "V in the rover: chase, the driver's seat, the mast camera",
+        "r11": "F — hold to work: the drill, the brush",
+        "r12": "1 2 3 4 — the rover's gears",
+        "t7": "Hold the engine key on the way down. Leave it too late and guidance takes over.",
+        "t8": "The amber key does the job in front of you — tap to get on the rover, hold to work",
+        "t9": "The gear key changes the rover's speed"
       },
       "pois": {
         "habitatA": "Habitat A — crew quarters",
@@ -1511,18 +1518,82 @@
         "lander": "Descent stage of the first crew",
         "flag": "Flag of Georgia",
         "seismometer": "Passive seismometer",
-        "sign": "Stellar Base — founded by Astroman, Tbilisi"
+        "sign": "Stellar Base — founded by Astroman, Tbilisi",
+        "ourLander": "Your descent vehicle"
       },
-      "view": "Helmet view",
       "eva": "EVA",
       "pulse": "Pulse",
       "suitTemp": "Suit",
       "distance": "Walked",
       "drive": "E — drive the rover",
-      "driveTouch": "Drive the rover",
+      "driveTouch": "Drive",
       "dismount": "E — climb out",
-      "dismountTouch": "Climb out",
-      "airlockOpen": "Airlock open — up the ramp and in"
+      "dismountTouch": "Get off",
+      "airlockOpen": "Airlock open — up the ramp and in",
+      "crouch": "Crouch",
+      "camera": "Camera",
+      "menu": "Menu",
+      "hudHide": "Hide the glass",
+      "hudShow": "Show the glass",
+      "stance": {
+        "crouch": "Crouched",
+        "slide": "Sliding — that slope will not hold boots",
+        "stumble": "Stumbling — get the feet back under you"
+      },
+      "grades": {
+        "feather": "Feather touchdown",
+        "good": "Good touchdown",
+        "firm": "Firm touchdown",
+        "hard": "Hard touchdown"
+      },
+      "landing": {
+        "title": "Powered descent",
+        "rate": "Rate",
+        "offset": "Off pad",
+        "fuel": "Descent fuel",
+        "assist": "Guidance has the stick",
+        "throttle": "Engine",
+        "touchdown": "{n} m/s at contact",
+        "drift": "Drift"
+      },
+      "gears": {
+        "creep": "Creep",
+        "cruise": "Cruise",
+        "sprint": "Sprint",
+        "ion": "Ion"
+      },
+      "tasks": {
+        "drill": "Drill",
+        "sweep": "Sweep",
+        "enter": "Enter"
+      },
+      "mission": {
+        "title": "Objective",
+        "log": "Expedition log",
+        "brief": "Stellar Base has a magnetic anomaly a hundred metres out that has no business being there. Drill it, follow what the core tells you, and find out what is under the regolith.",
+        "none": "Nothing earned yet. The drill site is west of the pad.",
+        "obj": {
+          "survey": "Get to magnetic anomaly 3",
+          "drill": "Hold the drill until the core is out",
+          "trace": "Follow the core's bearing to the crater",
+          "excavate": "Sweep the regolith off what is down there",
+          "contact": "Step through the open seam",
+          "done": "First contact. The craft is yours to visit."
+        },
+        "banner": {
+          "survey": "Anomaly 3 — drill site",
+          "drill": "Drill site reached — put the bit in",
+          "trace": "Metal at 4.6 m. Bearing 071, 205 metres.",
+          "excavate": "The crater. Something is under this.",
+          "contact": "The hull is clear — and the seam has power",
+          "done": "First contact"
+        },
+        "rewards": {
+          "core": "Deep Core — a metre of the Moon in a tube, with metal in it",
+          "hull": "Excavation — the first hull raised on another world",
+          "contact": "First Contact — the rover's ion gear is unlocked"
+        }
+      }
     }
   },
   "missionsPage": {

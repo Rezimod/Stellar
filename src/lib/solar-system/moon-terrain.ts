@@ -195,7 +195,7 @@ export function makeMoonHorizon(terrain: TerrainHandle, lite: boolean): THREE.Me
   for (let i = 0; i < pos.count; i++) {
     const x = pos.getX(i); const z = pos.getZ(i);
     const r = Math.hypot(x, z);
-    const near = terrain.heightAt(x, z) - 0.35;
+    const near = terrain.heightAt(x, z) - 0.08;
     const hills = fbm(x / 260, z / 260, 4, seed + 71) * 34 + ridged(x / 520 + 9, z / 520, seed + 77) * 46 * Math.min(1, (r - 300) / 600);
     const k = r <= 250 ? 0 : Math.min(1, (r - 250) / 90);
     const t = k * k * (3 - 2 * k);
@@ -205,8 +205,11 @@ export function makeMoonHorizon(terrain: TerrainHandle, lite: boolean): THREE.Me
   }
   geom.setAttribute('color', new THREE.BufferAttribute(colors, 3));
   geom.computeVertexNormals();
+  // Tile the regolith off world position, at the same six metres a tile the
+  // near ground uses: anything else puts a visible seam where the two meet,
+  // and from a hundred metres up on the way down you look straight at it.
   const uv = geom.attributes.uv as THREE.BufferAttribute;
-  for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * 120, uv.getY(i) * 120);
+  for (let i = 0; i < uv.count; i++) uv.setXY(i, pos.getX(i) / 6, pos.getZ(i) / 6);
   const mesh = new THREE.Mesh(geom, terrain.mesh.material);
   mesh.receiveShadow = true;
   mesh.name = 'moon-horizon';
