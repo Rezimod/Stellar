@@ -101,7 +101,13 @@ const BOARD_RANGE = 14 * H;
 const STATION_HP = 6;
 /** Docking: a station takes a ship arriving this slowly as a visitor rather
  *  than as a wreck, and berths it this far off the hull. */
-const DOCK_SPEED = 0.12 * U;
+const DOCK_SPEED = 0.45 * U;
+/** Faster than this into a station and it comes apart; slower is a bump. */
+const DOCK_WRECK_SPEED = 1.0 * U;
+/** The docking computer takes the con inside this many station radii, and
+ *  flies the approach at this pace at most. */
+const DOCK_ASSIST_RADII = 14;
+const DOCK_ASSIST_SPEED = 0.5 * U;
 const DOCK_GAP = 5 * H;
 /** The berth clamps on for this long before thrust can cast off again —
  *  without it the throttle that flew the ship in would release it at once. */
@@ -251,6 +257,8 @@ export interface FlightInput {
   assistToggle: boolean;
   /** One-shot for the deck itself, not the model: hide or show the HUD. */
   hudToggle: boolean;
+  /** One-shot: hand the approach to the docking computer — or take it back. */
+  dockRequest: boolean;
   /** One-shot: cycle the navigation target outward (+1) or inward (-1). */
   targetStep: number;
   targetClear: boolean;
@@ -363,6 +371,9 @@ export interface FlightTelemetry {
   /** Berthed at a station, and the id of the station holding the ship. */
   docked: boolean;
   dockedTo: string;
+  /** A station is close enough for the docking computer; it has the con. */
+  canDock: boolean;
+  docking: boolean;
   /** Taking on fuel and stores from a friendly world. */
   supply: boolean;
   /** Standing order: the world to destroy, how much of it is left (1..0),
@@ -430,7 +441,7 @@ export function createFlightSession(): FlightSession {
     input: {
       thrust: 0, yaw: 0, lookYaw: 0, pitch: 0, roll: 0,
       boost: false, fire: false, align: false, mouseDX: 0, mouseDY: 0,
-      modeRequest: null, foilsToggle: false, eject: false, viewToggle: false, assistToggle: false, hudToggle: false,
+      modeRequest: null, foilsToggle: false, eject: false, viewToggle: false, assistToggle: false, hudToggle: false, dockRequest: false,
       targetStep: 0, targetClear: false, targetRequest: null, targetKind: null,
       camZoom: 1, orbiting: false, orbitYaw: 0, orbitPitch: 0,
     },
@@ -498,6 +509,8 @@ export function createFlightSession(): FlightSession {
       commsProgress: 0,
       docked: false,
       dockedTo: '',
+      canDock: false,
+      docking: false,
       supply: false,
       orderId: '',
       orderIntegrity: 1,
@@ -976,6 +989,10 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
   let dockedTo: FlightBody | null = null;
   let dockHold = 0;
   const dockOffset = new THREE.Vector3();
+  /** The docking computer's berth: the station and the side it comes in on. */
+  let autodock: FlightBody | null = null;
+  const berthDir = new THREE.Vector3();
+  const berth = new THREE.Vector3();
   let orderId = '';
   let orderHits = ORDER_HITS;
   let orderDoneHold = 0;
@@ -1068,6 +1085,7 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
   /** Come alongside: the berth holds the ship a few hull-lengths off the
    *  structure with the nose already pointing out, so W departs. */
   const dock = (b: FlightBody, outward: THREE.Vector3) => {
+    autodock = null;
     dockedTo = b;
     dockHold = DOCK_HOLD;
     dockOffset.copy(outward).multiplyScalar(b.radius + HULL_RADIUS + DOCK_GAP);
@@ -1566,8 +1584,41 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
         parts().hull.rotation.z = pilot === 'ship' ? bank : bank * 0.3;
         parts().hull.rotation.x = -angVel.x * 0.05;
 
+        // ── The docking computer: asked for with a station in reach, it
+        // brings the ship to the berth on the side it was on, nose on the
+        // station, at a walking pace, and hands over to the clamps. Asked
+        // again, or thrown off by a crash, it lets go. ──
+        if (input.dockRequest) {
+          input.dockRequest = false;
+          if (autodock) autodock = null;
+          else if (pilot === 'ship' && !dockedTo) {
+            let best: FlightBody | null = null; let bestD = Infinity;
+            for (const b of world.bodies) {
+              if (b.destroyed || b.kind !== 'station') continue;
+              const d = me.position.distanceTo(b.position);
+              if (d < b.radius * DOCK_ASSIST_RADII && d < bestD) { best = b; bestD = d; }
+            }
+            if (best) {
+              autodock = best;
+              berthDir.copy(me.position).sub(best.position).normalize();
+              foilsForced = null;
+            }
+          }
+        }
+        if (autodock && (autodock.destroyed || pilot !== 'ship')) autodock = null;
+        if (autodock) {
+          berth.copy(autodock.position).addScaledVector(berthDir, autodock.radius + HULL_RADIUS + DOCK_GAP);
+          // Nose onto the station as it closes.
+          qA.copy(me.quaternion);
+          me.lookAt(tmp2.copy(autodock.position));
+          qB.copy(me.quaternion);
+          me.quaternion.copy(qA).slerp(qB, 1 - Math.exp(-dt * 2.5));
+          angVel.set(0, 0, 0);
+          if (berth.distanceTo(me.position) < 1.5 * H) dock(autodock, berthDir);
+        }
+
         // ── Thrust, drag, gravity. ──
-        const boost = input.boost && input.thrust > 0 && boostCharge > BOOST_FLOOR;
+        const boost = !autodock && input.boost && input.thrust > 0 && boostCharge > BOOST_FLOOR;
         if (boost) {
           boostCharge = Math.max(0, boostCharge - BOOST_DRAIN * dt);
           sinceBoost = 0;
@@ -1577,7 +1628,7 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
         const decay = -60 * Math.log(drag);
         const damping = Math.exp(-decay * dt);
         vel.multiplyScalar(damping);
-        vel.addScaledVector(fwd, input.thrust * eff.accel * (boost ? 2 : 1) * (1 - damping) / decay);
+        if (!autodock) vel.addScaledVector(fwd, input.thrust * eff.accel * (boost ? 2 : 1) * (1 - damping) / decay);
         rcsBrake = input.thrust < 0 ? -input.thrust : 0;
         for (const b of world.bodies) {
           if (b.destroyed || b.kind === 'station') continue;
@@ -1597,6 +1648,14 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
         }
         // Air bites: heat bleeds speed and scorches the hull.
         vel.multiplyScalar(Math.exp(-dt * 2.5 * heat));
+        // The docking computer's approach, commanded over gravity and drag:
+        // a walking pace that eases off as the berth comes up.
+        if (autodock) {
+          tmp.copy(berth).sub(me.position);
+          const dist = tmp.length();
+          const pace = Math.min(DOCK_ASSIST_SPEED, Math.max(dist * 1.6, Math.min(dist / Math.max(dt, 1e-3), 0.08 * U)));
+          vel.copy(tmp.normalize().multiplyScalar(pace));
+        }
         let max = boost ? eff.boost : eff.max;
         if (isDrive(mode) && pilot === 'ship') max = Math.max(regimes.cruise.max, max * wellK);
         speed = vel.length();
@@ -1649,7 +1708,17 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
               dock(b, tmp2);
               break;
             }
+            if (b.kind === 'station' && speed < DOCK_WRECK_SPEED) {
+              // A bump: pushed back off the hull with most of the way taken off.
+              autodock = null;
+              me.position.copy(b.position).addScaledVector(tmp2, b.radius + hr + 0.2 * H);
+              vel.multiplyScalar(-0.25);
+              damage(6, false);
+              rig.kick(0.4);
+              break;
+            }
             if (b.kind === 'station') destroyStation(b, prevPos);
+            autodock = null;
             doCrash(tmp, tmp2, b);
             break;
           }
@@ -2080,6 +2149,14 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
       tel.canBoard = pilot === 'eva' && evaG.position.distanceTo(group.position) < BOARD_RANGE;
       tel.docked = !!dockedTo;
       tel.dockedTo = dockedTo ? dockedTo.id : '';
+      tel.docking = !!autodock;
+      let stationNear = false;
+      if (pilot === 'ship' && !dockedTo && jumpPhase === 'none' && crashT < 0) {
+        for (const b of world.bodies) {
+          if (!b.destroyed && b.kind === 'station' && me.position.distanceTo(b.position) < b.radius * DOCK_ASSIST_RADII) { stationNear = true; break; }
+        }
+      }
+      tel.canDock = stationNear;
       invQ.copy(me.quaternion).invert();
       let n = 0;
       const blip = (p: THREE.Vector3) => {

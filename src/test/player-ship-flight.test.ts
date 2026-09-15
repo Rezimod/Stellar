@@ -370,7 +370,7 @@ describe('EVA and stations', () => {
     other.dispose();
   });
 
-  it('ramming a station destroys both; shots wear one down', () => {
+  it('ramming a station at speed destroys both; shots wear one down', () => {
     const iss = body('iss', 1, 0.0015, 0.11, 0, 1);
     iss.kind = 'station';
     // Close enough that a cruise burn reaches it before Earth's pull bends
@@ -378,7 +378,9 @@ describe('EVA and stations', () => {
     iss.position.set(1, 0, EARTH_R * 5 + 0.004);
     world.bodies.push(iss);
     ship.group.lookAt(iss.position);
+    // Under boost: a plain cruise arrival is a bump, not a wreck.
     session.input.thrust = 1;
+    session.input.boost = true;
     // Stop at the impact: hold on any longer and the wreck has already
     // respawned by the time the assertion runs.
     let hit = false;

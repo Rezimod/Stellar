@@ -424,7 +424,9 @@ export function makeMoonBase(heightAt: (x: number, z: number) => number, lite: b
   const rtgHot = new THREE.MeshStandardMaterial({ color: 0x552200, emissive: new THREE.Color(0xff5a1a), emissiveIntensity: 0.9 });
   const seatMat = new THREE.MeshStandardMaterial({ color: 0x1f2a44, roughness: 0.9, metalness: 0 });
   owned.push(wheelMat, tread, rtgMat, rtgHot, seatMat);
-  const roverParts: RoverParts = { spin: [], steer: [], rockers: [], bogies: [], wheelXZ: [], mast: new THREE.Group(), headlight: new THREE.SpotLight(0xfff4dc, 0, 24, 0.55, 0.5, 1.2) };
+  const brakeLight = new THREE.MeshStandardMaterial({ color: 0x5a0a0a, emissive: new THREE.Color(0xff2a1a), emissiveIntensity: 0.15, roughness: 0.4 });
+  owned.push(brakeLight);
+  const roverParts: RoverParts = { spin: [], steer: [], rockers: [], bogies: [], wheelXZ: [], mast: new THREE.Group(), headlight: new THREE.SpotLight(0xfff4dc, 0, 24, 0.55, 0.5, 1.2), arm: [], brakeLight };
   {
     const g = rover;
     const up = new THREE.Vector3(0, 1, 0);
@@ -456,6 +458,19 @@ export function makeMoonBase(heightAt: (x: number, z: number) => number, lite: b
     strut(g, -0.46, 2.9, 0.45, 0.46, 2.9, 0.45, 0.035);
     mesh(g, new THREE.BoxGeometry(0.5, 0.05, 0.16), dark, 0, 2.15, 1.32);
     mesh(g, new THREE.BoxGeometry(0.34, 0.2, 0.03), screen, 0, 2.3, 1.36).rotation.x = -0.35;
+    // A glass canopy over the cage, a name plaque on the flank, brake lights.
+    const canopy = mesh(g, new THREE.SphereGeometry(0.72, 24, 12, 0, Math.PI * 2, 0, Math.PI * 0.5), glass, 0, 2.45, 0.8);
+    canopy.scale.set(1, 0.75, 1.15);
+    canopy.castShadow = false;
+    const plaqueTex = plaque(['STELLAR', 'ROVER 1'], 256, 128, '#e9e9e4', '#1b1f26', 40);
+    textures.push(plaqueTex);
+    const plaqueMat = new THREE.MeshStandardMaterial({ map: plaqueTex, roughness: 0.7 });
+    owned.push(plaqueMat);
+    for (const sd of [-1, 1]) {
+      const pl = mesh(g, new THREE.PlaneGeometry(0.7, 0.35), plaqueMat, sd * 1.005, 1.55, -0.2);
+      pl.rotation.y = sd * Math.PI / 2;
+      mesh(g, new THREE.BoxGeometry(0.22, 0.08, 0.04), brakeLight, sd * 0.7, 1.5, -1.56);
+    }
     // The mast with its camera head; the head looks where the rover is steered.
     mesh(g, new THREE.CylinderGeometry(0.07, 0.09, 1.5, 10), alu, 0.62, 2.55, 1.25);
     roverParts.mast.position.set(0.62, 3.35, 1.25);
@@ -463,14 +478,26 @@ export function makeMoonBase(heightAt: (x: number, z: number) => number, lite: b
     mesh(roverParts.mast, new THREE.BoxGeometry(0.5, 0.26, 0.32), white);
     for (const sd of [-1, 1]) mesh(roverParts.mast, new THREE.CylinderGeometry(0.07, 0.07, 0.12, 12), dark, sd * 0.15, 0, 0.18).rotation.x = Math.PI / 2;
     mesh(roverParts.mast, new THREE.CircleGeometry(0.05, 12), lamp, 0, -0.06, 0.245);
-    // The arm, stowed across the front, its turret of tools at the end.
-    const arm = new THREE.Group();
-    arm.position.set(-0.55, 1.45, 1.35);
-    g.add(arm);
-    mesh(arm, new THREE.CylinderGeometry(0.1, 0.1, 0.16, 12), steel).rotation.z = Math.PI / 2;
-    strut(arm, 0, 0, 0, 0.9, 0.1, 0.35, 0.05);
-    strut(arm, 0.9, 0.1, 0.35, 0.4, -0.15, 0.85, 0.045);
-    mesh(arm, new THREE.CylinderGeometry(0.16, 0.16, 0.22, 12), dark, 0.4, -0.15, 0.85).rotation.x = Math.PI / 2;
+    // The arm: a shoulder on the front corner, an upper arm, an elbow, a
+    // forearm with the turret of tools at the end. Stowed across the front
+    // on the move; the drive unfolds it when the rover stands.
+    const shoulder = new THREE.Group();
+    shoulder.position.set(-0.55, 1.45, 1.35);
+    g.add(shoulder);
+    mesh(shoulder, new THREE.CylinderGeometry(0.1, 0.1, 0.16, 12), steel);
+    strut(shoulder, 0, 0, 0, 0.9, 0.1, 0.35, 0.05);
+    const elbow = new THREE.Group();
+    elbow.position.set(0.9, 0.1, 0.35);
+    shoulder.add(elbow);
+    elbow.rotation.x = -0.9;
+    mesh(elbow, new THREE.SphereGeometry(0.07, 12, 10), steel);
+    strut(elbow, 0, 0, 0, -0.5, -0.25, 0.5, 0.045);
+    mesh(elbow, new THREE.CylinderGeometry(0.16, 0.16, 0.22, 12), dark, -0.5, -0.25, 0.5).rotation.x = Math.PI / 2;
+    for (let tool = 0; tool < 4; tool++) {
+      const a = tool * Math.PI / 2;
+      mesh(elbow, new THREE.CylinderGeometry(0.025, 0.02, 0.12, 8), steel, -0.5 + Math.cos(a) * 0.1, -0.25 + Math.sin(a) * 0.1, 0.66).rotation.x = Math.PI / 2;
+    }
+    roverParts.arm.push(shoulder, elbow);
     // The RTG on the back, canted up, finned, warm at the core.
     const rtg = new THREE.Group();
     rtg.position.set(0, 1.95, -1.6);
@@ -498,12 +525,16 @@ export function makeMoonBase(heightAt: (x: number, z: number) => number, lite: b
       parent.add(pivot);
       const hub = new THREE.Group();
       pivot.add(hub);
-      mesh(hub, new THREE.CylinderGeometry(0.55, 0.55, 0.42, 24), wheelMat).rotation.z = Math.PI / 2;
-      for (let tr = 0; tr < 16; tr++) {
-        const a = tr * Math.PI / 8;
-        const bar = mesh(hub, new THREE.BoxGeometry(0.44, 0.05, 0.1), tread);
-        bar.position.set(0, Math.cos(a) * 0.56, Math.sin(a) * 0.56);
-        bar.rotation.x = -a;
+      mesh(hub, new THREE.CylinderGeometry(0.55, 0.55, 0.42, 36), wheelMat).rotation.z = Math.PI / 2;
+      // Chevron cleats: each a pair of bars meeting at the centreline.
+      for (let tr = 0; tr < 24; tr++) {
+        const a = tr * Math.PI / 12;
+        for (const half of [-1, 1]) {
+          const bar = mesh(hub, new THREE.BoxGeometry(0.2, 0.05, 0.07), tread);
+          bar.position.set(half * 0.11, Math.cos(a) * 0.565, Math.sin(a) * 0.565);
+          bar.rotation.x = -a;
+          bar.rotation.z = half * 0.5;
+        }
       }
       mesh(hub, new THREE.CylinderGeometry(0.2, 0.2, 0.46, 12), dark).rotation.z = Math.PI / 2;
       for (let sp = 0; sp < 3; sp++) mesh(hub, new THREE.BoxGeometry(0.47, 0.9, 0.05), steel).rotation.x = sp * Math.PI / 3;

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  ArrowDownToLine, Check, ChevronsUp, Crosshair, Eye, EyeOff, Globe, HelpCircle, LayoutGrid, LogOut, Menu, Minus, Moon,
+  Anchor, ArrowDownToLine, Check, ChevronsUp, Crosshair, Eye, EyeOff, Globe, HelpCircle, LayoutGrid, LogOut, Menu, Minus, Moon,
   Orbit, Pause, Play, Plus, Radio, Rocket, RotateCcw, Ruler, Satellite, Shield, Smartphone, Sparkles, Star, X, Zap,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
@@ -25,8 +25,8 @@ interface PlayerShipProps {
 }
 const SHIPS: ShipKind[] = ['kestrel', 'xfoil', 'endurance'];
 const BARS = ['shield', 'energy', 'boost'] as const;
-const KEY_ROWS = ['r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r10', 'r7', 'r8', 'r11', 'r9'] as const;
-const TOUCH_ROWS = ['t1', 't2', 't3', 't11', 't6', 't12', 't9', 't5'] as const;
+const KEY_ROWS = ['r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r10', 'r12', 'r7', 'r8', 'r11', 'r9'] as const;
+const TOUCH_ROWS = ['t1', 't2', 't3', 't11', 't6', 't13', 't12', 't9', 't5'] as const;
 const HELP_SEEN = 'stellar_explore_help';
 const ICONS = [Shield, Zap, ChevronsUp];
 /** The quick targets in the menu: a named world, or a kind to walk through.
@@ -126,6 +126,8 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, landscape,
   const orderTextRef = useRef<HTMLSpanElement>(null);
   const orderBarRef = useRef<HTMLSpanElement>(null);
   const landRef = useRef<HTMLButtonElement>(null);
+  const dockRef = useRef<HTMLButtonElement>(null);
+  const dockTextRef = useRef<HTMLSpanElement>(null);
   const railRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const barRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const placedRefs = useRef<Partial<Record<Placeable, HTMLElement | null>>>({});
@@ -148,6 +150,28 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, landscape,
     setTouch(window.matchMedia('(pointer: coarse)').matches);
     setLayout(loadLayout());
   }, []);
+  // The deck's own guards, on the document: while the ship is flown nothing
+  // may be selected, no callout may open, and a touch that is not on a key
+  // starts no browser gesture of its own — so two thumbs are two thumbs.
+  useEffect(() => {
+    if (!active) return;
+    const noSelect = (e: Event) => e.preventDefault();
+    const noGesture = (e: TouchEvent) => {
+      const el = e.target as Element | null;
+      if (el && el.closest('button, [role="menu"], .flight-hud__help, .flight-hud__editor-bar')) return;
+      if (e.cancelable) e.preventDefault();
+    };
+    document.addEventListener('selectstart', noSelect);
+    document.addEventListener('contextmenu', noSelect);
+    document.addEventListener('touchstart', noGesture, { passive: false });
+    document.addEventListener('touchmove', noGesture, { passive: false });
+    return () => {
+      document.removeEventListener('selectstart', noSelect);
+      document.removeEventListener('contextmenu', noSelect);
+      document.removeEventListener('touchstart', noGesture);
+      document.removeEventListener('touchmove', noGesture);
+    };
+  }, [active]);
   // Each placed control wears its offset and scale as custom properties;
   // the stylesheet turns them into a transform in deck units.
   useEffect(() => {
@@ -293,6 +317,14 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, landscape,
       // Low over the Moon in the ship: the way down opens.
       const canLand = tel.nearId === 'moon' && tel.nearAltKm < 2500 && tel.pilot === 'ship' && !tel.crashed && tel.jumpPhase === 'none' && !tel.docked && !session.paused;
       if (landRef.current) landRef.current.hidden = !canLand;
+      // A station in reach: the docking computer's key.
+      const dockKey = dockRef.current;
+      if (dockKey) {
+        const show = (tel.canDock || tel.docking) && !session.paused;
+        dockKey.hidden = !show;
+        dockKey.dataset.on = String(tel.docking);
+        if (show) text(dockTextRef.current, t(tel.docking ? 'docking' : 'dock'));
+      }
 
       // The quick targets in the menu: one for every kind of thing this
       // system holds, lit when the deck is locked onto one of them.
@@ -614,9 +646,14 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, landscape,
 
           {/* The dock: the stick, the thumb keys, the console bar. */}
           <div className="flight-hud__dock">
-            <button ref={landRef} type="button" className="flight-hud__land" onClick={land} hidden>
-              <ArrowDownToLine size={16} aria-hidden />{t('land')}
-            </button>
+            <div className="flight-hud__prompts">
+              <button ref={landRef} type="button" className="flight-hud__land" onClick={land} hidden>
+                <ArrowDownToLine size={16} aria-hidden />{t('land')}
+              </button>
+              <button ref={dockRef} type="button" className="flight-hud__land flight-hud__dock-key" onClick={() => { session.input.dockRequest = true; }} hidden>
+                <Anchor size={16} aria-hidden /><span ref={dockTextRef} />
+              </button>
+            </div>
             {touch && (
               <div className="flight-hud__move" {...placed('move')}>
                 {(!paused || editing) && <GameStick label={t('move')} rotated={landscape} onMove={(x, y) => {

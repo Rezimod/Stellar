@@ -424,7 +424,9 @@
 }
 /* In flight the canvas is only glass under the deck — no gesture of the
    browser's own may start on it. */
-.solar-system[data-flying='true'] .solar-system__canvas { touch-action: none; }
+.solar-system[data-flying='true'] .solar-system__canvas,
+.solar-system[data-flying='true'] .solar-system__viewport--fill,
+.solar-system[data-flying='true'] .flight-hud { touch-action: none; }
 /* Landscape on a phone that will not turn: the whole viewport — canvas and
    deck — is drawn a quarter turn clockwise and sized to the screen's other
    way round. The deck's container queries then lay it out as landscape,
@@ -900,6 +902,12 @@
    from the top right, the target rail down the left edge, the camera keys
    on the right, and one dock along the bottom with the two pads, the flight
    keys between them and the console bar under all of it. */
+.flight-hud,
+.flight-hud * {
+  -webkit-user-select: none !important;
+  user-select: none !important;
+  -webkit-touch-callout: none !important;
+}
 .flight-hud {
   /* The deck's palette: ice on deep navy glass. */
   --hud-ink: #eaf2fd;
@@ -1305,7 +1313,10 @@
   gap: 10px;
   grid-template-areas: 'land' 'keys' 'console';
 }
-.flight-hud__land { grid-area: land; }
+.flight-hud__prompts { grid-area: land; display: flex; gap: 8px; }
+.flight-hud .flight-hud__dock-key { border-color: rgba(77, 163, 255, 0.55); color: var(--hud-accent); }
+.flight-hud .flight-hud__dock-key[data-on='true'] { background: rgba(77, 163, 255, 0.2); }
+.flight-hud .flight-hud__dock-key span { white-space: nowrap; }
 .flight-hud__console { grid-area: console; }
 .flight-hud__keys { grid-area: keys; }
 .flight-hud__move { grid-area: move; }

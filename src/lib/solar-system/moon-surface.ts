@@ -417,7 +417,7 @@ export function makeMoonSurface(mount: HTMLElement): MoonSurfaceHandle {
         rover.update(dt, input.moveY, input.moveX, base.colliders, TERRAIN_WALK_RADIUS);
         // The crew rides along, for the meteors, the labels and the shadow frustum.
         crew.copy(base.rover.position);
-        placeChase(dt, base.rover.position, rover.yaw, 2.2, Math.max(camDist, 7), Math.abs(rover.speed) > 0.5);
+        placeChase(dt, base.rover.position, rover.yaw, 1.9, Math.max(camDist, 6.2), Math.abs(rover.speed) > 0.5);
         walk.moveX = walk.moveZ = 0; walk.jump = false;
       } else {
         rover.update(dt, 0, 0, base.colliders, TERRAIN_WALK_RADIUS);

@@ -1419,7 +1419,9 @@
         "t10": "Phone key — turn the whole deck to landscape and back",
         "r11": "I — hide the deck for the view alone",
         "t11": "Fire, boost, brake and the gear sit under the right thumb",
-        "t12": "Menu, top right — targets, camera, landscape, and Customize the deck: drag every control where you want it, size it, save"
+        "t12": "Menu, top right — targets, camera, landscape, and Customize the deck: drag every control where you want it, size it, save",
+        "r12": "K — docking computer: bring the ship in to a station nearby",
+        "t13": "Dock key — near a station it appears; tap and the computer brings you in. Push forward to leave."
       },
       "dockedAt": "Docked at {body} — W to release",
       "supplying": "Taking on fuel and stores",
@@ -1454,7 +1456,9 @@
         "brake": "Brake",
         "gear": "Gear",
         "console": "Console bar"
-      }
+      },
+      "dock": "Dock",
+      "docking": "Docking… tap to cancel"
     },
     "moon": {
       "place": "Stellar Base · Moon",

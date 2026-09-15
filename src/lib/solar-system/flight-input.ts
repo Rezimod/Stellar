@@ -12,7 +12,7 @@ const HANDLED_KEYS = new Set([
   'KeyW', 'KeyA', 'KeyS', 'KeyD', 'KeyQ', 'KeyE', 'Space',
   'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ShiftLeft', 'ShiftRight',
   'Digit1', 'Digit2', 'Digit3', 'KeyF', 'KeyH', 'KeyJ', 'KeyV', 'KeyC', 'KeyZ', 'KeyT', 'KeyG', 'KeyR', 'KeyI',
-  'Minus', 'Equal', 'BracketLeft', 'BracketRight',
+  'Minus', 'Equal', 'BracketLeft', 'BracketRight', 'KeyK',
 ]);
 
 /** Chase-camera distance multiplier: how close and how far the player can pull. */
@@ -91,6 +91,7 @@ export function attachDesktopControls(
     else if (e.code === 'KeyC') input.viewToggle = true;
     else if (e.code === 'KeyZ') input.assistToggle = true;
     else if (e.code === 'KeyI') input.hudToggle = true;
+    else if (e.code === 'KeyK') input.dockRequest = true;
     else if (e.code === 'KeyT') input.targetStep = e.shiftKey ? -1 : 1;
     else if (e.code === 'KeyR') input.targetClear = true;
     else if (e.code === 'Minus' || e.code === 'BracketLeft') zoomFlightCamera(input, 1);
@@ -198,6 +199,7 @@ export function clearFlightInput(input: FlightInput) {
   input.viewToggle = false;
   input.assistToggle = false;
   input.hudToggle = false;
+  input.dockRequest = false;
   input.targetStep = 0;
   input.targetClear = false;
   input.targetRequest = null;

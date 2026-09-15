@@ -27,6 +27,10 @@ export interface RoverParts {
   /** The camera head on the mast. */
   mast: THREE.Object3D;
   headlight: THREE.SpotLight;
+  /** The arm's shoulder and elbow: stowed on the move, unfolded at rest. */
+  arm: THREE.Object3D[];
+  /** The brake lights' material — lit while the rover slows. */
+  brakeLight: THREE.MeshStandardMaterial;
 }
 
 export interface RoverHandle {
@@ -60,6 +64,8 @@ export function makeRover(group: THREE.Group, collider: Collider, parts: RoverPa
   let steerAngle = 0;
   let mastYaw = 0;
   let idle = 0;
+  let armOut = 0;
+  let lastSpeed = 0;
   const heights = new Float32Array(6);
   const handle: RoverHandle = {
     speed: 0, yaw: group.rotation.y, driving: false,
@@ -136,12 +142,26 @@ export function makeRover(group: THREE.Group, collider: Collider, parts: RoverPa
       mastYaw += (mastTarget - mastYaw) * (1 - Math.exp(-dt * 2.5));
       parts.mast.rotation.y = mastYaw;
       parts.headlight.intensity += ((handle.driving ? 6 : 0) - parts.headlight.intensity) * (1 - Math.exp(-dt * 4));
+      // Brake lights while the rover is slowing; the arm unfolds to work
+      // once it has stood a moment, and stows the moment it moves.
+      const braking = Math.abs(v) < Math.abs(lastSpeed) - 0.02 && Math.abs(v) > 0.2;
+      lastSpeed = v;
+      parts.brakeLight.emissiveIntensity += ((braking ? 2.6 : 0.15) - parts.brakeLight.emissiveIntensity) * (1 - Math.exp(-dt * 8));
+      armOut += ((idle > 2.5 ? 1 : 0) - armOut) * (1 - Math.exp(-dt * 1.4));
+      parts.arm[0].rotation.y = -1.3 * armOut;
+      parts.arm[0].rotation.x = 0.35 * armOut;
+      parts.arm[1].rotation.x = -0.9 + 1.5 * armOut;
       wheelSpin += v / 0.55 * dt;
       for (const w of parts.spin) w.rotation.x = wheelSpin;
-      // Dust from the rear wheels, tracks under all six.
+      // Dust off every wheel, more from the rear pair, tracks under all six.
       if (Math.abs(v) > 0.6) {
         const kk = Math.abs(v) / TOP;
-        dust.burst({ x: x - fx * 1.6, y: group.position.y, z: z - fz * 1.6, count: Math.round(2 + kk * 8), speedMin: 0.5, speedMax: 1.2 + kk * 3, cone: 0.9, size: 0.14, dirX: -fx, dirZ: -fz, bias: 1.2 });
+        for (let i = 0; i < 6; i++) {
+          const [lx, lz] = parts.wheelXZ[i];
+          const rear = lz < -1;
+          if (!rear && Math.random() > kk * 0.6) continue;
+          dust.burst({ x: x + lx * c + lz * sn, y: heights[i], z: z - lx * sn + lz * c, count: Math.round(1 + kk * (rear ? 5 : 2)), speedMin: 0.4, speedMax: 1 + kk * 3, cone: 0.9, size: 0.14, dirX: -fx, dirZ: -fz, bias: 1.2 });
+        }
         trackAcc += Math.abs(v) * dt;
         if (trackAcc > 0.7) {
           trackAcc = 0;
