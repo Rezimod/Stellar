@@ -9,15 +9,18 @@ import type { LucideIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { attachDesktopControls, clearFlightInput, zoomFlightCamera } from '@/lib/solar-system/flight-input';
 import { type FlightSession, type ShipKind } from '@/lib/solar-system/player-ship';
+import { LANDING_SITES, type WorldId } from '@/lib/solar-system/world-profiles';
 import { FlightGear, FlightJumpCard } from './FlightDrive';
+
+export type LandingSite = 'moon' | WorldId;
 import { GameStick } from './GameStick';
 
 interface PlayerShipProps {
   session: FlightSession;
   onActiveChange: (active: boolean) => void;
-  /** The ship is low over the Moon and the pilot asked to go down. */
-  onLand: () => void;
-  /** Moon Mode has the screen; the deck stays paused underneath. */
+  /** The ship is low over a world with a surface to fly down to, and the pilot asked to go down. */
+  onLand: (site: LandingSite) => void;
+  /** A surface has the screen; the deck stays paused underneath. */
   landed: boolean;
   /** The viewport is drawn a quarter turn clockwise — landscape on a phone. */
   landscape: boolean;
@@ -126,6 +129,7 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, landscape,
   const orderTextRef = useRef<HTMLSpanElement>(null);
   const orderBarRef = useRef<HTMLSpanElement>(null);
   const landRef = useRef<HTMLButtonElement>(null);
+  const landTextRef = useRef<HTMLSpanElement>(null);
   const dockRef = useRef<HTMLButtonElement>(null);
   const dockTextRef = useRef<HTMLSpanElement>(null);
   const railRefs = useRef<(HTMLButtonElement | null)[]>([]);
@@ -230,9 +234,10 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, landscape,
     setPaused(false);
     attach();
   };
+  const landSiteRef = useRef<LandingSite>('moon');
   const land = () => {
     pause();
-    onLand();
+    onLand(landSiteRef.current);
   };
   const exit = () => {
     detachRef.current?.();
@@ -327,9 +332,14 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, landscape,
       else if (tel.supply) status = t('supplying');
       else if (tel.pilot === 'eva') status = t(tel.canBoard ? 'evaBoardTouch' : 'evaOut');
       text(statusRef.current, status);
-      // Low over the Moon in the ship: the way down opens.
-      const canLand = tel.nearId === 'moon' && tel.nearAltKm < 2500 && tel.pilot === 'ship' && !tel.crashed && tel.jumpPhase === 'none' && !tel.docked && !session.paused;
+      // Low over a world with ground to reach in the ship: the way down opens.
+      const ceiling = LANDING_SITES[tel.nearId];
+      const canLand = ceiling !== undefined && tel.nearAltKm < ceiling && tel.pilot === 'ship' && !tel.crashed && tel.jumpPhase === 'none' && !tel.docked && !session.paused;
       if (landRef.current) landRef.current.hidden = !canLand;
+      if (canLand && landSiteRef.current !== tel.nearId) {
+        landSiteRef.current = tel.nearId as LandingSite;
+        text(landTextRef.current, t(`landOn.${tel.nearId}`));
+      }
       // L on a keyboard: with the pointer held for steering, no key on the
       // deck can be clicked, so the way down has to be on the keys.
       if (session.input.landRequest) {
@@ -673,7 +683,7 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, landscape,
           <div className="flight-hud__dock">
             <div className="flight-hud__prompts">
               <button ref={landRef} type="button" className="flight-hud__prompt flight-hud__land" onClick={land} hidden>
-                <ArrowDownToLine size={16} aria-hidden />{t('land')}
+                <ArrowDownToLine size={16} aria-hidden /><span ref={landTextRef}>{t('landOn.moon')}</span>
               </button>
               <button ref={dockRef} type="button" className="flight-hud__prompt flight-hud__dock-key" onClick={() => { session.input.dockRequest = true; }} hidden>
                 <Anchor size={16} aria-hidden /><span ref={dockTextRef} />

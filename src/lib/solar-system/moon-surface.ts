@@ -152,7 +152,7 @@ const MAX_STEPS = 12;
 const SUN_DIR = new THREE.Vector3(-0.62, 0.46, 0.64).normalize();
 const EARTH_DIR = new THREE.Vector3(0.28, 0.6, -0.75).normalize();
 
-function starfield(count: number, band: number): THREE.Points {
+export function starfield(count: number, band: number): THREE.Points {
   const total = count + band;
   const pos = new Float32Array(total * 3);
   const col = new Float32Array(total * 3);

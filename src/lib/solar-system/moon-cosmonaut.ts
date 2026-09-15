@@ -107,7 +107,7 @@ const LEG = 0.88;
 const wrap = (a: number) => { while (a > Math.PI) a -= Math.PI * 2; while (a < -Math.PI) a += Math.PI * 2; return a; };
 const ease = (rate: number, dt: number) => 1 - Math.exp(-dt * rate);
 
-export function makeCosmonaut(dust: DustHandle, lite = false): CosmonautHandle {
+export function makeCosmonaut(dust: DustHandle, lite = false, g = MOON_G): CosmonautHandle {
   const rig = buildSuit(lite);
   const { group, body, pelvis, chest, pack, neck, helmet, sides, shoulders, elbows, hands, hips, knees, ankles } = rig;
   // Every joint is a group; everything rigid inside one becomes a draw call per material.
@@ -240,7 +240,7 @@ export function makeCosmonaut(dust: DustHandle, lite = false): CosmonautHandle {
           dust.burst(puff);
         }
       }
-      vel.y -= MOON_G * dt;
+      vel.y -= g * dt;
       position.x += vel.x * dt;
       position.z += vel.z * dt;
       position.y += vel.y * dt;

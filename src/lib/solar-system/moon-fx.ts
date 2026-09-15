@@ -26,7 +26,8 @@ export interface DustHandle {
   dispose: () => void;
 }
 
-export function makeMoonDust(max: number): DustHandle {
+/** `g` is the surface gravity the grains fall under; `tint` the colour of the ground they came off. */
+export function makeMoonDust(max: number, g = MOON_G, tint: [number, number, number] = [0.62, 0.61, 0.59]): DustHandle {
   const pos = new Float32Array(max * 3);
   const vel = new Float32Array(max * 3);
   const life = new Float32Array(max);
@@ -40,7 +41,7 @@ export function makeMoonDust(max: number): DustHandle {
   geom.setAttribute('aSize', sizeAttr);
   geom.setAttribute('aShade', shadeAttr);
   const mat = new THREE.ShaderMaterial({
-    uniforms: { uMap: { value: softSpriteTexture() }, uScale: { value: 600 } },
+    uniforms: { uMap: { value: softSpriteTexture() }, uScale: { value: 600 }, uTint: { value: new THREE.Vector3(...tint) } },
     vertexShader: `
       attribute float aSize; attribute float aShade; varying float vShade;
       uniform float uScale;
@@ -53,11 +54,11 @@ export function makeMoonDust(max: number): DustHandle {
         gl_Position = projectionMatrix * mv;
       }`,
     fragmentShader: `
-      uniform sampler2D uMap; varying float vShade;
+      uniform sampler2D uMap; uniform vec3 uTint; varying float vShade;
       void main() {
         float a = texture2D(uMap, gl_PointCoord).a;
         if (vShade <= 0.0) discard;
-        gl_FragColor = vec4(vec3(0.62, 0.61, 0.59) * vShade, a * 0.9);
+        gl_FragColor = vec4(uTint * vShade, a * 0.9);
       }`,
     transparent: true,
     depthWrite: false,
@@ -101,7 +102,7 @@ export function makeMoonDust(max: number): DustHandle {
       for (let i = 0; i < max; i++) {
         if (life[i] <= 0) continue;
         any = true;
-        vel[i * 3 + 1] -= MOON_G * dt;
+        vel[i * 3 + 1] -= g * dt;
         pos[i * 3] += vel[i * 3] * dt;
         pos[i * 3 + 1] += vel[i * 3 + 1] * dt;
         pos[i * 3 + 2] += vel[i * 3 + 2] * dt;

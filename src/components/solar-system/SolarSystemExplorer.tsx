@@ -5,8 +5,10 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Pause, Play, RotateCcw, X } from 'lucide-react';
 import { useFormatter, useTranslations } from 'next-intl';
 import { SolarSystemCanvas } from '@/components/solar-system/SolarSystemCanvas';
-import { PlayerShip } from '@/components/solar-system/PlayerShip';
+import { PlayerShip, type LandingSite } from '@/components/solar-system/PlayerShip';
 import { MoonSurface } from '@/components/solar-system/MoonSurface';
+import { WorldSurface } from '@/components/solar-system/WorldSurface';
+import { isWorldId } from '@/lib/solar-system/world-profiles';
 import { CosmicLoader } from '@/components/solar-system/CosmicLoader';
 import { createFlightSession, type FlightSession } from '@/lib/solar-system/player-ship';
 import type { SolarBodyId } from '@/lib/solar-system/ephemeris';
@@ -35,7 +37,7 @@ export default function SolarSystemExplorer() {
   const [playing, setPlaying] = useState(true);
   const [speedIdx, setSpeedIdx] = useState(2);
   const [flightActive, setFlightActive] = useState(false);
-  const [landed, setLanded] = useState(false);
+  const [landed, setLanded] = useState<LandingSite | null>(null);
   const [landscape, setLandscape] = useState(false);
   const [zoomTo, setZoomTo] = useState<number | null>(null);
   const flightRef = useRef<FlightSession | null>(null);
@@ -47,9 +49,13 @@ export default function SolarSystemExplorer() {
     document.body.setAttribute('data-solar-immersive', '1');
     return () => document.body.removeAttribute('data-solar-immersive');
   }, []);
-  // Development only: `?moon` opens straight onto the surface, for the capture harness.
+  // Development only: `?moon` or `?land=mars|proximaB` opens straight onto that surface, for the capture harness.
   useEffect(() => {
-    if (process.env.NODE_ENV !== 'production' && new URLSearchParams(window.location.search).has('moon')) setLanded(true);
+    if (process.env.NODE_ENV === 'production') return;
+    const q = new URLSearchParams(window.location.search);
+    const site = q.get('land') ?? '';
+    if (q.has('moon')) setLanded('moon');
+    else if (isWorldId(site)) setLanded(site);
   }, []);
   // The turned viewport has new sides; the renderer refits on the resize it
   // would otherwise never hear about.
@@ -82,14 +88,15 @@ export default function SolarSystemExplorer() {
       </div>}
       <div className="solar-system__viewport solar-system__viewport--fill" data-rotate={landscape && flightActive ? 'cw' : undefined}>
         <SolarSystemCanvas epochMs={epochMs} scaleMode="orrery" includePluto selectedId={selectedId} focusBodyId={selectedId}
-          onSelect={setSelectedId} onZoomToSun={zoomToSun} zoomTo={zoomTo} onZoomToConsumed={consumeZoom} flight={flightRef.current} suspended={landed}
+          onSelect={setSelectedId} onZoomToSun={zoomToSun} zoomTo={zoomTo} onZoomToConsumed={consumeZoom} flight={flightRef.current} suspended={landed !== null}
           onReady={onSceneReady} />
-        <PlayerShip session={flightRef.current} onActiveChange={setFlightActive} onLand={() => { setLandscape(false); setLanded(true); }} landed={landed}
+        <PlayerShip session={flightRef.current} onActiveChange={setFlightActive} onLand={(site) => { setLandscape(false); setLanded(site); }} landed={landed !== null}
           landscape={landscape} onLandscape={setLandscape} />
-        {landed && <MoonSurface onReturn={() => setLanded(false)} />}
+        {landed === 'moon' && <MoonSurface onReturn={() => setLanded(null)} />}
+        {landed !== null && landed !== 'moon' && <WorldSurface world={landed} onReturn={() => setLanded(null)} />}
       </div>
-      {/* Straight onto the Moon, the orbit scene never draws: the Moon has its own screen. */}
-      <CosmicLoader className={sceneReady || landed ? 'solar-system__loader is-done' : 'solar-system__loader'}
+      {/* Straight onto a surface, the orbit scene never draws: the surface has its own screen. */}
+      <CosmicLoader className={sceneReady || landed !== null ? 'solar-system__loader is-done' : 'solar-system__loader'}
         label={t('loading.title')} detail={t('loading.detail')} />
       {!flightActive && <div className="solar-system__dockbar" role="group" aria-label={t('time.title')}>
         <button type="button" className="solar-system__dockbtn" onClick={() => setPlaying((p) => !p)} aria-label={t(playing ? 'time.pause' : 'time.play')}>

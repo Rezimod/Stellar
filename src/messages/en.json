@@ -1429,7 +1429,11 @@
       "order": "Destroy {body}",
       "orderTitle": "Standing order",
       "orderDone": "Objective complete",
-      "land": "Land on the Moon",
+      "landOn": {
+        "moon": "Land on the Moon",
+        "mars": "Land at Mars Base",
+        "proximaB": "Land on Proxima b"
+      },
       "jumpLabel": "Light-year jump",
       "jumpShort": "Jump",
       "jumpMenu": "Choose a destination",
@@ -1720,6 +1724,131 @@
       "moon": "Descending to Stellar Base",
       "moonDetail": "Preparing the surface",
       "gpu": "The graphics card reset — rebuilding the scene"
+    },
+    "worlds": {
+      "mars": {
+        "place": "Mars Base · Jezero",
+        "loading": "Descending to Mars Base",
+        "loadingDetail": "Preparing the plain — 0.38 g, thin air, dust in it",
+        "outside": "Outside",
+        "run": "Run",
+        "hints": {
+          "walk": "W A S D — walk. Hold Shift to run. Mars holds you down twice as hard as the Moon.",
+          "jump": "Space — jump. A metre, no more: this is a real planet.",
+          "walkTouch": "Left stick — walk. Drag anywhere else to look around.",
+          "jumpTouch": "Jump is bottom right. A metre, no more: this is a real planet."
+        },
+        "keys": {
+          "r1": "W A S D / arrows — walk · Shift — run · C — crouch",
+          "r2": "Space — jump; on the way down it is the descent engine",
+          "r3": "Mouse drag — look around · wheel — zoom",
+          "r4": "V — walk the camera round: over the shoulder, in the helmet, wide",
+          "r5": "E — read the panel in front of you",
+          "r6": "The base is north of the pad: habitats, greenhouse, the plant, the reactors",
+          "r7": "Dust devils cross the plain. They will not come near the base.",
+          "t1": "Left stick — walk; push it to the rim to run",
+          "t2": "Right half — drag to look around",
+          "t3": "Run and crouch — beside the stick; jump — bottom right",
+          "t4": "Camera — walk the view round: shoulder, helmet, wide",
+          "t5": "The amber key reads the panel in front of you",
+          "t6": "The base is north of the pad: habitats, greenhouse, the plant, the reactors"
+        },
+        "pois": {
+          "habitat0": "Habitat 1 — crew quarters, under two metres of regolith",
+          "habitat1": "Habitat 2 — lab, galley and the medical bay",
+          "habitat2": "Habitat 3 — workshop and suit maintenance",
+          "greenhouse": "Greenhouse — potatoes, wheat, and the first Martian tomatoes",
+          "isru": "Sabatier plant — methane and oxygen out of the air",
+          "power": "Kilopower — two 10 kW fission units",
+          "solar": "Solar field — 28 panels, dusted every sol",
+          "dish": "Comms — high-gain dish on Earth, 4 to 24 minutes away",
+          "weather": "Weather mast — wind, pressure, dust opacity",
+          "flag": "Flag of Georgia",
+          "sign": "Mars Base — founded by Astroman, Tbilisi",
+          "cargoShip": "Cargo ship — everything here came down in it",
+          "rover": "Pressurised rover — 200 km on a charge",
+          "landingZone": "Landing zone — keep clear",
+          "ourLander": "Your descent vehicle"
+        },
+        "act": {
+          "read": {
+            "habitat": "Habitat status",
+            "greenhouse": "Crop status",
+            "isru": "Plant status",
+            "power": "Reactor status"
+          }
+        },
+        "readout": {
+          "habitat": "HAB-1 · 101 kPa · 21 °C · CO₂ 0.4 % · shielding 2.1 m regolith · 4 crew asleep",
+          "greenhouse": "GH-1 · 6 beds · wheat day 58, potatoes day 41, tomatoes flowering · 320 g O₂ a day",
+          "isru": "SABATIER-1 · CO₂ in 2.6 kg/h · CH₄ 0.9 kg/h · O₂ 1.8 kg/h · tanks 74 % · return fuel by sol 410",
+          "power": "KRUSTY-1 and 2 · 20 kWe · core 800 °C · radiators nominal · 11 years of fuel"
+        },
+        "banner": {
+          "arrived": "Mars Base — sol 1,214 · welcome down"
+        },
+        "dialog": {
+          "who": ""
+        }
+      },
+      "proximaB": {
+        "place": "Proxima b · the terminator",
+        "loading": "Descending to Proxima b",
+        "loadingDetail": "A red dwarf's day side — 1.1 g, warm, and something is alive",
+        "outside": "Outside",
+        "run": "Run",
+        "hints": {
+          "walk": "W A S D — walk. Hold Shift to run. The ground pulls harder than home.",
+          "jump": "Space — jump. Not far: this is 1.1 g.",
+          "walkTouch": "Left stick — walk. Drag anywhere else to look around.",
+          "jumpTouch": "Jump is bottom right. Not far: this is 1.1 g."
+        },
+        "keys": {
+          "r1": "W A S D / arrows — walk · Shift — run · C — crouch",
+          "r2": "Space — jump; on the way down it is the descent engine",
+          "r3": "Mouse drag — look around · wheel — zoom",
+          "r4": "V — walk the camera round: over the shoulder, in the helmet, wide",
+          "r5": "E — greet a villager who has come to meet you",
+          "r6": "The settlement is by the lake, east of the pad. They will find you first.",
+          "r7": "Greet them three times and one of them will lead you somewhere.",
+          "t1": "Left stick — walk; push it to the rim to run",
+          "t2": "Right half — drag to look around",
+          "t3": "Run and crouch — beside the stick; jump — bottom right",
+          "t4": "Camera — walk the view round: shoulder, helmet, wide",
+          "t5": "The amber key greets a villager who has come to meet you",
+          "t6": "The settlement is by the lake, east of the pad. Greet them three times and one will lead you somewhere."
+        },
+        "pois": {
+          "lake": "The lake — still, and lit from below",
+          "village": "The settlement — seven grown pods",
+          "stone": "The council stone — their script, lit into it",
+          "ourLander": "Your descent vehicle"
+        },
+        "act": {
+          "greet": "Greet"
+        },
+        "readout": {
+          "none": ""
+        },
+        "banner": {
+          "arrived": "Proxima b — the star never moves here",
+          "noticed": "They have seen you",
+          "firstContact": "First contact — recorded on the stone"
+        },
+        "dialog": {
+          "who": "Villager {n} · Astra translation",
+          "hello": "A pattern of greeting, held long. Roughly: you are new, and you are welcome.",
+          "peace": "Both hands open, every band lit slowly. This is what they do when nothing is wrong.",
+          "welcome": "They are naming the place. The word for it is the same as the word for the lake.",
+          "suit": "They are asking about the suit. They think it is your skin, and that it does not glow.",
+          "star": "They are pointing at the star. It has never moved, and they do not understand a sky that turns.",
+          "light": "The colours are a question: which is yours? Astra has answered teal, on your behalf.",
+          "water": "They are offering water from the lake. It is safe to carry; Astra advises not to drink it.",
+          "friend": "That was understood. The whole group answered at once.",
+          "stone": "This one wants you to follow. It keeps looking toward the stone.",
+          "gift": "They have added a mark to the stone: a suit, standing next to one of them. You are in their record now."
+        }
+      }
     }
   },
   "missionsPage": {

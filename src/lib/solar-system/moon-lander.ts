@@ -60,9 +60,9 @@ export interface LanderHandle {
 
 const START_ALT = 138;
 const START_DESCENT = 13.5;
-/** Full throttle, m/s² — a shade over twice lunar gravity, as the LM had. */
-const MAX_THRUST = 3.9;
-const RCS = 2.4;
+/** Full throttle, in gravities — a shade over twice the surface pull, as the LM had. */
+const THRUST_G = 2.4;
+const RCS_G = 1.48;
 const FUEL_BURN = 0.035;
 /** How much of the engine's braking the profile asks for: the rest is the
  *  margin that makes the profile flyable at all. */
@@ -76,7 +76,10 @@ export function makeLander(
   dust: DustHandle,
   lite: boolean,
   lights?: LightPool,
+  g = MOON_G,
 ): LanderHandle {
+  const MAX_THRUST = THRUST_G * g;
+  const RCS = RCS_G * g;
   const group = new THREE.Group();
   group.name = 'lander';
   const geoms: THREE.BufferGeometry[] = [];
@@ -173,7 +176,7 @@ export function makeLander(
       const fall = Math.max(0, -vel.y);
       // ── Guidance: could the engine still stop this fall in the height
       // that is left? Leave a second of margin and a metre of pad. ──
-      const net = MAX_THRUST - MOON_G;
+      const net = MAX_THRUST - g;
       const offset = Math.hypot(position.x - padX, position.z - padZ);
       // `safe` is the fastest the vehicle could be falling at this height and
       // still be stopped by the engine, less the margin that makes a profile
@@ -191,7 +194,7 @@ export function makeLander(
       let tx = input.moveX; let tz = -input.moveY;
       if (telemetry.assist) {
         // Hold the profile, and steer the drift out on the way down.
-        throttle = THREE.MathUtils.clamp((fall - want) * 1.4 + (MOON_G / MAX_THRUST), 0, 1);
+        throttle = THREE.MathUtils.clamp((fall - want) * 1.4 + (g / MAX_THRUST), 0, 1);
         const backX = (padX - position.x) * 0.06 - vel.x * 0.55;
         const backZ = (padZ - position.z) * 0.06 - vel.z * 0.55;
         tx = THREE.MathUtils.clamp(backX, -1, 1);
@@ -203,7 +206,7 @@ export function makeLander(
       telemetry.fuel = Math.max(0, telemetry.fuel - throttle * FUEL_BURN * dt);
       telemetry.throttle += (throttle - telemetry.throttle) * (1 - Math.exp(-dt * 7));
 
-      vel.y += (telemetry.throttle * MAX_THRUST - MOON_G) * dt;
+      vel.y += (telemetry.throttle * MAX_THRUST - g) * dt;
       vel.x += tx * RCS * dt;
       vel.z += tz * RCS * dt;
       // A little damping so the RCS is flyable rather than a skid.

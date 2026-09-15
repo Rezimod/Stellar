@@ -220,18 +220,23 @@ export function makeAlphaCentauri(sunMaterial: THREE.Material, lite: boolean): S
   lightP.position.copy(proximaLocal);
   group.add(lightP);
 
-  // Proxima's worlds: b, a rocky 1.07 R⊕ in an 11-day orbit with a thin
-  // air; d, a sub-Earth skimming the star every five days. Both cratered,
-  // tidally locked, lit red by their sun.
-  const texPb = crateredTexture(41, [126, 92, 76], 90);
-  const matPb = new THREE.MeshStandardMaterial({ map: texPb, bumpMap: texPb, bumpScale: 0.003, roughness: 0.9, metalness: 0.05 });
+  // Proxima's worlds: b, a 1.07 R⊕ world in an 11-day orbit, tidally
+  // locked, with a lake-and-moss biosphere on its day side that can be
+  // walked on; d, a cratered sub-Earth skimming the star every five days.
+  const pbTex = livingWorldTextures(41);
+  const matPb = new THREE.MeshStandardMaterial({
+    map: pbTex.day, roughness: 0.7, metalness: 0.02, color: new THREE.Color(0.9, 0.62, 0.75),
+    emissiveMap: pbTex.night, emissive: new THREE.Color(0x7ff5e0), emissiveIntensity: 0.5,
+  });
   const texPd = crateredTexture(57, [96, 88, 84], 160);
   const matPd = new THREE.MeshStandardMaterial({ map: texPd, bumpMap: texPd, bumpScale: 0.002, roughness: 0.95, metalness: 0.02 });
   owned.push(matPb, matPd);
-  textures.push(texPb, texPd);
+  textures.push(pbTex.day, pbTex.night, pbTex.clouds, texPd);
   const PB_ORBIT = 0.24;
   const PD_ORBIT = 0.14;
   const pb = addBody('proximaB', proximaLocal.clone().add(new THREE.Vector3(PB_ORBIT, 0, 0)), 1.07 * R_EARTH_KM, 11.2, 1.2, matPb, null, 'planet');
+  const pbAtmo = makeAtmosphereShell(pb.body.radius, 0xc48cff, 1.07, 1.2, 2.4);
+  pb.mesh.add(pbAtmo);
   const pd = addBody('proximaD', proximaLocal.clone().add(new THREE.Vector3(0, 0, PD_ORBIT)), 0.81 * R_EARTH_KM, 6.5, 1, matPd, null, 'planet');
   let pbAngle = 0;
 
@@ -327,6 +332,7 @@ export function makeAlphaCentauri(sunMaterial: THREE.Material, lite: boolean): S
       lightB.dispose();
       lightP.dispose();
       disposeAtmosphereShell(atmo);
+      disposeAtmosphereShell(pbAtmo);
       for (const g of geoms) g.dispose();
       for (const m of owned) m.dispose();
       for (const t of textures) t.dispose();

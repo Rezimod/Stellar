@@ -2399,6 +2399,29 @@
   animation: moon-impact 0.3s ease-out both;
 }
 .moon-hud__readout[hidden] { display: none; }
+
+/* ── What a villager said, as Astra reads it. ── */
+.moon-hud__dialog {
+  position: absolute;
+  left: 50%;
+  bottom: calc(var(--edge-bottom) + 190px);
+  transform: translateX(-50%);
+  width: min(460px, calc(100% - 32px));
+  display: grid;
+  gap: 4px;
+  padding: 10px 14px;
+  border: 1px solid rgba(126, 245, 224, 0.4);
+  border-radius: 6px;
+  background: var(--hud-solid);
+  animation: moon-impact 0.3s ease-out both;
+}
+.moon-hud__dialog[hidden] { display: none; }
+.moon-hud__dialog-who { font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: #7ff5e0; }
+.moon-hud__dialog-text { font-size: 12px; line-height: 1.5; color: var(--hud-ink); }
+.moon-surface--mars { background: #3a1d10; }
+.moon-surface--proximaB { background: #140a1e; }
+.moon-surface--mars .moon-hud { --hud-warm: #ffb36b; --hud-line: rgba(255, 190, 140, 0.3); --hud-glass: rgba(28, 10, 4, 0.5); --hud-solid: rgba(22, 8, 3, 0.86); }
+.moon-surface--proximaB .moon-hud { --hud-accent: #7ff5e0; --hud-line: rgba(160, 130, 235, 0.35); --hud-glass: rgba(14, 6, 24, 0.52); --hud-solid: rgba(12, 5, 20, 0.86); }
 .moon-hud__drill {
   position: absolute;
   right: var(--edge-right);
