@@ -263,6 +263,9 @@ export interface FlightInput {
   dockRequest: boolean;
   /** One-shot for the deck: take the ship down to the surface below. */
   landRequest: boolean;
+  /** One-shot: back from the surface — put the ship in a clean orbit over
+   *  the Moon rather than wherever it was frozen when the crew went down. */
+  relaunch: boolean;
   /** One-shot: cycle the navigation target outward (+1) or inward (-1). */
   targetStep: number;
   targetClear: boolean;
@@ -282,6 +285,9 @@ export interface FlightInput {
 }
 
 export interface FlightTelemetry {
+  /** Simulation frames the ship has flown; the deck waits on it to advance
+   *  before it takes the launch screen down. */
+  frame: number;
   /** Flight units per second. */
   speed: number;
   speedKmS: number;
@@ -445,7 +451,7 @@ export function createFlightSession(): FlightSession {
     input: {
       thrust: 0, yaw: 0, lookYaw: 0, pitch: 0, roll: 0,
       boost: false, fire: false, align: false, mouseDX: 0, mouseDY: 0,
-      modeRequest: null, foilsToggle: false, eject: false, viewToggle: false, assistToggle: false, hudToggle: false, dockRequest: false, landRequest: false,
+      modeRequest: null, foilsToggle: false, eject: false, viewToggle: false, assistToggle: false, hudToggle: false, dockRequest: false, landRequest: false, relaunch: false,
       targetStep: 0, targetClear: false, targetRequest: null, targetKind: null,
       camZoom: 1, orbiting: false, orbitYaw: 0, orbitPitch: 0,
     },
@@ -474,6 +480,7 @@ export function createFlightSession(): FlightSession {
       odometerKm: 0,
       energy: 1,
       boostCharge: 1,
+      frame: 0,
       alert: '',
       nearId: '',
       nearAltKm: 0,
@@ -818,7 +825,7 @@ const BUILDERS: Record<ShipKind, (h: number) => ShipParts> = {
 };
 
 export function createPlayerShip(session: FlightSession): PlayerShipHandle {
-  const shipParts = BUILDERS[session.shipKind](H);
+  const shipParts = (BUILDERS[session.shipKind] ?? BUILDERS.kestrel)(H);
   const evaParts = buildCosmonaut(E);
   const { group, cannonTips } = shipParts;
   const evaG = evaParts.group;
@@ -832,6 +839,7 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
   const missions = makeMissionTracker();
   tel.discoveryTotal = missions.total;
   tel.discoveryCount = missions.count();
+  audio.launch();
 
   const fxGroup = new THREE.Group();
   fxGroup.name = 'playerFx';
@@ -1015,6 +1023,7 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
   const jumpDir = new THREE.Vector3();
   const jumpStart = new THREE.Vector3();
   const jumpTarget: FlightAnchor = { position: new THREE.Vector3(), lookAt: new THREE.Vector3(), yaw: 0 };
+  const relaunchAnchor: FlightAnchor = { position: new THREE.Vector3(), lookAt: new THREE.Vector3(), yaw: 0 };
   let jumpName = '';
   let jumpOrigin = '';
   let arrivedHold = 0;
@@ -1194,6 +1203,7 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
     regime = regimes.cruise;
     eased.yaw = eased.pitch = 0;
     setAlert('docked', 4);
+    audio.confirm();
     rig.snap();
   };
 
@@ -1202,6 +1212,7 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
     vel.copy(dockOffset).normalize().multiplyScalar(0.25 * regimes.cruise.max);
     dockedTo = null;
     setAlert('undocked', 2);
+    audio.confirm();
   };
 
   /** Standing order: one world in the system the ship is actually in. */
@@ -1276,9 +1287,11 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
     if (!fromHeat) {
       tel.hitFlash = 1;
       rig.kick(rest > 0 ? 0.5 : 0.25);
+      audio.hit(rest > 0);
     }
     if (hadShield && shield <= 0) {
       setAlert('shielddown', 2.2);
+      audio.warn();
     } else if (shield > 0 && shield < MAX_SHIELD * 0.25 && !lowShieldWarned) {
       lowShieldWarned = true;
       setAlert('lowshield', 1.6);
@@ -1288,6 +1301,7 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
       up.set(0, 1, 0).applyQuaternion(actor().quaternion);
       doCrash(tmp.copy(actor().position), up, null);
     } else if (hull < MAX_HULL * 0.25 && rest > 0) {
+      if (alertHold <= 0 || heldAlert !== 'hullcritical') audio.warn();
       setAlert('hullcritical', 2);
     }
   };
@@ -1469,6 +1483,12 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
     tel.canBoard = false;
     tel.nav.on = 0;
     tel.navId = '';
+    tel.docked = false;
+    tel.docking = false;
+    tel.canDock = false;
+    tel.supply = false;
+    tel.commsLine = 0;
+    tel.contact = 'none';
     updateCamera(dt, camera, REGIMES.cruise.fov);
     updateDust(dt, 0);
     updateTunnel(dt, 0);
@@ -1484,7 +1504,30 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
       damage(amount, false);
     },
     update(dt, timeSec, camera, aliens, world) {
+      audio.setPaused(session.paused);
       if (session.paused) return;
+      // One step is never longer than a tenth of a second, whatever the
+      // caller was doing between frames.
+      dt = Math.min(0.1, Math.max(0, dt));
+      tel.frame += 1;
+      if (input.relaunch) {
+        input.relaunch = false;
+        // The world the crew went down to is still the nearest one on the
+        // telemetry — the deck was paused the whole time they were away.
+        const from = world.bodies.find((b) => b.id === tel.nearId && !b.destroyed)
+          ?? world.bodies.find((b) => b.id === 'moon' && !b.destroyed);
+        if (from) {
+          // Up from the base: a couple of radii out along the line the ship
+          // went down, nose away from the surface, a little way on.
+          tmp.copy(group.position).sub(from.position);
+          if (tmp.lengthSq() < 1e-12) tmp.set(0, 1, 0);
+          tmp.normalize();
+          relaunchAnchor.position.copy(from.position).addScaledVector(tmp, from.radius * 2.4);
+          relaunchAnchor.lookAt.copy(relaunchAnchor.position).add(tmp);
+          spawn(relaunchAnchor);
+          vel.copy(tmp).multiplyScalar(0.2 * regimes.cruise.max);
+        }
+      }
       tel.hitFlash = Math.max(0, tel.hitFlash - dt * 2.5);
       tel.jumpFlash = Math.max(0, tel.jumpFlash - dt * 1.6);
       alertHold -= dt;
@@ -1676,6 +1719,7 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
           tel.jumpFlash = 1;
           setAlert('arrived', 3);
           audio.whoosh();
+          audio.arrive();
         }
       } else {
         // ── Attitude. With assist the keys command rates and the airframe
@@ -1810,7 +1854,10 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
           tmp.copy(berth).sub(me.position);
           const dist = tmp.length();
           const pace = Math.min(DOCK_ASSIST_SPEED, Math.max(dist * 1.6, Math.min(dist / Math.max(dt, 1e-3), 0.08 * U)));
-          vel.copy(tmp.normalize().multiplyScalar(pace));
+          if (dist > 1e-9) vel.copy(tmp.divideScalar(dist).multiplyScalar(pace));
+          // The pilot can always take the ship back: a push on the stick
+          // ends the approach, and so does a station that has drawn out of reach.
+          if (Math.abs(input.thrust) > 0.5 || dist > dockReach(autodock) * 1.5) autodock = null;
         }
         let max = boost ? eff.boost : eff.max;
         if (isDrive(mode) && pilot === 'ship') max = Math.max(regimes.cruise.max, max * wellK);
@@ -1944,6 +1991,10 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
         tel.nearId = '';
         tel.nearAltKm = 0;
       }
+      // The organ: nothing until a black hole is the nearest thing, then a
+      // swell that grows with every radius closed and holds at the horizon.
+      audio.drone(near && near.kind === 'blackhole' && jumpPhase === 'none'
+        ? THREE.MathUtils.clamp(1 - nearD / (near.radius * 5), 0, 1) : 0);
       if (region !== lastRegion) {
         lastRegion = region;
         regionHold = region ? 3.5 : 0;
@@ -2232,15 +2283,19 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
       // The Sun in the lens: how much of the view it fills, and whether the
       // nose is on it. The canvas pulls the exposure down against it.
       let glare = 0;
-      if (sunBody && sunD > 1e-9) {
+      if (sunBody) {
         tmp.copy(sunBody.position).sub(camera.position);
+        // The camera, not the ship: inside the star's centre the glare is simply full.
         const d = tmp.length();
-        camera.getWorldDirection(tmp2);
-        const facing = THREE.MathUtils.smoothstep(tmp.divideScalar(d).dot(tmp2), 0.55, 0.96);
-        const apparent = THREE.MathUtils.clamp(sunBody.radius / d / Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2), 0, 1);
-        glare = THREE.MathUtils.clamp(facing * (0.25 + apparent * 2.2) + apparent * 0.6, 0, 1);
+        if (d > 1e-9) {
+          camera.getWorldDirection(tmp2);
+          const facing = THREE.MathUtils.smoothstep(tmp.divideScalar(d).dot(tmp2), 0.55, 0.96);
+          const apparent = THREE.MathUtils.clamp(sunBody.radius / d / Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2), 0, 1);
+          glare = THREE.MathUtils.clamp(facing * (0.25 + apparent * 2.2) + apparent * 0.6, 0, 1);
+        } else glare = 1;
       }
       tel.sunGlare += (glare - tel.sunGlare) * (1 - Math.exp(-dt * 3));
+      if (!Number.isFinite(tel.sunGlare)) tel.sunGlare = 0;
 
       if (jumpPhase === 'travel') {
         jumpGlow.visible = true;
@@ -2287,6 +2342,7 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
           tel.discovery = unlocked;
           tel.discoveryCount = missions.count();
           discoveryHold = DISCOVERY_HOLD;
+          audio.discovery();
         }
       }
       discoveryHold -= dt;

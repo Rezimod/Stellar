@@ -170,7 +170,10 @@ export function makeCameraRig(): CameraRig {
           // The camera takes a share of the airframe's bank.
           rollQ.setFromAxisAngle(fwd, f.bank * 0.35);
           bankedUp.copy(up).applyQuaternion(rollQ);
-          camUp.lerp(bankedUp, 1 - Math.exp(-dt * 5)).normalize();
+          camUp.lerp(bankedUp, 1 - Math.exp(-dt * 5));
+          // Antiparallel ups can meet at zero mid-roll; the camera keeps its last good one.
+          if (camUp.lengthSq() < 1e-12) camUp.copy(bankedUp);
+          camUp.normalize();
         }
         camera.position.copy(camPos);
         camera.up.copy(camUp);

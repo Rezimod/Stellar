@@ -291,8 +291,9 @@ export function makeJobs(world: JobWorld): JobsHandle {
     group, telemetry, interactables: [jobInteractable, board], onEvent: null,
     start(id) {
       if (active) return active.id;
-      const pick = id ?? JOB_ORDER.find((j) => !done.includes(j)) ?? JOB_ORDER[done.length % JOB_ORDER.length];
-      active = jobs.find((j) => j.id === pick) ?? null;
+      // Every job done: the board has nothing left to hand out.
+      const pick = id ?? JOB_ORDER.find((j) => !done.includes(j));
+      active = pick ? jobs.find((j) => j.id === pick) ?? null : null;
       if (!active) return null;
       stepIndex = 0;
       holdT = 0;

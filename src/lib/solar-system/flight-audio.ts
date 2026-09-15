@@ -1,26 +1,47 @@
-// Flight audio, cut back to the two things Explore Mode is allowed to make
-// a noise about: the hyperdrive, and something blowing up. The drive hum,
-// the RCS puffs, the warning tones and the radio chatter are gone on
-// purpose — the deck is silent unless you jump or you shoot. Synthesised in
-// Web Audio, created lazily on the first call after a user gesture, and
-// silent if the browser refuses.
+// Flight audio: the few things Explore Mode is allowed to make a noise
+// about. The deck itself is silent — no engine hum, no RCS puffs, no radio
+// chatter — so that the moments that do sound land: the drive winding up
+// and letting go, a system reached, a discovery, a hit, a hull lost, and
+// the organ that rises as a black hole fills the glass. Everything is
+// synthesised in Web Audio, built lazily after the first user gesture, and
+// silent if the browser refuses or the pilot turned the sound off.
+
+import { onSoundChange, soundOn } from '@/lib/solar-system/sound-prefs';
 
 export interface FlightAudio {
+  /** The flight begins: a slow organ swell out of nothing. */
+  launch: () => void;
   /** Cannon shot. */
   laser: () => void;
   /** An explosion: a hull, a station, a world. */
   boom: () => void;
   /** Entering and leaving light speed. */
   whoosh: () => void;
+  /** A star system reached: the chord that resolves after the exit flash. */
+  arrive: () => void;
   /** The drive winding up: a swell that climbs for `dur` and then stops. */
   charge: (dur: number) => void;
   /** Cut the charge short — the jump was refused or interrupted. */
   stopCharge: () => void;
+  /** An entry in the expedition log. */
+  discovery: () => void;
+  /** Something struck the ship; heavier when the hull took it. */
+  hit: (hull: boolean) => void;
+  /** Shields down or hull critical: two falling notes, once. */
+  warn: () => void;
+  /** Docked, released, or a landing accepted. */
+  confirm: () => void;
+  /** The black hole's organ, 0 far away and 1 at the horizon. Call every frame. */
+  drone: (k: number) => void;
+  /** Hold everything while the deck is paused. */
+  setPaused: (paused: boolean) => void;
   dispose: () => void;
 }
 
 /** Deliberately quiet — a shot is a tick, a jump is a swell. */
 const MASTER_GAIN = 0.07;
+/** Two hits inside this window sound as one. */
+const HIT_GAP = 0.2;
 
 export function makeFlightAudio(): FlightAudio {
   let ctx: AudioContext | null = null;
@@ -28,15 +49,24 @@ export function makeFlightAudio(): FlightAudio {
   let noise: AudioBuffer | null = null;
   /** The drive's wind-up, while it is sounding. */
   let chargeVoice: { stop: () => void } | null = null;
+  /** The black hole's organ, once it has been heard. */
+  let droneGain: GainNode | null = null;
+  let droneK = 0;
+  let lastHit = -1;
+  let paused = false;
+  let disposed = false;
+  const unsubscribe = onSoundChange((on) => {
+    if (master && ctx) master.gain.setTargetAtTime(on ? MASTER_GAIN : 0, ctx.currentTime, 0.05);
+  });
 
   const ready = (): AudioContext => {
     if (!ctx) {
       ctx = new AudioContext();
       master = ctx.createGain();
-      master.gain.value = MASTER_GAIN;
+      master.gain.value = soundOn() ? MASTER_GAIN : 0;
       master.connect(ctx.destination);
     }
-    if (ctx.state === 'suspended') void ctx.resume();
+    if (ctx.state === 'suspended' && !paused) void ctx.resume();
     if (!noise) {
       noise = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
       const d = noise.getChannelData(0);
@@ -45,15 +75,16 @@ export function makeFlightAudio(): FlightAudio {
     return ctx;
   };
   const safe = (fn: (c: AudioContext) => void) => {
+    if (disposed) return;
     try {
       fn(ready());
     } catch {
       // No audio available (autoplay policy, missing API) — the flight stays silent.
     }
   };
-  const tone = (c: AudioContext, type: OscillatorType, f0: number, f1: number, gain: number, dur: number) => {
+  const tone = (c: AudioContext, type: OscillatorType, f0: number, f1: number, gain: number, dur: number, at = 0) => {
     if (!master) return;
-    const t0 = c.currentTime;
+    const t0 = c.currentTime + at;
     const osc = c.createOscillator();
     osc.type = type;
     osc.frequency.setValueAtTime(f0, t0);
@@ -91,8 +122,72 @@ export function makeFlightAudio(): FlightAudio {
     src.start(t0);
     src.stop(t0 + dur + 0.02);
   };
+  /** A church organ, roughly: each note a sine with a soft octave above it,
+   *  the whole chord under one slow envelope and a low-pass that keeps it warm. */
+  const organ = (c: AudioContext, notes: number[], attack: number, hold: number, release: number, gain: number, at = 0) => {
+    if (!master) return;
+    const t0 = c.currentTime + at;
+    const env = c.createGain();
+    env.gain.setValueAtTime(0.0001, t0);
+    env.gain.exponentialRampToValueAtTime(gain, t0 + attack);
+    env.gain.setValueAtTime(gain, t0 + attack + hold);
+    env.gain.exponentialRampToValueAtTime(0.0001, t0 + attack + hold + release);
+    const lp = c.createBiquadFilter();
+    lp.type = 'lowpass';
+    lp.frequency.setValueAtTime(900, t0);
+    lp.frequency.exponentialRampToValueAtTime(1800, t0 + attack);
+    env.connect(lp).connect(master);
+    const end = t0 + attack + hold + release + 0.05;
+    const voices: OscillatorNode[] = [];
+    for (const f of notes) {
+      for (const [mult, level, type] of [[1, 1, 'sine'], [2, 0.28, 'triangle']] as const) {
+        const o = c.createOscillator();
+        o.type = type;
+        o.frequency.value = f * mult;
+        o.detune.value = (Math.random() - 0.5) * 6;
+        const g = c.createGain();
+        g.gain.value = level / notes.length;
+        o.connect(g).connect(env);
+        o.start(t0);
+        o.stop(end);
+        voices.push(o);
+      }
+    }
+    voices[0].onended = () => {
+      for (const o of voices) o.disconnect();
+      env.disconnect();
+      lp.disconnect();
+    };
+  };
+  const bell = (c: AudioContext, f: number, gain: number, dur: number, at: number) => {
+    if (!master) return;
+    const t0 = c.currentTime + at;
+    const g = c.createGain();
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(gain, t0 + 0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    g.connect(master);
+    const voices = [[1, 1], [2.76, 0.22], [5.4, 0.06]].map(([mult, level]) => {
+      const o = c.createOscillator();
+      o.type = 'sine';
+      o.frequency.value = f * mult;
+      const vg = c.createGain();
+      vg.gain.value = level;
+      o.connect(vg).connect(g);
+      o.start(t0);
+      o.stop(t0 + dur + 0.02);
+      return o;
+    });
+    voices[0].onended = () => {
+      for (const o of voices) o.disconnect();
+      g.disconnect();
+    };
+  };
 
   return {
+    launch() {
+      safe((c) => organ(c, [55, 82.41, 110, 164.81], 2.4, 1.2, 3.2, 0.7));
+    },
     laser() {
       safe((c) => {
         tone(c, 'sawtooth', 640, 190, 0.5, 0.1);
@@ -112,6 +207,9 @@ export function makeFlightAudio(): FlightAudio {
         burst(c, 'lowpass', 200, 4200, 1.2, 1.2);
         tone(c, 'sine', 60, 900, 0.5, 0.9);
       });
+    },
+    arrive() {
+      safe((c) => organ(c, [110, 164.81, 220, 277.18], 0.5, 1.0, 2.8, 0.55, 0.45));
     },
     charge(dur) {
       chargeVoice?.stop();
@@ -155,9 +253,89 @@ export function makeFlightAudio(): FlightAudio {
       chargeVoice?.stop();
       chargeVoice = null;
     },
+    discovery() {
+      safe((c) => {
+        bell(c, 880, 0.32, 1.4, 0);
+        bell(c, 1174.66, 0.26, 1.8, 0.16);
+      });
+    },
+    hit(hull) {
+      safe((c) => {
+        if (c.currentTime - lastHit < HIT_GAP) return;
+        lastHit = c.currentTime;
+        burst(c, 'lowpass', hull ? 520 : 1400, 70, hull ? 1.0 : 0.45, hull ? 0.32 : 0.18);
+        tone(c, 'sine', hull ? 130 : 260, 40, hull ? 0.7 : 0.3, hull ? 0.3 : 0.16);
+      });
+    },
+    warn() {
+      safe((c) => {
+        tone(c, 'triangle', 660, 640, 0.28, 0.16);
+        tone(c, 'triangle', 440, 420, 0.28, 0.24, 0.2);
+      });
+    },
+    confirm() {
+      safe((c) => {
+        tone(c, 'triangle', 523, 528, 0.22, 0.12);
+        tone(c, 'triangle', 784, 790, 0.22, 0.26, 0.11);
+      });
+    },
+    drone(k) {
+      const next = k > 0.01 ? Math.min(1, k) : 0;
+      if (next === droneK) return;
+      if (!droneGain && next === 0) return;
+      droneK = next;
+      safe((c) => {
+        if (!master) return;
+        if (!droneGain) {
+          // Three low pipes a fifth apart, the lowest barely a note, the
+          // whole thing breathing under a slow tremolo.
+          droneGain = c.createGain();
+          droneGain.gain.value = 0;
+          const lp = c.createBiquadFilter();
+          lp.type = 'lowpass';
+          lp.frequency.value = 420;
+          droneGain.connect(lp).connect(master);
+          const trem = c.createGain();
+          trem.gain.value = 1;
+          trem.connect(droneGain);
+          const lfo = c.createOscillator();
+          lfo.type = 'sine';
+          lfo.frequency.value = 0.11;
+          const lfoDepth = c.createGain();
+          lfoDepth.gain.value = 0.18;
+          lfo.connect(lfoDepth).connect(trem.gain);
+          lfo.start();
+          for (const [f, level, type] of [[41.2, 0.55, 'sine'], [61.74, 0.4, 'sine'], [82.41, 0.3, 'triangle'], [123.47, 0.12, 'triangle']] as const) {
+            const o = c.createOscillator();
+            o.type = type;
+            o.frequency.value = f;
+            const g = c.createGain();
+            g.gain.value = level;
+            o.connect(g).connect(trem);
+            o.start();
+          }
+        }
+        droneGain.gain.setTargetAtTime(droneK * 1.1, c.currentTime, droneK > 0 ? 0.9 : 0.5);
+      });
+    },
+    setPaused(next) {
+      if (paused === next) return;
+      paused = next;
+      if (!ctx) return;
+      try {
+        if (next) void ctx.suspend();
+        else void ctx.resume();
+      } catch {
+        // Nothing to hold.
+      }
+    },
     dispose() {
+      disposed = true;
+      unsubscribe();
       chargeVoice?.stop();
       chargeVoice = null;
+      droneGain = null;
+      droneK = 0;
       void ctx?.close();
       ctx = null;
       master = null;

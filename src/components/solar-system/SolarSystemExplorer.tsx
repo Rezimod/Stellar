@@ -10,8 +10,13 @@ import { MoonSurface } from '@/components/solar-system/MoonSurface';
 import { WorldSurface } from '@/components/solar-system/WorldSurface';
 import { isWorldId } from '@/lib/solar-system/world-profiles';
 import { CosmicLoader } from '@/components/solar-system/CosmicLoader';
+import { useLoadingTips } from '@/components/solar-system/useLoadingTips';
 import { createFlightSession, type FlightSession } from '@/lib/solar-system/player-ship';
 import type { SolarBodyId } from '@/lib/solar-system/ephemeris';
+
+/** The climb back to orbit stays up at least this long, and until the deck has flown a few frames. */
+const ASCENT_MIN_MS = 1600;
+const ASCENT_FRAMES = 2;
 
 const SPEED_STEPS = [
   { id: 'realtime', rate: 1 },
@@ -27,6 +32,10 @@ export default function SolarSystemExplorer() {
   // so the jump from the button to the scene never shows an empty black page.
   const [sceneReady, setSceneReady] = useState(false);
   const onSceneReady = useCallback(() => setSceneReady(true), []);
+  const tips = useLoadingTips();
+  /** The way back up from a surface: the orbit scene refits its buffers and
+   *  the deck resumes, and the screen covers that rather than showing it. */
+  const [ascent, setAscent] = useState<'off' | 'on' | 'fading'>('off');
   useEffect(() => {
     const giveUp = window.setTimeout(() => setSceneReady(true), 30000);
     return () => window.clearTimeout(giveUp);
@@ -57,6 +66,25 @@ export default function SolarSystemExplorer() {
     if (q.has('moon')) setLanded('moon');
     else if (isWorldId(site)) setLanded(site);
   }, []);
+  useEffect(() => {
+    if (ascent === 'off') return;
+    if (ascent === 'fading') {
+      const id = window.setTimeout(() => setAscent('off'), 700);
+      return () => window.clearTimeout(id);
+    }
+    const session = flightRef.current!;
+    const from = session.telemetry.frame;
+    const t0 = performance.now();
+    let raf = 0;
+    const wait = () => {
+      const flown = !session.active || session.paused || session.telemetry.frame - from >= ASCENT_FRAMES;
+      if (flown && performance.now() - t0 >= ASCENT_MIN_MS) setAscent('fading');
+      else raf = requestAnimationFrame(wait);
+    };
+    raf = requestAnimationFrame(wait);
+    return () => cancelAnimationFrame(raf);
+  }, [ascent]);
+  const returnToOrbit = useCallback(() => { setAscent('on'); setLanded(null); }, []);
   // The turned viewport has new sides; the renderer refits on the resize it
   // would otherwise never hear about.
   useEffect(() => {
@@ -92,12 +120,16 @@ export default function SolarSystemExplorer() {
           onReady={onSceneReady} />
         <PlayerShip session={flightRef.current} onActiveChange={setFlightActive} onLand={(site) => { setLandscape(false); setLanded(site); }} landed={landed !== null}
           landscape={landscape} onLandscape={setLandscape} />
-        {landed === 'moon' && <MoonSurface onReturn={() => setLanded(null)} />}
-        {landed !== null && landed !== 'moon' && <WorldSurface world={landed} onReturn={() => setLanded(null)} />}
+        {landed === 'moon' && <MoonSurface onReturn={returnToOrbit} />}
+        {landed !== null && landed !== 'moon' && <WorldSurface world={landed} onReturn={returnToOrbit} />}
       </div>
       {/* Straight onto a surface, the orbit scene never draws: the surface has its own screen. */}
       <CosmicLoader className={sceneReady || landed !== null ? 'solar-system__loader is-done' : 'solar-system__loader'}
-        label={t('loading.title')} detail={t('loading.detail')} />
+        label={t('loading.title')} detail={t('loading.detail')} tips={tips} />
+      {ascent !== 'off' && (
+        <CosmicLoader className={ascent === 'fading' ? 'solar-system__loader is-done' : 'solar-system__loader'} variant="ascent"
+          label={t('loading.ascent')} detail={t('loading.ascentDetail')} tips={tips} />
+      )}
       {!flightActive && <div className="solar-system__dockbar" role="group" aria-label={t('time.title')}>
         <button type="button" className="solar-system__dockbtn" onClick={() => setPlaying((p) => !p)} aria-label={t(playing ? 'time.pause' : 'time.play')}>
           {playing ? <Pause size={16} aria-hidden /> : <Play size={16} aria-hidden />}

@@ -2543,11 +2543,110 @@
   background: var(--terracotta, #ffb347);
   animation: cosmic-bar 1.6s ease-in-out infinite;
 }
+/* A line to read while the scene comes up; each one fades in as it arrives. */
+.cosmic-loader__tip {
+  position: relative;
+  max-width: 34ch;
+  min-height: 2.8em;
+  margin: 10px 0 0;
+  font: 500 12px/1.45 var(--font-body, system-ui), sans-serif;
+  color: rgba(200, 210, 228, 0.78);
+  animation: cosmic-tip-in 0.7s ease both;
+}
+
+/* The Moon with a lander on its way down (or up): a grey disc lit from the
+   upper left, a few craters, and a small vehicle on a dotted line. */
+.cosmic-loader__moon-scene { position: relative; width: 160px; height: 176px; margin-bottom: 6px; }
+.cosmic-loader__moon {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 128px;
+  height: 128px;
+  margin-left: -64px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 36% 62%, rgba(70, 76, 90, 0.9) 0 9px, transparent 10px),
+    radial-gradient(circle at 66% 40%, rgba(70, 76, 90, 0.8) 0 6px, transparent 7px),
+    radial-gradient(circle at 58% 72%, rgba(70, 76, 90, 0.7) 0 4px, transparent 5px),
+    radial-gradient(circle at 28% 34%, rgba(70, 76, 90, 0.6) 0 3px, transparent 4px),
+    radial-gradient(circle at 32% 28%, #d9dbe0 0%, #a6a9b3 45%, #4a4e5c 78%, #22252f 100%);
+  box-shadow: 0 0 0 1px rgba(200, 210, 228, 0.08), 0 0 32px rgba(180, 190, 210, 0.08);
+}
+.cosmic-loader__lander {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 14px;
+  height: 12px;
+  margin-left: -7px;
+  background: #c9c3b8;
+  clip-path: polygon(20% 0, 80% 0, 100% 55%, 100% 100%, 72% 100%, 72% 80%, 28% 80%, 28% 100%, 0 100%, 0 55%);
+  animation: cosmic-descend 3.2s ease-in-out infinite;
+}
+.cosmic-loader__lander i {
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  width: 4px;
+  height: 10px;
+  margin-left: -2px;
+  border-radius: 0 0 4px 4px;
+  background: linear-gradient(var(--terracotta, #ffb347), transparent);
+  animation: cosmic-flame 0.32s ease-in-out infinite alternate;
+}
+.cosmic-loader[data-variant='ascent'] .cosmic-loader__lander { animation-name: cosmic-ascend; }
+
+/* The star streaks of a ship getting under way: lines racing out from a point. */
+.cosmic-loader__streaks { position: relative; width: 168px; height: 168px; margin-bottom: 6px; }
+.cosmic-loader__streaks span {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 84px;
+  height: 1px;
+  transform-origin: 0 50%;
+  transform: rotate(calc(var(--i) * 25.7deg));
+}
+.cosmic-loader__streaks span::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(220, 230, 255, 0.9));
+  transform-origin: 0 50%;
+  animation: cosmic-streak 1.4s linear infinite;
+  animation-delay: calc(var(--i) * -0.1s);
+}
+.cosmic-loader__streaks b {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  margin: -5px 0 0 -5px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 18px 6px rgba(160, 200, 255, 0.45);
+}
 @keyframes cosmic-orbit { to { transform: rotate(360deg); } }
 @keyframes cosmic-twinkle { from { opacity: 0.55; } to { opacity: 1; } }
 @keyframes cosmic-bar { 0% { left: -40%; } 100% { left: 100%; } }
+@keyframes cosmic-tip-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+@keyframes cosmic-descend { 0% { transform: translateY(0); } 100% { transform: translateY(46px); } }
+@keyframes cosmic-ascend { 0% { transform: translateY(46px); } 100% { transform: translateY(0); } }
+@keyframes cosmic-flame { from { transform: scaleY(0.6); opacity: 0.7; } to { transform: scaleY(1.2); opacity: 1; } }
+@keyframes cosmic-streak { 0% { transform: scaleX(0); opacity: 0; } 30% { opacity: 1; } 100% { transform: scaleX(1); opacity: 0; } }
 @media (prefers-reduced-motion: reduce) {
-  .cosmic-loader__orbit, .cosmic-loader__stars, .cosmic-loader__bar i { animation: none; }
+  .cosmic-loader__orbit, .cosmic-loader__stars, .cosmic-loader__bar i, .cosmic-loader__lander, .cosmic-loader__lander i,
+  .cosmic-loader__streaks span::before, .cosmic-loader__tip { animation: none; }
+}
+/* The launch screen over the deck: above every key, under nothing. */
+.flight-hud__launching { z-index: 80; }
+.flight-hud__launching.is-done {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.6s ease, visibility 0s linear 0.6s;
 }
 /* The route and chunk screens sit over everything until the explorer takes over. */
 .solar-system--loading .cosmic-loader { z-index: 1000; }

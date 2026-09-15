@@ -1,12 +1,15 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Camera, ChevronsDown, ChevronsUp, Eye, EyeOff, Flame, Hand, HelpCircle, Menu, Rocket, Wind, X } from 'lucide-react';
+import { Camera, ChevronsDown, ChevronsUp, Eye, EyeOff, Flame, Hand, HelpCircle, Menu, Rocket, Volume2, VolumeX, Wind, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { makeWorldSurface, type WorldSurfaceHandle } from '@/lib/solar-system/world-surface';
 import type { WorldId } from '@/lib/solar-system/world-profiles';
+import { setSoundOn, soundOn } from '@/lib/solar-system/sound-prefs';
 import { GameStick } from './GameStick';
 import { CosmicLoader } from './CosmicLoader';
+import { useLoadingTips } from './useLoadingTips';
+import { useSoundPref } from './useSoundPref';
 
 interface WorldSurfaceProps {
   world: WorldId;
@@ -17,7 +20,7 @@ const KEY_ROWS = ['r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r7'] as const;
 const TOUCH_ROWS = ['t1', 't2', 't3', 't4', 't5', 't6'] as const;
 const HANDLED = new Set([
   'KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
-  'Space', 'ShiftLeft', 'ShiftRight', 'KeyE', 'KeyC', 'KeyF', 'KeyV', 'ControlLeft',
+  'Space', 'ShiftLeft', 'ShiftRight', 'KeyE', 'KeyC', 'KeyF', 'KeyV', 'KeyM', 'ControlLeft',
 ]);
 const fmtTime = (s: number) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 const fmtRange = (m: number) => (m >= 1000 ? `${(m / 1000).toFixed(2)} km` : `${Math.round(m)} m`);
@@ -28,6 +31,8 @@ export function WorldSurface({ world, onReturn }: WorldSurfaceProps) {
   const t = useTranslations('solarSystem.moon');
   const tw = useTranslations(`solarSystem.worlds.${world}`);
   const tl = useTranslations('solarSystem.loading');
+  const tips = useLoadingTips();
+  const [sound, toggleSound] = useSoundPref();
   const [touch, setTouch] = useState(false);
   const [glGeneration, setGlGeneration] = useState(0);
   const [gpuLost, setGpuLost] = useState(false);
@@ -137,6 +142,7 @@ export function WorldSurface({ world, onReturn }: WorldSurfaceProps) {
       if (e.code === 'KeyE' || e.code === 'KeyF') input.interact = true;
       if (e.code === 'KeyV') input.viewToggle = true;
       if (e.code === 'KeyC') { crouchRef.current = !crouchRef.current; setCrouch(crouchRef.current); }
+      if (e.code === 'KeyM') setSoundOn(!soundOn());
       sync();
       e.preventDefault();
     };
@@ -344,8 +350,8 @@ export function WorldSurface({ world, onReturn }: WorldSurfaceProps) {
   return (
     <div ref={rootRef} className={`moon-surface moon-surface--${world}`} data-phase="descent" data-ready="false" data-immersive={immersive}>
       <div ref={mountRef} className="moon-surface__canvas" />
-      <CosmicLoader className={gpuLost ? 'moon-surface__loader is-forced' : 'moon-surface__loader'}
-        label={gpuLost ? tl('gpu') : tw('loading')} detail={gpuLost ? undefined : tw('loadingDetail')} />
+      <CosmicLoader className={gpuLost ? 'moon-surface__loader is-forced' : 'moon-surface__loader'} variant="descent"
+        label={gpuLost ? tl('gpu') : tw('loading')} detail={gpuLost ? undefined : tw('loadingDetail')} tips={tips} />
       <div className="moon-hud">
         <div className="moon-hud__visor" aria-hidden />
 
@@ -416,6 +422,9 @@ export function WorldSurface({ world, onReturn }: WorldSurfaceProps) {
             <div className="moon-hud__menu" role="menu" aria-label={t('menu')}>
               <button type="button" role="menuitem" onClick={() => { cycleView(); setMenu(false); }}>
                 <Camera size={16} aria-hidden /><span>{t('camera')}</span>
+              </button>
+              <button type="button" role="menuitem" onClick={toggleSound} aria-pressed={sound}>
+                {sound ? <Volume2 size={16} aria-hidden /> : <VolumeX size={16} aria-hidden />}<span>{t(sound ? 'soundOn' : 'soundOff')}</span>
               </button>
               <button type="button" role="menuitem" onClick={() => { setHelp((h) => !h); setMenu(false); }}>
                 <HelpCircle size={16} aria-hidden /><span>{t('help')}</span>

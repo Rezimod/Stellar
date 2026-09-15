@@ -7,12 +7,13 @@
 import * as THREE from 'three';
 import type { FlightInput, FlightSession, SpeedMode } from '@/lib/solar-system/player-ship';
 import { stepDestination } from '@/lib/solar-system/star-routes';
+import { setSoundOn, soundOn } from '@/lib/solar-system/sound-prefs';
 
 const HANDLED_KEYS = new Set([
   'KeyW', 'KeyA', 'KeyS', 'KeyD', 'KeyQ', 'KeyE', 'Space',
   'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ShiftLeft', 'ShiftRight',
   'Digit1', 'Digit2', 'Digit3', 'KeyF', 'KeyH', 'KeyJ', 'KeyV', 'KeyC', 'KeyZ', 'KeyT', 'KeyG', 'KeyR', 'KeyI',
-  'Minus', 'Equal', 'BracketLeft', 'BracketRight', 'KeyK', 'KeyL',
+  'Minus', 'Equal', 'BracketLeft', 'BracketRight', 'KeyK', 'KeyL', 'KeyM',
 ]);
 
 /** Chase-camera distance multiplier: how close and how far the player can pull. */
@@ -95,6 +96,7 @@ export function attachDesktopControls(
     else if (e.code === 'KeyL') input.landRequest = true;
     else if (e.code === 'KeyT') input.targetStep = e.shiftKey ? -1 : 1;
     else if (e.code === 'KeyR') input.targetClear = true;
+    else if (e.code === 'KeyM') setSoundOn(!soundOn());
     else if (e.code === 'Minus' || e.code === 'BracketLeft') zoomFlightCamera(input, 1);
     else if (e.code === 'Equal' || e.code === 'BracketRight') zoomFlightCamera(input, -1);
     pressed.add(e.code);
@@ -202,6 +204,7 @@ export function clearFlightInput(input: FlightInput) {
   input.hudToggle = false;
   input.dockRequest = false;
   input.landRequest = false;
+  input.relaunch = false;
   input.targetStep = 0;
   input.targetClear = false;
   input.targetRequest = null;

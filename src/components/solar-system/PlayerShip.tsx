@@ -3,17 +3,24 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Anchor, ArrowDownToLine, Check, ChevronsUp, Crosshair, Eye, EyeOff, Globe, HelpCircle, LayoutGrid, LogOut, Menu, Minus, Moon,
-  Orbit, Pause, Play, Plus, Radio, Rocket, RotateCcw, Ruler, Satellite, Shield, Smartphone, Sparkles, Star, X, Zap,
+  Orbit, Pause, Play, Plus, Radio, Rocket, RotateCcw, Ruler, Satellite, Shield, Smartphone, Sparkles, Star, Volume2, VolumeX, X, Zap,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { attachDesktopControls, clearFlightInput, zoomFlightCamera } from '@/lib/solar-system/flight-input';
 import { type FlightSession, type ShipKind } from '@/lib/solar-system/player-ship';
 import { LANDING_SITES, type WorldId } from '@/lib/solar-system/world-profiles';
+import { CosmicLoader } from './CosmicLoader';
 import { FlightGear, FlightJumpCard } from './FlightDrive';
 
 export type LandingSite = 'moon' | WorldId;
 import { GameStick } from './GameStick';
+import { useLoadingTips } from './useLoadingTips';
+import { useSoundPref } from './useSoundPref';
+
+/** The launch screen stays at least this long, and until the ship has flown a few frames. */
+const LAUNCH_MIN_MS = 1500;
+const LAUNCH_FRAMES = 3;
 
 interface PlayerShipProps {
   session: FlightSession;
@@ -28,8 +35,8 @@ interface PlayerShipProps {
 }
 const SHIPS: ShipKind[] = ['kestrel', 'xfoil', 'endurance'];
 const BARS = ['shield', 'energy', 'boost'] as const;
-const KEY_ROWS = ['r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r10', 'r12', 'r13', 'r7', 'r8', 'r11', 'r9'] as const;
-const TOUCH_ROWS = ['t1', 't2', 't3', 't11', 't6', 't13', 't12', 't9', 't5'] as const;
+const KEY_ROWS = ['r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r10', 'r12', 'r13', 'r7', 'r15', 'r8', 'r16', 'r11', 'r14', 'r9'] as const;
+const TOUCH_ROWS = ['t1', 't2', 't3', 't11', 't6', 't13', 't12', 't9', 't14', 't5'] as const;
 const HELP_SEEN = 'stellar_explore_help';
 const ICONS = [Shield, Zap, ChevronsUp];
 /** The quick targets in the menu: a named world, or a kind to walk through.
@@ -95,7 +102,12 @@ const saveLayout = (layout: Layout) => {
 export function PlayerShip({ session, onActiveChange, onLand, landed, landscape, onLandscape }: PlayerShipProps) {
   const t = useTranslations('solarSystem.flight');
   const tb = useTranslations('solarSystem.bodies');
+  const tl = useTranslations('solarSystem.loading');
+  const tips = useLoadingTips();
+  const [sound, toggleSound] = useSoundPref();
   const [active, setActive] = useState(false);
+  /** The launch screen: up while the ship is built and its shaders compile, then fading. */
+  const [launch, setLaunch] = useState<'off' | 'on' | 'fading'>('off');
   const [paused, setPaused] = useState(false);
   const [touch, setTouch] = useState(false);
   const [shipKind, setShipKind] = useState<ShipKind>(session.shipKind);
@@ -151,6 +163,8 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, landscape,
   const zoomRef = useRef(1);
   const landscapeRef = useRef(landscape);
   landscapeRef.current = landscape;
+  const landedRef = useRef(landed);
+  landedRef.current = landed;
 
   useEffect(() => {
     setTouch(window.matchMedia('(pointer: coarse)').matches);
@@ -216,6 +230,7 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, landscape,
     session.telemetry.odometerKm = 0;
     setActive(true);
     setPaused(false);
+    setLaunch('on');
     onActiveChange(true);
     // First flight opens the control card; after that it is in the menu.
     try {
@@ -246,6 +261,7 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, landscape,
     clearFlightInput(session.input);
     setActive(false);
     setPaused(false);
+    setLaunch('off');
     setHelp(false);
     setMenu(false);
     setEditing(false);
@@ -253,11 +269,38 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, landscape,
     onLandscape(false);
     onActiveChange(false);
   };
+  // The launch screen comes down once the ship has actually flown a few
+  // frames — the first ones are slow, every planet material recompiles for
+  // the flight lights — and never before it has had its moment.
+  useEffect(() => {
+    if (launch !== 'on') return;
+    const tel = session.telemetry;
+    const from = tel.frame;
+    const t0 = performance.now();
+    let raf = 0;
+    const wait = () => {
+      // Paused (the window lost focus) the ship flies no frames: the screen
+      // comes down anyway rather than sit over a paused deck.
+      const flown = tel.frame - from >= LAUNCH_FRAMES || !session.active || session.paused;
+      if (flown && performance.now() - t0 >= LAUNCH_MIN_MS) setLaunch('fading');
+      else raf = requestAnimationFrame(wait);
+    };
+    raf = requestAnimationFrame(wait);
+    return () => cancelAnimationFrame(raf);
+  }, [launch, session]);
+  useEffect(() => {
+    if (launch !== 'fading') return;
+    const id = window.setTimeout(() => setLaunch('off'), 700);
+    return () => window.clearTimeout(id);
+  }, [launch]);
   // Back up from the Moon: the deck was paused for the landing, so it picks
   // the flight up again rather than leaving the pilot on a paused screen.
   const wasLanded = useRef(false);
   useEffect(() => {
-    if (wasLanded.current && !landed && active && session.paused) resume();
+    if (wasLanded.current && !landed && active && session.paused) {
+      resume();
+      session.input.relaunch = true;
+    }
     wasLanded.current = landed;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [landed, active]);
@@ -299,7 +342,8 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, landscape,
     let lastPaint = 0;
     const paint = (now: number) => {
       raf = requestAnimationFrame(paint);
-      if (now - lastPaint < 33) return;
+      // Nothing to paint behind the Moon's screen or a hidden tab.
+      if (now - lastPaint < 33 || landedRef.current || document.hidden) return;
       lastPaint = now;
       if (session.input.hudToggle) {
         session.input.hudToggle = false;
@@ -582,6 +626,10 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, landscape,
         </div>
       ) : (
         <>
+          {launch !== 'off' && (
+            <CosmicLoader className={launch === 'fading' ? 'flight-hud__launching is-done' : 'flight-hud__launching'} variant="hyperspace"
+              label={tl('preflight')} detail={tl('preflightDetail', { ship: t(`ships.${shipKind}`) })} tips={tips} />
+          )}
           {/* The look pad: the right of the glass, under everything else on it. */}
           {touch && <div className="flight-hud__lookpad" {...look} aria-hidden />}
           {/* The jump on the glass: the rim closes in as the drive charges,
@@ -637,6 +685,9 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, landscape,
                     <Smartphone size={16} aria-hidden /><span>{t(landscape ? 'portrait' : 'landscape')}</span>
                   </button>
                 )}
+                <button type="button" role="menuitem" onClick={toggleSound} aria-pressed={sound}>
+                  {sound ? <Volume2 size={16} aria-hidden /> : <VolumeX size={16} aria-hidden />}<span>{t(sound ? 'soundOn' : 'soundOff')}</span>
+                </button>
                 <button type="button" role="menuitem" onClick={openEditor}>
                   <LayoutGrid size={16} aria-hidden /><span>{t('customize')}</span>
                 </button>

@@ -497,10 +497,19 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
     if (kind === 'bite') audio.step(0.45);
     else if (kind === 'rumble') { audio.thump(25); cam.shake(0.4); }
     else if (kind === 'meteor' && x !== undefined && z !== undefined) meteors.strike(x, z);
+    else if (kind === 'reward') audio.milestone();
     else audio.bleep();
     if (kind === 'reward' && mission.telemetry.stage === 'done') rover.unlock('ion');
   };
-  jobs.onEvent = () => audio.bleep();
+  jobs.onEvent = (kind) => { if (kind === 'reward') audio.milestone(); else audio.bleep(); };
+
+  /** The lander is down: a thing to walk around, and a place to find again. */
+  const settleLander = () => {
+    base.pois.push({ id: 'ourLander', x: lander.position.x, z: lander.position.z, r: 8 });
+    const hull = { x: lander.position.x, z: lander.position.z, r: 3.4 };
+    base.colliders.push(hull);
+    base.walkColliders.push(hull);
+  };
 
   // ── Frame state. ──
   let t = 0;
@@ -586,10 +595,7 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
           egressHold = EGRESS_HOLD;
           audio.thump(lt.touchdown < 1.5 ? 40 : 6);
           cam.shake(Math.min(1, 0.25 + lt.touchdown * 0.2));
-          base.pois.push({ id: 'ourLander', x: lander.position.x, z: lander.position.z, r: 8 });
-          const hull = { x: lander.position.x, z: lander.position.z, r: 3.4 };
-          base.colliders.push(hull);
-          base.walkColliders.push(hull);
+          settleLander();
         }
       } else {
         lander.update(dt, { throttle: 0, moveX: 0, moveY: 0 }, terrain.heightAt);
@@ -873,6 +879,7 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
       lander.telemetry.touchdown = 0.6;
       lander.telemetry.egressX = lander.position.x;
       lander.telemetry.egressZ = lander.position.z + 4.2;
+      settleLander();
       telemetry.phase = 'touchdown';
       telemetry.grade = 'feather';
       egressHold = 0.2;

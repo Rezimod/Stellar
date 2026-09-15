@@ -268,13 +268,21 @@ export function SolarSystemCanvas({
     const lowData = !!conn && (conn.saveData === true || conn.effectiveType === '2g' || conn.effectiveType === 'slow-2g');
     const lite = isMobile || lowData;
 
-    const renderer = new THREE.WebGLRenderer({
-      antialias: !lite,
-      alpha: false,
-      // 'default' avoids pinning the discrete GPU on for the tab's lifetime on
-      // dual-GPU laptops (macOS), which keeps the machine hot/slow.
-      powerPreference: 'default',
-    });
+    let renderer: THREE.WebGLRenderer;
+    try {
+      renderer = new THREE.WebGLRenderer({
+        antialias: !lite,
+        alpha: false,
+        // 'default' avoids pinning the discrete GPU on for the tab's lifetime on
+        // dual-GPU laptops (macOS), which keeps the machine hot/slow.
+        powerPreference: 'default',
+      });
+    } catch {
+      // No WebGL (disabled, or the browser is out of contexts): let the
+      // loading screen go rather than leave it up, and draw nothing.
+      onReadyRef.current?.();
+      return;
+    }
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, lite ? 1.5 : 1.75));
     renderer.setSize(mount.clientWidth, mount.clientHeight);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -633,6 +641,9 @@ export function SolarSystemCanvas({
         }
         detailLoaded.add(id);
         applyLoadedTexture(id, tex);
+      }, undefined, () => {
+        // A dropped connection: the body keeps its base map and may ask again.
+        detailRequested.delete(id);
       });
     };
 
@@ -823,7 +834,7 @@ export function SolarSystemCanvas({
           }
         }
         mesh.position.copy(s.position);
-        hit!.position.copy(s.position);
+        hit?.position.copy(s.position);
       }
 
       // A body looks the same whether or not it is selected: the popup and
@@ -1036,8 +1047,15 @@ export function SolarSystemCanvas({
 
     const onResize = () => {
       if (!mount) return;
-      camera.aspect = mount.clientWidth / mount.clientHeight;
+      camera.aspect = Math.max(1, mount.clientWidth) / Math.max(1, mount.clientHeight);
       camera.updateProjectionMatrix();
+      // While the Moon has the screen the buffers stay small; the loop
+      // refits them when this scene comes back.
+      if (suspendedRef.current) {
+        renderer.setSize(2, 2, false);
+        postFx.setSize(2, 2);
+        return;
+      }
       renderer.setSize(mount.clientWidth, mount.clientHeight);
       postFx.setSize(mount.clientWidth, mount.clientHeight);
     };
@@ -1566,6 +1584,9 @@ export function SolarSystemCanvas({
       (stars.material as THREE.Material).dispose();
       postFx.dispose();
       renderer.dispose();
+      // Give the context back now rather than when the canvas is collected:
+      // the Moon scene and every rebuild after a context loss want one too.
+      renderer.forceContextLoss();
       if (renderer.domElement.parentNode === mount) {
         mount.removeChild(renderer.domElement);
       }

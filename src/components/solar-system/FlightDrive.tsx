@@ -16,7 +16,7 @@ interface DriveProps {
 const GEARS: SpeedMode[] = ['cruise', 'fast', 'ultra'];
 
 const formatLy = (locale: string, n: number, unit: string) =>
-  `${new Intl.NumberFormat(locale, { notation: n >= 1e5 ? 'compact' : 'standard', maximumFractionDigits: 2 }).format(n)} ${unit}`;
+  `${new Intl.NumberFormat(locale, { notation: n >= 1e5 ? 'compact' : 'standard', maximumFractionDigits: 2 }).format(n)} ${unit}`;
 
 /** Paint a piece of the drive at ten frames a second — the telemetry is a
  *  live object, so nothing here goes through React. */

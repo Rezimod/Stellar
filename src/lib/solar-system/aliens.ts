@@ -794,6 +794,10 @@ export function makeAlienEncounters(): AlienHandle {
 
       if (mode === 'scan' && hostile) {
         const f = active[0];
+        if (!f) {
+          endEncounter();
+          return;
+        }
         const tp = hostile.group.position;
         if (!f.ship.visible) {
           t = 1;

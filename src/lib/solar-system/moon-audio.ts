@@ -4,9 +4,15 @@
 // and landings carried up through the suit, a comms bleep when the base
 // names something. Synthesised in Web Audio, created on the first gesture.
 
+import { onSoundChange, soundOn } from '@/lib/solar-system/sound-prefs';
+
+const MASTER_GAIN = 0.22;
+
 export interface SuitAudio {
   /** Call from a user gesture; safe to call repeatedly. */
   start: () => void;
+  /** An act of the expedition closed, a job paid: a short chord through the helmet. */
+  milestone: () => void;
   /** Exertion 0..1 drives breath rate and depth. Inside the helmet the suit is louder. */
   update: (dt: number, exertion: number, helmet: boolean) => void;
   step: (hard: number) => void;
@@ -28,13 +34,16 @@ export function makeSuitAudio(): SuitAudio {
   let helmetK = 0;
   let drillOsc: OscillatorNode | null = null;
   let drillGain: GainNode | null = null;
+  const unsubscribe = onSoundChange((on) => {
+    if (master && ctx) master.gain.setTargetAtTime(on ? MASTER_GAIN : 0, ctx.currentTime, 0.05);
+  });
 
   const start = () => {
     try {
       if (!ctx) {
         ctx = new AudioContext();
         master = ctx.createGain();
-        master.gain.value = 0.22;
+        master.gain.value = soundOn() ? MASTER_GAIN : 0;
         master.connect(ctx.destination);
         noise = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
         const d = noise.getChannelData(0);
@@ -79,6 +88,30 @@ export function makeSuitAudio(): SuitAudio {
   };
   return {
     start,
+    milestone() {
+      one((c, m) => {
+        // A major triad on soft pipes, held a moment, let go slowly.
+        const t0 = c.currentTime;
+        const env = c.createGain();
+        env.gain.setValueAtTime(0.0001, t0);
+        env.gain.exponentialRampToValueAtTime(0.16, t0 + 0.35);
+        env.gain.setValueAtTime(0.16, t0 + 1.1);
+        env.gain.exponentialRampToValueAtTime(0.0001, t0 + 3.2);
+        const lp = c.createBiquadFilter();
+        lp.type = 'lowpass'; lp.frequency.value = 1400;
+        env.connect(lp); lp.connect(m);
+        const voices = [220, 277.18, 329.63, 440].map((f) => {
+          const o = c.createOscillator();
+          o.type = 'sine';
+          o.frequency.value = f;
+          const g = c.createGain(); g.gain.value = 0.3;
+          o.connect(g); g.connect(env);
+          o.start(t0); o.stop(t0 + 3.3);
+          return o;
+        });
+        voices[0].onended = () => { for (const o of voices) o.disconnect(); env.disconnect(); lp.disconnect(); };
+      });
+    },
     update(dt, exertion, helmet) {
       if (!ctx || !breathGain || !fanGain) return;
       helmetK += ((helmet ? 1 : 0.45) - helmetK) * (1 - Math.exp(-dt * 4));
@@ -165,6 +198,7 @@ export function makeSuitAudio(): SuitAudio {
       drillGain.gain.setTargetAtTime(running ? 0.025 + load * 0.06 : 0, ctx.currentTime, 0.1);
     },
     dispose() {
+      unsubscribe();
       if (ctx) void ctx.close();
       ctx = null;
     },

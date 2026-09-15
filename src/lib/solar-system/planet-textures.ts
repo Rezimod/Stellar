@@ -349,6 +349,10 @@ function applyHooks(id: SolarBodyId, mat: THREE.MeshStandardMaterial, lite: bool
     for (const mutate of mutators) mutate(shader);
     mat.userData.shader = shader;
   };
+  // three keys its program cache on the hook's source text, which is the
+  // same for every planet here; without a key of their own, whichever
+  // planet compiles first hands its program to all the rest.
+  mat.customProgramCacheKey = () => `planet-${id}-${lite ? 'lite' : 'full'}`;
 }
 
 /** Per-frame time for the animated cloud-band materials (no-op for the rest). */

@@ -130,13 +130,18 @@ function load(): Saved {
     const cleared = Array.isArray(v.cleared)
       ? [...new Set(v.cleared.filter((n): n is number => Number.isInteger(n) && n >= 0 && n < PATCHES))]
       : past ? [0, 1, 2, 3] : [];
-    return { stage, rewards, briefed, cleared };
+    // Every patch cleared but the stage not yet advanced: nothing on the
+    // surface could move it on, so move it on here.
+    return { stage: stage === 'excavate' && cleared.length >= PATCHES ? 'contact' : stage, rewards, briefed, cleared };
   } catch {
     return fresh;
   }
 }
 function save(s: Saved) {
-  try { localStorage.setItem(STORE, JSON.stringify(s)); } catch { /* private window: play it through anyway */ }
+  try {
+    localStorage.setItem(STORE, JSON.stringify(s));
+    localStorage.removeItem(STORE_V1);
+  } catch { /* private window: play it through anyway */ }
 }
 
 /** Has this crew made contact before? The rover's fourth gear depends on it. */
@@ -453,7 +458,9 @@ export function makeMission(
         const inArea = telemetry.distance < SCAN_RADIUS;
         // Out on the mare the scanner only says "that way"; in the area it
         // peaks over the exact spot.
-        telemetry.signal = inArea ? Math.exp(-(dExact * dExact) / 18) : Math.max(0, 1 - telemetry.distance / 220) * 0.3;
+        // The peak is wide enough to lock from outside the rig's own
+        // collider (2 m plus the suit): the crew can never stand on the spot.
+        telemetry.signal = inArea ? Math.exp(-(dExact * dExact) / 60) : Math.max(0, 1 - telemetry.distance / 220) * 0.3;
         if (inArea && !ctx.driving) {
           telemetry.task = 'scan';
           telemetry.objective = 'obj.scan';

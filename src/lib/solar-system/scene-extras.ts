@@ -118,6 +118,11 @@ export function clampedPointsMaterial(
   perParticleSize: boolean,
 ): THREE.PointsMaterial {
   const mat = new THREE.PointsMaterial(params);
+  // Stars, belt and Kuiper belt share this hook's source text, so without a
+  // key of their own they would share one compiled program — and a field
+  // without an aSize attribute bound to a program that reads it draws at
+  // zero pixels.
+  mat.customProgramCacheKey = () => `points-${maxPx}-${perParticleSize ? 'sized' : 'flat'}`;
   mat.onBeforeCompile = (shader) => {
     if (perParticleSize) {
       shader.vertexShader = shader.vertexShader

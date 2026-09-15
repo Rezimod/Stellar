@@ -3,23 +3,26 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Camera, ChevronsDown, ChevronsUp, Drill, Eye, EyeOff, Flame, Gauge, HelpCircle,
-  LogIn, Menu, Rocket, Trophy, Wind, X,
+  LogIn, Menu, Rocket, Trophy, Volume2, VolumeX, Wind, X,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { makeMoonSurface, type MoonSurfaceHandle } from '@/lib/solar-system/moon-surface';
 import { DRILL_BAND } from '@/lib/solar-system/moon-mission';
+import { setSoundOn, soundOn } from '@/lib/solar-system/sound-prefs';
 import { GameStick } from './GameStick';
 import { CosmicLoader } from './CosmicLoader';
+import { useLoadingTips } from './useLoadingTips';
+import { useSoundPref } from './useSoundPref';
 
 interface MoonSurfaceProps {
   onReturn: () => void;
 }
 
-const KEY_ROWS = ['r1', 'r2', 'r9', 'r3', 'r4', 'r5', 'r10', 'r6', 'r11', 'r12', 'r8', 'r13', 'r7'] as const;
-const TOUCH_ROWS = ['t1', 't2', 't3', 't7', 't4', 't8', 't9', 't6', 't10', 't5'] as const;
+const KEY_ROWS = ['r1', 'r2', 'r9', 'r3', 'r4', 'r5', 'r10', 'r6', 'r11', 'r12', 'r8', 'r13', 'r14', 'r7'] as const;
+const TOUCH_ROWS = ['t1', 't2', 't3', 't7', 't4', 't8', 't9', 't6', 't10', 't11', 't5'] as const;
 const HANDLED = new Set([
   'KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
-  'Space', 'ShiftLeft', 'ShiftRight', 'KeyE', 'KeyC', 'KeyF', 'KeyV', 'ControlLeft',
+  'Space', 'ShiftLeft', 'ShiftRight', 'KeyE', 'KeyC', 'KeyF', 'KeyV', 'KeyM', 'ControlLeft',
   'Digit1', 'Digit2', 'Digit3', 'Digit4',
 ]);
 const fmtTime = (s: number) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
@@ -33,6 +36,8 @@ const TURNS = 3;
 export function MoonSurface({ onReturn }: MoonSurfaceProps) {
   const t = useTranslations('solarSystem.moon');
   const tl = useTranslations('solarSystem.loading');
+  const tips = useLoadingTips();
+  const [sound, toggleSound] = useSoundPref();
   const [touch, setTouch] = useState(false);
   /** Bumped when the GPU drops the context; the scene is rebuilt on the surface. */
   const [glGeneration, setGlGeneration] = useState(0);
@@ -169,6 +174,7 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
       if (e.code === 'KeyE' || e.code === 'KeyF') input.interact = true;
       if (e.code === 'KeyV') input.viewToggle = true;
       if (e.code === 'KeyC') { crouchRef.current = !crouchRef.current; setCrouch(crouchRef.current); }
+      if (e.code === 'KeyM') setSoundOn(!soundOn());
       if (e.code.startsWith('Digit')) input.gearRequest = Number(e.code.slice(5)) - 1;
       sync();
       e.preventDefault();
@@ -305,7 +311,7 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
         : m.task === 'clear' && m.atSite ? t('mission.patches', { n: m.cleared, total: m.patches })
         : m.distance >= 0 ? (m.approx ? fmtApprox(m.distance) : fmtRange(m.distance)) : '');
       show(jobRef.current, j.active !== '');
-      if (j.active) text(jobTextRef.current, `${t(`jobs.steps.${j.objective}`)}${j.distance >= 0 && j.distance > 4 ? ` · ${fmtRange(j.distance)}` : ''}`);
+      if (j.active && j.objective) text(jobTextRef.current, `${t(`jobs.steps.${j.objective}`)}${j.distance >= 0 && j.distance > 4 ? ` · ${fmtRange(j.distance)}` : ''}`);
 
       text(altRef.current, `${tel.altitude.toFixed(1)} m`);
       text(speedRef.current, `${tel.speed.toFixed(1)} m/s`);
@@ -491,8 +497,8 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
   return (
     <div ref={rootRef} className="moon-surface" data-phase="descent" data-ready="false" data-immersive={immersive}>
       <div ref={mountRef} className="moon-surface__canvas" />
-      <CosmicLoader className={gpuLost ? 'moon-surface__loader is-forced' : 'moon-surface__loader'}
-        label={gpuLost ? tl('gpu') : tl('moon')} detail={gpuLost ? undefined : tl('moonDetail')} />
+      <CosmicLoader className={gpuLost ? 'moon-surface__loader is-forced' : 'moon-surface__loader'} variant="descent"
+        label={gpuLost ? tl('gpu') : tl('moon')} detail={gpuLost ? undefined : tl('moonDetail')} tips={tips} />
       <div className="moon-hud">
         <div className="moon-hud__visor" aria-hidden />
 
@@ -595,6 +601,9 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
               </button>
               <button type="button" role="menuitem" onClick={() => { cycleView(); setMenu(false); }}>
                 <Camera size={16} aria-hidden /><span>{t('camera')}</span>
+              </button>
+              <button type="button" role="menuitem" onClick={toggleSound} aria-pressed={sound}>
+                {sound ? <Volume2 size={16} aria-hidden /> : <VolumeX size={16} aria-hidden />}<span>{t(sound ? 'soundOn' : 'soundOff')}</span>
               </button>
               <button type="button" role="menuitem" onClick={() => { setHelp((h) => !h); setMenu(false); }}>
                 <HelpCircle size={16} aria-hidden /><span>{t('help')}</span>
