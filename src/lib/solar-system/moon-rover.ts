@@ -1,26 +1,27 @@
-// The rover, driveable. A rocker-bogie six-wheeler on the heightfield:
-// throttle and steering from the stick, six wheels that each find their
-// own ground so the rockers and bogies articulate over every rise, the
-// body riding on the average of them and pitching and rolling with the
-// slope, the corner wheels steering, the camera head looking into the
-// turn, headlights on while it is driven, dust off the wheels, tracks left
-// behind. Low gravity means little grip — it slides wide on a fast turn,
-// on purpose.
+// The rover, driveable. A rocker-bogie six-wheeler on the heightfield: six
+// wheels that each find their own ground so the rockers and bogies
+// articulate over every rise, the body riding a sprung average of them, the
+// corner wheels steering, the camera head looking into the turn, headlights
+// on while it is driven, dust off the wheels, tracks left behind.
 //
-// Four gears. Creep is for working around the base and lining up on a
-// hatch: slow, and it turns inside its own length. Cruise is the drive out
-// to a site. Sprint is what you take across the mare when the oxygen clock
-// is running, and it will let go of the back end if you ask too much of it.
-// Ion is the fourth, and the crew does not have it until the thing in the
-// crater has been opened.
+// The drive is a real vehicle rather than a cursor. Heading is steered
+// directly — so it never fishtails — but velocity is not: grip limits how
+// fast sideways motion can be taken out, so ask for more turn than the
+// regolith can give at speed and the rover drifts wide, then bites again as
+// soon as the wheel is straightened. The hill takes speed going up.
+//
+// Four gears. Creep turns inside its own length and parks. Cruise is the
+// drive out to a site. Sprint is for crossing the mare against the oxygen
+// clock and will slide if you ask too much of it. Ion is the fourth, and the
+// crew does not have it until the thing in the crater has been opened.
 
 import * as THREE from 'three';
+import { MOON_G, type DustBurst, type DustHandle } from '@/lib/solar-system/moon-fx';
 import type { Collider } from '@/lib/solar-system/moon-cosmonaut';
-import type { DustHandle } from '@/lib/solar-system/moon-fx';
 import type { PrintsHandle } from '@/lib/solar-system/moon-prints';
 import type { TerrainHandle } from '@/lib/solar-system/moon-terrain';
 
-/** The parts of the rover the drive articulates, built by moon-base. */
+/** The parts of the rover the drive articulates, built by moon-rover-mesh. */
 export interface RoverParts {
   /** The six wheel hubs, spun about their axles. */
   spin: THREE.Object3D[];
@@ -33,11 +34,15 @@ export interface RoverParts {
   wheelXZ: [number, number][];
   /** The camera head on the mast. */
   mast: THREE.Object3D;
+  /** The driver's eye, for the cockpit view. */
+  seat: THREE.Object3D;
   headlight: THREE.SpotLight;
   /** The arm's shoulder and elbow: stowed on the move, unfolded at rest. */
   arm: THREE.Object3D[];
   /** The brake lights' material — lit while the rover slows. */
   brakeLight: THREE.MeshStandardMaterial;
+  /** The ion strips along the tub: dark until the fourth gear is earned. */
+  ionMat: THREE.MeshStandardMaterial;
 }
 
 /** The gears, slowest first. `ion` is the expedition's reward. */
@@ -45,24 +50,33 @@ export type RoverGear = 'creep' | 'cruise' | 'sprint' | 'ion';
 export const ROVER_GEARS: RoverGear[] = ['creep', 'cruise', 'sprint', 'ion'];
 
 interface GearSpec {
-  /** Top speed, m/s, and how hard it gets there and stops. */
+  /** Top speed, m/s; how hard it gets there, lets off, and brakes. */
   top: number;
   accel: number;
+  coast: number;
   brake: number;
-  /** Steering authority, and how much grip the back end keeps. */
+  /** Yaw rate at full lock, rad/s, and the speed over which it halves. */
   steer: number;
+  steerFade: number;
+  /** Sideways acceleration the wheels can take out, m/s². */
   grip: number;
+  /** Turns on the spot. */
+  pivot: boolean;
 }
 const SPEC: Record<RoverGear, GearSpec> = {
-  creep: { top: 3.0, accel: 2.4, brake: 5.0, steer: 1.25, grip: 1 },
-  cruise: { top: 8.0, accel: 3.0, brake: 4.6, steer: 0.9, grip: 0.8 },
-  sprint: { top: 15.0, accel: 4.4, brake: 4.2, steer: 0.62, grip: 0.45 },
-  ion: { top: 26.0, accel: 7.0, brake: 5.4, steer: 0.5, grip: 0.3 },
+  creep: { top: 3.0, accel: 2.6, coast: 3.2, brake: 5.5, steer: 1.05, steerFade: 6, grip: 9, pivot: true },
+  cruise: { top: 8.0, accel: 3.2, coast: 2.3, brake: 5.0, steer: 0.95, steerFade: 9, grip: 7, pivot: false },
+  sprint: { top: 15.0, accel: 4.4, coast: 1.7, brake: 4.8, steer: 0.9, steerFade: 11, grip: 4.2, pivot: false },
+  ion: { top: 26.0, accel: 7.2, coast: 1.0, brake: 5.8, steer: 0.85, steerFade: 14, grip: 3.2, pivot: false },
 };
 
 export interface RoverHandle {
+  /** Signed speed along the heading, m/s. */
   speed: number;
+  /** Sideways speed, m/s: how much it is sliding. */
+  slip: number;
   yaw: number;
+  yawRate: number;
   driving: boolean;
   /** The gear it is in, and the ones this crew has earned. */
   gear: RoverGear;
@@ -71,28 +85,39 @@ export interface RoverHandle {
   shift: (dir: number) => void;
   /** Go straight to a gear by its place in `gears`; clamped. */
   select: (index: number) => void;
+  /** Add a gear to what this crew has. */
+  unlock: (gear: RoverGear) => void;
   /** Top speed of the gear it is in, for the dial. */
   top: number;
+  /** State of charge, 0…1. Nearly flat, it will only creep. */
+  battery: number;
+  charge: (dt: number) => void;
+  /** A meaningful jolt this step, 0…1, for the camera. */
+  bump: number;
+  /** Where the body is, smoothed: the camera anchor. */
+  position: THREE.Vector3;
   update: (dt: number, throttle: number, steer: number, colliders: Collider[], walkRadius: number) => void;
+  /** Draw the body between the last two simulation steps. */
+  present: (alpha: number) => void;
 }
 
-const TOP = 15;
-const STEER_RATE = 0.9;
-/** How far a corner wheel turns at full lock, and how fast the body and
- *  the arms follow the ground (per second). */
 const STEER_LOCK = 0.42;
-const SUSPENSION = 7;
+const HEAVE_W = 13;
+const HEAVE_Z = 0.72;
 
 export function makeRover(group: THREE.Group, collider: Collider, parts: RoverParts, terrain: TerrainHandle, dust: DustHandle, prints: PrintsHandle, gears: RoverGear[] = ['creep', 'cruise', 'sprint']): RoverHandle {
   const up = new THREE.Vector3(0, 1, 0);
   const yawQ = new THREE.Quaternion();
   const tiltQ = new THREE.Quaternion();
   const tilt = new THREE.Euler();
+  const heights = new Float32Array(6);
+  const puff: DustBurst = { x: 0, y: 0, z: 0, count: 1, speedMin: 0.4, speedMax: 1, cone: 0.9, size: 0.14, dirX: 0, dirZ: 0, bias: 1.2 };
+  let vx = 0; let vz = 0;
   let wheelSpin = 0;
   let trackAcc = 0;
-  let slide = 0;
-  let pitch = 0;
-  let roll = 0;
+  let dustAcc = 0;
+  let pitch = 0; let roll = 0;
+  let heave = group.position.y; let heaveVel = 0;
   const rockerTilt = [0, 0];
   const bogieTilt = [0, 0];
   let steerAngle = 0;
@@ -100,121 +125,197 @@ export function makeRover(group: THREE.Group, collider: Collider, parts: RoverPa
   let idle = 0;
   let armOut = 0;
   let lastSpeed = 0;
-  const heights = new Float32Array(6);
+  // Presentation: the last two simulated poses.
+  const prevPos = new THREE.Vector3().copy(group.position);
+  const curPos = new THREE.Vector3().copy(group.position);
+  const prevQ = new THREE.Quaternion().copy(group.quaternion);
+  const curQ = new THREE.Quaternion().copy(group.quaternion);
+
   const handle: RoverHandle = {
-    speed: 0, yaw: group.rotation.y, driving: false, gear: 'cruise', gears, top: SPEC.cruise.top,
+    speed: 0, slip: 0, yaw: group.rotation.y, yawRate: 0, driving: false, gear: 'cruise', gears, top: SPEC.cruise.top,
+    battery: 1, bump: 0, position: curPos,
     shift(dir) { handle.select(handle.gears.indexOf(handle.gear) + dir); },
     select(index) {
       const list = handle.gears;
       handle.gear = list[THREE.MathUtils.clamp(Math.round(index), 0, list.length - 1)];
       handle.top = SPEC[handle.gear].top;
     },
-    update(dt, throttle, steer, colliders, walkRadius) {
+    unlock(gear) { if (!handle.gears.includes(gear)) handle.gears.push(gear); },
+    charge(dt) { handle.battery = Math.min(1, handle.battery + dt * 0.08); },
+    update(dt, throttleIn, steerIn, colliders, walkRadius) {
+      prevPos.copy(curPos);
+      prevQ.copy(curQ);
       const spec = SPEC[handle.gear];
+      // A flat battery limps home at a crawl.
+      const top = handle.battery < 0.04 ? Math.min(spec.top, 3) : spec.top;
       handle.top = spec.top;
-      const s = handle.speed;
+      // Shaped inputs: fine control near the middle, all of it at the stops.
+      const throttle = Math.sign(throttleIn) * Math.pow(Math.abs(throttleIn), 1.35);
+      const steer = Math.sign(steerIn) * Math.pow(Math.abs(steerIn), 1.2);
+      // Steering first: a yaw rate that answers quickly, fades with speed,
+      // and in Creep works standing still. The velocity does not turn with
+      // the body — it is split along the new heading below, and grip decides
+      // how much of the sideways part survives.
+      const speedBefore = Math.abs(vx * Math.sin(handle.yaw) + vz * Math.cos(handle.yaw));
+      const goingBack = vx * Math.sin(handle.yaw) + vz * Math.cos(handle.yaw) < -0.2;
+      const authority = spec.pivot ? 1 : THREE.MathUtils.clamp(speedBefore / 2.0, 0, 1);
+      const wantRate = handle.driving ? -steer * spec.steer * authority / (1 + speedBefore / spec.steerFade) * (goingBack ? -1 : 1) : 0;
+      handle.yawRate += (wantRate - handle.yawRate) * (1 - Math.exp(-dt * 8));
+      handle.yaw += handle.yawRate * dt;
+      const c = Math.cos(handle.yaw); const s = Math.sin(handle.yaw);
+      let fwd = vx * s + vz * c;
+      let lat = vx * c - vz * s;
       if (handle.driving) {
-        const target = throttle * spec.top;
-        const rate = Math.abs(target) < Math.abs(s) || Math.sign(target) !== Math.sign(s) ? spec.brake : spec.accel;
-        handle.speed += THREE.MathUtils.clamp(target - s, -rate * dt, rate * dt);
+        const target = throttle >= 0 ? throttle * top : throttle * Math.min(top * 0.4, 4);
+        const opposing = Math.abs(fwd) > 0.2 && target !== 0 && Math.sign(target) !== Math.sign(fwd);
+        // The first metres per second come quickly; the last ones take a while.
+        const launch = 1 + 0.8 * Math.max(0, 1 - Math.abs(fwd) / (spec.top * 0.35));
+        const rate = opposing ? spec.brake : Math.abs(target) < Math.abs(fwd) ? spec.coast : spec.accel * launch;
+        fwd += THREE.MathUtils.clamp(target - fwd, -rate * dt, rate * dt);
       } else {
-        handle.speed *= Math.exp(-dt * 2);
+        fwd *= Math.exp(-dt * 2);
       }
-      const v = handle.speed;
-      // Steering authority grows with speed; grip fades with it (regolith slides).
-      const turn = -steer * STEER_RATE * spec.steer * THREE.MathUtils.clamp(Math.abs(v) / 2.5, 0, 1) * Math.sign(v || 1);
-      handle.yaw += turn * dt;
-      const loose = (1 - spec.grip) * 0.7;
-      slide += ((Math.abs(turn) > 0.25 && Math.abs(v) > spec.top * 0.35 ? loose : 0) - slide) * (1 - Math.exp(-dt * 2));
-      const fx = Math.sin(handle.yaw); const fz = Math.cos(handle.yaw);
-      const sx = -Math.cos(handle.yaw) * slide * v * 0.2; const sz = Math.sin(handle.yaw) * slide * v * 0.2;
-      let x = group.position.x + (fx * v + sx) * dt;
-      let z = group.position.z + (fz * v + sz) * dt;
+      // The hill: the slope between the front and back wheels.
+      const slope = (heights[0] + heights[3] - heights[2] - heights[5]) / 2 / 3.1;
+      fwd -= MOON_G * THREE.MathUtils.clamp(slope, -0.6, 0.6) * dt;
+      // Parked, the brakes hold it on a slope.
+      if (!handle.driving && Math.abs(fwd) < 0.6) fwd -= THREE.MathUtils.clamp(fwd, -6 * dt, 6 * dt);
+
+      const speed = Math.abs(fwd);
+      // Grip takes the sideways motion out, at a rate the gear allows.
+      lat -= THREE.MathUtils.clamp(lat, -spec.grip * dt, spec.grip * dt);
+      vx = fwd * s + lat * c;
+      vz = fwd * c - lat * s;
+
+      let x = curPos.x + vx * dt;
+      let z = curPos.z + vz * dt;
       const rr = Math.hypot(x, z);
-      if (rr > walkRadius - 2) { x *= (walkRadius - 2) / rr; z *= (walkRadius - 2) / rr; handle.speed *= 0.3; }
-      for (const c of colliders) {
-        if (c === collider) continue;
-        const dx = x - c.x; const dz = z - c.z;
+      const edge = walkRadius - 2;
+      if (rr > edge) {
+        x *= edge / rr; z *= edge / rr;
+        const vn = (vx * x + vz * z) / edge;
+        if (vn > 0) { vx -= vn * x / edge; vz -= vn * z / edge; }
+      }
+      handle.bump *= Math.exp(-dt * 6);
+      for (const col of colliders) {
+        if (col === collider) continue;
+        const dx = x - col.x; const dz = z - col.z;
         const d = Math.hypot(dx, dz);
-        const min = c.r + collider.r;
+        const min = col.r + collider.r;
         if (d < min && d > 1e-4) {
-          x += dx * (min - d) / d;
-          z += dz * (min - d) / d;
-          handle.speed *= 0.2;
+          const nx = dx / d; const nz = dz / d;
+          x += nx * (min - d);
+          z += nz * (min - d);
+          const vn = vx * nx + vz * nz;
+          // Only the motion into it stops; sliding along it carries on.
+          if (vn < 0) {
+            vx -= vn * nx; vz -= vn * nz;
+            handle.bump = Math.max(handle.bump, Math.min(1, -vn / 6));
+          }
         }
       }
-      group.position.x = x; group.position.z = z;
+      curPos.x = x; curPos.z = z;
       collider.x = x; collider.z = z;
+      handle.speed = vx * s + vz * c;
+      handle.slip = Math.abs(vx * c - vz * s);
+      handle.battery = Math.max(0, handle.battery - Math.abs(handle.speed) * dt * 0.00011);
 
-      // ── Six wheels, six grounds. The body rides on their mean and leans
-      // with the slope between front and rear, left and right; each rocker
-      // tilts to put its front wheel down, each bogie to put both of its
-      // wheels down. ──
-      const c = Math.cos(handle.yaw); const sn = Math.sin(handle.yaw);
+      // ── Six wheels, six grounds. The body rides a sprung mean of them and
+      // leans with the slope; each rocker tilts to put its front wheel down,
+      // each bogie to put both of its wheels down. ──
       for (let i = 0; i < 6; i++) {
         const [lx, lz] = parts.wheelXZ[i];
-        heights[i] = terrain.heightAt(x + lx * c + lz * sn, z - lx * sn + lz * c);
+        heights[i] = terrain.heightAt(x + lx * c + lz * s, z - lx * s + lz * c);
       }
       const left = (heights[0] + heights[1] + heights[2]) / 3;
       const right = (heights[3] + heights[4] + heights[5]) / 3;
       const front = (heights[0] + heights[3]) / 2;
       const rear = (heights[1] + heights[2] + heights[4] + heights[5]) / 4;
-      const k = 1 - Math.exp(-dt * SUSPENSION);
-      group.position.y += ((left + right) / 2 - group.position.y) * k;
-      pitch += (-Math.atan2(front - rear, 2.3) - pitch) * k;
+      const ground = (left + right) / 2;
+      const was = heaveVel;
+      heaveVel += ((ground - heave) * HEAVE_W * HEAVE_W - heaveVel * 2 * HEAVE_Z * HEAVE_W) * dt;
+      heave += heaveVel * dt;
+      // Never through a wheel: the body cannot sit lower than the highest ground under it allows.
+      let highest = -Infinity;
+      for (let i = 0; i < 6; i++) if (heights[i] > highest) highest = heights[i];
+      if (heave < highest - 0.14) { heave = highest - 0.14; heaveVel = Math.max(0, heaveVel); }
+      const jolt = Math.abs(heaveVel - was) / dt;
+      if (jolt > 26) handle.bump = Math.max(handle.bump, Math.min(1, (jolt - 26) / 60));
+      curPos.y = heave;
+      const k = 1 - Math.exp(-dt * 10);
+      const accelPitch = THREE.MathUtils.clamp((handle.speed - lastSpeed) / dt, -6, 6) * 0.006;
+      pitch += (-Math.atan2(front - rear, 2.3) + accelPitch - pitch) * k;
       roll += (Math.atan2(right - left, 2.7) - roll) * k;
       yawQ.setFromAxisAngle(up, handle.yaw);
       tilt.set(pitch, 0, roll);
       tiltQ.setFromEuler(tilt);
-      group.quaternion.copy(yawQ).multiply(tiltQ);
+      curQ.copy(yawQ).multiply(tiltQ);
       for (let side = 0; side < 2; side++) {
         const hf = heights[side * 3]; const hm = heights[side * 3 + 1]; const hr = heights[side * 3 + 2];
-        const rockerTarget = -Math.atan2(hf - (hm + hr) / 2, 2.1) - pitch;
-        rockerTilt[side] += (rockerTarget - rockerTilt[side]) * k;
+        rockerTilt[side] += (-Math.atan2(hf - (hm + hr) / 2, 2.1) - pitch - rockerTilt[side]) * k;
         parts.rockers[side].rotation.x = rockerTilt[side];
-        const bogieTarget = -Math.atan2(hm - hr, 1.35) - pitch - rockerTilt[side];
-        bogieTilt[side] += (bogieTarget - bogieTilt[side]) * k;
+        bogieTilt[side] += (-Math.atan2(hm - hr, 1.35) - pitch - rockerTilt[side] - bogieTilt[side]) * k;
         parts.bogies[side].rotation.x = bogieTilt[side];
       }
-      // Corner wheels steer, the rear pair against the front; the mast head
-      // looks into the turn, and glances about when the rover stands.
-      steerAngle += ((handle.driving ? -steer * STEER_LOCK : 0) - steerAngle) * (1 - Math.exp(-dt * 6));
-      parts.steer.forEach((p, i) => { p.rotation.y = i % 2 === 0 ? steerAngle : -steerAngle; });
-      idle = handle.driving && Math.abs(v) > 0.3 ? 0 : idle + dt;
+      // Corner wheels steer, the rear pair against the front — hard over for
+      // a pivot turn standing still; the mast head looks into the turn.
+      const lock = spec.pivot && speed < 0.6 ? 0.75 : STEER_LOCK;
+      steerAngle += ((handle.driving ? -steer * lock : 0) - steerAngle) * (1 - Math.exp(-dt * 7));
+      for (let i = 0; i < parts.steer.length; i++) parts.steer[i].rotation.y = i % 2 === 0 ? steerAngle : -steerAngle;
+      idle = handle.driving && speed > 0.3 ? 0 : idle + dt;
       const mastTarget = handle.driving ? steerAngle * 1.6 : Math.sin(idle * 0.4) * 0.8;
       mastYaw += (mastTarget - mastYaw) * (1 - Math.exp(-dt * 2.5));
       parts.mast.rotation.y = mastYaw;
-      parts.headlight.intensity += ((handle.driving ? 6 : 0) - parts.headlight.intensity) * (1 - Math.exp(-dt * 4));
-      // Brake lights while the rover is slowing; the arm unfolds to work
-      // once it has stood a moment, and stows the moment it moves.
-      const braking = Math.abs(v) < Math.abs(lastSpeed) - 0.02 && Math.abs(v) > 0.2;
-      lastSpeed = v;
+      parts.headlight.intensity += ((handle.driving ? 7 : 0) - parts.headlight.intensity) * (1 - Math.exp(-dt * 4));
+      const braking = Math.abs(handle.speed) < Math.abs(lastSpeed) - 0.01 && Math.abs(handle.speed) > 0.2;
+      lastSpeed = handle.speed;
       parts.brakeLight.emissiveIntensity += ((braking ? 2.6 : 0.15) - parts.brakeLight.emissiveIntensity) * (1 - Math.exp(-dt * 8));
+      const ionOwned = handle.gears.includes('ion');
+      parts.ionMat.emissiveIntensity = handle.gear === 'ion' ? 1.3 + 0.4 * Math.sin(idle + wheelSpin * 0.2) : ionOwned ? 0.35 : 0;
       armOut += ((idle > 2.5 ? 1 : 0) - armOut) * (1 - Math.exp(-dt * 1.4));
       parts.arm[0].rotation.y = -1.3 * armOut;
       parts.arm[0].rotation.x = 0.35 * armOut;
       parts.arm[1].rotation.x = -0.9 + 1.5 * armOut;
-      wheelSpin += v / 0.55 * dt;
+      wheelSpin += handle.speed / 0.55 * dt;
       for (const w of parts.spin) w.rotation.x = wheelSpin;
-      // Dust off every wheel, more from the rear pair, tracks under all six.
-      if (Math.abs(v) > 0.6) {
-        const kk = Math.min(1, Math.abs(v) / TOP);
+
+      // Dust off the wheels — more from the rear pair and from a slide — and
+      // tracks under all six.
+      // Emitted at a steady 30 puffs a second, whatever the step rate.
+      dustAcc = Math.min(2, dustAcc + dt * 30);
+      if ((speed > 0.6 || handle.slip > 1) && dustAcc >= 1) {
+        dustAcc %= 1;
+        const kk = Math.min(1, speed / 15) + Math.min(0.6, handle.slip / 6);
+        const fx = Math.sin(handle.yaw); const fz = Math.cos(handle.yaw);
         for (let i = 0; i < 6; i++) {
           const [lx, lz] = parts.wheelXZ[i];
-          const rear = lz < -1;
-          if (!rear && Math.random() > kk * 0.6) continue;
-          dust.burst({ x: x + lx * c + lz * sn, y: heights[i], z: z - lx * sn + lz * c, count: Math.round(1 + kk * (rear ? 5 : 2)), speedMin: 0.4, speedMax: 1 + kk * 3, cone: 0.9, size: 0.14, dirX: -fx, dirZ: -fz, bias: 1.2 });
+          const isRear = lz < -1;
+          if (!isRear && Math.random() > kk * 0.6) continue;
+          puff.x = x + lx * c + lz * s; puff.y = heights[i]; puff.z = z - lx * s + lz * c;
+          puff.count = Math.round(1 + kk * (isRear ? 5 : 2));
+          puff.speedMax = 1 + kk * 3;
+          puff.dirX = -fx; puff.dirZ = -fz;
+          dust.burst(puff);
         }
-        trackAcc += Math.abs(v) * dt;
+      }
+      if (speed > 0.6 || handle.slip > 1) {
+        trackAcc += Math.hypot(vx, vz) * dt;
         if (trackAcc > 0.7) {
           trackAcc = 0;
-          for (const side of [-1, 1]) {
-            const tx = x + Math.cos(handle.yaw) * side * 1.35; const tz = z - Math.sin(handle.yaw) * side * 1.35;
+          for (let side = -1; side <= 1; side += 2) {
+            const tx = x + c * side * 1.35; const tz = z - s * side * 1.35;
             prints.track(tx, terrain.heightAt(tx, tz), tz, handle.yaw, 0.36);
           }
         }
       }
     },
+    present(alpha) {
+      group.position.lerpVectors(prevPos, curPos, alpha);
+      group.quaternion.slerpQuaternions(prevQ, curQ, alpha);
+    },
   };
+  // Start settled on the ground.
+  curPos.y = heave = terrain.heightAt(curPos.x, curPos.z);
+  prevPos.copy(curPos);
   return handle;
 }

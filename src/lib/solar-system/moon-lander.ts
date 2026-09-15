@@ -15,6 +15,8 @@
 
 import * as THREE from 'three';
 import { MOON_G, type DustHandle } from '@/lib/solar-system/moon-fx';
+import { keep, mergeStatic } from '@/lib/solar-system/moon-batch';
+import type { LightPool } from '@/lib/solar-system/moon-lights';
 
 export interface LanderInput {
   /** The descent engine, 0…1. */
@@ -73,6 +75,7 @@ export function makeLander(
   heightAt: (x: number, z: number) => number,
   dust: DustHandle,
   lite: boolean,
+  lights?: LightPool,
 ): LanderHandle {
   const group = new THREE.Group();
   group.name = 'lander';
@@ -138,12 +141,10 @@ export function makeLander(
   owned.push(bell);
   mesh(group, new THREE.CylinderGeometry(0.42, 0.95, 1.1, seg, 1, true), bell, 0, 0.45);
   // The plume: a cone of light under the bell, plus the light it throws.
-  const plume = mesh(group, new THREE.ConeGeometry(0.8, 5.0, seg, 1, true), plumeMat, 0, -2.4);
+  const plume = keep(mesh(group, new THREE.ConeGeometry(0.8, 5.0, seg, 1, true), plumeMat, 0, -2.4));
   plume.rotation.x = Math.PI;
   plume.castShadow = false;
-  const plumeLight = new THREE.PointLight(0xaad6ff, 0, 40, 2);
-  plumeLight.position.y = -1.2;
-  group.add(plumeLight);
+  geoms.push(...mergeStatic(group, { minCaster: 0.1 }).geometries);
 
   const position = group.position;
   const vel = new THREE.Vector3(1.6, -START_DESCENT, -2.4);
@@ -164,7 +165,7 @@ export function makeLander(
         // Down and quiet: the plume dies, the dust settles.
         telemetry.throttle += (0 - telemetry.throttle) * (1 - Math.exp(-dt * 6));
         plumeMat.opacity = telemetry.throttle * 0.5;
-        plumeLight.intensity = telemetry.throttle * 20;
+        lights?.request(position.x, position.y - 1.2, position.z, 0xaad6ff, telemetry.throttle * 20, 20, 2);
         return;
       }
       const ground = height(position.x, position.z);
@@ -234,8 +235,7 @@ export function makeLander(
       const t = telemetry.throttle;
       plumeMat.opacity = t * (0.45 + 0.1 * Math.sin(flicker));
       plume.scale.set(0.85 + t * 0.3, 0.5 + t * 0.7 + 0.06 * Math.sin(flicker * 1.7), 0.85 + t * 0.3);
-      plumeLight.intensity = t * 26;
-      plumeLight.distance = 20 + alt * 0.6;
+      lights?.request(position.x, position.y - 1.2, position.z, 0xaad6ff, t * 26, 20 + alt * 0.6, 2);
       // Below thirty metres the blast starts to move regolith; by ten it is
       // a sheet of it going sideways faster than the vehicle is coming down.
       const blast = t * Math.max(0, 1 - alt / 30);

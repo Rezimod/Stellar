@@ -2318,3 +2318,222 @@
 @media (max-height: 500px) {
   .game-stick { width: 104px; height: 104px; }
 }
+
+/* ── Moon Mode: the one key, and the instruments that come up for a job ── */
+.moon-hud__prompt {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 4px;
+  background: var(--hud-glass);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #ffe6bd;
+}
+.moon-hud__prompt[hidden] { display: none; }
+.moon-hud__prompt kbd {
+  font: inherit;
+  font-size: 11px;
+  min-width: 22px;
+  padding: 2px 6px;
+  border: 1px solid rgba(255, 194, 102, 0.7);
+  border-radius: 4px;
+  color: var(--hud-warm);
+  text-align: center;
+}
+.moon-hud__prompt small { font-size: 10px; color: var(--hud-dim); }
+.moon-hud__prompt small[hidden] { display: none; }
+.moon-surface[data-touch='true'] .moon-hud__prompt { display: none; }
+.moon-hud__objective-job { display: grid; gap: 2px; margin-top: 4px; padding-top: 5px; border-top: 1px solid var(--hud-line); font-size: 11px; line-height: 1.35; }
+.moon-hud__objective-job[hidden] { display: none; }
+.moon-hud__pip--job { background: var(--hud-warm); }
+.moon-hud__meter {
+  position: absolute;
+  top: calc(var(--edge-top) + 44px);
+  left: 0;
+  right: 0;
+  margin-inline: auto;
+  width: min(220px, 40vw);
+  display: grid;
+  justify-items: center;
+  gap: 3px;
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--hud-dim);
+}
+.moon-hud__meter[hidden] { display: none; }
+.moon-hud__meter-bar { width: 100%; height: 4px; border-radius: 2px; background: rgba(186, 214, 240, 0.18); overflow: hidden; }
+.moon-hud__meter-bar i { display: block; height: 100%; width: calc(var(--v, 0) * 100%); background: #5eead4; transition: width 0.12s linear; }
+.moon-hud__meter[data-kind='align'] .moon-hud__meter-bar i { background: var(--hud-warm); }
+.moon-hud__radio {
+  position: absolute;
+  top: calc(var(--edge-top) + 76px);
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: min(440px, calc(100% - 32px));
+  padding: 6px 12px;
+  border-radius: 4px;
+  background: var(--hud-glass);
+  color: var(--hud-dim);
+  font-size: 11px;
+  text-align: center;
+  animation: moon-impact 0.4s ease-out both;
+}
+.moon-hud__radio[hidden] { display: none; }
+.moon-hud__readout {
+  position: absolute;
+  left: 50%;
+  bottom: calc(var(--edge-bottom) + 190px);
+  transform: translateX(-50%);
+  width: min(420px, calc(100% - 32px));
+  padding: 9px 13px;
+  border: 1px solid var(--hud-line);
+  border-radius: 6px;
+  background: var(--hud-solid);
+  font-size: 11px;
+  line-height: 1.5;
+  text-align: center;
+  animation: moon-impact 0.3s ease-out both;
+}
+.moon-hud__readout[hidden] { display: none; }
+.moon-hud__drill {
+  position: absolute;
+  right: var(--edge-right);
+  top: 50%;
+  transform: translateY(-50%);
+  width: 180px;
+  display: grid;
+  gap: 7px;
+  padding: 9px 11px;
+  border-radius: 6px;
+  background: var(--hud-glass);
+  font-size: 10px;
+}
+.moon-hud__drill[hidden] { display: none; }
+.moon-hud__drill-row { display: grid; grid-template-columns: 46px 1fr; gap: 8px; align-items: center; color: var(--hud-dim); letter-spacing: 0.12em; text-transform: uppercase; }
+.moon-hud__drill-depth { font-size: 17px; color: var(--hud-ink); letter-spacing: 0; text-transform: none; }
+.moon-hud__gauge { position: relative; display: block; height: 7px; border-radius: 3px; background: rgba(186, 214, 240, 0.16); overflow: hidden; }
+.moon-hud__gauge b { position: absolute; top: 0; bottom: 0; left: calc(var(--lo) * 100%); width: calc((var(--hi) - var(--lo)) * 100%); background: rgba(77, 255, 136, 0.28); }
+.moon-hud__gauge i { position: absolute; left: 0; top: 0; bottom: 0; width: calc(var(--v, 0) * 100%); background: var(--hud-ink); transition: width 0.1s linear; }
+.moon-hud__gauge[data-state='over'] i { background: var(--hud-warm); }
+.moon-hud__gauge[data-state='hot'] i { background: #ff5a4a; }
+.moon-hud__drill-warn { color: var(--hud-warm); letter-spacing: 0.1em; text-transform: uppercase; }
+.moon-hud__drill-warn[hidden] { display: none; }
+.moon-surface[data-driving='true'] :is(.moon-hud__jump, .moon-hud__drill) { display: none; }
+@media (max-width: 599px) {
+  .moon-hud__drill { top: auto; bottom: calc(var(--edge-bottom) + 262px); transform: none; width: 156px; }
+  .moon-hud__readout { bottom: calc(var(--edge-bottom) + 290px); }
+  .moon-hud__meter { top: calc(var(--edge-top) + 36px); left: var(--edge-left); right: auto; margin-inline: 0; width: min(220px, calc(100vw - 172px)); }
+  .moon-hud__radio { top: calc(var(--edge-top) + 168px); }
+}
+/* In the rover the jump key is gone: the gear key takes its place under the action key. */
+.moon-surface[data-driving='true'] .moon-hud__gear { grid-column: 2; grid-row: 2; width: auto; min-width: 78px; padding: 0 10px; flex-direction: row; gap: 6px; }
+
+/* ═══════════ The cosmic loading screen: before any 3D scene is ready ═══════════ */
+.cosmic-loader {
+  position: absolute;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 14px;
+  overflow: hidden;
+  background: #050812;
+  color: #eef2fb;
+  text-align: center;
+  padding-inline: 16px;
+  transition: opacity 0.6s ease, visibility 0s linear 0s;
+}
+.cosmic-loader__stars {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  border-radius: 50%;
+  animation: cosmic-twinkle 5.5s ease-in-out infinite alternate;
+}
+.cosmic-loader__stars--near { width: 2px; height: 2px; animation-duration: 3.8s; animation-delay: -1.7s; }
+.cosmic-loader__system { position: relative; width: 148px; height: 148px; margin-bottom: 10px; }
+.cosmic-loader__sun {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 16px;
+  height: 16px;
+  margin: -8px 0 0 -8px;
+  border-radius: 50%;
+  background: var(--terracotta, #ffb347);
+}
+.cosmic-loader__orbit {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  border: 1px solid rgba(168, 180, 200, 0.28);
+  border-radius: 50%;
+  animation: cosmic-orbit linear infinite;
+}
+.cosmic-loader__orbit i {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+.cosmic-loader__orbit--1 { width: 54px; height: 54px; margin: -27px 0 0 -27px; animation-duration: 3.2s; }
+.cosmic-loader__orbit--1 i { width: 5px; height: 5px; background: #c9c3b8; }
+.cosmic-loader__orbit--2 { width: 96px; height: 96px; margin: -48px 0 0 -48px; animation-duration: 6.4s; }
+.cosmic-loader__orbit--2 i { width: 8px; height: 8px; background: var(--seafoam, #5eead4); }
+.cosmic-loader__orbit--3 { width: 146px; height: 146px; margin: -73px 0 0 -73px; animation-duration: 12s; }
+.cosmic-loader__orbit--3 i { width: 7px; height: 7px; background: #e0a070; }
+.cosmic-loader__label {
+  position: relative;
+  margin: 0;
+  font: 500 15px/1.35 var(--font-body, system-ui), sans-serif;
+  letter-spacing: 0.04em;
+}
+.cosmic-loader__detail {
+  position: relative;
+  margin: 0;
+  font: 500 12px/1.4 var(--font-mono, ui-monospace), monospace;
+  color: rgba(168, 180, 200, 0.85);
+}
+.cosmic-loader__bar {
+  position: relative;
+  width: 168px;
+  height: 2px;
+  margin-top: 6px;
+  border-radius: 2px;
+  background: rgba(168, 180, 200, 0.18);
+  overflow: hidden;
+}
+.cosmic-loader__bar i {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 40%;
+  border-radius: 2px;
+  background: var(--terracotta, #ffb347);
+  animation: cosmic-bar 1.6s ease-in-out infinite;
+}
+@keyframes cosmic-orbit { to { transform: rotate(360deg); } }
+@keyframes cosmic-twinkle { from { opacity: 0.55; } to { opacity: 1; } }
+@keyframes cosmic-bar { 0% { left: -40%; } 100% { left: 100%; } }
+@media (prefers-reduced-motion: reduce) {
+  .cosmic-loader__orbit, .cosmic-loader__stars, .cosmic-loader__bar i { animation: none; }
+}
+/* The route and chunk screens sit over everything until the explorer takes over. */
+.solar-system--loading .cosmic-loader { z-index: 1000; }
+.solar-system__loader { z-index: 70; }
+.solar-system__loader.is-done,
+.moon-surface[data-ready='true'] .moon-surface__loader:not(.is-forced) {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.6s ease, visibility 0s linear 0.6s;
+}
+.moon-surface__loader { z-index: 30; }

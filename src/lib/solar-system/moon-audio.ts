@@ -12,6 +12,8 @@ export interface SuitAudio {
   step: (hard: number) => void;
   bleep: () => void;
   thump: (distance: number) => void;
+  /** The drill through the suit: pitch and weight follow the bit's load. */
+  drill: (load: number, running: boolean) => void;
   dispose: () => void;
 }
 
@@ -24,6 +26,8 @@ export function makeSuitAudio(): SuitAudio {
   let rate = 0.28;
   let noise: AudioBuffer | null = null;
   let helmetK = 0;
+  let drillOsc: OscillatorNode | null = null;
+  let drillGain: GainNode | null = null;
 
   const start = () => {
     try {
@@ -141,6 +145,24 @@ export function makeSuitAudio(): SuitAudio {
           n.connect(lp); lp.connect(ng); ng.connect(m); n.start(); n.stop(c.currentTime + 0.7);
         }
       });
+    },
+    drill(load, running) {
+      if (!ctx || !master) return;
+      if (!drillOsc && running) {
+        try {
+          drillOsc = ctx.createOscillator();
+          drillOsc.type = 'sawtooth';
+          const lp = ctx.createBiquadFilter();
+          lp.type = 'lowpass'; lp.frequency.value = 420;
+          drillGain = ctx.createGain();
+          drillGain.gain.value = 0;
+          drillOsc.connect(lp); lp.connect(drillGain); drillGain.connect(master);
+          drillOsc.start();
+        } catch { drillOsc = null; }
+      }
+      if (!drillOsc || !drillGain) return;
+      drillOsc.frequency.setTargetAtTime(62 + load * 70, ctx.currentTime, 0.08);
+      drillGain.gain.setTargetAtTime(running ? 0.025 + load * 0.06 : 0, ctx.currentTime, 0.1);
     },
     dispose() {
       if (ctx) void ctx.close();

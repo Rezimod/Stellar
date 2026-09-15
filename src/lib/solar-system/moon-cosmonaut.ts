@@ -1,26 +1,23 @@
-// The cosmonaut on the surface: an articulated EVA suit modelled on the
-// current lunar suits — a hard upper torso, a pressure bubble inside a white
-// visor assembly with the gold sun visor down and two helmet lamps, a
-// rounded life-support pack, convolute bellows at the elbows, knees and
-// ankles, gauntlet gloves and thick-soled lunar boots — driven by a gait
-// taken from the Apollo films: a short, careful stride at walking pace that
-// blends into the two-footed lunar lope as the speed comes up, knees always
-// bending the right way, boots kept level with the ground. The one-sixth-g
-// controller moves it: long floating strides, slow arcs, a squat on
-// touchdown, dust off the boots.
+// The cosmonaut on the surface: the EVA suit from moon-suit-mesh, moved by a
+// one-sixth-g controller and posed by a small set of blended states.
 //
-// What the suit will and will not do is the point of the movement. A
-// pressure garment at a sixth of a g has almost no grip to push against,
-// so it takes a couple of strides to get going and a good three metres to
-// stop; it cannot turn on the spot at a run, only arc; it loses the hill
-// going up and gains it coming down, and on anything steeper than about
-// thirty degrees it starts to slide whatever the boots want. Land hard and
-// the crew stumbles, arms out, and has to get the feet back under them
-// before they are going anywhere. Crouch and all of it halves.
+// What the suit will and will not do is the point of the movement. There is
+// little grip on regolith, so a stride builds speed over a second rather than
+// instantly — but the first step answers at once, turning is quick at a walk
+// and only takes a wide arc once there is real momentum, and letting go
+// always brings the crew to a stop in a couple of metres. It loses the hill
+// going up and gains it coming down; past about thirty degrees it slides.
+// Land hard and the crew stumbles, arms out. Crouch and all of it halves.
+//
+// The pose is built from the motion, never the other way round: stride
+// frequency and leg swing follow the ground speed so boots do not skate, the
+// chest counter-rotates against the hips, the arms and the pack lag on
+// springs, the head stays level, and landings compress and come back.
 
 import * as THREE from 'three';
-import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
-import { MOON_G, type DustHandle } from '@/lib/solar-system/moon-fx';
+import { MOON_G, type DustBurst, type DustHandle } from '@/lib/solar-system/moon-fx';
+import { mergeStatic } from '@/lib/solar-system/moon-batch';
+import { buildSuit, HELMET_C, RUN_SPEED } from '@/lib/solar-system/moon-suit-mesh';
 
 export interface Collider { x: number; z: number; r: number }
 
@@ -28,381 +25,228 @@ export interface WalkInput {
   /** World-space move intent, already camera-relative, |v| ≤ 1. */
   moveX: number;
   moveZ: number;
+  /** Edge-triggered: a jump was asked for this step. */
   jump: boolean;
   run: boolean;
   /** Down on one knee: slow, low, and steady. */
   crouch: boolean;
+  /** Using a tool at a work site. */
+  work: boolean;
 }
+
+export type SuitAnim =
+  | 'idle' | 'idleLook' | 'walk' | 'lope' | 'brake' | 'turn' | 'crouch' | 'crouchMove'
+  | 'jump' | 'air' | 'landSoft' | 'landHard' | 'stumble' | 'work' | 'climb' | 'enterRover' | 'exitRover';
 
 export interface CosmonautState {
   airborne: boolean;
   speed: number;
   /** Height above the ground under the boots, m. */
   altitude: number;
-  /** Set for one frame on a hard landing. */
+  /** Set for one step on a hard landing. */
   landed: boolean;
-  /** Down on one knee. */
   crouched: boolean;
   /** Seconds left of a stumble; the stick barely answers while it runs. */
   stumble: number;
   /** The grade under the boots in the direction of travel: + is uphill. */
   grade: number;
-  /** Sliding down a slope the boots cannot hold. */
   sliding: boolean;
+  anim: SuitAnim;
 }
 
 export interface StepEvent { x: number; y: number; z: number; yaw: number; side: number; hard: number }
 
 export interface CosmonautHandle {
   group: THREE.Group;
+  /** The simulated position; the drawn one is interpolated from it. */
   position: THREE.Vector3;
+  velocity: THREE.Vector3;
   /** Facing yaw, rad, +Z forward at 0. */
   yaw: number;
   state: CosmonautState;
   /** Eye point inside the helmet, world space. */
   eye: (out: THREE.Vector3) => THREE.Vector3;
-  /** Inside the helmet the helmet itself is not drawn. */
   setHelmetView: (on: boolean) => void;
   /** Turn the head toward a look direction (helmet view) — yaw relative to the body, pitch. */
   look: (yaw: number, pitch: number) => void;
   onStep: ((e: StepEvent) => void) | null;
   update: (dt: number, input: WalkInput, heightAt: (x: number, z: number) => number, colliders: Collider[], walkRadius: number) => void;
+  /** Draw the suit between the last two simulation steps. */
+  present: (alpha: number) => void;
+  /** Put the drawn suit where the simulated one is (after a teleport). */
+  settle: () => void;
+  /** A short scripted move: climbing onto the rover, or down off it. */
+  play: (kind: 'enterRover' | 'exitRover', seconds: number) => void;
   /** Standing on a floor rather than regolith: no dust off the boots. */
   indoors: boolean;
   dispose: () => void;
 }
 
-const WALK = 2.05;
-const RUN = 4.6;
+export const WALK = 2.05;
+export const RUN = RUN_SPEED;
 const CROUCH = 0.95;
 const JUMP_V = 2.7;
-/** What the boots can get out of regolith: pushing off, pulling up, and in
- *  the air, where there is nothing to push against at all. */
-const GROUND_ACCEL = 5.0;
-const BRAKE = 3.4;
+/** Getting going: hard for the first metre a second, then a long build. */
+const LAUNCH_ACCEL = 8.5;
+const CRUISE_ACCEL = 3.4;
+const BRAKE = 4.4;
+const REVERSE_BRAKE = 7.5;
+/** Sideways grip for changing direction, standing and at a run. */
+const STEER_STILL = 11;
+const STEER_RUN = 3.2;
 const AIR_ACCEL = 1.1;
-/** How fast the suit can be turned, rad/s, standing and at a run. */
-const TURN_STILL = 3.6;
-const TURN_RUN = 1.5;
-/** Steeper than this and the boots stop holding. */
+/** How fast the suit turns to face, rad/s, standing and at a run. */
+const TURN_STILL = 7;
+const TURN_RUN = 2.2;
+const COYOTE = 0.1;
+const JUMP_BUFFER = 0.15;
 const SLIP_GRADE = 0.58;
 const SUIT_RADIUS = 0.55;
-const HIP_H = 0.98;
-/** Leg segments, hip pivot → knee → ankle → sole. */
-const THIGH = 0.46;
-const SHIN = 0.42;
+const LEG = 0.88;
 
-/** A fine ripstop weave, so the white cloth is not a flat plastic. */
-function fabricNormal(): THREE.CanvasTexture {
-  const s = 128;
-  const c = document.createElement('canvas');
-  c.width = c.height = s;
-  const ctx = c.getContext('2d')!;
-  const img = ctx.createImageData(s, s);
-  for (let y = 0; y < s; y++) {
-    for (let x = 0; x < s; x++) {
-      const i = (y * s + x) * 4;
-      const wx = Math.sin(x * Math.PI / 2) * 0.35 + (Math.random() - 0.5) * 0.3;
-      const wy = Math.sin(y * Math.PI / 2) * 0.35 + (Math.random() - 0.5) * 0.3;
-      img.data[i] = Math.round((wx * 0.5 + 0.5) * 255);
-      img.data[i + 1] = Math.round((wy * 0.5 + 0.5) * 255);
-      img.data[i + 2] = 230;
-      img.data[i + 3] = 255;
-    }
-  }
-  ctx.putImageData(img, 0, 0);
-  const t = new THREE.CanvasTexture(c);
-  t.wrapS = t.wrapT = THREE.RepeatWrapping;
-  t.repeat.set(6, 6);
-  return t;
-}
+const wrap = (a: number) => { while (a > Math.PI) a -= Math.PI * 2; while (a < -Math.PI) a += Math.PI * 2; return a; };
+const ease = (rate: number, dt: number) => 1 - Math.exp(-dt * rate);
 
-/** A solid of revolution from (radius, height) pairs listed bottom to top. */
-const lathe = (pts: [number, number][], seg = 22) => new THREE.LatheGeometry(pts.map(([r, y]) => new THREE.Vector2(r, y)), seg);
+export function makeCosmonaut(dust: DustHandle, lite = false): CosmonautHandle {
+  const rig = buildSuit(lite);
+  const { group, body, pelvis, chest, pack, neck, helmet, sides, shoulders, elbows, hands, hips, knees, ankles } = rig;
+  // Every joint is a group; everything rigid inside one becomes a draw call per material.
+  const merged = mergeStatic(group, { isPivot: (o) => (o as THREE.Group).isGroup === true, minCaster: 0.05 });
 
-/** A limb segment hanging down from its pivot: rounded at both ends, tapering. */
-const taper = (rTop: number, rBottom: number, length: number) => lathe([
-  [0, -length], [rBottom * 0.72, -length + 0.012], [rBottom, -length + 0.045],
-  [(rTop + rBottom) / 2 * 1.04, -length / 2], [rTop, -0.045], [rTop * 0.72, -0.012], [0, 0],
-]);
-
-export function makeCosmonaut(dust: DustHandle): CosmonautHandle {
-  const group = new THREE.Group();
-  group.name = 'cosmonaut';
-  const body = new THREE.Group();
-  group.add(body);
-  const weave = fabricNormal();
-  const cloth = new THREE.MeshStandardMaterial({ color: 0xe2e2dd, roughness: 0.8, metalness: 0, normalMap: weave, normalScale: new THREE.Vector2(0.35, 0.35) });
-  const bellows = new THREE.MeshStandardMaterial({ color: 0xcfcfca, roughness: 0.85, metalness: 0, normalMap: weave, normalScale: new THREE.Vector2(0.6, 0.6) });
-  const clothDirty = new THREE.MeshStandardMaterial({ color: 0xb9b5ad, roughness: 0.92, metalness: 0, normalMap: weave, normalScale: new THREE.Vector2(0.5, 0.5) });
-  const hard = new THREE.MeshStandardMaterial({ color: 0xefefea, roughness: 0.38, metalness: 0.05 });
-  const bearing = new THREE.MeshStandardMaterial({ color: 0x9aa0a7, roughness: 0.4, metalness: 0.75 });
-  const dark = new THREE.MeshStandardMaterial({ color: 0x2b2e33, roughness: 0.6, metalness: 0.3 });
-  const glove = new THREE.MeshStandardMaterial({ color: 0x5d636b, roughness: 0.75, metalness: 0.05, normalMap: weave, normalScale: new THREE.Vector2(0.4, 0.4) });
-  const sole = new THREE.MeshStandardMaterial({ color: 0x3a3d42, roughness: 0.95, metalness: 0 });
-  const red = new THREE.MeshStandardMaterial({ color: 0xb8322c, roughness: 0.7, metalness: 0 });
-  const blue = new THREE.MeshStandardMaterial({ color: 0x1e4ea8, roughness: 0.7, metalness: 0 });
-  const visor = new THREE.MeshPhysicalMaterial({ color: 0xd4a53a, roughness: 0.05, metalness: 1, clearcoat: 1, clearcoatRoughness: 0.04, envMapIntensity: 1.8 });
-  const glass = new THREE.MeshPhysicalMaterial({ color: 0xcfe2f2, roughness: 0.04, metalness: 0.1, transparent: true, opacity: 0.25, clearcoat: 1 });
-  const screen = new THREE.MeshStandardMaterial({ color: 0x0a2a2a, emissive: new THREE.Color(0x5eead4), emissiveIntensity: 0.8, roughness: 0.3 });
-  const lampMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: new THREE.Color(0xfff4dc), emissiveIntensity: 1.4 });
-  const hoseMat = new THREE.MeshStandardMaterial({ color: 0x8a8f96, roughness: 0.5, metalness: 0.4 });
-  hard.side = THREE.DoubleSide;
-  const owned: THREE.Material[] = [cloth, clothDirty, bellows, hard, bearing, dark, glove, sole, red, blue, visor, glass, screen, lampMat, hoseMat];
-  const geoms: THREE.BufferGeometry[] = [];
-  const mesh = (parent: THREE.Object3D, g: THREE.BufferGeometry, m: THREE.Material, x = 0, y = 0, z = 0) => {
-    geoms.push(g);
-    const o = new THREE.Mesh(g, m);
-    o.position.set(x, y, z);
-    o.castShadow = true;
-    o.receiveShadow = true;
-    parent.add(o);
-    return o;
-  };
-  /** Convolute rings: the pleated joint of a pressure suit. */
-  const convolute = (parent: THREE.Object3D, r: number, count: number, y0: number, step: number) => {
-    for (let b = 0; b < count; b++) mesh(parent, new THREE.TorusGeometry(r, r * 0.2, 8, 20), bellows, 0, y0 - b * step, 0).rotation.x = Math.PI / 2;
-  };
-  const band = (parent: THREE.Object3D, r: number, y: number, m: THREE.Material, h = 0.035) =>
-    mesh(parent, new THREE.CylinderGeometry(r, r, h, 20, 1, true), m, 0, y, 0);
-
-  // ── Torso: hard upper torso, soft waist brief, the waist bearing. ──
-  const torso = new THREE.Group();
-  torso.position.y = HIP_H;
-  body.add(torso);
-  mesh(torso, lathe([[0.19, 0.1], [0.225, 0.18], [0.27, 0.32], [0.295, 0.45], [0.285, 0.55], [0.22, 0.63], [0.13, 0.665], [0, 0.67]]), hard, 0, 0, 0)
-    .scale.set(1.12, 1, 0.8);
-  mesh(torso, lathe([[0, -0.1], [0.17, -0.09], [0.215, -0.02], [0.21, 0.06], [0.19, 0.12]]), cloth, 0, 0, 0).scale.set(1.1, 1, 0.85);
-  mesh(torso, new THREE.TorusGeometry(0.2, 0.022, 8, 28), bearing, 0, 0.1, 0).rotation.x = Math.PI / 2;
-  // Display and control module on the chest, with its dials.
-  mesh(torso, new RoundedBoxGeometry(0.3, 0.15, 0.1, 2, 0.025), dark, 0, 0.36, 0.23);
-  mesh(torso, new THREE.BoxGeometry(0.16, 0.07, 0.01), screen, -0.04, 0.37, 0.282);
-  for (const dx of [0.08, 0.12]) mesh(torso, new THREE.CylinderGeometry(0.018, 0.018, 0.03, 12), bearing, dx, 0.37, 0.285).rotation.x = Math.PI / 2;
-  // Name tape, a Georgian flag patch, a commander's red band on the torso.
-  const tape = document.createElement('canvas');
-  tape.width = 256; tape.height = 64;
-  const tc = tape.getContext('2d')!;
-  tc.fillStyle = '#e9e9e4'; tc.fillRect(0, 0, 256, 64);
-  tc.fillStyle = '#1b1f26'; tc.font = '600 34px "JetBrains Mono", ui-monospace, monospace';
-  tc.textAlign = 'center'; tc.textBaseline = 'middle'; tc.fillText('MODEBADZE', 128, 34);
-  const tapeTex = new THREE.CanvasTexture(tape);
-  tapeTex.colorSpace = THREE.SRGBColorSpace;
-  const flag = document.createElement('canvas');
-  flag.width = 96; flag.height = 64;
-  const fc = flag.getContext('2d')!;
-  fc.fillStyle = '#ffffff'; fc.fillRect(0, 0, 96, 64);
-  fc.fillStyle = '#e8112d';
-  fc.fillRect(40, 0, 16, 64); fc.fillRect(0, 24, 96, 16);
-  for (const [cx, cy] of [[20, 12], [76, 12], [20, 52], [76, 52]]) { fc.fillRect(cx - 2, cy - 7, 4, 14); fc.fillRect(cx - 7, cy - 2, 14, 4); }
-  const flagTex = new THREE.CanvasTexture(flag);
-  flagTex.colorSpace = THREE.SRGBColorSpace;
-  const tapeMat = new THREE.MeshStandardMaterial({ map: tapeTex, roughness: 0.8 });
-  const flagMat = new THREE.MeshStandardMaterial({ map: flagTex, roughness: 0.8 });
-  owned.push(tapeMat, flagMat);
-  mesh(torso, new THREE.PlaneGeometry(0.17, 0.042), tapeMat, -0.13, 0.5, 0.232).rotation.y = -0.28;
-  mesh(torso, new THREE.PlaneGeometry(0.09, 0.06), flagMat, 0.14, 0.5, 0.23).rotation.y = 0.3;
-
-  // ── Tool belt: a geology hammer on the right hip, a sample pouch on the
-  // left, the tether reel in front. ──
-  const beltRing = mesh(torso, new THREE.TorusGeometry(0.235, 0.018, 8, 28), dark, 0, -0.05, 0);
-  beltRing.rotation.x = Math.PI / 2;
-  beltRing.scale.set(1.1, 0.85, 1);
-  const hammer = new THREE.Group();
-  hammer.position.set(0.25, -0.1, 0.02);
-  hammer.rotation.z = 0.25;
-  torso.add(hammer);
-  mesh(hammer, new THREE.CylinderGeometry(0.012, 0.014, 0.26, 8), hoseMat, 0, -0.12, 0);
-  mesh(hammer, new THREE.BoxGeometry(0.04, 0.035, 0.11), bearing, 0, 0.02, 0);
-  mesh(hammer, new THREE.BoxGeometry(0.03, 0.03, 0.05), bearing, 0, 0.02, 0.07).rotation.x = 0.4;
-  mesh(torso, new RoundedBoxGeometry(0.11, 0.13, 0.06, 2, 0.02), clothDirty, -0.24, -0.14, 0.05);
-  mesh(torso, new THREE.BoxGeometry(0.11, 0.02, 0.065), dark, -0.24, -0.075, 0.05);
-  const reel = mesh(torso, new THREE.CylinderGeometry(0.035, 0.035, 0.03, 16), bearing, 0.11, -0.08, 0.2);
-  reel.rotation.x = Math.PI / 2;
-  mesh(torso, new THREE.CylinderGeometry(0.012, 0.012, 0.035, 8), dark, 0.11, -0.08, 0.2).rotation.x = Math.PI / 2;
-
-  // ── Life-support pack: rounded shell, side covers, top cap, vents. ──
-  const pack = new THREE.Group();
-  pack.position.set(0, 0.36, -0.35);
-  torso.add(pack);
-  mesh(pack, new RoundedBoxGeometry(0.54, 0.7, 0.27, 4, 0.06), hard);
-  mesh(pack, new RoundedBoxGeometry(0.48, 0.12, 0.24, 3, 0.04), clothDirty, 0, 0.36, 0);
-  for (const s of [-1, 1]) {
-    mesh(pack, new RoundedBoxGeometry(0.03, 0.52, 0.2, 2, 0.012), bearing, s * 0.275, -0.02, 0);
-    mesh(pack, new THREE.CylinderGeometry(0.035, 0.035, 0.06, 12), dark, s * 0.18, -0.37, 0.02);
-  }
-  for (let v = 0; v < 5; v++) mesh(pack, new THREE.BoxGeometry(0.3, 0.012, 0.01), dark, 0, 0.12 - v * 0.05, -0.137);
-  mesh(pack, new THREE.BoxGeometry(0.12, 0.05, 0.012), red, 0.15, 0.26, -0.137);
-  mesh(pack, new THREE.CylinderGeometry(0.005, 0.005, 0.32, 6), bearing, 0.21, 0.5, -0.06);
-  // Umbilicals from the pack round to the chest module.
-  for (const side of [-1, 1]) {
-    const curve = new THREE.CatmullRomCurve3([
-      new THREE.Vector3(side * 0.22, 0.12, -0.24), new THREE.Vector3(side * 0.34, 0.14, -0.02),
-      new THREE.Vector3(side * 0.3, 0.26, 0.2), new THREE.Vector3(side * 0.15, 0.34, 0.26),
-    ]);
-    mesh(torso, new THREE.TubeGeometry(curve, 18, 0.018, 8, false), hoseMat);
-  }
-
-  // ── Helmet: neck ring, clear bubble, white visor assembly open at the
-  // front, the gold sun visor drawn down, a lamp on each temple. ──
-  const neck = new THREE.Group();
-  neck.position.set(0, 0.64, 0);
-  torso.add(neck);
-  mesh(neck, new THREE.TorusGeometry(0.155, 0.03, 10, 28), bearing, 0, 0.02, 0).rotation.x = Math.PI / 2;
-  const helmetParts = new THREE.Group();
-  neck.add(helmetParts);
-  const HC = 0.2;
-  mesh(helmetParts, new THREE.SphereGeometry(0.185, 28, 20), glass, 0, HC, 0);
-  // SphereGeometry's phi runs from -X; π/2 is straight ahead (+Z).
-  mesh(helmetParts, new THREE.SphereGeometry(0.212, 32, 24, Math.PI / 2 + 0.95, Math.PI * 2 - 1.9, 0, Math.PI * 0.8), hard, 0, HC, -0.005);
-  mesh(helmetParts, new THREE.SphereGeometry(0.203, 32, 24, Math.PI / 2 - 1.02, 2.04, 0.42, 1.5), visor, 0, HC, 0);
-  mesh(helmetParts, new THREE.TorusGeometry(0.2, 0.012, 8, 32, Math.PI * 1.1), hard, 0, HC + 0.01, 0.02).rotation.set(0.25, 0, -Math.PI * 0.05);
-  for (const side of [-1, 1]) {
-    const lamp = mesh(helmetParts, new RoundedBoxGeometry(0.05, 0.05, 0.1, 2, 0.015), dark, side * 0.2, HC + 0.08, 0.03);
-    lamp.rotation.z = side * 0.35;
-    mesh(helmetParts, new THREE.CircleGeometry(0.018, 14), lampMat, side * 0.2, HC + 0.08, 0.082);
-  }
-
-  // ── Limbs. Each joint is a group at its pivot so the swing reads true. ──
-  const sides: number[] = [];
-  const shoulders: THREE.Group[] = []; const elbows: THREE.Group[] = [];
-  const hips: THREE.Group[] = []; const knees: THREE.Group[] = []; const ankles: THREE.Group[] = [];
-  for (const side of [-1, 1]) {
-    sides.push(side);
-    // Arm: shoulder bearing, upper arm with the red band, elbow convolutes,
-    // forearm, wrist disconnect, glove with gauntlet and thumb.
-    const sh = new THREE.Group();
-    sh.position.set(side * 0.33, 0.5, 0);
-    torso.add(sh);
-    mesh(sh, new THREE.SphereGeometry(0.1, 16, 12), hard);
-    mesh(sh, new THREE.TorusGeometry(0.092, 0.018, 8, 22), bearing, 0, -0.05, 0).rotation.x = Math.PI / 2;
-    mesh(sh, taper(0.088, 0.072, 0.3), cloth, 0, -0.04, 0);
-    band(sh, 0.086, -0.17, red, 0.045);
-    const el = new THREE.Group();
-    el.position.set(0, -0.34, 0);
-    sh.add(el);
-    convolute(el, 0.075, 3, 0.02, 0.032);
-    mesh(el, taper(0.07, 0.058, 0.26), cloth, 0, -0.05, 0);
-    mesh(el, new THREE.TorusGeometry(0.06, 0.016, 8, 20), bearing, 0, -0.3, 0).rotation.x = Math.PI / 2;
-    const hand = new THREE.Group();
-    hand.position.set(0, -0.32, 0);
-    el.add(hand);
-    mesh(hand, new THREE.CylinderGeometry(0.066, 0.058, 0.07, 16), glove, 0, -0.02, 0);
-    mesh(hand, new RoundedBoxGeometry(0.085, 0.1, 0.05, 2, 0.02), glove, 0, -0.1, 0.005);
-    mesh(hand, new RoundedBoxGeometry(0.08, 0.07, 0.042, 2, 0.018), glove, 0, -0.17, 0.02).rotation.x = -0.45;
-    mesh(hand, new THREE.CapsuleGeometry(0.016, 0.04, 4, 8), glove, -side * 0.048, -0.09, 0.03).rotation.z = -side * 0.5;
-    // Left forearm: the cuff display and its checklist; right: a wrist mirror.
-    if (side < 0) {
-      mesh(el, new RoundedBoxGeometry(0.1, 0.075, 0.035, 2, 0.01), dark, 0, -0.19, 0.06).rotation.x = -0.35;
-      mesh(el, new THREE.PlaneGeometry(0.07, 0.04), screen, 0, -0.185, 0.081).rotation.x = -0.35;
-    } else {
-      mesh(el, new THREE.CylinderGeometry(0.03, 0.03, 0.008, 16), bearing, 0, -0.2, 0.066).rotation.x = Math.PI / 2 - 0.35;
-    }
-    shoulders.push(sh); elbows.push(el);
-
-    // Leg: hip bearing, thigh, knee convolutes, shin, ankle bellows, boot.
-    const hip = new THREE.Group();
-    hip.position.set(side * 0.13, 0.02, 0);
-    torso.add(hip);
-    mesh(hip, new THREE.SphereGeometry(0.115, 16, 12), cloth);
-    mesh(hip, taper(0.115, 0.09, THIGH), cloth, 0, -0.02, 0);
-    band(hip, 0.108, -0.14, red, 0.05);
-    const kn = new THREE.Group();
-    kn.position.set(0, -THIGH, 0);
-    hip.add(kn);
-    convolute(kn, 0.096, 4, 0.04, 0.036);
-    mesh(kn, taper(0.088, 0.072, SHIN), cloth, 0, -0.06, 0);
-    const an = new THREE.Group();
-    an.position.set(0, -SHIN, 0);
-    kn.add(an);
-    convolute(an, 0.074, 2, 0.05, 0.03);
-    mesh(an, new THREE.CylinderGeometry(0.082, 0.09, 0.08, 18), clothDirty, 0, 0, 0.01);
-    mesh(an, new RoundedBoxGeometry(0.15, 0.08, 0.27, 3, 0.035), clothDirty, 0, -0.045, 0.045);
-    mesh(an, new THREE.SphereGeometry(0.075, 16, 12), clothDirty, 0, -0.05, 0.15).scale.set(1, 0.55, 0.9);
-    mesh(an, new RoundedBoxGeometry(0.16, 0.03, 0.32, 2, 0.01), sole, 0, -0.095, 0.05);
-    mesh(an, new THREE.BoxGeometry(0.07, 0.03, 0.015), blue, 0, -0.02, 0.19);
-    hips.push(hip); knees.push(kn); ankles.push(an);
-  }
-
-  const position = group.position;
+  const position = new THREE.Vector3();
   const vel = new THREE.Vector3();
-  const state: CosmonautState = { airborne: false, speed: 0, altitude: 0, landed: false, crouched: false, stumble: 0, grade: 0, sliding: false };
+  const prev = new THREE.Vector3();
+  let prevYaw = 0;
+  const state: CosmonautState = { airborne: false, speed: 0, altitude: 0, landed: false, crouched: false, stumble: 0, grade: 0, sliding: false, anim: 'idle' };
+  const puff: DustBurst = { x: 0, y: 0, z: 0, count: 1, speedMin: 0.4, speedMax: 1, cone: 0.7, size: 0.09 };
   let phase = 0;
-  let squat = 0;
-  let lean = 0;
-  let airT = 0;
-  let stepSide = 1;
   let lastStepPhase = 0;
+  let stepSide = 1;
+  let clock = 0;
   let idleT = 0;
+  let airT = 0;
+  let landT = 9;
+  let landHard = false;
   let lope = 0;
-  let crouch = 0;
+  let crouchK = 0;
+  let workK = 0;
+  let climbK = 0;
+  let brakeK = 0;
+  let lookK = 0;
+  let lean = 0;
   let stumble = 0;
   let stumbleRoll = 0;
   let grade = 0;
-  const eyeLocal = new THREE.Vector3(0, HC, 0.08);
-  let lookYaw = 0;
-  let lookPitch = 0;
+  let squat = 0; let squatVel = 0;
+  let packRot = 0; let packVel = 0; let lastBodyVy = 0; let lastBodyY = 0;
+  const arm = [0, 0]; const armVel = [0, 0];
+  let coyote = 0;
+  let jumpBuffer = 0;
+  let jumping = false;
+  let turnError = 0;
+  let scripted = 0;
+  let scriptedKind: 'enterRover' | 'exitRover' | null = null;
+  let scriptedLen = 1;
+  let lookYaw = 0; let lookPitch = 0;
   let helmetView = false;
+  const eyeLocal = new THREE.Vector3(0, HELMET_C, 0.08);
+
   const handle: CosmonautHandle = {
-    group, position, yaw: 0, state, onStep: null, indoors: false,
-    eye(out) { return neck.localToWorld(out.copy(eyeLocal)); },
-    setHelmetView(on) { helmetView = on; helmetParts.visible = !on; },
+    group, position, velocity: vel, yaw: 0, state, onStep: null, indoors: false,
+    eye(out) {
+      group.updateMatrixWorld(true);
+      return neck.localToWorld(out.copy(eyeLocal));
+    },
+    setHelmetView(on) { helmetView = on; helmet.visible = !on; },
     look(y, p) { lookYaw = y; lookPitch = p; },
+    play(kind, seconds) { scriptedKind = kind; scripted = scriptedLen = seconds; },
+    settle() { prev.copy(position); prevYaw = handle.yaw; group.position.copy(position); group.rotation.y = handle.yaw; },
+    present(alpha) {
+      group.position.lerpVectors(prev, position, alpha);
+      group.rotation.y = prevYaw + wrap(handle.yaw - prevYaw) * alpha;
+    },
     update(dt, input, heightAt, colliders, walkRadius) {
+      prev.copy(position);
+      prevYaw = handle.yaw;
       state.landed = false;
-      idleT += dt;
-      // A stumble runs itself out; until it does the stick barely answers.
+      clock += dt;
       stumble = Math.max(0, stumble - dt);
       state.stumble = stumble;
-      const authority = stumble > 0 ? 0.22 : 1;
+      scripted = Math.max(0, scripted - dt);
+      if (scripted <= 0) scriptedKind = null;
+      const authority = scripted > 0 ? 0 : stumble > 0 ? 0.22 : 1;
       const wantX = input.moveX * authority; const wantZ = input.moveZ * authority;
       const want = Math.min(1, Math.hypot(wantX, wantZ));
       const ground = heightAt(position.x, position.z);
       const onGround = position.y <= ground + 0.001 && vel.y <= 0;
-      // Crouch: only on the ground, and it eases in and out of the pose.
+      coyote = onGround ? COYOTE : Math.max(0, coyote - dt);
+      jumpBuffer = input.jump ? JUMP_BUFFER : Math.max(0, jumpBuffer - dt);
       const wantCrouch = input.crouch && onGround && stumble <= 0;
-      crouch += ((wantCrouch ? 1 : 0) - crouch) * (1 - Math.exp(-dt * 7));
+      const working = input.work && onGround && want < 0.05 && stumble <= 0 && scripted <= 0;
       state.crouched = wantCrouch;
-      // ── The hill. Sample the ground a stride ahead along the intent: up
-      // it the suit loses speed, down it gains a little. ──
+
+      // ── The hill, a stride ahead along the intent. ──
       if (want > 0.05 && onGround) {
         const ax = position.x + (wantX / want) * 0.9;
         const az = position.z + (wantZ / want) * 0.9;
-        grade += ((heightAt(ax, az) - ground) / 0.9 - grade) * (1 - Math.exp(-dt * 6));
+        grade += ((heightAt(ax, az) - ground) / 0.9 - grade) * ease(6, dt);
       } else {
-        grade += (0 - grade) * (1 - Math.exp(-dt * 4));
+        grade += (0 - grade) * ease(4, dt);
       }
       state.grade = grade;
       const hill = THREE.MathUtils.clamp(1 - grade * 0.62, 0.42, 1.22);
       const top = (wantCrouch ? CROUCH : input.run ? RUN : WALK) * hill;
-      // ── Traction. Regolith gives the boots very little to push against,
-      // so the suit takes a couple of strides to get going and rather more
-      // to stop; in the air there is nothing to push against at all. ──
       const tx = want > 0 ? (wantX / want) * top * want : 0;
       const tz = want > 0 ? (wantZ / want) * top * want : 0;
-      const dvx = tx - vel.x; const dvz = tz - vel.z;
-      const dv = Math.hypot(dvx, dvz);
-      const rate = onGround ? (want > 0.05 ? GROUND_ACCEL : BRAKE) * (wantCrouch ? 1.5 : 1) : AIR_ACCEL;
-      if (dv > 1e-5) {
+
+      // ── Traction: along the motion and across it are different jobs. ──
+      const sp = Math.hypot(vel.x, vel.z);
+      const approach = (rate: number) => {
+        const dvx = tx - vel.x; const dvz = tz - vel.z;
+        const dv = Math.hypot(dvx, dvz);
+        if (dv < 1e-6) return;
         const step = Math.min(dv, rate * dt);
-        vel.x += dvx / dv * step;
-        vel.z += dvz / dv * step;
+        vel.x += dvx / dv * step; vel.z += dvz / dv * step;
+      };
+      if (!onGround) {
+        approach(AIR_ACCEL);
+      } else if (want < 0.05) {
+        approach(BRAKE * (wantCrouch ? 1.5 : 1));
+      } else if (sp < 0.05) {
+        approach(LAUNCH_ACCEL);
+      } else {
+        const ux = vel.x / sp; const uz = vel.z / sp;
+        const dvx = tx - vel.x; const dvz = tz - vel.z;
+        const along = dvx * ux + dvz * uz;
+        const px = dvx - ux * along; const pz = dvz - uz * along;
+        const reversing = tx * vel.x + tz * vel.z < 0;
+        const alongRate = along < 0 ? (reversing ? REVERSE_BRAKE : BRAKE) : sp < 1.1 ? LAUNCH_ACCEL : CRUISE_ACCEL;
+        const perpRate = THREE.MathUtils.lerp(STEER_STILL, STEER_RUN, Math.min(1, sp / RUN));
+        const a = THREE.MathUtils.clamp(along, -alongRate * dt, alongRate * dt);
+        const pl = Math.hypot(px, pz);
+        const pk = pl > 1e-6 ? Math.min(pl, perpRate * dt) / pl : 0;
+        vel.x += ux * a + px * pk;
+        vel.z += uz * a + pz * pk;
       }
-      if (onGround && input.jump && !wantCrouch && stumble <= 0) {
+
+      // ── Jump: buffered a moment before landing, allowed a moment after a ledge. ──
+      if ((onGround || coyote > 0) && jumpBuffer > 0 && !wantCrouch && stumble <= 0 && scripted <= 0 && vel.y <= 0.01) {
         vel.y = JUMP_V + (input.run ? 0.4 : 0);
-        // Push off: a little extra carry in the direction of travel.
-        vel.x *= 1.1; vel.z *= 1.1;
-        if (!handle.indoors) dust.burst({ x: position.x, y: ground, z: position.z, count: 14, speedMin: 0.6, speedMax: 1.8, cone: 0.9, size: 0.12 });
-        squat = -0.4;
+        vel.x *= 1.08; vel.z *= 1.08;
+        jumpBuffer = 0; coyote = 0; jumping = true;
+        squatVel -= 2.2;
+        if (!handle.indoors) {
+          puff.x = position.x; puff.y = ground; puff.z = position.z; puff.count = 14; puff.speedMin = 0.6; puff.speedMax = 1.8; puff.cone = 0.9; puff.size = 0.12; puff.bias = 0;
+          dust.burst(puff);
+        }
       }
       vel.y -= MOON_G * dt;
       position.x += vel.x * dt;
       position.z += vel.z * dt;
       position.y += vel.y * dt;
-      // Keep inside the map and out of the structures.
       const rr = Math.hypot(position.x, position.z);
       if (rr > walkRadius) {
-        position.x *= walkRadius / rr;
-        position.z *= walkRadius / rr;
+        position.x *= walkRadius / rr; position.z *= walkRadius / rr;
         vel.x *= 0.2; vel.z *= 0.2;
       }
       for (const c of colliders) {
@@ -411,8 +255,7 @@ export function makeCosmonaut(dust: DustHandle): CosmonautHandle {
         const min = c.r + SUIT_RADIUS;
         if (d < min && d > 1e-4) {
           const push = (min - d) / d;
-          position.x += dx * push;
-          position.z += dz * push;
+          position.x += dx * push; position.z += dz * push;
           const vn = (vel.x * dx + vel.z * dz) / d;
           if (vn < 0) { vel.x -= vn * dx / d; vel.z -= vn * dz / d; }
         }
@@ -421,8 +264,9 @@ export function makeCosmonaut(dust: DustHandle): CosmonautHandle {
       if (position.y <= g2) {
         if (vel.y < -1.6) {
           state.landed = true;
-          squat = Math.min(1, -vel.y / 4.5);
-          // Come down hard enough and the feet go out from under you.
+          landT = 0;
+          landHard = vel.y < -3.0;
+          squatVel += Math.min(3.4, -vel.y * 0.75);
           if (vel.y < -3.4) {
             stumble = Math.min(1.5, 0.5 + (-vel.y - 3.4) * 0.28);
             stumbleRoll = Math.sign(vel.x * Math.cos(handle.yaw) - vel.z * Math.sin(handle.yaw) || 1);
@@ -430,13 +274,21 @@ export function makeCosmonaut(dust: DustHandle): CosmonautHandle {
           }
           handle.onStep?.({ x: position.x, y: g2, z: position.z, yaw: handle.yaw, side: 1, hard: 1 });
           handle.onStep?.({ x: position.x, y: g2, z: position.z, yaw: handle.yaw, side: -1, hard: 1 });
-          if (!handle.indoors) dust.burst({ x: position.x, y: g2, z: position.z, count: Math.round(10 + squat * 40), speedMin: 0.8, speedMax: 2.2 + squat * 2, cone: 1.25, size: 0.14 });
+          if (!handle.indoors) {
+            const k = Math.min(1, -vel.y / 4.5);
+            puff.x = position.x; puff.y = g2; puff.z = position.z; puff.count = Math.round(10 + k * 40); puff.speedMin = 0.8; puff.speedMax = 2.2 + k * 2; puff.cone = 1.25; puff.size = 0.14; puff.bias = 0;
+            dust.burst(puff);
+          }
         }
         position.y = g2;
         vel.y = 0;
+        jumping = false;
+      } else if (onGround && !jumping && position.y - g2 < 0.22) {
+        // Walking down a slope or off a step: keep the boots on it.
+        position.y = g2;
+        vel.y = 0;
       }
-      // ── Steep ground. Past about thirty degrees the boots stop holding
-      // and the crew starts down the fall line whatever the stick says. ──
+      // ── Steep ground: past about thirty degrees the boots stop holding. ──
       const slopeX = (heightAt(position.x + 0.7, position.z) - heightAt(position.x - 0.7, position.z)) / 1.4;
       const slopeZ = (heightAt(position.x, position.z + 0.7) - heightAt(position.x, position.z - 0.7)) / 1.4;
       const steep = Math.hypot(slopeX, slopeZ);
@@ -453,96 +305,142 @@ export function makeCosmonaut(dust: DustHandle): CosmonautHandle {
       state.speed = speed;
       state.altitude = position.y - g2;
       airT = airborne ? airT + dt : 0;
-      // Face where you go — but the suit turns at a rate, and the faster
-      // it is moving the wider the arc it has to take to do it.
-      if (speed > 0.3) {
-        const target = Math.atan2(vel.x, vel.z);
-        let d = target - handle.yaw;
-        while (d > Math.PI) d -= Math.PI * 2;
-        while (d < -Math.PI) d += Math.PI * 2;
-        const ease = d * (1 - Math.exp(-dt * (onGround ? 9 : 3)));
-        const cap = THREE.MathUtils.lerp(TURN_STILL, TURN_RUN, Math.min(1, speed / RUN)) * (onGround ? 1 : 0.45) * dt;
-        handle.yaw += THREE.MathUtils.clamp(ease, -cap, cap);
-      }
-      group.rotation.y = handle.yaw;
-      squat += (0 - squat) * (1 - Math.exp(-dt * 5));
-      // Lean into the run, into the hill, and out of a stumble.
-      const leanTarget = airborne ? 0.1 : speed / RUN * 0.3 + Math.max(0, grade) * 0.45 + (stumble > 0 ? -0.35 : 0);
-      lean += (leanTarget - lean) * (1 - Math.exp(-dt * 6));
+      landT += dt;
 
-      // ── Pose. Rotation about X: negative swings a limb forward, positive
-      // folds a knee back. ──
-      const gait = Math.min(1, speed / RUN);
-      // The walk hands over to the lope — both feet pushing off nearly
-      // together, a long float between contacts — as the speed comes up.
+      // ── Facing: slow, the suit turns to where the stick points; moving,
+      // to where it is going, at a rate that falls off with speed. ──
+      turnError = 0;
+      if (scripted <= 0) {
+        let target: number | null = null;
+        if (want > 0.05 && speed < 0.9) target = Math.atan2(wantX, wantZ);
+        else if (speed > 0.3) target = Math.atan2(vel.x, vel.z);
+        if (target !== null) {
+          const d = wrap(target - handle.yaw);
+          turnError = d;
+          const cap = THREE.MathUtils.lerp(TURN_STILL, TURN_RUN, Math.min(1, speed / RUN)) * (onGround ? 1 : 0.45) * dt;
+          handle.yaw += THREE.MathUtils.clamp(d * ease(onGround ? 12 : 3, dt), -cap, cap);
+        }
+      }
+
+      // ── Which state the suit is in. ──
+      let anim: SuitAnim;
+      if (scriptedKind) anim = scriptedKind;
+      else if (stumble > 0) anim = 'stumble';
+      else if (airborne) anim = airT < 0.25 && vel.y > 0 ? 'jump' : 'air';
+      else if (landT < 0.35) anim = landHard ? 'landHard' : 'landSoft';
+      else if (working) anim = 'work';
+      else if (wantCrouch) anim = speed > 0.3 ? 'crouchMove' : 'crouch';
+      else if (want < 0.05 && speed > 1.2) anim = 'brake';
+      else if (speed < 0.35) anim = want > 0.05 && Math.abs(turnError) > 0.5 ? 'turn' : idleT > 6 ? 'idleLook' : 'idle';
+      else if (grade > 0.22) anim = 'climb';
+      else anim = lope > 0.5 ? 'lope' : 'walk';
+      state.anim = anim;
+      idleT = anim === 'idle' || anim === 'idleLook' ? idleT + dt : 0;
+
+      // ── Blend weights, eased so nothing snaps. ──
+      crouchK += ((wantCrouch ? 1 : 0) - crouchK) * ease(7, dt);
+      workK += ((anim === 'work' ? 1 : 0) - workK) * ease(5, dt);
+      climbK += ((anim === 'climb' ? 1 : 0) - climbK) * ease(4, dt);
+      brakeK += ((anim === 'brake' ? 1 : 0) - brakeK) * ease(6, dt);
+      lookK += ((anim === 'idleLook' ? 1 : 0) - lookK) * ease(1.5, dt);
       const lopeTarget = THREE.MathUtils.smoothstep(speed, WALK * 1.1, RUN * 0.8);
-      lope += (lopeTarget - lope) * (1 - Math.exp(-dt * 3));
-      const strideHz = THREE.MathUtils.lerp(0.9 + gait * 0.7, 1.2, lope);
-      if (!airborne) phase += dt * strideHz * Math.PI * 2 * Math.min(1, speed / 0.6);
-      const moving = Math.min(1, speed / 0.6);
-      const amp = airborne ? 0 : THREE.MathUtils.lerp(0.28 + gait * 0.3, 0.4, lope) * moving;
+      lope += (lopeTarget - lope) * ease(3, dt);
+      const leanTarget = airborne ? 0.08
+        : speed / RUN * 0.28 + Math.max(0, grade) * 0.45 - brakeK * 0.16 + workK * 0.22 + (stumble > 0 ? -0.35 : 0);
+      lean += (leanTarget - lean) * ease(6, dt);
+      // Landing compression: a spring that dips and comes back.
+      squatVel += (-squat * 48 - squatVel * 9.5) * dt;
+      squat += squatVel * dt;
+      if (scriptedKind === 'exitRover') squat = Math.max(squat, 0.55 * (scripted / scriptedLen));
+
+      // ── The gait, tied to the ground so the boots do not skate. One
+      // cycle is two steps; the walk's cycle is short, the lope's long. ──
+      const moving = airborne ? 0 : Math.min(1, speed / 0.6);
+      const cycle = THREE.MathUtils.lerp(1.45, 3.4, lope) * (wantCrouch ? 0.7 : 1);
+      if (!airborne) phase += (speed / cycle) * Math.PI * 2 * dt;
+      if (anim === 'turn') phase += dt * Math.PI * 2 * 1.4;
+      const duty = THREE.MathUtils.lerp(0.62, 0.38, lope);
+      const stride = Math.asin(Math.min(0.55, (cycle * duty) / (4 * LEG)));
+      const shuffle = anim === 'turn' ? 0.18 : 0;
+      const amp = Math.max(stride * moving, shuffle);
       const legLag = THREE.MathUtils.lerp(Math.PI, 0.45, lope);
+      const gait = Math.min(1, speed / RUN);
       const bob = airborne ? 0 : THREE.MathUtils.lerp(Math.abs(Math.cos(phase)) * 0.03 * gait, Math.max(0, Math.sin(phase)) * 0.09, lope) * moving;
-      body.position.y = bob - squat * 0.16 - crouch * 0.42;
-      torso.rotation.x = lean + squat * 0.3 + crouch * 0.28 + lope * 0.05 * Math.cos(phase) * moving;
-      // A stumble throws the shoulders the way the fall was going.
+      body.position.y = bob - squat * 0.16 - crouchK * 0.42 - workK * 0.1 - Math.abs(grade) * 0.04;
+      pelvis.rotation.x = lean * 0.6 + squat * 0.25 + crouchK * 0.22;
+      chest.rotation.x = lean * 0.4 + workK * 0.2 + lope * 0.05 * Math.cos(phase) * moving;
+      // Hips and chest turn against each other through the stride.
+      const twist = moving * (1 - lope * 0.6);
+      pelvis.rotation.y = Math.sin(phase) * 0.06 * twist;
+      chest.rotation.y = -Math.sin(phase) * 0.12 * twist + lookK * Math.sin(clock * 0.3) * 0.08;
       const flailRoll = stumble > 0 ? Math.sin(stumble * 22) * 0.16 * stumble * stumbleRoll : 0;
-      torso.rotation.z = (airborne ? 0 : -Math.sin(phase) * 0.035 * gait * (1 - lope)) + flailRoll;
-      const breathe = Math.sin(idleT * 1.5) * 0.01;
-      torso.scale.set(1, 1 + breathe * (speed < 0.3 ? 1 : 0), 1);
+      pelvis.rotation.z = (airborne ? 0 : -Math.sin(phase) * 0.035 * gait * (1 - lope)) + flailRoll + lookK * Math.sin(clock * 0.21) * 0.03;
+      chest.scale.y = 1 + (speed < 0.3 ? Math.sin(clock * 1.5) * 0.008 : 0);
       const tuck = airborne ? Math.min(1, airT / 0.35) : 0;
       const free = 1 - tuck;
       const flail = airborne ? Math.sin(airT * 2.6) * 0.07 : 0;
+      const catchArm = stumble > 0 ? stumble : 0;
       for (let i = 0; i < 2; i++) {
         const s = sides[i];
         const p = phase + (i === 0 ? 0 : legLag);
         const swing = Math.sin(p) * amp;
-        // The knee folds while the leg swings through (thigh travelling
-        // forward), and stays a little soft in stance — suits don't lock.
-        const flex = 0.1 + Math.max(0, Math.cos(p)) * (0.5 + lope * 0.35) * moving;
-        // Crouching, one knee goes further down than the other.
-        const kneel = crouch * (i === 0 ? 1 : 0.7);
-        hips[i].rotation.x = -swing * free + tuck * (-0.6 - i * 0.12) - squat * 0.8 - kneel * 0.95;
-        hips[i].rotation.z = s * (0.035 + crouch * 0.12);
-        knees[i].rotation.x = flex * free + tuck * (1.0 + i * 0.15) + squat * 1.45 + kneel * 1.7;
-        // Boots stay close to level with the ground.
-        ankles[i].rotation.x = -(hips[i].rotation.x + knees[i].rotation.x) * 0.8;
-        // Arms: a small counter-swing at a walk; carried forward for balance in the lope.
-        const walkArm = swing * 0.45 - 0.08;
-        const lopeArm = -0.3 + Math.sin(phase) * 0.08 * moving;
-        // Arms come out wide to catch a stumble.
-        const catchArm = stumble > 0 ? stumble : 0;
-        shoulders[i].rotation.x = THREE.MathUtils.lerp(walkArm, lopeArm, lope) * free + tuck * -0.55 + flail - catchArm * 0.9;
-        shoulders[i].rotation.z = s * (0.2 + tuck * 0.45 + catchArm * 0.7);
-        elbows[i].rotation.x = -(0.45 + lope * 0.35 + tuck * 0.3 + Math.max(0, -swing) * 0.25);
+        const flex = 0.1 + Math.max(0, Math.cos(p)) * (0.5 + lope * 0.35 + climbK * 0.35) * Math.max(moving, anim === 'turn' ? 0.4 : 0);
+        const kneel = crouchK * (i === 0 ? 1 : 0.7);
+        const mount = scriptedKind === 'enterRover' && i === 0 ? Math.sin((1 - scripted / scriptedLen) * Math.PI) : 0;
+        hips[i].rotation.x = -swing * free + tuck * (-0.6 - i * 0.12) - squat * 0.8 - kneel * 0.95 - workK * 0.35 - mount * 1.1;
+        hips[i].rotation.z = s * (0.035 + crouchK * 0.12);
+        knees[i].rotation.x = flex * free + tuck * (1.0 + i * 0.15) + squat * 1.45 + kneel * 1.7 + workK * 0.6 + mount * 1.4;
+        // Boots stay close to level, and lie along the slope under them.
+        ankles[i].rotation.x = -(hips[i].rotation.x + knees[i].rotation.x) * 0.8 - Math.atan(grade) * 0.6 * free;
+        // Arms: a spring toward the gait's own swing, so they carry momentum.
+        const walkArm = swing * 0.5 - 0.08;
+        const lopeArm = -0.32 + Math.sin(phase) * 0.08 * moving;
+        const target = THREE.MathUtils.lerp(THREE.MathUtils.lerp(walkArm, lopeArm, lope), -0.95, workK) * free
+          - brakeK * 0.3 + tuck * -0.55 + flail - catchArm * 0.9 - mount * 0.5;
+        armVel[i] += ((target - arm[i]) * 110 - armVel[i] * 15) * dt;
+        arm[i] += armVel[i] * dt;
+        shoulders[i].rotation.x = arm[i];
+        shoulders[i].rotation.z = s * (0.2 + tuck * 0.45 + catchArm * 0.7 + workK * 0.08);
+        elbows[i].rotation.x = -(0.45 + lope * 0.35 + tuck * 0.3 + Math.max(0, -swing) * 0.25 + workK * 0.55);
+        hands[i].rotation.x = -workK * 0.3 + (workK > 0.5 ? Math.sin(clock * 7 + i) * 0.08 * workK : 0);
       }
-      // Idle: a look about. In the helmet the head follows the view.
+      // The pack is heavy and hangs off the shoulders: it lags the bounce.
+      const bodyVy = (body.position.y - lastBodyY) / dt;
+      const bodyAy = THREE.MathUtils.clamp((bodyVy - lastBodyVy) / dt, -40, 40);
+      lastBodyY = body.position.y; lastBodyVy = bodyVy;
+      packVel += (-bodyAy * 0.006 - packRot * 85 - packVel * 11) * dt;
+      packRot += packVel * dt;
+      pack.rotation.x = packRot;
+      // The head stays level; idle, the crew looks about.
       if (helmetView) {
         neck.rotation.y = THREE.MathUtils.clamp(lookYaw, -1.1, 1.1);
         neck.rotation.x = THREE.MathUtils.clamp(-lookPitch, -0.7, 0.7);
+        neck.rotation.z = 0;
       } else {
-        neck.rotation.y = speed < 0.3 ? Math.sin(idleT * 0.35) * 0.35 : Math.sin(idleT * 0.8) * 0.06;
-        neck.rotation.x = airborne ? -0.15 : 0.05;
+        neck.rotation.y = lookK * Math.sin(clock * 0.42) * 0.6 + (speed < 0.3 ? 0 : Math.sin(clock * 0.8) * 0.05);
+        neck.rotation.x = -(pelvis.rotation.x + chest.rotation.x) * 0.55 + (airborne ? -0.1 : 0.04) + workK * 0.35;
+        neck.rotation.z = -pelvis.rotation.z * 0.6;
       }
-      // Footfalls on the ground raise a little dust.
+      // Footfalls: a print and a little dust off the boot.
       if (!airborne && speed > 0.8 && stumble <= 0) {
         const stepPhase = Math.sin(phase) * stepSide;
         if (lastStepPhase > 0 && stepPhase <= 0) {
           stepSide = -stepSide;
           const fx = position.x - Math.sin(handle.yaw) * 0.1;
           const fz = position.z - Math.cos(handle.yaw) * 0.1;
-          if (!handle.indoors) dust.burst({ x: fx, y: g2, z: fz, count: Math.round(3 + gait * 6), speedMin: 0.4, speedMax: 1 + gait * 1.4, cone: 0.7, size: 0.09, dirX: -Math.sin(handle.yaw), dirZ: -Math.cos(handle.yaw), bias: 0.6 });
+          if (!handle.indoors) {
+            puff.x = fx; puff.y = g2; puff.z = fz; puff.count = Math.round(3 + gait * 6); puff.speedMin = 0.4; puff.speedMax = 1 + gait * 1.4; puff.cone = 0.7; puff.size = 0.09;
+            puff.dirX = -Math.sin(handle.yaw); puff.dirZ = -Math.cos(handle.yaw); puff.bias = 0.6;
+            dust.burst(puff);
+          }
           handle.onStep?.({ x: fx, y: g2, z: fz, yaw: handle.yaw, side: stepSide, hard: gait });
         }
         lastStepPhase = stepPhase;
       }
     },
     dispose() {
-      for (const g of geoms) g.dispose();
-      for (const m of owned) m.dispose();
-      weave.dispose();
-      tapeTex.dispose();
-      flagTex.dispose();
+      rig.dispose();
+      for (const g of merged.geometries) g.dispose();
     },
   };
   return handle;

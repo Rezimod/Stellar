@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import {
   MEAN_RADIUS_KM,
@@ -132,6 +132,8 @@ export interface SolarSystemCanvasProps {
   flight?: FlightSession;
   /** Moon Mode has the screen: keep the scene but skip the frames. */
   suspended?: boolean;
+  /** Called once, after the first frame has been drawn. */
+  onReady?: () => void;
 }
 
 /** Project a world-space point onto CSS pixel coords. Returns null when the
@@ -222,6 +224,7 @@ export function SolarSystemCanvas({
   onZoomToConsumed,
   flight,
   suspended = false,
+  onReady,
 }: SolarSystemCanvasProps) {
   const mountRef = useRef<HTMLDivElement>(null);
   const epochRef = useRef(epochMs);
@@ -249,6 +252,10 @@ export function SolarSystemCanvas({
   flightRef.current = flight;
   const suspendedRef = useRef(suspended);
   suspendedRef.current = suspended;
+  const onReadyRef = useRef(onReady);
+  onReadyRef.current = onReady;
+  /** Bumped when the GPU drops the context: the whole scene is rebuilt on a fresh one. */
+  const [glGeneration, setGlGeneration] = useState(0);
 
   useEffect(() => {
     const mount = mountRef.current;
@@ -275,6 +282,17 @@ export function SolarSystemCanvas({
     renderer.toneMappingExposure = 1.18;
     renderer.setClearColor(0x01030a, 1);
     mount.appendChild(renderer.domElement);
+    // A GPU under memory pressure (integrated graphics, two scenes, a sleep)
+    // can take the context away. Without this the page just goes black; with
+    // it the scene is rebuilt on a new canvas a moment later.
+    let contextLost = false;
+    let rebuildTimer = 0;
+    const onContextLost = (e: Event) => {
+      e.preventDefault();
+      contextLost = true;
+      rebuildTimer = window.setTimeout(() => setGlGeneration((g) => g + 1), 1000);
+    };
+    renderer.domElement.addEventListener('webglcontextlost', onContextLost);
     renderer.domElement.style.display = 'block';
     renderer.domElement.style.width = '100%';
     renderer.domElement.style.height = '100%';
@@ -1234,9 +1252,24 @@ export function SolarSystemCanvas({
       const now = performance.now();
       const dtSec = Math.min(0.1, (now - lastFrame) / 1000);
       lastFrame = now;
+      if (contextLost) {
+        raf = 0;
+        return;
+      }
       if (suspendedRef.current) {
+        // Moon Mode has the screen and a renderer of its own: give back the
+        // GPU memory of the full-size buffers while this scene waits.
+        if (!shrunk) {
+          shrunk = true;
+          renderer.setSize(2, 2, false);
+          postFx.setSize(2, 2);
+        }
         raf = requestAnimationFrame(loop);
         return;
+      }
+      if (shrunk) {
+        shrunk = false;
+        onResize();
       }
       // Wall-clock seconds for shader animation (convection, cloud bands).
       const sceneTime = reduceMotion ? 0 : (now - t0) / 1000;
@@ -1427,12 +1460,20 @@ export function SolarSystemCanvas({
       }
 
       postFx.render(dtSec);
+      if (!readyFired) {
+        readyFired = true;
+        onReadyRef.current?.();
+      }
       raf = requestAnimationFrame(loop);
     };
+    let shrunk = false;
+    let readyFired = false;
     startLoop();
 
     return () => {
       stopLoop();
+      window.clearTimeout(rebuildTimer);
+      renderer.domElement.removeEventListener('webglcontextlost', onContextLost);
       document.removeEventListener('visibilitychange', onVis);
       window.removeEventListener('resize', onResize);
       el.removeEventListener('pointerdown', onPointerDown);
@@ -1529,7 +1570,7 @@ export function SolarSystemCanvas({
         mount.removeChild(renderer.domElement);
       }
     };
-  }, [scaleMode, includePluto]);
+  }, [scaleMode, includePluto, glGeneration]);
 
   useEffect(() => {
     selectedRef.current = selectedId;

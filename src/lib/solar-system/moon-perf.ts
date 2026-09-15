@@ -1,0 +1,182 @@
+// Frame accounting for Moon Mode, and the governor that keeps the frame
+// inside its budget. Stats are always collected (a few numbers a frame);
+// the overlay that shows them exists only in development, on the backquote
+// key. The governor only ever moves the pixel ratio in quarter steps, with
+// hysteresis and a cooldown, so it can settle but never visibly oscillate.
+
+import type * as THREE from 'three';
+
+export interface PerfSample {
+  fps: number;
+  /** Mean, 95th percentile and worst frame interval over the window, ms. */
+  frameMs: number;
+  p95Ms: number;
+  maxMs: number;
+  /** CPU time of the simulation and of the render call, ms (mean). */
+  simMs: number;
+  renderMs: number;
+  calls: number;
+  triangles: number;
+  geometries: number;
+  textures: number;
+  programs: number;
+  pixelRatio: number;
+  buildMs: number;
+  /** Frames over 30 ms and over 50 ms since the scene opened. */
+  long30: number;
+  long50: number;
+}
+
+export interface MoonPerf {
+  begin: (now: number) => void;
+  /** The simulation is done; the render starts. */
+  mark: () => void;
+  end: () => void;
+  sample: () => PerfSample;
+  setBuildMs: (ms: number) => void;
+  dispose: () => void;
+}
+
+interface Options {
+  /** Pixel-ratio bounds for the governor; equal bounds switch it off. */
+  minRatio: number;
+  maxRatio: number;
+  onPixelRatio: (ratio: number) => void;
+}
+
+const WINDOW = 120;
+
+export function makeMoonPerf(renderer: THREE.WebGLRenderer, mount: HTMLElement, opts: Options): MoonPerf {
+  renderer.info.autoReset = false;
+  const intervals = new Float32Array(WINDOW);
+  const sims = new Float32Array(WINDOW);
+  const renders = new Float32Array(WINDOW);
+  const sorted = new Float32Array(WINDOW);
+  let head = 0;
+  let filled = 0;
+  let lastNow = 0;
+  let frameStart = 0;
+  let simEnd = 0;
+  let buildMs = 0;
+  let long30 = 0;
+  let long50 = 0;
+  let ratio = renderer.getPixelRatio();
+  const cap = Math.min(ratio, opts.maxRatio);
+
+  // ── The governor: a 90-frame mean, down a step when the frame is
+  // sustained over budget, back up only after a long stretch well inside it,
+  // and never up again once it has had to come down twice. ──
+  let govFrames = 0;
+  let govSum = 0;
+  let calmWindows = 0;
+  let cooldown = 0;
+  let drops = 0;
+  const govern = (interval: number) => {
+    if (opts.minRatio >= cap) return;
+    // A stall (tab switch, GC, shader compile) is not a trend.
+    if (interval > 250) return;
+    govSum += interval;
+    govFrames += 1;
+    cooldown = Math.max(0, cooldown - interval);
+    if (govFrames < 90) return;
+    const mean = govSum / govFrames;
+    govSum = 0;
+    govFrames = 0;
+    if (cooldown > 0) return;
+    if (mean > 21 && ratio > opts.minRatio) {
+      ratio = Math.max(opts.minRatio, ratio - 0.25);
+      drops += 1;
+      calmWindows = 0;
+      cooldown = 3000;
+      opts.onPixelRatio(ratio);
+    } else if (mean < 14.5 && ratio < cap && drops < 2) {
+      calmWindows += 1;
+      if (calmWindows >= 10) {
+        ratio = Math.min(cap, ratio + 0.25);
+        calmWindows = 0;
+        cooldown = 6000;
+        opts.onPixelRatio(ratio);
+      }
+    } else {
+      calmWindows = 0;
+    }
+  };
+
+  const dev = process.env.NODE_ENV !== 'production';
+  let overlay: HTMLPreElement | null = null;
+  let overlayT = 0;
+  const onKey = (e: KeyboardEvent) => {
+    if (e.code !== 'Backquote') return;
+    if (overlay) { overlay.remove(); overlay = null; return; }
+    overlay = document.createElement('pre');
+    overlay.style.cssText = 'position:absolute;left:8px;bottom:8px;z-index:40;margin:0;padding:6px 8px;font:11px/1.35 ui-monospace,monospace;color:#cfe;background:rgba(0,0,0,.72);pointer-events:none;white-space:pre';
+    mount.appendChild(overlay);
+  };
+  if (dev) window.addEventListener('keydown', onKey);
+
+  const handle: MoonPerf = {
+    begin(now) {
+      if (lastNow > 0) {
+        const interval = now - lastNow;
+        intervals[head] = interval;
+        if (interval > 30) long30 += 1;
+        if (interval > 50) long50 += 1;
+        govern(interval);
+      }
+      lastNow = now;
+      frameStart = performance.now();
+      renderer.info.reset();
+    },
+    mark() { simEnd = performance.now(); },
+    end() {
+      const done = performance.now();
+      sims[head] = simEnd - frameStart;
+      renders[head] = done - simEnd;
+      head = (head + 1) % WINDOW;
+      filled = Math.min(WINDOW, filled + 1);
+      if (overlay && done - overlayT > 250) {
+        overlayT = done;
+        const s = handle.sample();
+        overlay.textContent = `${s.fps.toFixed(0)} fps  ${s.frameMs.toFixed(1)} ms  p95 ${s.p95Ms.toFixed(1)}  max ${s.maxMs.toFixed(0)}\n`
+          + `sim ${s.simMs.toFixed(2)}  render ${s.renderMs.toFixed(2)}  px ${s.pixelRatio}\n`
+          + `calls ${s.calls}  tris ${(s.triangles / 1000).toFixed(0)}k  geo ${s.geometries}  tex ${s.textures}  prog ${s.programs}\n`
+          + `>30ms ${s.long30}  >50ms ${s.long50}  build ${s.buildMs.toFixed(0)} ms`;
+      }
+    },
+    sample() {
+      const n = filled;
+      let sum = 0; let max = 0; let sim = 0; let ren = 0;
+      for (let i = 0; i < n; i++) {
+        sum += intervals[i]; sim += sims[i]; ren += renders[i];
+        if (intervals[i] > max) max = intervals[i];
+        sorted[i] = intervals[i];
+      }
+      const view = sorted.subarray(0, n).sort();
+      const mean = n ? sum / n : 0;
+      const info = renderer.info;
+      return {
+        fps: mean > 0 ? 1000 / mean : 0,
+        frameMs: mean,
+        p95Ms: n ? view[Math.min(n - 1, Math.floor(n * 0.95))] : 0,
+        maxMs: max,
+        simMs: n ? sim / n : 0,
+        renderMs: n ? ren / n : 0,
+        calls: info.render.calls,
+        triangles: info.render.triangles,
+        geometries: info.memory.geometries,
+        textures: info.memory.textures,
+        programs: info.programs?.length ?? 0,
+        pixelRatio: ratio,
+        buildMs,
+        long30,
+        long50,
+      };
+    },
+    setBuildMs(ms) { buildMs = ms; },
+    dispose() {
+      if (dev) window.removeEventListener('keydown', onKey);
+      overlay?.remove();
+    },
+  };
+  return handle;
+}

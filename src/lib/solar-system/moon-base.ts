@@ -1,17 +1,25 @@
-// The outpost: three inflatable habitats on raised skirts with airlocks and
-// ramps, greenhouse tunnels between them, a row of blue gas tanks, a solar
-// field, a comms dish aimed at Earth, a cargo rover, the descent stage that
-// brought the first crew, a flag, a seismometer, a sign, two mast lights.
-// Everything sits on the terrain's own height, and every footprint is also a
-// collider so the cosmonaut walks around it rather than through it — except
-// the habitats, which are walked into: up the ramp, through the airlock,
-// onto a floor with bunks, benches and a gym under the lit restraint layer.
+// The outpost's core: three inflatable habitats under quilted micrometeoroid
+// blankets and restraint straps, on skirts with their equipment and
+// radiators, a hard collar and hatch on top, a hard airlock module at the
+// front with its control panel and status lamp, a ramp down to the regolith,
+// and pressurised tunnels between them. The crew walks inside: up the ramp,
+// cycle the airlock, onto a deck with bunks, benches and a gym under the lit
+// restraint layer. Around them moon-base-zones builds the working outpost,
+// moon-rover-mesh the rover; the first crew's descent stage stands out past
+// the landing zone, where it came down; the flag and the sign between.
+//
+// Everything sits on the terrain's own height. Every footprint is a
+// collider — the habitats only for vehicles, since the crew goes in.
 
 import * as THREE from 'three';
-import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import type { Collider } from '@/lib/solar-system/moon-cosmonaut';
 import { PAD_CENTER } from '@/lib/solar-system/moon-terrain';
 import type { RoverParts } from '@/lib/solar-system/moon-rover';
+import { keep, mergeStatic, pivot } from '@/lib/solar-system/moon-batch';
+import type { LightPool } from '@/lib/solar-system/moon-lights';
+import type { Kit } from '@/lib/solar-system/moon-kit';
+import { buildRover } from '@/lib/solar-system/moon-rover-mesh';
+import { buildZones, type ZonesHandle } from '@/lib/solar-system/moon-base-zones';
 
 export interface PointOfInterest {
   id: string;
@@ -22,10 +30,16 @@ export interface PointOfInterest {
 }
 
 export interface Airlock {
+  habitat: string;
+  /** The door, world metres, and the module's facing. */
   x: number; z: number; yaw: number;
   panel: THREE.Mesh;
-  /** 0 shut … 1 open. */
+  /** 0 shut … 1 open, as drawn. */
   open: number;
+  state: 'closed' | 'cycling' | 'open';
+  /** 0…1 through an equalisation cycle. */
+  cycle: number;
+  lamp: THREE.MeshStandardMaterial;
 }
 
 /** A habitat the crew can stand in. */
@@ -35,47 +49,25 @@ export interface BaseHandle {
   group: THREE.Group;
   /** Every footprint — what the rover and the meteoroids keep out of. */
   colliders: Collider[];
-  /** The footprints the crew keeps out of on foot: the habitats are not
-   *  among them, since the crew goes inside. */
+  /** The footprints the crew keeps out of on foot: not the habitats. */
   walkColliders: Collider[];
-  /** The floor under a point on the base's own structure — a ramp, an
-   *  airlock, a dome — or null on open ground. */
+  /** The floor under a point on the base's own structure, or null on open ground. */
   floorAt: (x: number, z: number) => number | null;
-  /** Keep a walker on the ramps, inside the dome walls, and out of the
-   *  domes from outside: only the ramp leads in. */
+  /** Keep a walker on the ramps, inside the dome walls, out of the domes
+   *  from outside, and on their own side of a shut airlock door. */
   confine: (p: { x: number; z: number }) => void;
-  /** The habitat the crew is standing in, if any. */
   inside: Inside | null;
   pois: PointOfInterest[];
-  /** Where the crew steps out. */
   spawn: THREE.Vector3;
   airlocks: Airlock[];
-  /** The rover: its group (driven by moon-rover), its collider (moved with
-   *  it), and the parts the drive articulates. */
+  /** Start an equalisation cycle, or shut an open door. */
+  cycleAirlock: (a: Airlock) => void;
   rover: THREE.Group;
   roverCollider: Collider;
   roverParts: RoverParts;
-  /** Blink the beacons, turn the dish, slide the airlocks. */
+  zones: ZonesHandle;
   update: (dt: number, t: number, earthDir: THREE.Vector3, crewX: number, crewZ: number) => void;
   dispose: () => void;
-}
-
-/** A canvas plaque: white board, dark mono lettering. */
-function plaque(lines: string[], w: number, h: number, bg: string, fg: string, px: number): THREE.CanvasTexture {
-  const c = document.createElement('canvas');
-  c.width = w; c.height = h;
-  const ctx = c.getContext('2d')!;
-  ctx.fillStyle = bg;
-  ctx.fillRect(0, 0, w, h);
-  ctx.fillStyle = fg;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.font = `600 ${px}px "JetBrains Mono", ui-monospace, monospace`;
-  lines.forEach((l, i) => ctx.fillText(l, w / 2, h / 2 + (i - (lines.length - 1) / 2) * px * 1.35));
-  const t = new THREE.CanvasTexture(c);
-  t.colorSpace = THREE.SRGBColorSpace;
-  t.anisotropy = 4;
-  return t;
 }
 
 /** Georgia's five-cross flag, drawn — it is the founder's, and Astroman's. */
@@ -90,7 +82,6 @@ function georgianFlag(): THREE.CanvasTexture {
   ctx.fillRect(w / 2 - 20, 0, 40, h);
   ctx.fillRect(0, h / 2 - 20, w, 40);
   const bolnisi = (cx: number, cy: number, s: number) => {
-    // Each arm flares a little — the Bolnisi cross.
     ctx.beginPath();
     for (let k = 0; k < 4; k++) {
       ctx.save();
@@ -110,52 +101,39 @@ function georgianFlag(): THREE.CanvasTexture {
   return t;
 }
 
-export function makeMoonBase(heightAt: (x: number, z: number) => number, lite: boolean): BaseHandle {
+const CYCLE_SECONDS = 1.4;
+const LAMP = { closed: 0xff3b2e, cycling: 0xffb347, open: 0x4dff88 } as const;
+
+export function makeMoonBase(
+  heightAt: (x: number, z: number) => number,
+  lite: boolean,
+  kit: Kit,
+  sunDir: THREE.Vector3,
+  lights?: LightPool,
+): BaseHandle {
+  const m = kit.mat;
   const group = new THREE.Group();
   group.name = 'moon-base';
   const colliders: Collider[] = [];
   const pois: PointOfInterest[] = [];
   const airlocks: Airlock[] = [];
-  const geoms: THREE.BufferGeometry[] = [];
   const textures: THREE.Texture[] = [];
-  const white = new THREE.MeshStandardMaterial({ color: 0xcfcfca, roughness: 0.68, metalness: 0.02 });
-  const skirt = new THREE.MeshStandardMaterial({ color: 0xa9aaa6, roughness: 0.5, metalness: 0.45 });
-  const alu = new THREE.MeshStandardMaterial({ color: 0x9a9da3, roughness: 0.35, metalness: 0.85 });
-  const steel = new THREE.MeshStandardMaterial({ color: 0x6e737b, roughness: 0.45, metalness: 0.8 });
-  const dark = new THREE.MeshStandardMaterial({ color: 0x24272c, roughness: 0.55, metalness: 0.4 });
-  const gold = new THREE.MeshStandardMaterial({ color: 0xd4a72c, roughness: 0.32, metalness: 0.95 });
-  const tankBlue = new THREE.MeshStandardMaterial({ color: 0x1946b8, roughness: 0.3, metalness: 0.55 });
-  const tankNavy = new THREE.MeshStandardMaterial({ color: 0x0e1f60, roughness: 0.3, metalness: 0.55 });
-  const panel = new THREE.MeshStandardMaterial({ color: 0x0f1c3a, roughness: 0.18, metalness: 0.6 });
-  const greenhouse = new THREE.MeshPhysicalMaterial({ color: 0xd9ecf5, roughness: 0.08, metalness: 0, transparent: true, opacity: 0.3, clearcoat: 1, side: THREE.DoubleSide, depthWrite: false });
-  const leaf = new THREE.MeshStandardMaterial({ color: 0x3e8a35, roughness: 0.8 });
-  const soil = new THREE.MeshStandardMaterial({ color: 0x3b2c22, roughness: 1 });
-  const glass = new THREE.MeshPhysicalMaterial({ color: 0x9fb6c8, roughness: 0.05, metalness: 0.3, transparent: true, opacity: 0.55, clearcoat: 1 });
-  const beacon = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: new THREE.Color(0xffb347), emissiveIntensity: 2 });
-  const lamp = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: new THREE.Color(0xfff2d0), emissiveIntensity: 1.6 });
-  const airlockLight = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: new THREE.Color(0x4db2ff), emissiveIntensity: 1.5 });
+  const std = (p: THREE.MeshStandardMaterialParameters) => { const x = new THREE.MeshStandardMaterial(p); owned.push(x); return x; };
+  const owned: THREE.Material[] = [];
   // Inside the habitats.
-  const innerWall = new THREE.MeshStandardMaterial({ color: 0xb4b2ab, roughness: 0.95, metalness: 0, side: THREE.BackSide });
-  const deck = new THREE.MeshStandardMaterial({ color: 0x4c5158, roughness: 0.55, metalness: 0.35 });
-  const locker = new THREE.MeshStandardMaterial({ color: 0xb9bdc3, roughness: 0.5, metalness: 0.3 });
-  const lockerDark = new THREE.MeshStandardMaterial({ color: 0x2e3238, roughness: 0.5, metalness: 0.4 });
-  const roomLight = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: new THREE.Color(0xfff3dc), emissiveIntensity: 2.2 });
-  const screen = new THREE.MeshStandardMaterial({ color: 0x06202a, emissive: new THREE.Color(0x5eead4), emissiveIntensity: 0.9, roughness: 0.3 });
-  const bedding = new THREE.MeshStandardMaterial({ color: 0x1f3f8a, roughness: 0.95, metalness: 0 });
-  const pillow = new THREE.MeshStandardMaterial({ color: 0xeeeee8, roughness: 0.95, metalness: 0 });
-  const wood = new THREE.MeshStandardMaterial({ color: 0x8a6a48, roughness: 0.7, metalness: 0 });
-  const rubber = new THREE.MeshStandardMaterial({ color: 0x17191c, roughness: 0.98, metalness: 0 });
-  const owned: THREE.Material[] = [white, skirt, alu, steel, dark, gold, tankBlue, tankNavy, panel, greenhouse, leaf, soil, glass, beacon, lamp, airlockLight,
-    innerWall, deck, locker, lockerDark, roomLight, screen, bedding, pillow, wood, rubber];
-  const mesh = (parent: THREE.Object3D, g: THREE.BufferGeometry, m: THREE.Material, x = 0, y = 0, z = 0) => {
-    geoms.push(g);
-    const o = new THREE.Mesh(g, m);
-    o.position.set(x, y, z);
-    o.castShadow = true;
-    o.receiveShadow = true;
-    parent.add(o);
-    return o;
-  };
+  const innerWall = std({ color: 0xb4b2ab, roughness: 0.95, metalness: 0, side: THREE.BackSide });
+  const chamber = std({ color: 0x9aa0a8, roughness: 0.6, side: THREE.BackSide });
+  const locker = std({ color: 0xb9bdc3, roughness: 0.5, metalness: 0.3 });
+  const lockerDark = std({ color: 0x2e3238, roughness: 0.5, metalness: 0.4 });
+  const roomLight = std({ color: 0xffffff, emissive: new THREE.Color(0xfff3dc), emissiveIntensity: 2.2 });
+  const bedding = std({ color: 0x1f3f8a, roughness: 0.95, metalness: 0 });
+  const pillow = std({ color: 0xeeeee8, roughness: 0.95, metalness: 0 });
+  const wood = std({ color: 0x8a6a48, roughness: 0.7, metalness: 0 });
+  const leaf = std({ color: 0x3e8a35, roughness: 0.8 });
+  const soil = std({ color: 0x3b2c22, roughness: 1 });
+  const beacon = std({ color: 0x2a1a06, emissive: new THREE.Color(0xffb347), emissiveIntensity: 2 });
+  const mesh = kit.mesh;
+  const noShadow = <T extends THREE.Mesh>(o: T) => { o.castShadow = false; return o; };
   const place = (x: number, z: number, yaw = 0): THREE.Group => {
     const g = new THREE.Group();
     g.position.set(x, heightAt(x, z), z);
@@ -166,142 +144,150 @@ export function makeMoonBase(heightAt: (x: number, z: number) => number, lite: b
   const seg = lite ? 24 : 40;
 
   // ── Habitats. ──
-  interface Hab { id: string; x: number; z: number; yaw: number; cy: number; lamp: THREE.PointLight }
+  interface Hab { id: string; x: number; z: number; yaw: number; cy: number; glow: number; airlock: Airlock }
   const habs: Hab[] = [];
   const habColliders = new Set<Collider>();
   const habCollider = (c: Collider) => { colliders.push(c); habColliders.add(c); };
-  /** The floor levels of a habitat, in its own frame: the dome's deck over
-   *  the skirt, the airlock landing, and the ramp running down to the
-   *  ground from it. */
+  /** Floor levels in a habitat's own frame: the dome deck over the skirt,
+   *  the airlock landing, and the ramp running down from it. */
   const FLOOR = 1.95;
   const LANDING = 1.74;
   const DOME_R = 5.0;
   const RAMP_END = 11.9;
   const rampY = (lz: number) => LANDING - (lz - 6.7) * (1.56 / 5.2);
-  /** Sphere phi runs from -X, so π/2 is straight ahead (+Z): the doorway
+  /** Sphere phi runs from −X, so π/2 is straight ahead (+Z): the doorway
    *  is a gap in the lower band of the dome, centred on the airlock. */
   const DOOR_GAP = 0.42;
   const DOOR_THETA = 1.05;
-  /** Half the width of the way in — ramp, airlock and doorway all take it.
-   *  Wide enough that walking at the door is enough to go through it. */
   const DOOR_HALF = 1.05;
-  /** The apron at the foot of the ramp, where an approach is gathered onto
-   *  the centreline so nobody has to thread a needle to get indoors. */
+  const DOOR_Z = 6.72;
   const APRON = 3.4;
-  const habitat = (x: number, z: number, yaw: number, id: string) => {
+  const DOME_TOP = 1.95 + 5.4 * 0.86;
+  const habitat = (x: number, z: number, yaw: number, id: string, code: string) => {
     const g = place(x, z, yaw);
-    // Four legs and a ring skirt, then the dome on top.
+    // Legs on pads, regolith banked over the feet.
     for (const [lx, lz] of [[-3.6, -3.6], [3.6, -3.6], [-3.6, 3.6], [3.6, 3.6]]) {
-      mesh(g, new THREE.CylinderGeometry(0.16, 0.2, 1.1, 10), steel, lx, 0.55, lz);
-      mesh(g, new THREE.CylinderGeometry(0.6, 0.6, 0.08, 12), steel, lx, 0.04, lz);
+      kit.cyl(g, 0.16, 0.2, 1.1, m.steel, lx, 0.55, lz, 10);
+      kit.cyl(g, 0.6, 0.6, 0.08, m.steel, lx, 0.04, lz, 12);
+      const berm = noShadow(mesh(g, new THREE.SphereGeometry(0.9, 10, 5, 0, Math.PI * 2, 0, Math.PI / 2), m.regolith, lx, -0.04, lz));
+      berm.scale.set(1, 0.3, 1);
     }
-    mesh(g, new THREE.CylinderGeometry(5.4, 5.6, 0.9, seg), skirt, 0, 1.5, 0);
-    // The dome in two pieces — a cap, and a lower band with the doorway cut
-    // out where the airlock module covers it from outside.
-    const cap = mesh(g, new THREE.SphereGeometry(5.4, seg, seg / 2, 0, Math.PI * 2, 0, DOOR_THETA), white, 0, 1.95, 0);
-    cap.scale.set(1, 0.86, 1);
-    const dome = mesh(g, new THREE.SphereGeometry(5.4, seg, seg / 2, Math.PI / 2 + DOOR_GAP / 2, Math.PI * 2 - DOOR_GAP, DOOR_THETA, Math.PI * 0.62 - DOOR_THETA), white, 0, 1.95, 0);
-    dome.scale.set(1, 0.86, 1);
-    // Seams: the inflatable's restraint layer.
-    for (let i = 0; i < 6; i++) {
-      const ring = mesh(g, new THREE.TorusGeometry(5.42, 0.05, 6, seg, Math.PI), skirt, 0, 1.95, 0);
-      ring.rotation.y = (i / 6) * Math.PI;
-      ring.scale.set(1, 0.86, 1);
+    mesh(g, new THREE.CylinderGeometry(5.4, 5.6, 0.9, seg), m.shellDusty, 0, 1.5, 0);
+    // Equipment on the skirt and radiators standing off it, all clear of the door.
+    for (const a of [1.9, -1.9, Math.PI]) {
+      const box = new THREE.Group();
+      box.position.set(Math.sin(a) * 5.55, 1.5, Math.cos(a) * 5.55);
+      box.rotation.y = a;
+      g.add(box);
+      kit.rbox(box, 1.0, 0.62, 0.32, 0.04, m.anodised, 0, 0, 0.12);
+      noShadow(kit.box(box, 0.07, 0.06, 0.02, m.green, 0.36, 0.18, 0.29));
     }
-    for (const yh of [3.4, 4.8]) {
-      const r = Math.sqrt(Math.max(0.1, 1 - Math.pow((yh - 1.95) / (5.4 * 0.86), 2))) * 5.4;
-      mesh(g, new THREE.TorusGeometry(r, 0.05, 6, seg), skirt, 0, yh, 0).rotation.x = Math.PI / 2;
+    for (const a of [2.6, -2.6]) {
+      const rad = new THREE.Group();
+      rad.position.set(Math.sin(a) * 6.3, 0, Math.cos(a) * 6.3);
+      rad.rotation.y = a;
+      g.add(rad);
+      kit.box(rad, 2.0, 1.3, 0.05, m.radiator, 0, 1.25, 0);
+      for (const sx of [-0.85, 0.85]) kit.strut(rad, sx, 0, 0.35, sx, 0.62, 0, 0.04, m.steel);
     }
-    // Airlock: a hard module on the front with the door and a stair-ramp.
-    mesh(g, new THREE.BoxGeometry(3.0, 2.8, 2.2), white, 0, 2.8, 5.6);
-    // A lit chamber behind the door — it reaches back through the doorway
-    // into the dome — and the door itself slides up into the frame.
-    const chamber = new THREE.MeshStandardMaterial({ color: 0x9aa0a8, roughness: 0.6, side: THREE.BackSide });
-    owned.push(chamber);
-    mesh(g, new THREE.BoxGeometry(DOOR_HALF * 2, 2.2, 2.5), chamber, 0, 3.05, 5.5);
-    mesh(g, new THREE.BoxGeometry(DOOR_HALF * 2, 0.06, 2.5), deck, 0, FLOOR, 5.5);
-    mesh(g, new THREE.BoxGeometry(0.8, 0.04, 0.8), airlockLight, 0, 3.7, 5.9);
-    const door = mesh(g, new THREE.BoxGeometry(DOOR_HALF * 2 - 0.1, 2.1, 0.1), skirt, 0, 2.65, 6.72);
-    mesh(door, new THREE.BoxGeometry(0.34, 0.34, 0.06), glass, 0.0, 0.55, 0.06);
-    mesh(g, new THREE.BoxGeometry(DOOR_HALF * 2 + 0.2, 0.12, 0.16), dark, 0, 3.8, 6.72);
-    airlocks.push({ x: x + Math.sin(yaw) * 6.9, z: z + Math.cos(yaw) * 6.9, yaw, panel: door, open: 0 });
-    mesh(g, new THREE.BoxGeometry(0.7, 0.06, 0.06), airlockLight, 0, 4.05, 6.74);
-    const ramp = mesh(g, new THREE.BoxGeometry(DOOR_HALF * 2 + 0.3, 0.12, 5.2), alu, 0, 0.9, 9.3);
+    // The shell: a cap, and a lower band with the doorway cut where the
+    // airlock module covers it, both under the quilted blanket.
+    mesh(g, new THREE.SphereGeometry(5.4, seg, seg / 2, 0, Math.PI * 2, 0, DOOR_THETA), m.blanket, 0, 1.95, 0).scale.set(1, 0.86, 1);
+    mesh(g, new THREE.SphereGeometry(5.4, seg, seg / 2, Math.PI / 2 + DOOR_GAP / 2, Math.PI * 2 - DOOR_GAP, DOOR_THETA, Math.PI * 0.62 - DOOR_THETA), m.blanket, 0, 1.95, 0).scale.set(1, 0.86, 1);
+    // Restraint straps over the top, belts round it.
+    for (let i = 0; i < 8; i++) {
+      // Webbing, not tubing: flat and close to the blanket's own tone.
+      const strap = noShadow(mesh(g, new THREE.TorusGeometry(5.43, 0.03, 3, seg, Math.PI), m.shellDusty, 0, 1.95, 0));
+      strap.rotation.y = (i / 8) * Math.PI;
+      strap.scale.set(1, 0.86, 1.8);
+    }
+    for (const yh of [2.7, 3.9, 5.1]) {
+      const r = Math.sqrt(Math.max(0.1, 1 - Math.pow((yh - 1.95) / (5.4 * 0.86), 2))) * 5.42;
+      noShadow(mesh(g, new THREE.TorusGeometry(r, 0.03, 3, seg), m.shellDusty, 0, yh, 0)).rotation.x = Math.PI / 2;
+    }
+    // The hard collar on top: hatch, whip, beacon.
+    kit.cyl(g, 1.25, 1.4, 0.36, m.shell, 0, DOME_TOP - 0.06, 0, seg);
+    kit.cyl(g, 0.62, 0.62, 0.12, m.anodised, 0, DOME_TOP + 0.18, 0, 20);
+    kit.cyl(g, 0.012, 0.02, 1.3, m.steel, 0.85, DOME_TOP + 0.75, 0.25, 6);
+    noShadow(mesh(g, new THREE.SphereGeometry(0.14, 10, 8), beacon, 0, DOME_TOP + 0.34, 0));
+    // The airlock module: shell, blanket roof, corner frames, the lit chamber
+    // behind the door, the door that slides up, its lintel and status lamp.
+    kit.box(g, 3.0, 2.8, 2.2, m.shell, 0, 2.8, 5.6);
+    kit.box(g, 3.08, 0.12, 2.28, m.blanket, 0, 4.26, 5.6);
+    for (const sx of [-1.52, 1.52]) kit.box(g, 0.09, 2.8, 0.09, m.anodised, sx, 2.8, 6.68);
+    mesh(g, new THREE.BoxGeometry(DOOR_HALF * 2, 2.2, 2.5), chamber, 0, 3.05, 5.5).castShadow = false;
+    noShadow(mesh(g, new THREE.BoxGeometry(DOOR_HALF * 2, 0.06, 2.5), m.deck, 0, FLOOR, 5.5));
+    noShadow(kit.box(g, 0.8, 0.04, 0.8, m.cool, 0, 3.7, 5.9));
+    const door = keep(mesh(g, new THREE.BoxGeometry(DOOR_HALF * 2 - 0.1, 2.1, 0.1), m.shellDusty, 0, 2.65, DOOR_Z));
+    mesh(door, new THREE.BoxGeometry(0.34, 0.34, 0.06), m.glass, 0.0, 0.55, 0.06);
+    kit.box(g, DOOR_HALF * 2 + 0.3, 0.14, 0.18, m.anodised, 0, 3.8, DOOR_Z);
+    const lamp = std({ color: 0x100404, emissive: new THREE.Color(LAMP.closed), emissiveIntensity: 1.8, roughness: 0.4 });
+    noShadow(mesh(g, new THREE.BoxGeometry(0.9, 0.07, 0.05), lamp, 0, 4.02, DOOR_Z + 0.03));
+    // The control panel beside the door, and the handrails.
+    const cp = kit.rbox(g, 0.36, 0.5, 0.1, 0.03, m.carbon, 1.3, 2.75, DOOR_Z + 0.06);
+    noShadow(mesh(cp, new THREE.PlaneGeometry(0.26, 0.2), m.screen, 0, 0.08, 0.055));
+    noShadow(mesh(cp, new THREE.BoxGeometry(0.08, 0.08, 0.03), lamp, 0, -0.14, 0.05));
+    for (const sx of [-1.42, 1.62]) kit.strut(g, sx, 2.1, DOOR_Z + 0.14, sx, 3.4, DOOR_Z + 0.14, 0.022, m.alu);
+    const idPlate = noShadow(mesh(g, new THREE.PlaneGeometry(1.4, 0.35), kit.label([code], { w: 256, h: 64 }), 1.515, 3.3, 5.6));
+    idPlate.rotation.y = Math.PI / 2;
+    const logo = noShadow(mesh(g, new THREE.PlaneGeometry(1.6, 0.4), kit.logo, -1.515, 3.3, 5.6));
+    logo.rotation.y = -Math.PI / 2;
+    const airlock: Airlock = { habitat: id, x: x + Math.sin(yaw) * DOOR_Z, z: z + Math.cos(yaw) * DOOR_Z, yaw, panel: door, open: 0, state: 'closed', cycle: 0, lamp };
+    airlocks.push(airlock);
+    // The ramp, its cleats, rails and landing, a hazard strip at the foot.
+    const ramp = mesh(g, new THREE.BoxGeometry(DOOR_HALF * 2 + 0.3, 0.12, 5.2), m.deck, 0, 0.9, 9.3);
     ramp.rotation.x = Math.atan2(1.5, 5);
-    // Cleats across the ramp, so it reads as something to walk up.
     for (let i = 0; i < 9; i++) {
-      const cleat = mesh(g, new THREE.BoxGeometry(DOOR_HALF * 2, 0.04, 0.09), steel, 0, 1.63 - i * 0.174, 7.1 + i * 0.58);
+      const cleat = noShadow(mesh(g, new THREE.BoxGeometry(DOOR_HALF * 2, 0.04, 0.09), m.steel, 0, 1.63 - i * 0.174, 7.1 + i * 0.58));
       cleat.rotation.x = Math.atan2(1.5, 5);
-      cleat.castShadow = false;
     }
     for (const s of [-1, 1]) {
-      const rail = mesh(g, new THREE.CylinderGeometry(0.03, 0.03, 5.3, 6), steel, s * (DOOR_HALF + 0.12), 1.75, 9.3);
+      const rail = mesh(g, new THREE.CylinderGeometry(0.03, 0.03, 5.3, 6), m.alu, s * (DOOR_HALF + 0.12), 1.75, 9.3);
       rail.rotation.x = Math.PI / 2 + Math.atan2(1.5, 5);
-      for (let i = 0; i < 4; i++) mesh(g, new THREE.CylinderGeometry(0.025, 0.025, 0.7, 6), steel, s * (DOOR_HALF + 0.12), 1.2 - i * 0.26, 7.6 + i * 1.3);
+      for (let i = 0; i < 4; i++) mesh(g, new THREE.CylinderGeometry(0.025, 0.025, 0.7, 6), m.steel, s * (DOOR_HALF + 0.12), 1.2 - i * 0.26, 7.6 + i * 1.3);
     }
-    mesh(g, new THREE.BoxGeometry(DOOR_HALF * 2 + 0.3, 0.12, 1.2), alu, 0, 1.68, 6.9);
-    const rampX = x + Math.sin(yaw) * 9.3; const rampZ = z + Math.cos(yaw) * 9.3;
-    habCollider({ x: rampX, z: rampZ, r: 2.2 });
-    // Two portholes in the flank, so the room has somewhere to look out of.
+    mesh(g, new THREE.BoxGeometry(DOOR_HALF * 2 + 0.3, 0.12, 1.2), m.deck, 0, 1.68, 6.9);
+    noShadow(mesh(g, new THREE.BoxGeometry(DOOR_HALF * 2 + 0.3, 0.015, 0.3), m.hazard, 0, 0.02, RAMP_END + 0.2));
+    habCollider({ x: x + Math.sin(yaw) * 9.3, z: z + Math.cos(yaw) * 9.3, r: 2.2 });
+    // Two portholes in the flank.
     for (const pa of [-1.15, 1.15]) {
       const ph = new THREE.Group();
       ph.position.set(Math.sin(pa) * 5.3, 3.5, Math.cos(pa) * 5.3);
-      ph.rotation.y = pa;
-      ph.rotation.x = Math.PI / 2;
+      // Facing straight out from the dome, tipped back with its curve.
+      ph.rotation.set(-0.35, pa, 0, 'YXZ');
       g.add(ph);
-      mesh(ph, new THREE.TorusGeometry(0.62, 0.09, 8, 20), alu);
-      const pane = mesh(ph, new THREE.CircleGeometry(0.58, 20), glass);
-      pane.castShadow = false;
+      mesh(ph, new THREE.TorusGeometry(0.62, 0.09, 8, 20), m.alu);
+      noShadow(mesh(ph, new THREE.CircleGeometry(0.58, 20), m.glass));
     }
-    // Beacon on top.
-    mesh(g, new THREE.SphereGeometry(0.16, 10, 8), beacon, 0, 6.75, 0);
-    habCollider({ x: x, z: z, r: 5.9 });
-    const doorX = x + Math.sin(yaw) * 6.5; const doorZ = z + Math.cos(yaw) * 6.5;
-    habCollider({ x: doorX, z: doorZ, r: 1.5 });
+    habCollider({ x, z, r: 5.9 });
+    habCollider({ x: x + Math.sin(yaw) * 6.5, z: z + Math.cos(yaw) * 6.5, r: 1.5 });
     pois.push({ id, x: x + Math.sin(yaw) * 9, z: z + Math.cos(yaw) * 9, r: 6 });
     pois.push({ id, x, z, r: 5.3 });
 
     // ── Inside: the restraint layer seen from within, a deck over the
     // skirt, a ring of lockers clear of the door, a light ring, and what
     // the module is for. ──
-    const inner = mesh(g, new THREE.SphereGeometry(5.25, seg, seg / 2, Math.PI / 2 + DOOR_GAP / 2, Math.PI * 2 - DOOR_GAP, DOOR_THETA, Math.PI * 0.62 - DOOR_THETA), innerWall, 0, 1.95, 0);
+    const inner = noShadow(mesh(g, new THREE.SphereGeometry(5.25, seg, seg / 2, Math.PI / 2 + DOOR_GAP / 2, Math.PI * 2 - DOOR_GAP, DOOR_THETA, Math.PI * 0.62 - DOOR_THETA), innerWall, 0, 1.95, 0));
     inner.scale.set(1, 0.86, 1);
-    const innerCap = mesh(g, new THREE.SphereGeometry(5.25, seg, seg / 2, 0, Math.PI * 2, 0, DOOR_THETA), innerWall, 0, 1.95, 0);
-    innerCap.scale.set(1, 0.86, 1);
-    inner.castShadow = innerCap.castShadow = false;
-    const floor = mesh(g, new THREE.CylinderGeometry(DOME_R + 0.1, DOME_R + 0.1, 0.06, seg), deck, 0, FLOOR, 0);
-    floor.castShadow = false;
-    // Deck plate seams.
-    for (let i = 0; i < 4; i++) {
-      const seam = mesh(g, new THREE.BoxGeometry(0.03, 0.005, DOME_R * 2), lockerDark, 0, FLOOR + 0.035, 0);
-      seam.rotation.y = (i / 4) * Math.PI;
-      seam.castShadow = false;
-    }
-    mesh(g, new THREE.TorusGeometry(2.7, 0.06, 8, seg), roomLight, 0, 5.5, 0).rotation.x = Math.PI / 2;
-    mesh(g, new THREE.CylinderGeometry(0.5, 0.5, 0.04, 20), roomLight, 0, 6.0, 0);
-    const habLamp = new THREE.PointLight(0xfff1dc, 0, 22, 1.5);
-    habLamp.position.set(0, 4.6, 0);
-    g.add(habLamp);
+    noShadow(mesh(g, new THREE.SphereGeometry(5.25, seg, seg / 2, 0, Math.PI * 2, 0, DOOR_THETA), innerWall, 0, 1.95, 0)).scale.set(1, 0.86, 1);
+    noShadow(mesh(g, new THREE.CylinderGeometry(DOME_R + 0.1, DOME_R + 0.1, 0.06, seg), m.deck, 0, FLOOR, 0));
+    for (let i = 0; i < 4; i++) noShadow(mesh(g, new THREE.BoxGeometry(0.03, 0.005, DOME_R * 2), lockerDark, 0, FLOOR + 0.035, 0)).rotation.y = (i / 4) * Math.PI;
+    noShadow(mesh(g, new THREE.TorusGeometry(2.7, 0.06, 8, seg), roomLight, 0, 5.5, 0)).rotation.x = Math.PI / 2;
+    noShadow(mesh(g, new THREE.CylinderGeometry(0.5, 0.5, 0.04, 20), roomLight, 0, 6.0, 0));
     for (let i = 0; i < 12; i++) {
       const a = (i / 12) * Math.PI * 2;
-      // Lockers and consoles face the room; none where the door is.
       if (Math.abs(Math.atan2(Math.sin(a), Math.cos(a))) < 0.6) continue;
-      const unit = mesh(g, new THREE.BoxGeometry(0.95, 1.9, 0.42), i % 3 === 0 ? lockerDark : locker, Math.sin(a) * 4.35, FLOOR + 0.98, Math.cos(a) * 4.35);
+      const unit = noShadow(mesh(g, new THREE.BoxGeometry(0.95, 1.9, 0.42), i % 3 === 0 ? lockerDark : locker, Math.sin(a) * 4.35, FLOOR + 0.98, Math.cos(a) * 4.35));
       unit.rotation.y = a + Math.PI;
-      unit.castShadow = false;
-      if (i % 3 === 1) mesh(unit, new THREE.PlaneGeometry(0.62, 0.36), screen, 0, 0.4, 0.215);
-      else mesh(unit, new THREE.BoxGeometry(0.06, 0.4, 0.03), lockerDark, 0.3, 0, 0.22);
+      if (i % 3 === 1) noShadow(mesh(unit, new THREE.PlaneGeometry(0.62, 0.36), m.screen, 0, 0.4, 0.215));
+      else noShadow(mesh(unit, new THREE.BoxGeometry(0.06, 0.4, 0.03), lockerDark, 0.3, 0, 0.22));
     }
-    /** A piece of furniture at a bearing and range from the centre, turned
-     *  to face it. */
-    const at = (a: number, r: number, geometry: THREE.BufferGeometry, m: THREE.Material, dy: number, dx = 0) => {
-      const o = mesh(g, geometry, m, Math.sin(a) * r + Math.cos(a) * dx, FLOOR + dy, Math.cos(a) * r - Math.sin(a) * dx);
+    const at = (a: number, r: number, geometry: THREE.BufferGeometry, mt: THREE.Material, dy: number, dx = 0) => {
+      const o = noShadow(mesh(g, geometry, mt, Math.sin(a) * r + Math.cos(a) * dx, FLOOR + dy, Math.cos(a) * r - Math.sin(a) * dx));
       o.rotation.y = a;
-      o.castShadow = false;
       return o;
     };
     if (id === 'habitatA') {
-      // Crew quarters: four bunks along the wall and a table in the middle.
       for (const a of [1.7, 2.6, -1.7, -2.6]) {
         at(a, 3.5, new THREE.BoxGeometry(2.0, 0.34, 0.9), locker, 0.45);
         at(a, 3.5, new THREE.BoxGeometry(1.94, 0.1, 0.84), bedding, 0.67);
@@ -310,71 +296,72 @@ export function makeMoonBase(heightAt: (x: number, z: number) => number, lite: b
         at(a, 3.9, new THREE.BoxGeometry(1.94, 0.1, 0.84), bedding, 1.77);
       }
       at(0, 0, new THREE.CylinderGeometry(0.85, 0.85, 0.05, 24), wood, 0.78);
-      at(0, 0, new THREE.CylinderGeometry(0.08, 0.12, 0.76, 10), steel, 0.38);
+      at(0, 0, new THREE.CylinderGeometry(0.08, 0.12, 0.76, 10), m.steel, 0.38);
       for (const a of [0.6, 2.7, 4.8]) at(a, 1.35, new THREE.CylinderGeometry(0.2, 0.2, 0.46, 12), lockerDark, 0.23);
     } else if (id === 'habitatB') {
-      // Lab and galley: two benches under screens, a counter across the back.
       for (const a of [2.1, -2.1]) {
         at(a, 3.3, new THREE.BoxGeometry(2.4, 0.9, 0.75), locker, 0.45);
         at(a, 3.3, new THREE.BoxGeometry(2.36, 0.04, 0.72), lockerDark, 0.92);
-        at(a, 3.3, new THREE.CylinderGeometry(0.06, 0.08, 0.5, 10), steel, 1.17, 0.6);
+        at(a, 3.3, new THREE.CylinderGeometry(0.06, 0.08, 0.5, 10), m.steel, 1.17, 0.6);
         at(a, 3.3, new THREE.BoxGeometry(0.4, 0.3, 0.3), lockerDark, 1.1, -0.5);
-        for (const dx of [-0.75, 0, 0.75]) at(a, 4.0, new THREE.PlaneGeometry(0.6, 0.38), screen, 1.75, dx).rotation.y = a + Math.PI;
+        for (const dx of [-0.75, 0, 0.75]) at(a, 4.0, new THREE.PlaneGeometry(0.6, 0.38), m.screen, 1.75, dx).rotation.y = a + Math.PI;
       }
       at(Math.PI, 3.6, new THREE.BoxGeometry(2.6, 0.9, 0.7), locker, 0.45);
       at(Math.PI, 3.6, new THREE.BoxGeometry(2.56, 0.04, 0.66), lockerDark, 0.92);
-      at(Math.PI, 3.6, new THREE.CylinderGeometry(0.22, 0.22, 0.08, 16), steel, 0.95, 0.7);
+      at(Math.PI, 3.6, new THREE.CylinderGeometry(0.22, 0.22, 0.08, 16), m.steel, 0.95, 0.7);
       at(Math.PI, 3.6, new THREE.BoxGeometry(0.34, 0.42, 0.34), lockerDark, 1.15, -0.8);
-      at(Math.PI, 3.6, new THREE.BoxGeometry(0.12, 0.12, 0.02), screen, 1.25, -0.8);
-      // The mission board: the wall the expedition is planned against, with
-      // the mare drawn on it and the anomaly ringed in red.
       at(-0.95, 4.3, new THREE.BoxGeometry(2.4, 1.5, 0.08), lockerDark, 1.85).rotation.y = -0.95 + Math.PI;
-      const boardTex = plaque(['DEEP CORE', 'MAGNETIC ANOMALY 3', 'BEARING 312 \u00b7 118 M'], 512, 320, '#07141c', '#5eead4', 40);
-      textures.push(boardTex);
-      const boardMat = new THREE.MeshStandardMaterial({ map: boardTex, emissiveMap: boardTex, emissive: new THREE.Color(0xffffff), emissiveIntensity: 0.55, roughness: 0.4 });
-      owned.push(boardMat);
-      at(-0.95, 4.24, new THREE.PlaneGeometry(2.2, 1.34), boardMat, 1.85).rotation.y = -0.95 + Math.PI;
+      const board = kit.label(['DEEP CORE', 'MAGNETIC ANOMALY 3', 'BEARING 312 · 118 M'], { w: 512, h: 320, bg: '#07141c', fg: '#5eead4', px: 40, emissive: 0.55 });
+      at(-0.95, 4.24, new THREE.PlaneGeometry(2.2, 1.34), board, 1.85).rotation.y = -0.95 + Math.PI;
     } else {
-      // Medical bay and gym: a bed under its monitor, a treadmill, a cabinet.
       at(2.3, 3.4, new THREE.BoxGeometry(2.0, 0.55, 0.85), pillow, 0.5);
       at(2.3, 3.4, new THREE.BoxGeometry(2.0, 0.08, 0.85), locker, 0.2);
       at(2.3, 3.4, new THREE.BoxGeometry(0.45, 0.1, 0.5), bedding, 0.82, -0.7);
-      at(2.3, 4.1, new THREE.PlaneGeometry(0.7, 0.42), screen, 1.85).rotation.y = 2.3 + Math.PI;
-      at(-2.3, 3.2, new THREE.BoxGeometry(0.85, 0.22, 1.9), rubber, 0.11);
-      at(-2.3, 3.2, new THREE.BoxGeometry(0.3, 0.9, 0.06), steel, 0.6, 0.55);
-      at(-2.3, 3.2, new THREE.BoxGeometry(0.3, 0.9, 0.06), steel, 0.6, -0.55);
-      at(-2.3, 3.2, new THREE.BoxGeometry(1.3, 0.06, 0.06), steel, 1.03);
+      at(2.3, 4.1, new THREE.PlaneGeometry(0.7, 0.42), m.screen, 1.85).rotation.y = 2.3 + Math.PI;
+      at(-2.3, 3.2, new THREE.BoxGeometry(0.85, 0.22, 1.9), m.rubber, 0.11);
+      at(-2.3, 3.2, new THREE.BoxGeometry(0.3, 0.9, 0.06), m.steel, 0.6, 0.55);
+      at(-2.3, 3.2, new THREE.BoxGeometry(0.3, 0.9, 0.06), m.steel, 0.6, -0.55);
+      at(-2.3, 3.2, new THREE.BoxGeometry(1.3, 0.06, 0.06), m.steel, 1.03);
       at(Math.PI, 3.8, new THREE.BoxGeometry(1.8, 1.9, 0.5), locker, 0.95);
-      at(Math.PI, 3.8, new THREE.PlaneGeometry(1.6, 1.2), glass, 1.05);
-      at(Math.PI + 0.9, 3.4, new THREE.CylinderGeometry(0.16, 0.16, 1.0, 12), steel, 0.5);
+      at(Math.PI, 3.8, new THREE.PlaneGeometry(1.6, 1.2), m.glass, 1.05);
+      at(Math.PI + 0.9, 3.4, new THREE.CylinderGeometry(0.16, 0.16, 1.0, 12), m.steel, 0.5);
       at(Math.PI + 0.9, 3.4, new THREE.CylinderGeometry(0.28, 0.28, 0.08, 12), lockerDark, 1.02);
     }
-    habs.push({ id, x, z, yaw, cy: g.position.y, lamp: habLamp });
+    habs.push({ id, x, z, yaw, cy: g.position.y, glow: 0, airlock });
   };
   const px = PAD_CENTER.x; const pz = PAD_CENTER.y;
-  habitat(px - 21, pz - 12, 0.28, 'habitatA');
-  habitat(px, pz - 20, 0, 'habitatB');
-  habitat(px + 21, pz - 12, -0.28, 'habitatC');
+  habitat(px - 21, pz - 12, 0.28, 'habitatA', 'HAB-A · 01');
+  habitat(px, pz - 20, 0, 'habitatB', 'OPS-B · 02');
+  habitat(px + 21, pz - 12, -0.28, 'habitatC', 'MED-C · 03');
 
-  // ── Greenhouse tunnels between the domes. ──
+  // ── Pressurised tunnels between the domes: a segmented shell with a
+  // glazed strip down each side over the grow beds. ──
   const tunnel = (x: number, z: number, yaw: number, len: number) => {
     const g = place(x, z, yaw);
-    const shell = mesh(g, new THREE.CylinderGeometry(2.3, 2.3, len, seg, 1, true, 0, Math.PI), greenhouse, 0, 0.7, 0);
-    shell.rotation.z = Math.PI / 2;
-    shell.castShadow = false;
-    for (let i = -1; i <= 1; i++) {
-      const rib = mesh(g, new THREE.TorusGeometry(2.32, 0.05, 6, seg, Math.PI), alu, i * len * 0.4, 0.7, 0);
+    // Angles measured from the top: turned onto its side about X, a
+    // cylinder's own θ = π/2 is what points up.
+    const shellPart = (from: number, span: number, mt: THREE.Material) => {
+      const o = mesh(g, new THREE.CylinderGeometry(2.2, 2.2, len, seg, 1, true, from + Math.PI / 2, span), mt, 0, 0.75, 0);
+      o.rotation.z = Math.PI / 2;
+      return o;
+    };
+    shellPart(-0.55, 1.1, m.shellDusty);
+    noShadow(shellPart(0.55, 0.35, m.glass));
+    shellPart(0.9, 0.7, m.shellDusty);
+    noShadow(shellPart(-0.9, 0.35, m.glass));
+    shellPart(-1.6, 0.7, m.shellDusty);
+    for (let i = 0; i <= 3; i++) {
+      const rib = mesh(g, new THREE.TorusGeometry(2.25, 0.07, 6, seg, Math.PI), m.anodised, -len / 2 + (i / 3) * len, 0.75, 0);
       rib.rotation.y = Math.PI / 2;
     }
-    mesh(g, new THREE.BoxGeometry(len, 0.5, 4.8), skirt, 0, 0.45, 0);
+    mesh(g, new THREE.BoxGeometry(len, 0.5, 4.6), m.shellDusty, 0, 0.45, 0);
     for (const s of [-1, 1]) {
-      mesh(g, new THREE.BoxGeometry(len - 0.6, 0.5, 1.4), soil, 0, 0.95, s * 1.3);
+      noShadow(mesh(g, new THREE.BoxGeometry(len - 0.6, 0.5, 1.3), soil, 0, 0.95, s * 1.25));
       for (let k = 0; k < Math.floor(len / 1.1); k++) {
-        const leafy = mesh(g, new THREE.SphereGeometry(0.42, 8, 6), leaf, -len / 2 + 0.8 + k * 1.1, 1.45, s * 1.3);
+        const leafy = noShadow(mesh(g, new THREE.SphereGeometry(0.4, 8, 6), leaf, -len / 2 + 0.8 + k * 1.1, 1.42, s * 1.25));
         leafy.scale.set(1, 0.7, 1);
-        leafy.castShadow = false;
       }
-      mesh(g, new THREE.BoxGeometry(len - 0.6, 0.04, 0.06), lamp, 0, 2.6, s * 1.3);
+      noShadow(mesh(g, new THREE.BoxGeometry(len - 0.6, 0.04, 0.06), roomLight, 0, 2.5, s * 1.2));
     }
     colliders.push({ x, z, r: len / 2 });
   };
@@ -383,342 +370,86 @@ export function makeMoonBase(heightAt: (x: number, z: number) => number, lite: b
   pois.push({ id: 'greenhouse', x: px - 10.5, z: pz - 10, r: 5 });
   pois.push({ id: 'greenhouse', x: px + 10.5, z: pz - 10, r: 5 });
 
-  // ── Gas farm: four tanks on cradles, labelled. ──
-  {
-    const g = place(px - 36, pz + 2, 0.15);
-    const labels = ['O2', 'N2', 'H2O', 'CH4'];
-    labels.forEach((label, i) => {
-      const zc = (i - 1.5) * 3.2;
-      const tank = mesh(g, new THREE.CapsuleGeometry(1.05, 3.6, 6, seg / 2), i % 2 ? tankNavy : tankBlue, 0, 1.55, zc);
-      tank.rotation.z = Math.PI / 2;
-      for (const s of [-1, 1]) mesh(g, new THREE.BoxGeometry(0.6, 0.9, 2.5), steel, s * 1.4, 0.45, zc);
-      mesh(g, new THREE.TorusGeometry(1.08, 0.04, 6, seg / 2), alu, 0, 1.55, zc).rotation.y = Math.PI / 2;
-      const tex = plaque([label], 128, 64, '#f2f2ee', '#101418', 34);
-      textures.push(tex);
-      const m = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.6 });
-      owned.push(m);
-      mesh(g, new THREE.PlaneGeometry(1.0, 0.5), m, 1.12, 1.7, zc).rotation.y = Math.PI / 2;
-    });
-    mesh(g, new THREE.CylinderGeometry(0.08, 0.08, 12, 8), steel, 0, 0.2, 0).rotation.x = Math.PI / 2;
-    colliders.push({ x: px - 36, z: pz + 2, r: 7 });
-    pois.push({ id: 'tanks', x: px - 33, z: pz + 2, r: 6 });
-  }
+  // ── The working outpost, and the rover parked in its bay. ──
+  const zones = buildZones(kit, group, heightAt, colliders, pois, sunDir);
+  const builtRover = buildRover(kit, lite);
+  const rover = builtRover.group;
+  const bay = zones.anchors.serviceBay;
+  rover.position.set(bay.x, heightAt(bay.x, bay.z), bay.z);
+  rover.rotation.y = bay.yaw;
+  group.add(rover);
+  const roverCollider: Collider = { x: bay.x, z: bay.z, r: 2.4 };
+  colliders.push(roverCollider);
+  pois.push({ id: 'rover', x: bay.x, z: bay.z, r: 5.5 });
+  const roverParts = builtRover.parts;
 
-  // ── Solar field. ──
+  // ── The first crew's descent stage, out past the landing zone. ──
   {
-    const g = place(px + 36, pz + 6, -0.2);
-    for (let r = 0; r < 2; r++) {
-      for (let c = 0; c < 4; c++) {
-        const x = (c - 1.5) * 3.2; const z = (r - 0.5) * 5.5;
-        mesh(g, new THREE.CylinderGeometry(0.07, 0.07, 1.4, 8), steel, x, 0.7, z);
-        const p = mesh(g, new THREE.BoxGeometry(3, 0.06, 2.2), panel, x, 1.7, z);
-        p.rotation.x = -0.55;
-        const frame = mesh(g, new THREE.BoxGeometry(3.06, 0.02, 2.26), alu, x, 1.69, z);
-        frame.rotation.x = -0.55;
-      }
-    }
-    mesh(g, new THREE.BoxGeometry(1.2, 1, 0.8), dark, 0, 0.5, 5.4);
-    colliders.push({ x: px + 36, z: pz + 6, r: 7.5 });
-    pois.push({ id: 'solar', x: px + 32, z: pz + 6, r: 6 });
-  }
-
-  // ── Comms dish. ──
-  const dishG = place(px + 22, pz - 30, 0);
-  const dishHead = new THREE.Group();
-  {
-    mesh(dishG, new THREE.CylinderGeometry(0.16, 0.24, 7, 10), steel, 0, 3.5, 0);
-    for (let i = 0; i < 3; i++) {
-      const brace = mesh(dishG, new THREE.CylinderGeometry(0.04, 0.04, 3.4, 6), steel, Math.sin(i * 2.09) * 1.2, 1.6, Math.cos(i * 2.09) * 1.2);
-      brace.rotation.z = Math.sin(i * 2.09) * 0.36;
-      brace.rotation.x = -Math.cos(i * 2.09) * 0.36;
-    }
-    dishHead.position.set(0, 7.2, 0);
-    dishG.add(dishHead);
-    // Bowl opens toward +Z, which lookAt points at Earth.
-    const dish = mesh(dishHead, new THREE.SphereGeometry(2.4, seg, seg / 2, 0, Math.PI * 2, 0, Math.PI * 0.32), alu, 0, 0, 2.4);
-    dish.rotation.x = -Math.PI / 2;
-    dish.material = new THREE.MeshStandardMaterial({ color: 0xb9bcc2, roughness: 0.35, metalness: 0.85, side: THREE.DoubleSide });
-    owned.push(dish.material);
-    mesh(dishHead, new THREE.CylinderGeometry(0.03, 0.03, 1.6, 6), steel, 0, 0, 0.8).rotation.x = Math.PI / 2;
-    mesh(dishHead, new THREE.ConeGeometry(0.12, 0.3, 8), dark, 0, 0, 1.7).rotation.x = Math.PI / 2;
-    mesh(dishG, new THREE.SphereGeometry(0.12, 8, 6), beacon, 0, 7.3, 0);
-    colliders.push({ x: px + 22, z: pz - 30, r: 1.2 });
-    pois.push({ id: 'dish', x: px + 22, z: pz - 27, r: 5 });
-  }
-
-  // ── The rover: a rocker-bogie six-wheeler — six spoked aluminium wheels
-  // on two rockers and two bogies so every wheel keeps the ground on any
-  // slope — with a crew seat and roll cage up front, a camera mast beside
-  // it, a stowed arm, a finned RTG canted up at the back, a high-gain dish,
-  // a whip antenna, and headlights that come on when it is driven. ──
-  const rover = place(px + 12, pz + 10, 0.9);
-  const roverCollider: Collider = { x: px + 12, z: pz + 10, r: 2.8 };
-  const wheelMat = new THREE.MeshStandardMaterial({ color: 0xc9ccd1, roughness: 0.45, metalness: 0.7 });
-  const tread = new THREE.MeshStandardMaterial({ color: 0x8b8f95, roughness: 0.7, metalness: 0.5 });
-  const rtgMat = new THREE.MeshStandardMaterial({ color: 0x3a3d42, roughness: 0.6, metalness: 0.5 });
-  const rtgHot = new THREE.MeshStandardMaterial({ color: 0x552200, emissive: new THREE.Color(0xff5a1a), emissiveIntensity: 0.9 });
-  const seatMat = new THREE.MeshStandardMaterial({ color: 0x1f2a44, roughness: 0.9, metalness: 0 });
-  owned.push(wheelMat, tread, rtgMat, rtgHot, seatMat);
-  const brakeLight = new THREE.MeshStandardMaterial({ color: 0x5a0a0a, emissive: new THREE.Color(0xff2a1a), emissiveIntensity: 0.15, roughness: 0.4 });
-  owned.push(brakeLight);
-  const roverParts: RoverParts = { spin: [], steer: [], rockers: [], bogies: [], wheelXZ: [], mast: new THREE.Group(), headlight: new THREE.SpotLight(0xfff4dc, 0, 24, 0.55, 0.5, 1.2), arm: [], brakeLight };
-  {
-    const g = rover;
-    const up = new THREE.Vector3(0, 1, 0);
-    /** A strut between two points. */
-    const strut = (parent: THREE.Object3D, ax: number, ay: number, az: number, bx: number, by: number, bz: number, r = 0.05) => {
-      const dx = bx - ax; const dy = by - ay; const dz = bz - az;
-      const len = Math.hypot(dx, dy, dz);
-      const m = mesh(parent, new THREE.CylinderGeometry(r, r, len, 8), steel, (ax + bx) / 2, (ay + by) / 2, (az + bz) / 2);
-      m.quaternion.setFromUnitVectors(up, new THREE.Vector3(dx, dy, dz).normalize());
-      return m;
-    };
-    // The body: the warm electronics box under a solar deck, wings out.
-    mesh(g, new THREE.BoxGeometry(2.0, 0.5, 2.9), white, 0, 1.55, -0.1);
-    mesh(g, new THREE.BoxGeometry(1.9, 0.04, 2.4), panel, 0, 1.82, -0.4);
-    for (const sd of [-1, 1]) {
-      mesh(g, new THREE.BoxGeometry(0.8, 0.03, 1.6), panel, sd * 1.3, 1.84, -0.7);
-      strut(g, sd * 0.95, 1.8, -0.7, sd * 1.65, 1.82, -0.7, 0.025);
-    }
-    mesh(g, new THREE.BoxGeometry(1.2, 0.12, 0.1), steel, 0, 1.3, 0.3);
-    // Crew seat, roll cage, tiller and a dash.
-    mesh(g, new THREE.BoxGeometry(0.72, 0.16, 0.6), seatMat, 0, 1.9, 0.85);
-    mesh(g, new THREE.BoxGeometry(0.72, 0.6, 0.14), seatMat, 0, 2.25, 0.55);
-    for (const sd of [-1, 1]) {
-      strut(g, sd * 0.46, 1.8, 1.3, sd * 0.46, 2.9, 1.1, 0.035);
-      strut(g, sd * 0.46, 1.8, 0.35, sd * 0.46, 2.9, 0.45, 0.035);
-      strut(g, sd * 0.46, 2.9, 1.1, sd * 0.46, 2.9, 0.45, 0.035);
-    }
-    strut(g, -0.46, 2.9, 1.1, 0.46, 2.9, 1.1, 0.035);
-    strut(g, -0.46, 2.9, 0.45, 0.46, 2.9, 0.45, 0.035);
-    mesh(g, new THREE.BoxGeometry(0.5, 0.05, 0.16), dark, 0, 2.15, 1.32);
-    mesh(g, new THREE.BoxGeometry(0.34, 0.2, 0.03), screen, 0, 2.3, 1.36).rotation.x = -0.35;
-    // A glass canopy over the cage, a name plaque on the flank, brake lights.
-    const canopy = mesh(g, new THREE.SphereGeometry(0.72, 24, 12, 0, Math.PI * 2, 0, Math.PI * 0.5), glass, 0, 2.45, 0.8);
-    canopy.scale.set(1, 0.75, 1.15);
-    canopy.castShadow = false;
-    const plaqueTex = plaque(['STELLAR', 'ROVER 1'], 256, 128, '#e9e9e4', '#1b1f26', 40);
-    textures.push(plaqueTex);
-    const plaqueMat = new THREE.MeshStandardMaterial({ map: plaqueTex, roughness: 0.7 });
-    owned.push(plaqueMat);
-    for (const sd of [-1, 1]) {
-      const pl = mesh(g, new THREE.PlaneGeometry(0.7, 0.35), plaqueMat, sd * 1.005, 1.55, -0.2);
-      pl.rotation.y = sd * Math.PI / 2;
-      mesh(g, new THREE.BoxGeometry(0.22, 0.08, 0.04), brakeLight, sd * 0.7, 1.5, -1.56);
-    }
-    // The mast with its camera head; the head looks where the rover is steered.
-    mesh(g, new THREE.CylinderGeometry(0.07, 0.09, 1.5, 10), alu, 0.62, 2.55, 1.25);
-    roverParts.mast.position.set(0.62, 3.35, 1.25);
-    g.add(roverParts.mast);
-    mesh(roverParts.mast, new THREE.BoxGeometry(0.5, 0.26, 0.32), white);
-    for (const sd of [-1, 1]) mesh(roverParts.mast, new THREE.CylinderGeometry(0.07, 0.07, 0.12, 12), dark, sd * 0.15, 0, 0.18).rotation.x = Math.PI / 2;
-    mesh(roverParts.mast, new THREE.CircleGeometry(0.05, 12), lamp, 0, -0.06, 0.245);
-    // The arm: a shoulder on the front corner, an upper arm, an elbow, a
-    // forearm with the turret of tools at the end. Stowed across the front
-    // on the move; the drive unfolds it when the rover stands.
-    const shoulder = new THREE.Group();
-    shoulder.position.set(-0.55, 1.45, 1.35);
-    g.add(shoulder);
-    mesh(shoulder, new THREE.CylinderGeometry(0.1, 0.1, 0.16, 12), steel);
-    strut(shoulder, 0, 0, 0, 0.9, 0.1, 0.35, 0.05);
-    const elbow = new THREE.Group();
-    elbow.position.set(0.9, 0.1, 0.35);
-    shoulder.add(elbow);
-    elbow.rotation.x = -0.9;
-    mesh(elbow, new THREE.SphereGeometry(0.07, 12, 10), steel);
-    strut(elbow, 0, 0, 0, -0.5, -0.25, 0.5, 0.045);
-    mesh(elbow, new THREE.CylinderGeometry(0.16, 0.16, 0.22, 12), dark, -0.5, -0.25, 0.5).rotation.x = Math.PI / 2;
-    for (let tool = 0; tool < 4; tool++) {
-      const a = tool * Math.PI / 2;
-      mesh(elbow, new THREE.CylinderGeometry(0.025, 0.02, 0.12, 8), steel, -0.5 + Math.cos(a) * 0.1, -0.25 + Math.sin(a) * 0.1, 0.66).rotation.x = Math.PI / 2;
-    }
-    roverParts.arm.push(shoulder, elbow);
-    // The RTG on the back, canted up, finned, warm at the core.
-    const rtg = new THREE.Group();
-    rtg.position.set(0, 1.95, -1.6);
-    rtg.rotation.x = -0.6;
-    g.add(rtg);
-    mesh(rtg, new THREE.CylinderGeometry(0.2, 0.2, 0.8, 12), rtgMat).rotation.x = Math.PI / 2;
-    for (let f = 0; f < 8; f++) mesh(rtg, new THREE.BoxGeometry(0.02, 0.5, 0.74), rtgMat).rotation.z = f * Math.PI / 8;
-    mesh(rtg, new THREE.CylinderGeometry(0.12, 0.12, 0.06, 12), rtgHot, 0, 0, -0.42).rotation.x = Math.PI / 2;
-    // High-gain dish on its post, and the UHF whip.
-    strut(g, -0.7, 1.8, -1.0, -0.7, 2.45, -1.0, 0.04);
-    mesh(g, new THREE.CylinderGeometry(0.34, 0.1, 0.12, 20, 1, true), alu, -0.7, 2.55, -1.0).rotation.x = -0.9;
-    strut(g, 0.75, 1.8, -1.2, 0.75, 2.95, -1.2, 0.02);
-    // Headlights, and the beam they throw when driven.
-    for (const sd of [-1, 1]) mesh(g, new THREE.BoxGeometry(0.18, 0.1, 0.06), lamp, sd * 0.7, 1.55, 1.36);
-    roverParts.headlight.position.set(0, 1.6, 1.4);
-    roverParts.headlight.target.position.set(0, 0.4, 9);
-    g.add(roverParts.headlight, roverParts.headlight.target);
-    // Rocker-bogie, both sides: the rocker carries the front wheel and the
-    // bogie; the bogie carries the middle and rear wheels. A differential
-    // bar across the top ties the rockers.
-    mesh(g, new THREE.BoxGeometry(2.3, 0.08, 0.08), steel, 0, 1.32, 0.3);
-    const wheel = (parent: THREE.Object3D, x: number, y: number, z: number, steerable: boolean) => {
-      const pivot = new THREE.Group();
-      pivot.position.set(x, y, z);
-      parent.add(pivot);
-      const hub = new THREE.Group();
-      pivot.add(hub);
-      mesh(hub, new THREE.CylinderGeometry(0.55, 0.55, 0.42, lite ? 20 : 36), wheelMat).rotation.z = Math.PI / 2;
-      // Chevron cleats: each a pair of bars meeting at the centreline, the
-      // whole tread merged into one geometry so a wheel is one draw call.
-      const cleats: THREE.BufferGeometry[] = [];
-      const count = lite ? 14 : 22;
-      for (let tr = 0; tr < count; tr++) {
-        const a = (tr / count) * Math.PI * 2;
-        for (const half of [-1, 1]) {
-          const bar = new THREE.BoxGeometry(0.2, 0.05, 0.07);
-          bar.rotateZ(half * 0.5);
-          bar.rotateX(-a);
-          bar.translate(half * 0.11, Math.cos(a) * 0.565, Math.sin(a) * 0.565);
-          cleats.push(bar);
-        }
-      }
-      const treadGeom = mergeGeometries(cleats, false);
-      for (const c of cleats) c.dispose();
-      if (treadGeom) mesh(hub, treadGeom, tread);
-      mesh(hub, new THREE.CylinderGeometry(0.2, 0.2, 0.46, 12), dark).rotation.z = Math.PI / 2;
-      for (let sp = 0; sp < 3; sp++) mesh(hub, new THREE.BoxGeometry(0.47, 0.9, 0.05), steel).rotation.x = sp * Math.PI / 3;
-      roverParts.spin.push(hub);
-      if (steerable) roverParts.steer.push(pivot);
-    };
-    for (const sd of [-1, 1]) {
-      const rocker = new THREE.Group();
-      rocker.position.set(sd * 1.05, 1.15, 0.3);
-      g.add(rocker);
-      roverParts.rockers.push(rocker);
-      strut(rocker, 0, 0, 0, sd * 0.3, -0.6, 1.25);
-      strut(rocker, 0, 0, 0, 0, -0.3, -0.85);
-      mesh(rocker, new THREE.CylinderGeometry(0.1, 0.1, 0.2, 10), dark).rotation.z = Math.PI / 2;
-      wheel(rocker, sd * 0.3, -0.6, 1.25, true);
-      const bogie = new THREE.Group();
-      bogie.position.set(0, -0.3, -0.85);
-      rocker.add(bogie);
-      roverParts.bogies.push(bogie);
-      strut(bogie, 0, 0, 0, sd * 0.3, -0.3, 0.35);
-      strut(bogie, 0, 0, 0, sd * 0.3, -0.3, -1.0);
-      mesh(bogie, new THREE.CylinderGeometry(0.08, 0.08, 0.18, 10), dark).rotation.z = Math.PI / 2;
-      wheel(bogie, sd * 0.3, -0.3, 0.35, false);
-      wheel(bogie, sd * 0.3, -0.3, -1.0, true);
-      roverParts.wheelXZ.push([sd * 1.35, 1.55], [sd * 1.35, -0.2], [sd * 1.35, -1.55]);
-    }
-    colliders.push(roverCollider);
-    pois.push({ id: 'rover', x: px + 12, z: pz + 10, r: 5.5 });
-  }
-
-  // ── Descent stage: the ride down, left where it landed. ──
-  {
-    const g = place(px - 12, pz + 24, 0.4);
-    mesh(g, new THREE.CylinderGeometry(2.4, 2.6, 1.7, 8), gold, 0, 1.9, 0);
-    mesh(g, new THREE.CylinderGeometry(1.1, 1.6, 1.1, 12), dark, 0, 0.5, 0);
-    mesh(g, new THREE.CylinderGeometry(0.9, 0.9, 0.5, 12), steel, 0, 2.95, 0);
+    const g = place(px - 22, pz + 36, 0.4);
+    kit.cyl(g, 2.4, 2.6, 1.7, m.gold, 0, 1.9, 0, 8);
+    kit.cyl(g, 2.42, 2.42, 0.1, m.carbon, 0, 2.78, 0, 8);
+    kit.cyl(g, 1.1, 1.6, 1.1, m.carbon, 0, 0.5, 0, 12);
+    kit.cyl(g, 0.9, 0.9, 0.5, m.silver, 0, 2.95, 0, 12);
     for (let i = 0; i < 4; i++) {
       const a = i * Math.PI / 2 + Math.PI / 4;
       const lx = Math.sin(a) * 3.6; const lz = Math.cos(a) * 3.6;
-      const leg = mesh(g, new THREE.CylinderGeometry(0.08, 0.1, 3.6, 8), gold, lx * 0.65, 1.3, lz * 0.65);
+      const leg = mesh(g, new THREE.CylinderGeometry(0.08, 0.1, 3.6, 8), m.gold, lx * 0.65, 1.3, lz * 0.65);
       leg.rotation.z = -Math.sin(a) * 0.6;
       leg.rotation.x = Math.cos(a) * 0.6;
-      mesh(g, new THREE.CylinderGeometry(0.7, 0.55, 0.14, 12), gold, lx, 0.07, lz);
+      kit.cyl(g, 0.7, 0.55, 0.14, m.gold, lx, 0.07, lz, 12);
+      noShadow(mesh(g, new THREE.SphereGeometry(1.0, 10, 5, 0, Math.PI * 2, 0, Math.PI / 2), m.regolith, lx, -0.05, lz)).scale.set(1, 0.22, 1);
     }
-    for (let i = 0; i < 6; i++) mesh(g, new THREE.BoxGeometry(0.5, 0.05, 0.05), steel, 0, 0.5 + i * 0.45, 2.55);
-    for (const s of [-1, 1]) mesh(g, new THREE.CylinderGeometry(0.03, 0.03, 2.8, 6), steel, s * 0.25, 1.75, 2.55);
-    mesh(g, new THREE.SphereGeometry(0.1, 8, 6), beacon, 0, 3.3, 0);
-    colliders.push({ x: px - 12, z: pz + 24, r: 3.8 });
-    pois.push({ id: 'lander', x: px - 12, z: pz + 24, r: 7 });
+    for (let i = 0; i < 6; i++) kit.box(g, 0.5, 0.05, 0.05, m.steel, 0, 0.5 + i * 0.45, 2.55);
+    for (const s of [-1, 1]) kit.cyl(g, 0.03, 0.03, 2.8, m.steel, s * 0.25, 1.75, 2.55, 6);
+    noShadow(mesh(g, new THREE.PlaneGeometry(1.3, 0.34), kit.label(['STELLAR I · 2031'], { w: 256, h: 64 }), 0, 2.2, 2.62));
+    colliders.push({ x: px - 22, z: pz + 36, r: 3.8 });
+    pois.push({ id: 'lander', x: px - 22, z: pz + 36, r: 7 });
   }
 
-  // ── Flag. ──
+  // ── The flag. ──
   {
     const g = place(px + 3, pz + 18, 0);
-    mesh(g, new THREE.CylinderGeometry(0.02, 0.025, 2.6, 8), alu, 0, 1.3, 0);
-    mesh(g, new THREE.CylinderGeometry(0.015, 0.015, 1.25, 6), alu, 0.62, 2.55, 0).rotation.z = Math.PI / 2;
+    kit.cyl(g, 0.02, 0.025, 2.6, m.alu, 0, 1.3, 0, 8);
+    kit.cylX(g, 0.015, 1.25, m.alu, 0.62, 2.55, 0, 6);
     const tex = georgianFlag();
     textures.push(tex);
-    const m = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.8, side: THREE.DoubleSide });
-    owned.push(m);
-    const flag = mesh(g, new THREE.PlaneGeometry(1.2, 0.8, 12, 4), m, 0.62, 2.14, 0);
-    // A stiff flag: the cloth hangs in the ripples it was packed with.
+    const fm = std({ map: tex, roughness: 0.8, side: THREE.DoubleSide });
+    const flag = mesh(g, new THREE.PlaneGeometry(1.2, 0.8, 12, 4), fm, 0.62, 2.14, 0);
     const fp = flag.geometry.attributes.position as THREE.BufferAttribute;
     for (let i = 0; i < fp.count; i++) fp.setZ(i, Math.sin(fp.getX(i) * 7) * 0.03 * (fp.getX(i) + 0.6));
     flag.geometry.computeVertexNormals();
     pois.push({ id: 'flag', x: px + 3, z: pz + 18, r: 3.5 });
   }
 
-  // ── Seismometer and a sample crate. ──
-  {
-    const g = place(px + 26, pz - 2, 0.5);
-    for (let i = 0; i < 3; i++) {
-      const leg = mesh(g, new THREE.CylinderGeometry(0.02, 0.02, 1, 6), steel, Math.sin(i * 2.09) * 0.4, 0.45, Math.cos(i * 2.09) * 0.4);
-      leg.rotation.z = -Math.sin(i * 2.09) * 0.45;
-      leg.rotation.x = Math.cos(i * 2.09) * 0.45;
-    }
-    mesh(g, new THREE.CylinderGeometry(0.28, 0.28, 0.2, 12), dark, 0, 0.9, 0);
-    mesh(g, new THREE.SphereGeometry(0.05, 8, 6), beacon, 0, 1.05, 0);
-    mesh(g, new THREE.BoxGeometry(0.9, 0.5, 0.6), skirt, 1.4, 0.25, 0.4);
-    pois.push({ id: 'seismometer', x: px + 26, z: pz - 2, r: 3.5 });
-  }
-
   // ── The base sign. ──
   {
     const g = place(px, pz + 12, 0);
-    for (const s of [-1, 1]) mesh(g, new THREE.CylinderGeometry(0.04, 0.04, 2.2, 8), steel, s * 1.3, 1.1, 0);
-    const tex = plaque(['STELLAR BASE', 'ASTROMAN · TBILISI', '41.71 N · 44.83 E'], 512, 256, '#f2f2ee', '#101418', 38);
-    textures.push(tex);
-    const m = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.55, side: THREE.DoubleSide });
-    owned.push(m);
-    mesh(g, new THREE.PlaneGeometry(2.8, 1.4), m, 0, 1.75, -0.03).rotation.y = Math.PI;
-    mesh(g, new THREE.BoxGeometry(2.9, 1.5, 0.04), dark, 0, 1.75, 0);
-    // One collider for the whole board: a camera that can be pushed between
-    // the posts ends up looking at the back of it.
+    for (const s of [-1, 1]) kit.cyl(g, 0.04, 0.04, 2.2, m.steel, s * 1.3, 1.1, 0, 8);
+    const signMat = kit.label(['STELLAR BASE', 'ASTROMAN · TBILISI', '41.71 N · 44.83 E'], { w: 512, h: 256, px: 38 });
+    const face = noShadow(mesh(g, new THREE.PlaneGeometry(2.8, 1.4), signMat, 0, 1.75, -0.03));
+    face.rotation.y = Math.PI;
+    kit.box(g, 2.9, 1.5, 0.04, m.carbon, 0, 1.75, 0);
     colliders.push({ x: px, z: pz + 12, r: 1.7 });
     pois.push({ id: 'sign', x: px, z: pz + 13, r: 3 });
   }
 
-  // ── Mast lights at the pad's edge. ──
-  const lamps: THREE.Object3D[] = [];
-  for (const [lx, lz] of [[px - 28, pz + 16], [px + 28, pz + 18]]) {
-    const g = place(lx, lz, 0);
-    mesh(g, new THREE.CylinderGeometry(0.08, 0.12, 8, 8), steel, 0, 4, 0);
-    const head = mesh(g, new THREE.BoxGeometry(0.9, 0.2, 0.5), lamp, 0, 8, 0);
-    lamps.push(head);
-    colliders.push({ x: lx, z: lz, r: 0.3 });
-  }
+  // Fold the outpost into a few draw calls per material. The rover's
+  // articulated parts, the array heads, the dish and the airlock doors keep moving.
+  rover.traverse((o) => { if ((o as THREE.Group).isGroup) pivot(o); });
+  const merged = mergeStatic(group, { cell: 24, minCaster: 0.15 });
 
-  // ── Cable runs along the ground between the domes and the tanks. ──
-  const cableMat = new THREE.MeshStandardMaterial({ color: 0x1a1c20, roughness: 0.7 });
-  owned.push(cableMat);
-  const runs: [number, number][][] = [
-    [[px - 33, pz + 2], [px - 26, pz - 4], [px - 21, pz - 5]],
-    [[px + 30, pz + 6], [px + 24, pz - 2], [px + 21, pz - 5]],
-    [[px + 22, pz - 28], [px + 12, pz - 24], [px + 4, pz - 15]],
-  ];
-  for (const run of runs) {
-    const pts = run.map(([x, z]) => new THREE.Vector3(x, heightAt(x, z) + 0.06, z));
-    const curve = new THREE.CatmullRomCurve3(pts);
-    const g = new THREE.TubeGeometry(curve, 24, 0.06, 6, false);
-    geoms.push(g);
-    const c = new THREE.Mesh(g, cableMat);
-    c.receiveShadow = true;
-    group.add(c);
-  }
-
-  const beaconMats = [beacon];
   const spawn = new THREE.Vector3(px, heightAt(px, pz + 4), pz + 4);
-  const tmp = new THREE.Vector3();
   const roverPoi = pois.find((p) => p.id === 'rover')!;
   const walkColliders = colliders.filter((c) => !habColliders.has(c));
 
   // ── Standing on a habitat. ──
   const lp = { x: 0, z: 0 };
-  /** World → a habitat's own frame (its yaw undone). */
   const local = (h: Hab, x: number, z: number) => {
     const dx = x - h.x; const dz = z - h.z;
     const c = Math.cos(h.yaw); const s = Math.sin(h.yaw);
     lp.x = dx * c - dz * s;
     lp.z = dx * s + dz * c;
   };
-  /** The floor under a point of a habitat, or null off its structure. */
   const structure = (h: Hab, lx: number, lz: number): number | null => {
     if (Math.hypot(lx, lz) < DOME_R) return h.cy + FLOOR;
     if (Math.abs(lx) < DOOR_HALF) {
@@ -737,10 +468,9 @@ export function makeMoonBase(heightAt: (x: number, z: number) => number, lite: b
     }
     return null;
   };
-  /** Keep a walker on the way in and off everything else. The one rule that
-   *  matters is that going indoors should take nothing but walking at the
-   *  door: the apron in front of the ramp gathers an approach onto the
-   *  centreline, and from there the corridor is wide enough to stroll. */
+  /** Going indoors takes walking at the door and cycling the lock: the apron
+   *  in front of the ramp gathers an approach onto the centreline, and a shut
+   *  door holds the walker on the side they are on. */
   const RAIL = DOOR_HALF - 0.14;
   const confine = (p: { x: number; z: number }) => {
     for (const h of habs) {
@@ -751,25 +481,21 @@ export function makeMoonBase(heightAt: (x: number, z: number) => number, lite: b
       let moved = false;
       if (structure(h, lx, lz) !== null) {
         if (r < DOME_R) {
-          // On the deck: the wall, open only where the doorway is.
           const doorway = Math.abs(lx) < DOOR_HALF && lz > 3.8;
           if (!doorway && r > DOME_R - 0.55) { const k = (DOME_R - 0.55) / r; lx *= k; lz *= k; moved = true; }
         } else if (Math.abs(lx) > RAIL) {
-          // The airlock's walls and the ramp's rails.
           lx = Math.sign(lx) * RAIL; moved = true;
         }
+        if (h.airlock.open < 0.85 && Math.abs(lx) < DOOR_HALF && lz > DOOR_Z - 0.38 && lz < DOOR_Z + 0.38) {
+          lz = lz < DOOR_Z ? DOOR_Z - 0.38 : DOOR_Z + 0.38;
+          moved = true;
+        }
       } else if (r < 5.95 && !(Math.abs(lx) < DOOR_HALF && lz > 4.0)) {
-        // Outside: off the skirt and the legs …
         const k = 5.95 / r; lx *= k; lz *= k; moved = true;
       } else if (Math.abs(lx) < 1.6 && lz > 4.0 && lz < RAMP_END - 0.4) {
-        // … and off the sides of the airlock module and the ramp. Drift of
-        // a hand's width puts you back on the cleats rather than beside
-        // them; anything wider and you are walking round the outside.
         lx = Math.abs(lx) < 1.32 ? Math.sign(lx || 1) * (DOOR_HALF - 0.1) : Math.sign(lx || 1) * 1.6;
         moved = true;
       } else if (lz >= RAMP_END - 0.4 && lz < RAMP_END + APRON && Math.abs(lx) < 2.8) {
-        // The apron: the closer to the ramp, the harder it draws you to the
-        // middle of it, so the last step onto the cleats is always square.
         const pull = 1 - (lz - (RAMP_END - 0.4)) / (APRON + 0.4);
         lx *= 1 - 0.55 * pull * pull;
         moved = true;
@@ -782,37 +508,48 @@ export function makeMoonBase(heightAt: (x: number, z: number) => number, lite: b
     }
   };
 
+  const setLamp = (a: Airlock) => a.lamp.emissive.setHex(LAMP[a.state]);
   const handle: BaseHandle = {
-    group, colliders, walkColliders, pois, spawn, airlocks, rover, roverCollider, roverParts, floorAt, confine, inside: null,
+    group, colliders, walkColliders, pois, spawn, airlocks, rover, roverCollider, roverParts, zones, floorAt, confine, inside: null,
+    cycleAirlock(a) {
+      if (a.state === 'closed') { a.state = 'cycling'; a.cycle = 0; }
+      else if (a.state === 'open') a.state = 'closed';
+      setLamp(a);
+    },
     update(dt, t, earthDir, crewX, crewZ) {
-      // Which habitat the crew is in; its light comes up as they enter.
       let inside: Inside | null = null;
       for (const h of habs) {
         local(h, crewX, crewZ);
         const r = Math.hypot(lp.x, lp.z);
         const here = r < DOME_R || (Math.abs(lp.x) < DOOR_HALF && lp.z >= 4.2 && lp.z < 6.75);
         if (here) inside = { id: h.id, x: h.x, z: h.z, y: h.cy + FLOOR };
-        h.lamp.intensity += ((here ? 1.9 : 0) - h.lamp.intensity) * (1 - Math.exp(-dt * 3));
+        h.glow += ((here ? 1 : 0) - h.glow) * (1 - Math.exp(-dt * 3));
+        if (h.glow > 0.01) lights?.request(h.x, h.cy + 4.6, h.z, 0xfff1dc, h.glow * 1.9, 22, 1.5);
       }
       handle.inside = inside;
-      const blink = (Math.sin(t * 2.2) > 0.6 ? 1 : 0.15) * 2;
-      for (const m of beaconMats) m.emissiveIntensity = blink;
-      // The dish tracks Earth.
-      dishHead.getWorldPosition(tmp).add(earthDir);
-      dishHead.lookAt(tmp);
-      // Airlock doors slide up when the crew comes to the foot of the ramp.
+      beacon.emissiveIntensity = (Math.sin(t * 2.2) > 0.6 ? 1 : 0.15) * 2;
       for (const a of airlocks) {
-        const near = Math.hypot(crewX - a.x, crewZ - a.z) < 7.5;
-        a.open += ((near ? 1 : 0) - a.open) * (1 - Math.exp(-dt * 2.8));
+        if (a.state === 'cycling') {
+          a.cycle = Math.min(1, a.cycle + dt / CYCLE_SECONDS);
+          a.lamp.emissiveIntensity = Math.sin(t * 14) > 0 ? 2.2 : 0.4;
+          if (a.cycle >= 1) { a.state = 'open'; a.lamp.emissiveIntensity = 1.8; setLamp(a); }
+        } else if (a.state === 'open' && Math.hypot(crewX - a.x, crewZ - a.z) > 8.5) {
+          a.state = 'closed';
+          setLamp(a);
+        }
+        a.open += ((a.state === 'open' ? 1 : 0) - a.open) * (1 - Math.exp(-dt * 3.2));
         a.panel.position.y = 2.65 + a.open * 1.95;
       }
+      zones.update(dt, t, earthDir);
       roverPoi.x = roverCollider.x;
       roverPoi.z = roverCollider.z;
     },
     dispose() {
-      for (const g of geoms) g.dispose();
-      for (const m of owned) m.dispose();
-      for (const t of textures) t.dispose();
+      for (const g of merged.geometries) g.dispose();
+      for (const o of owned) o.dispose();
+      for (const tx of textures) tx.dispose();
+      zones.dispose();
+      builtRover.dispose();
     },
   };
   return handle;

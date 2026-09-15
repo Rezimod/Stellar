@@ -7,14 +7,16 @@ import {
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { makeMoonSurface, type MoonSurfaceHandle } from '@/lib/solar-system/moon-surface';
+import { DRILL_BAND } from '@/lib/solar-system/moon-mission';
 import { GameStick } from './GameStick';
+import { CosmicLoader } from './CosmicLoader';
 
 interface MoonSurfaceProps {
   onReturn: () => void;
 }
 
-const KEY_ROWS = ['r1', 'r2', 'r9', 'r3', 'r4', 'r5', 'r10', 'r6', 'r11', 'r12', 'r8', 'r7'] as const;
-const TOUCH_ROWS = ['t1', 't2', 't3', 't7', 't4', 't8', 't9', 't6', 't5'] as const;
+const KEY_ROWS = ['r1', 'r2', 'r9', 'r3', 'r4', 'r5', 'r10', 'r6', 'r11', 'r12', 'r8', 'r13', 'r7'] as const;
+const TOUCH_ROWS = ['t1', 't2', 't3', 't7', 't4', 't8', 't9', 't6', 't10', 't5'] as const;
 const HANDLED = new Set([
   'KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
   'Space', 'ShiftLeft', 'ShiftRight', 'KeyE', 'KeyC', 'KeyF', 'KeyV', 'ControlLeft',
@@ -22,13 +24,20 @@ const HANDLED = new Set([
 ]);
 const fmtTime = (s: number) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 const fmtRange = (m: number) => (m >= 1000 ? `${(m / 1000).toFixed(2)} km` : `${Math.round(m)} m`);
+/** A rough range: to the nearest ten metres, marked as such. */
+const fmtApprox = (m: number) => `~${fmtRange(Math.round(m / 10) * 10)}`;
 /** How wide a degree of the compass is, and how far round it is drawn. */
 const PPD = 3.1;
 const TURNS = 3;
 
 export function MoonSurface({ onReturn }: MoonSurfaceProps) {
   const t = useTranslations('solarSystem.moon');
+  const tl = useTranslations('solarSystem.loading');
   const [touch, setTouch] = useState(false);
+  /** Bumped when the GPU drops the context; the scene is rebuilt on the surface. */
+  const [glGeneration, setGlGeneration] = useState(0);
+  const [gpuLost, setGpuLost] = useState(false);
+  const resumeRef = useRef(false);
   const [help, setHelp] = useState(false);
   const [menu, setMenu] = useState(false);
   const [log, setLog] = useState(false);
@@ -52,16 +61,31 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
   // Surface.
   const stripRef = useRef<HTMLDivElement>(null);
   const pipRef = useRef<HTMLDivElement>(null);
+  const jobPipRef = useRef<HTMLDivElement>(null);
+  const meterRef = useRef<HTMLDivElement>(null);
+  const meterLabelRef = useRef<HTMLSpanElement>(null);
   const objRef = useRef<HTMLButtonElement>(null);
   const objTextRef = useRef<HTMLSpanElement>(null);
   const objRangeRef = useRef<HTMLSpanElement>(null);
+  const jobRef = useRef<HTMLSpanElement>(null);
+  const jobTextRef = useRef<HTMLSpanElement>(null);
   const altRef = useRef<HTMLSpanElement>(null);
   const speedRef = useRef<HTMLSpanElement>(null);
   const cratersRef = useRef<HTMLSpanElement>(null);
   const poiRef = useRef<HTMLDivElement>(null);
   const hintRef = useRef<HTMLParagraphElement>(null);
+  const promptRef = useRef<HTMLDivElement>(null);
+  const promptTextRef = useRef<HTMLSpanElement>(null);
+  const promptHoldRef = useRef<HTMLElement>(null);
   const impactRef = useRef<HTMLDivElement>(null);
   const bannerRef = useRef<HTMLDivElement>(null);
+  const radioRef = useRef<HTMLDivElement>(null);
+  const readoutRef = useRef<HTMLDivElement>(null);
+  const drillRef = useRef<HTMLDivElement>(null);
+  const drillDepthRef = useRef<HTMLSpanElement>(null);
+  const drillLoadRef = useRef<HTMLSpanElement>(null);
+  const drillHeatRef = useRef<HTMLSpanElement>(null);
+  const drillWarnRef = useRef<HTMLSpanElement>(null);
   const o2Ref = useRef<HTMLSpanElement>(null);
   const o2BarRef = useRef<HTMLSpanElement>(null);
   const hrRef = useRef<HTMLSpanElement>(null);
@@ -79,12 +103,15 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
   const keyboardMoveRef = useRef({ x: 0, y: 0 });
   const runRef = useRef(false);
   const crouchRef = useRef(false);
+  const touchRef = useRef(false);
   runRef.current = run;
   crouchRef.current = crouch;
-  /** What the one contextual key does right now, kept off React. */
-  const actionModeRef = useRef<'' | 'use' | 'work'>('');
 
-  useEffect(() => setTouch(window.matchMedia('(pointer: coarse)').matches), []);
+  useEffect(() => {
+    const coarse = window.matchMedia('(pointer: coarse)').matches;
+    touchRef.current = coarse;
+    setTouch(coarse);
+  }, []);
 
   /** The ticks of the compass ribbon: three turns of it, so it never runs out. */
   const ticks = useMemo(() => {
@@ -101,7 +128,18 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
     const mount = mountRef.current;
     const root = rootRef.current;
     if (!mount || !root) return;
-    const handle = makeMoonSurface(mount);
+    let rebuildTimer = 0;
+    const handle = makeMoonSurface(mount, {
+      startOnSurface: resumeRef.current,
+      onContextLost: () => {
+        setGpuLost(true);
+        rebuildTimer = window.setTimeout(() => {
+          resumeRef.current = true;
+          setGpuLost(false);
+          setGlGeneration((g) => g + 1);
+        }, 1200);
+      },
+    });
     handleRef.current = handle;
     const input = handle.input;
     const pressed = new Set<string>();
@@ -117,19 +155,18 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
       }
       input.run = has('ShiftLeft') || has('ShiftRight') || runRef.current;
       input.crouch = has('ControlLeft') || crouchRef.current;
-      input.work = has('KeyF') || input.work;
+      // E and F both hold the job in front of you; E also presses it.
+      input.use = has('KeyE') || has('KeyF');
       // On the way down, the space bar is the descent engine.
       input.throttle = has('Space') ? 1 : 0;
-      input.jump = has('Space') || input.jump;
+      input.jump = has('Space');
     };
     const onKeyDown = (e: KeyboardEvent) => {
       if (!HANDLED.has(e.code)) return;
       handle.startAudio();
       if (e.repeat) { e.preventDefault(); return; }
       pressed.add(e.code);
-      if (e.code === 'Space') input.jump = true;
-      if (e.code === 'KeyF') input.work = true;
-      if (e.code === 'KeyE') input.interact = true;
+      if (e.code === 'KeyE' || e.code === 'KeyF') input.interact = true;
       if (e.code === 'KeyV') input.viewToggle = true;
       if (e.code === 'KeyC') { crouchRef.current = !crouchRef.current; setCrouch(crouchRef.current); }
       if (e.code.startsWith('Digit')) input.gearRequest = Number(e.code.slice(5)) - 1;
@@ -139,14 +176,12 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
     const onKeyUp = (e: KeyboardEvent) => {
       if (!HANDLED.has(e.code)) return;
       pressed.delete(e.code);
-      if (e.code === 'Space') input.jump = false;
-      if (e.code === 'KeyF') input.work = false;
       sync();
     };
     const onBlur = () => {
       pressed.clear();
       input.moveX = input.moveY = 0;
-      input.jump = false; input.run = false; input.work = false; input.throttle = 0;
+      input.jump = false; input.run = false; input.use = false; input.throttle = 0;
       keyboardMoveRef.current = { x: 0, y: 0 };
       input.orbitDX = input.orbitDY = 0;
       orbitId = -1;
@@ -200,16 +235,29 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
     const tel = handle.telemetry;
     const text = (el: HTMLElement | null, v: string) => { if (el && el.textContent !== v) el.textContent = v; };
     const show = (el: HTMLElement | null, on: boolean) => { if (el && el.hidden === on) el.hidden = !on; };
+    const setVar = (el: HTMLElement | null, name: string, v: string) => { if (el && el.style.getPropertyValue(name) !== v) el.style.setProperty(name, v); };
+    const pipAt = (el: HTMLElement | null, bearing: number, heading: number, on: boolean) => {
+      if (!el) return;
+      show(el, on);
+      if (!on) return;
+      let rel = ((bearing * 180) / Math.PI - heading + 540) % 360 - 180;
+      const edge = Math.abs(rel) > 58;
+      rel = Math.max(-58, Math.min(58, rel));
+      el.style.transform = `translateX(calc(-50% + ${rel * PPD}px))`;
+      el.dataset.edge = String(edge);
+    };
     let raf = 0;
     let lastPaint = 0;
     const isTouch = window.matchMedia('(pointer: coarse)').matches;
+    root.dataset.touch = String(isTouch);
     const paint = (now: number) => {
       raf = requestAnimationFrame(paint);
       if (now - lastPaint < 33) return;
       lastPaint = now;
+      root.dataset.ready = String(tel.ready);
       root.dataset.phase = tel.phase;
       root.dataset.view = tel.view;
-      root.dataset.driving = String(tel.view === 'rover' || tel.view === 'cockpit' || tel.view === 'mast');
+      root.dataset.driving = String(tel.driving);
 
       // ── The way down. ──
       if (tel.phase !== 'surface') {
@@ -229,30 +277,35 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
         return;
       }
 
-      // ── The compass, and the pip for wherever the crew is being sent. ──
+      // ── The compass, and where the crew is being sent. ──
       const heading = tel.heading;
       if (stripRef.current) stripRef.current.style.transform = `translateX(${-(heading + 360) * PPD}px)`;
       const m = tel.mission;
-      const pip = pipRef.current;
-      if (pip) {
-        const has = m.hasMarker;
-        pip.hidden = !has;
-        if (has) {
-          let rel = ((m.bearing * 180) / Math.PI - heading + 540) % 360 - 180;
-          const edge = Math.abs(rel) > 58;
-          rel = Math.max(-58, Math.min(58, rel));
-          pip.style.transform = `translateX(calc(-50% + ${rel * PPD}px))`;
-          pip.dataset.edge = String(edge);
+      const j = tel.jobs;
+      pipAt(pipRef.current, m.bearing, heading, m.distance >= 0 && (m.task === '' || !m.atSite));
+      pipAt(jobPipRef.current, j.bearing, heading, j.active !== '' && j.distance >= 0);
+      // One meter under the compass: a job's alignment when there is one,
+      // otherwise the expedition's scanner.
+      const meter = meterRef.current;
+      if (meter) {
+        const align = j.meter >= 0;
+        const on = align || m.signal >= 0;
+        show(meter, on);
+        if (on) {
+          meter.dataset.kind = align ? 'align' : 'scan';
+          meter.dataset.ping = String(m.ping);
+          setVar(meter, '--v', (align ? j.meter : m.signal).toFixed(3));
+          text(meterLabelRef.current, align ? t('jobs.meter') : m.task === 'scan' ? t('mission.scanLock', { n: Math.round(m.work * 100) }) : t('mission.scanner'));
         }
       }
-      // The banner says the same thing louder: only one of them at a time.
-      show(objRef.current, (m.hasMarker || m.complete) && !m.banner);
-      text(objTextRef.current, t(`mission.${m.objective}`));
-      // Standing at a work site, the range is meaningless: show the job.
+      show(objRef.current, (m.distance >= 0 || m.complete || j.active !== '') && !m.banner && !j.banner);
+      text(objTextRef.current, t(`mission.${m.objective || 'obj.done'}`));
       text(objRangeRef.current,
-        m.task === 'drill' && m.atSite ? `${m.depth.toFixed(1)} m`
-        : m.task === 'sweep' && m.atSite ? `${Math.round(m.work * 100)} %`
-        : m.distance >= 0 ? fmtRange(m.distance) : '');
+        m.task === 'drill' && m.atSite ? `${m.drill.depth.toFixed(1)} / ${5.2} m`
+        : m.task === 'clear' && m.atSite ? t('mission.patches', { n: m.cleared, total: m.patches })
+        : m.distance >= 0 ? (m.approx ? fmtApprox(m.distance) : fmtRange(m.distance)) : '');
+      show(jobRef.current, j.active !== '');
+      if (j.active) text(jobTextRef.current, `${t(`jobs.steps.${j.objective}`)}${j.distance >= 0 && j.distance > 4 ? ` · ${fmtRange(j.distance)}` : ''}`);
 
       text(altRef.current, `${tel.altitude.toFixed(1)} m`);
       text(speedRef.current, `${tel.speed.toFixed(1)} m/s`);
@@ -264,62 +317,97 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
       text(evaRef.current, fmtTime(tel.evaSeconds));
       text(distRef.current, fmtRange(tel.distanceM));
 
-      // ── The one contextual key: a tap to get on or off, a hold to work. ──
-      const driving = tel.view === 'rover' || tel.view === 'cockpit' || tel.view === 'mast';
-      const canWork = m.task !== '' && m.atSite;
-      const mode: '' | 'use' | 'work' = canWork ? 'work' : (tel.canDrive || driving) ? 'use' : '';
-      actionModeRef.current = mode;
+      // ── The one key. ──
+      const p = tel.prompt;
+      const label = p.active ? t(`act.${p.label}`) : '';
       const action = actionRef.current;
       if (action) {
-        show(action, mode !== '');
-        if (mode !== '') {
-          action.dataset.mode = mode;
-          const label = mode === 'work'
-            ? t(`tasks.${m.task}`)
-            : driving ? t(isTouch ? 'dismountTouch' : 'dismount') : t(isTouch ? 'driveTouch' : 'drive');
+        show(action, p.active);
+        if (p.active) {
+          action.dataset.mode = p.kind === 'hold' ? 'work' : 'use';
           text(actionTextRef.current, label);
+        }
+      }
+      const prompt = promptRef.current;
+      if (prompt) {
+        show(prompt, p.active);
+        if (p.active) {
+          text(promptTextRef.current, label);
+          show(promptHoldRef.current, p.kind === 'hold');
         }
       }
       const work = workRef.current;
       if (work) {
-        const busy = m.work > 0.001 && m.task !== '' && m.task !== 'enter';
-        work.hidden = !busy;
-        if (busy) {
-          work.style.setProperty('--work', String(m.work));
-          text(work.firstElementChild as HTMLElement, m.task === 'drill' ? `${m.depth.toFixed(1)} m` : `${Math.round(m.work * 100)}%`);
+        const busy = p.active && p.progress > 0.001;
+        show(work, busy);
+        if (busy) setVar(work, '--work', Math.min(1, p.progress).toFixed(3));
+      }
+      // The drill's own panel, while standing at it.
+      const drill = drillRef.current;
+      if (drill) {
+        const on = m.stage === 'drill' && m.atSite && m.drill.engaged;
+        show(drill, on);
+        if (on) {
+          const d = m.drill;
+          text(drillDepthRef.current, `${d.depth.toFixed(2)} m`);
+          const loadEl = drillLoadRef.current;
+          setVar(loadEl, '--v', Math.min(1, d.load).toFixed(3));
+          if (loadEl) loadEl.dataset.state = d.load > DRILL_BAND[1] ? 'over' : 'ok';
+          const heatEl = drillHeatRef.current;
+          setVar(heatEl, '--v', d.heat.toFixed(3));
+          if (heatEl) heatEl.dataset.state = d.heat > 0.75 ? 'hot' : 'ok';
+          const warn = d.stalled ? t('mission.drill.stalled') : d.ready ? t('mission.drill.ready') : d.hard ? t('mission.drill.hard') : '';
+          show(drillWarnRef.current, warn !== '');
+          text(drillWarnRef.current, warn);
         }
       }
-      // The gear, while there is something to drive.
       const gear = gearRef.current;
       if (gear) {
-        show(gear, driving);
-        if (driving) {
+        show(gear, tel.driving);
+        if (tel.driving) {
           gear.dataset.gear = tel.gear;
-          text(gearTextRef.current, t(`gears.${tel.gear}`));
+          text(gearTextRef.current, `${t(`gears.${tel.gear}`)} · ${Math.round(tel.battery * 100)}%`);
         }
       }
       const stance = stanceRef.current;
       if (stance) {
-        const s = tel.stumbling ? 'stumble' : tel.sliding ? 'slide' : tel.crouched ? 'crouch' : '';
-        stance.hidden = !s || driving;
-        if (s) text(stance, t(`stance.${s}`));
+        const s = tel.driving
+          ? (tel.roverFault ? t('rover.fault') : tel.charging ? t('rover.charging', { n: Math.round(tel.battery * 100) }) : '')
+          : tel.stumbling ? t('stance.stumble') : tel.sliding ? t('stance.slide') : tel.crouched ? t('stance.crouch') : '';
+        show(stance, s !== '');
+        text(stance, s);
       }
-      show(airlockRef.current, tel.airlockOpen && !driving);
+      const lock = tel.airlock;
+      const lockText = !lock.near ? '' : lock.state === 'cycling' ? t('airlock.cycling', { n: Math.round(lock.cycle * 100) }) : lock.state === 'open' ? t('airlock.open') : '';
+      show(airlockRef.current, lockText !== '');
+      text(airlockRef.current, lockText);
       const poi = poiRef.current;
       if (poi) {
-        poi.hidden = !tel.poiId;
-        if (tel.poiId) text(poi, t(`pois.${tel.poiId}`));
+        const on = !!tel.poiId && !p.active;
+        show(poi, on);
+        if (on) text(poi, t(`pois.${tel.poiId}`));
       }
       const hintKey = tel.hint ? (isTouch ? `hints.${tel.hint}Touch` : `hints.${tel.hint}`) : '';
       const hint = hintRef.current;
       if (hint) {
-        hint.hidden = !hintKey;
+        show(hint, !!hintKey && !p.active);
         if (hintKey) text(hint, t(hintKey));
       }
       const banner = bannerRef.current;
       if (banner) {
-        banner.hidden = !m.banner;
-        if (m.banner) text(banner.firstElementChild as HTMLElement, t(`mission.${m.banner}`));
+        const key = m.banner ? `mission.${m.banner}` : j.banner ? `jobs.${j.banner}` : '';
+        show(banner, key !== '');
+        if (key) text(banner.firstElementChild as HTMLElement, t(key));
+      }
+      const radio = radioRef.current;
+      if (radio) {
+        show(radio, !!m.radio);
+        if (m.radio) text(radio, t(`mission.${m.radio}`));
+      }
+      const readout = readoutRef.current;
+      if (readout) {
+        show(readout, !!tel.readout);
+        if (tel.readout) text(readout, tel.readout === 'charger' ? t('readout.charger', { n: Math.round(tel.battery * 100) }) : t(`readout.${tel.readout}`));
       }
       const impact = impactRef.current;
       if (impact) {
@@ -330,6 +418,7 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
     raf = requestAnimationFrame(paint);
     return () => {
       cancelAnimationFrame(raf);
+      window.clearTimeout(rebuildTimer);
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('keyup', onKeyUp);
       window.removeEventListener('blur', onBlur);
@@ -345,7 +434,7 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
       handle.dispose();
       handleRef.current = null;
     };
-  }, [t]);
+  }, [t, glGeneration]);
 
   /** Capture the finger so a key stays down when it slides off, but never at
    *  the cost of the key itself: the press is registered first either way. */
@@ -367,22 +456,13 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
   };
   const jumpKey = hold((on) => { const h = handleRef.current; if (h) h.input.jump = on; });
   const throttleKey = hold((on) => { const h = handleRef.current; if (h) h.input.throttle = on ? 1 : 0; });
-  /** The contextual key: held it works, tapped it gets you on or off. */
-  const actionKey = {
-    onPointerDown: (e: React.PointerEvent<HTMLButtonElement>) => {
-      if (e.button !== 0) return;
-      e.preventDefault();
-      const h = handleRef.current;
-      if (h) {
-        if (actionModeRef.current === 'work') h.input.work = true;
-        else h.input.interact = true;
-      }
-      capture(e);
-    },
-    onPointerUp: () => { const h = handleRef.current; if (h) h.input.work = false; },
-    onPointerCancel: () => { const h = handleRef.current; if (h) h.input.work = false; },
-    onLostPointerCapture: () => { const h = handleRef.current; if (h) h.input.work = false; },
-  };
+  /** The action key: pressing it presses the job in front of you; holding it holds it. */
+  const actionKey = hold((on) => {
+    const h = handleRef.current;
+    if (!h) return;
+    if (on) h.input.interact = true;
+    h.input.use = on;
+  });
   const cycleView = () => { const h = handleRef.current; if (h) h.input.viewToggle = true; };
   const cycleGear = () => {
     const h = handleRef.current;
@@ -406,10 +486,13 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
     });
   };
   const rewards = handleRef.current?.telemetry.mission.rewards ?? [];
+  const jobsDone = handleRef.current?.telemetry.jobs.done ?? [];
 
   return (
-    <div ref={rootRef} className="moon-surface" data-phase="descent" data-immersive={immersive}>
+    <div ref={rootRef} className="moon-surface" data-phase="descent" data-ready="false" data-immersive={immersive}>
       <div ref={mountRef} className="moon-surface__canvas" />
+      <CosmicLoader className={gpuLost ? 'moon-surface__loader is-forced' : 'moon-surface__loader'}
+        label={gpuLost ? tl('gpu') : tl('moon')} detail={gpuLost ? undefined : tl('moonDetail')} />
       <div className="moon-hud">
         <div className="moon-hud__visor" aria-hidden />
 
@@ -433,7 +516,7 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
           </div>
         </div>
 
-        {/* ── The compass ribbon, and what it is pointing at. ── */}
+        {/* ── The compass ribbon, what it points at, and the meter under it. ── */}
         <div className="moon-hud__compass" aria-hidden>
           <div className="moon-hud__strip-wrap">
             <div ref={stripRef} className="moon-hud__strip">
@@ -445,8 +528,14 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
             </div>
           </div>
           <div ref={pipRef} className="moon-hud__pip" hidden />
+          <div ref={jobPipRef} className="moon-hud__pip moon-hud__pip--job" hidden />
           <span className="moon-hud__needle" />
         </div>
+        <div ref={meterRef} className="moon-hud__meter" hidden>
+          <span className="moon-hud__meter-bar"><i /></span>
+          <span ref={meterLabelRef} />
+        </div>
+        <div ref={radioRef} className="moon-hud__radio" role="status" hidden />
 
         {/* ── Top left: where we are and what we are here for. ── */}
         <div className="moon-hud__head">
@@ -461,6 +550,10 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
           <span className="moon-hud__objective-tag">{t('mission.title')}</span>
           <span ref={objTextRef} className="moon-hud__objective-text" />
           <span ref={objRangeRef} className="moon-hud__objective-range" />
+          <span ref={jobRef} className="moon-hud__objective-job" hidden>
+            <span className="moon-hud__objective-tag">{t('jobs.title')}</span>
+            <span ref={jobTextRef} />
+          </span>
         </button>
 
         {/* ── Left rail: the suit. ── */}
@@ -472,7 +565,16 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
           <span className="moon-hud__vital"><i>{t('distance')}</i><span ref={distRef} /></span>
         </div>
 
-        {/* ── Top right: the eye, the camera, the menu. ── */}
+        {/* ── Right rail: the drill's instruments while it runs. ── */}
+        <div ref={drillRef} className="moon-hud__drill" hidden
+          style={{ '--lo': DRILL_BAND[0], '--hi': DRILL_BAND[1] } as React.CSSProperties}>
+          <span className="moon-hud__drill-row"><span>{t('mission.drill.depth')}</span><span ref={drillDepthRef} className="moon-hud__drill-depth" /></span>
+          <span className="moon-hud__drill-row"><span>{t('mission.drill.load')}</span><span ref={drillLoadRef} className="moon-hud__gauge"><b /><i /></span></span>
+          <span className="moon-hud__drill-row"><span>{t('mission.drill.temp')}</span><span ref={drillHeatRef} className="moon-hud__gauge"><i /></span></span>
+          <span ref={drillWarnRef} className="moon-hud__drill-warn" hidden />
+        </div>
+
+        {/* ── Top right: the camera, the eye, the menu. ── */}
         <button type="button" className="moon-hud__round moon-hud__unhide" onClick={() => setImmersive(false)} aria-label={t('hudShow')} title={t('hudShow')}>
           <Eye size={19} aria-hidden />
         </button>
@@ -521,9 +623,12 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
             </div>
             <p className="moon-hud__log-brief">{t('mission.brief')}</p>
             <div className="moon-hud__log-rewards">
-              {rewards.length === 0 && <p>{t('mission.none')}</p>}
+              {rewards.length === 0 && jobsDone.length === 0 && <p>{t('mission.none')}</p>}
               {rewards.map((r) => (
                 <p key={r} className="moon-hud__reward"><Trophy size={14} aria-hidden /><span>{t(`mission.rewards.${r}`)}</span></p>
+              ))}
+              {jobsDone.map((id) => (
+                <p key={id} className="moon-hud__reward"><Trophy size={14} aria-hidden /><span>{t(`jobs.names.${id}`)}</span></p>
               ))}
             </div>
           </div>
@@ -531,10 +636,14 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
 
         <div ref={impactRef} className="moon-hud__impact" role="status" hidden />
         <div ref={bannerRef} className="moon-hud__banner" role="status" hidden><span /></div>
+        <div ref={readoutRef} className="moon-hud__readout" role="status" hidden />
 
         {/* ── The middle of the glass: what is in front of the crew. ── */}
         <div className="moon-hud__foot">
-          <div ref={airlockRef} className="moon-hud__airlock" hidden>{t('airlockOpen')}</div>
+          <div ref={promptRef} className="moon-hud__prompt" hidden>
+            <kbd>E</kbd><span ref={promptTextRef} /><small ref={promptHoldRef} hidden>{t('hold')}</small>
+          </div>
+          <div ref={airlockRef} className="moon-hud__airlock" hidden />
           <div ref={stanceRef} className="moon-hud__stance" hidden />
           <div ref={poiRef} className="moon-hud__poi" hidden />
           <p ref={hintRef} className="moon-hud__hint" hidden />
@@ -549,6 +658,8 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
             if (movingRef.current) h.startAudio();
             h.input.moveX = movingRef.current ? x : keyboardMoveRef.current.x;
             h.input.moveY = movingRef.current ? y : keyboardMoveRef.current.y;
+            // On a touch screen, the stick pushed right out to its rim lopes.
+            if (touchRef.current) h.input.run = runRef.current || Math.hypot(x, y) > 0.93;
           }} />
           <div className="moon-hud__stance-keys">
             <button type="button" className="moon-hud__key" data-on={run} onClick={toggleRun} aria-pressed={run} title={t('run')}>

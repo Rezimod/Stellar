@@ -1489,47 +1489,47 @@
         "r3": "Space — jump; on the way down it is the descent engine",
         "r4": "Mouse drag — look around · wheel — zoom",
         "r5": "V — walk the camera round: over the shoulder, in the helmet, wide",
-        "r6": "E — drive the rover when you stand beside it",
+        "r6": "E — the job in front of you: tap to use, hold to work",
         "r7": "Meteoroids land now and then. They never land on you.",
         "t1": "Left stick — walk",
         "t2": "Right half — drag to look around",
         "t3": "Lope and crouch — beside the stick; jump — bottom right",
         "t4": "Camera — walk the view round: shoulder, helmet, wide",
         "t5": "Meteoroids land now and then. They never land on you.",
-        "r8": "The habitats are open: up a ramp, through the airlock, and you are in",
-        "t6": "The habitats are open: up a ramp, through the airlock, and you are in",
+        "r8": "The habitats: up a ramp, cycle the airlock with E, and you are in",
+        "t6": "The habitats: up a ramp, cycle the airlock with the amber key, and you are in",
         "r9": "C — crouch: slow, low and steady",
         "r10": "V in the rover: chase, the driver's seat, the mast camera",
-        "r11": "F — hold to work: the drill, the brush",
+        "r11": "F — hold to work, the same as holding E",
         "r12": "1 2 3 4 — the rover's gears",
         "t7": "Hold the engine key on the way down. Leave it too late and guidance takes over.",
-        "t8": "The amber key does the job in front of you — tap to get on the rover, hold to work",
-        "t9": "The gear key changes the rover's speed"
+        "t8": "The amber key does the job in front of you — tap to use, hold to work",
+        "t9": "The gear key changes the rover’s speed; push the stick to its rim to lope",
+        "r13": "The mission computer in the geology lab hands out the day’s jobs",
+        "t10": "The mission computer in the geology lab hands out the day’s jobs"
       },
       "pois": {
         "habitatA": "Habitat A — crew quarters",
         "habitatB": "Habitat B — lab and galley",
         "habitatC": "Habitat C — medical bay and gym",
         "greenhouse": "Greenhouse tunnel — lettuce, radish, wheat",
-        "tanks": "Consumables farm — O₂ · N₂ · H₂O · CH₄",
-        "solar": "Solar field — 24 kW at lunar noon",
-        "dish": "Comms dish — tracking Earth",
-        "rover": "Cargo rover — 800 kg payload",
+        "tanks": "Life support — oxygen out of regolith",
+        "solar": "Power — vertical tracking arrays, 31 kW",
+        "dish": "Comms — high-gain dish on Earth",
+        "rover": "Rover LTV-01",
         "lander": "Descent stage of the first crew",
         "flag": "Flag of Georgia",
         "seismometer": "Passive seismometer",
         "sign": "Stellar Base — founded by Astroman, Tbilisi",
-        "ourLander": "Your descent vehicle"
+        "ourLander": "Your descent vehicle",
+        "science": "Geology lab — the mission computer",
+        "logistics": "Rover bay and charger",
+        "landingZone": "Landing zone — keep clear"
       },
       "eva": "EVA",
       "pulse": "Pulse",
       "suitTemp": "Suit",
       "distance": "Walked",
-      "drive": "E — drive the rover",
-      "driveTouch": "Drive",
-      "dismount": "E — climb out",
-      "dismountTouch": "Get off",
-      "airlockOpen": "Airlock open — up the ramp and in",
       "crouch": "Crouch",
       "camera": "Camera",
       "menu": "Menu",
@@ -1562,38 +1562,164 @@
         "sprint": "Sprint",
         "ion": "Ion"
       },
-      "tasks": {
-        "drill": "Drill",
-        "sweep": "Sweep",
-        "enter": "Enter"
-      },
       "mission": {
         "title": "Objective",
         "log": "Expedition log",
-        "brief": "Stellar Base has a magnetic anomaly a hundred metres out that has no business being there. Drill it, follow what the core tells you, and find out what is under the regolith.",
-        "none": "Nothing earned yet. The drill site is west of the pad.",
+        "brief": "The mission computer in the geology lab has a magnetic anomaly on the survey map, a hundred metres out, that has no business being there. Pin it with the scanner, drill it, follow what the core tells you, and find out what is under the regolith.",
+        "none": "Nothing earned yet. The mission computer is in the geology lab, west of the landing zone.",
         "obj": {
-          "survey": "Get to magnetic anomaly 3",
-          "drill": "Hold the drill until the core is out",
-          "trace": "Follow the core's bearing to the crater",
-          "excavate": "Sweep the regolith off what is down there",
+          "survey": "Head for the survey area",
+          "drill": "Start the drill",
+          "trace": "Follow the core’s signature across the mare",
+          "excavate": "Clear the regolith off the hull, patch by patch",
           "contact": "Step through the open seam",
-          "done": "First contact. The craft is yours to visit."
+          "done": "First contact. The craft is yours to visit.",
+          "brief": "Collect the survey at the mission computer — geology lab",
+          "scan": "Sweep the area — the scanner peaks over the anomaly",
+          "drillFeed": "Feed the drill — keep the load in the green",
+          "collect": "Take the core from the tray",
+          "contactWait": "Stand by — the seam is waking",
+          "open": "Open the hatch",
+          "enter": "Step through the hatch"
         },
         "banner": {
           "survey": "Anomaly 3 — drill site",
-          "drill": "Drill site reached — put the bit in",
-          "trace": "Metal at 4.6 m. Bearing 071, 205 metres.",
+          "drill": "Anomaly pinned — the drill is deploying",
+          "trace": "Core out — metal at 4.6 m, and it points across the mare",
           "excavate": "The crater. Something is under this.",
           "contact": "The hull is clear — and the seam has power",
-          "done": "First contact"
+          "done": "First contact — the ion gear is unlocked",
+          "brief": "Survey received — anomaly 3 is on your compass"
         },
         "rewards": {
           "core": "Deep Core — a metre of the Moon in a tube, with metal in it",
           "hull": "Excavation — the first hull raised on another world",
-          "contact": "First Contact — the rover's ion gear is unlocked"
+          "contact": "First Contact — the rover’s ion gear is unlocked"
+        },
+        "scanner": "Scanner",
+        "scanLock": "Locking — {n}%",
+        "patches": "{n} of {total} patches clear",
+        "radio": {
+          "rover": "Base: it is two hundred metres out — take the rover.",
+          "half": "Base: impact flash on the mare ahead of you. Keep clear of it.",
+          "close": "Base: we are reading you right over it now."
+        },
+        "drill": {
+          "depth": "Depth",
+          "load": "Load",
+          "temp": "Heat",
+          "stalled": "Overheated — let it cool",
+          "ready": "Core out — take it",
+          "hard": "Basalt layer — ease off"
+        }
+      },
+      "hold": "Hold",
+      "act": {
+        "terminal": "Read the survey",
+        "drillStart": "Start drill",
+        "drillFeed": "Feed drill",
+        "collectCore": "Take core",
+        "clear": "Clear regolith",
+        "openHatch": "Open hatch",
+        "jobBoard": "Job board",
+        "resetBreaker": "Reset breaker",
+        "holdReset": "Hold reset",
+        "alignArray": "Turn array",
+        "collectSample": "Collect sample",
+        "depositSamples": "Store samples",
+        "openPanel": "Open panel",
+        "alignDish": "Turn dish",
+        "serviceWheel": "Service wheel",
+        "takePackage": "Take package",
+        "placePackage": "Set down",
+        "levelPackage": "Level it",
+        "activate": "Switch on",
+        "drive": "Drive",
+        "dismount": "Climb out",
+        "stopToExit": "Stop to climb out",
+        "cycleAirlock": "Cycle airlock",
+        "closeAirlock": "Close airlock",
+        "read": {
+          "isru": "Plant status",
+          "power": "Power status",
+          "comms": "Link status",
+          "charger": "Charger"
+        }
+      },
+      "airlock": {
+        "cycling": "Equalising — {n}%",
+        "open": "Airlock open — go through"
+      },
+      "rover": {
+        "fault": "Wheel sensor fault — Cruise at most",
+        "charging": "Charging — {n}%"
+      },
+      "readout": {
+        "isru": "ISRU-1 · 1.8 kg of oxygen a day from 160 kg of regolith · furnace 1,050 °C · O₂ tank 74 %",
+        "power": "PCU-1 · arrays A B C · 31 kW in · batteries 88 % · bus 120 V",
+        "comms": "Earth link · Ka band · 42 Mbit/s · 2.6 s round trip",
+        "charger": "Charger 2 · rover battery {n}% · park inside the marks to charge"
+      },
+      "jobs": {
+        "title": "Job",
+        "meter": "Alignment",
+        "names": {
+          "solar": "Array B brought back onto the sun",
+          "samples": "Two samples returned to the store",
+          "comms": "Earth link realigned",
+          "rover": "Rover wheel serviced",
+          "seismo": "Seismometer deployed"
+        },
+        "start": {
+          "solar": "Job — array B string is offline",
+          "samples": "Job — two tagged samples to bring in",
+          "comms": "Job — the Earth link has degraded",
+          "rover": "Job — a rover wheel sensor has faulted",
+          "seismo": "Job — deploy a seismometer"
+        },
+        "done": {
+          "solar": "Array B back on the sun — full power",
+          "samples": "Samples sealed in the store",
+          "comms": "Dish on Earth — link restored",
+          "rover": "Wheel serviced — all gears back",
+          "seismo": "Seismometer listening"
+        },
+        "steps": {
+          "solar": {
+            "go": "Go to the power cabinet",
+            "breaker": "Reset the array B breaker",
+            "reset": "Hold the reset until the string comes up",
+            "align": "Turn array B onto the sun — let go on the peak"
+          },
+          "samples": {
+            "collect": "Collect the two tagged rock samples",
+            "return": "Put the samples in the sealed store"
+          },
+          "comms": {
+            "go": "Go to the comms enclosure",
+            "panel": "Open the dish control panel",
+            "align": "Bring the dish round to Earth — let go on the peak"
+          },
+          "rover": {
+            "bring": "Drive the rover into the service bay",
+            "wheel": "Service the rear left wheel"
+          },
+          "seismo": {
+            "take": "Take the seismometer package from the sample store",
+            "go": "Carry it to the marked geology point",
+            "place": "Set it down",
+            "level": "Level it — let go when the bubble centres",
+            "activate": "Switch it on"
+          }
         }
       }
+    },
+    "loading": {
+      "title": "Opening the solar system",
+      "detail": "Charting every orbit for today",
+      "moon": "Descending to Stellar Base",
+      "moonDetail": "Preparing the surface",
+      "gpu": "The graphics card reset — rebuilding the scene"
     }
   },
   "missionsPage": {

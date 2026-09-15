@@ -27,6 +27,16 @@ function valueNoise(x: number, y: number, seed: number): number {
   const c = hash(ix, iy + 1, seed); const d = hash(ix + 1, iy + 1, seed);
   return (a + (b - a) * fx) + ((c - a) + (a - b - c + d) * fx) * fy;
 }
+/** Value noise that repeats every `period` lattice cells: a tile that wraps exactly. */
+function periodicNoise(x: number, y: number, period: number, seed: number): number {
+  const ix = Math.floor(x); const iy = Math.floor(y);
+  const fx = smooth(x - ix); const fy = smooth(y - iy);
+  const x0 = ((ix % period) + period) % period; const x1 = (x0 + 1) % period;
+  const y0 = ((iy % period) + period) % period; const y1 = (y0 + 1) % period;
+  const a = hash(x0, y0, seed); const b = hash(x1, y0, seed);
+  const c = hash(x0, y1, seed); const d = hash(x1, y1, seed);
+  return (a + (b - a) * fx) + ((c - a) + (a - b - c + d) * fx) * fy;
+}
 export function fbm(x: number, y: number, octaves: number, seed: number, gain = 0.5): number {
   let amp = 1; let sum = 0; let norm = 0; let f = 1;
   for (let i = 0; i < octaves; i++) {
@@ -73,28 +83,34 @@ export interface TerrainHandle {
   stampCrater: (x: number, z: number, r: number, depth: number) => void;
   /** Sun direction in view space, updated by the scene each frame. */
   setSunView: (v: THREE.Vector3) => void;
+  /** Darken (k < 0, compacted) or brighten (k > 0, blasted) the regolith
+   *  within r of a point, softly. Build time only. */
+  tint: (x: number, z: number, r: number, k: number) => void;
+  /** The same along a walked path. */
+  tintPath: (pts: [number, number][], width: number, k: number) => void;
   dispose: () => void;
 }
 
 /** Fine regolith: grain, a few tiny pits, small bright clasts. */
-function regolithMaps(size: number): { map: THREE.CanvasTexture; normal: THREE.CanvasTexture; rough: THREE.CanvasTexture } {
+/** The drawn maps depend only on their size, so a second landing reuses them. */
+const canvasCache = new Map<number, HTMLCanvasElement[]>();
+function regolithCanvases(size: number): HTMLCanvasElement[] {
+  const cached = canvasCache.get(size);
+  if (cached) return cached;
   const h = new Float32Array(size * size);
   const S = 7;
   for (let y = 0; y < size; y++) {
     for (let x = 0; x < size; x++) {
       const u = x / size; const v = y / size;
-      // Periodic so the tile wraps: sample the noise on a torus via four blends.
-      let n = 0;
-      let w = 0;
-      for (let k = 0; k < 4; k++) {
-        const ox = k & 1 ? 1 : 0; const oy = k & 2 ? 1 : 0;
-        const wx = ox ? u : 1 - u; const wy = oy ? v : 1 - v;
-        const ww = wx * wy;
-        n += fbm((u + ox) * 38, (v + oy) * 38, 5, S, 0.55) * ww;
-        w += ww;
+      // Periodic noise, octave periods doubling from 38 cells, so the tile wraps.
+      let n = 0; let amp = 1; let norm = 0; let f = 38;
+      for (let o = 0; o < 5; o++) {
+        n += (periodicNoise(u * f, v * f, f, S + o * 17) * 2 - 1) * amp;
+        norm += amp;
+        amp *= 0.55;
+        f *= 2;
       }
-      n /= w;
-      h[y * size + x] = n;
+      h[y * size + x] = (n / norm) * 0.75;
     }
   }
   // Tiny pits stamped in (wrapping).
@@ -151,6 +167,13 @@ function regolithMaps(size: number): { map: THREE.CanvasTexture; normal: THREE.C
     }
   }
   mc.putImageData(mi, 0, 0); nc.putImageData(ni, 0, 0); rc.putImageData(ri, 0, 0);
+  const out = [map, nrm, rgh];
+  canvasCache.set(size, out);
+  return out;
+}
+
+function regolithMaps(size: number): { map: THREE.CanvasTexture; normal: THREE.CanvasTexture; rough: THREE.CanvasTexture } {
+  const [map, nrm, rgh] = regolithCanvases(size);
   const tex = (c: HTMLCanvasElement, srgb: boolean) => {
     const t = new THREE.CanvasTexture(c);
     t.wrapS = t.wrapT = THREE.RepeatWrapping;
@@ -233,26 +256,6 @@ export function makeMoonTerrain(lite: boolean): TerrainHandle {
     if (Math.hypot(x - PAD_CENTER.x, z - PAD_CENTER.y) < PAD_RADIUS + r * 1.6) continue;
     craters.push({ x, z, r, depth: r * (0.14 + hash(i, 24, seed) * 0.1) });
   }
-  const rawHeight = (x: number, z: number): number => {
-    let h = fbm(x / 95, z / 95, 4, seed) * 7.5;
-    // A long rim ridge across the western side — the horizon in the reference.
-    const ridgeD = Math.abs((x + 0.55 * z) / 1.14 + 68);
-    const ridgeMask = Math.exp(-(ridgeD * ridgeD) / (2 * 28 * 28));
-    h += ridged(x / 60 + 3.1, z / 60, seed + 5) * 7.5 * ridgeMask;
-    h += fbm(x / 9, z / 9, 3, seed + 9) * 0.55;
-    h += fbm(x / 2.2, z / 2.2, 2, seed + 13) * 0.11;
-    for (const c of craters) {
-      const d = Math.hypot(x - c.x, z - c.z);
-      if (d < c.r * 1.55) h += craterProfile(d, c);
-    }
-    for (const c of small) {
-      const dx = x - c.x; if (dx > 6 || dx < -6) continue;
-      const dz = z - c.z; if (dz > 6 || dz < -6) continue;
-      const d = Math.hypot(dx, dz);
-      if (d < c.r * 1.55) h += craterProfile(d, c);
-    }
-    return h;
-  };
   // Small craters — the ground is pocked at every scale.
   const small: Crater[] = [];
   for (let i = 0; i < 420; i++) {
@@ -262,6 +265,32 @@ export function makeMoonTerrain(lite: boolean): TerrainHandle {
     if (Math.hypot(x - PAD_CENTER.x, z - PAD_CENTER.y) < 14) continue;
     small.push({ x, z, r, depth: r * (0.16 + hash(i, 64, seed) * 0.12) });
   }
+  // Every crater filed under each 16 m cell its rim reaches, so a height
+  // sample looks at the handful nearby instead of all four hundred.
+  const BIN = 16;
+  const bins = Math.ceil(size / BIN) + 1;
+  const craterBins: Crater[][] = Array.from({ length: bins * bins }, () => []);
+  const binOf = (v: number) => THREE.MathUtils.clamp(Math.floor((v + half) / BIN), 0, bins - 1);
+  for (const c of [...craters, ...small]) {
+    const reach = c.r * 1.55;
+    for (let gz = binOf(c.z - reach); gz <= binOf(c.z + reach); gz++) {
+      for (let gx = binOf(c.x - reach); gx <= binOf(c.x + reach); gx++) craterBins[gz * bins + gx].push(c);
+    }
+  }
+  const rawHeight = (x: number, z: number): number => {
+    let h = fbm(x / 95, z / 95, 4, seed) * 7.5;
+    // A long rim ridge across the western side — the horizon in the reference.
+    const ridgeD = Math.abs((x + 0.55 * z) / 1.14 + 68);
+    const ridgeMask = Math.exp(-(ridgeD * ridgeD) / (2 * 28 * 28));
+    if (ridgeMask > 1e-4) h += ridged(x / 60 + 3.1, z / 60, seed + 5) * 7.5 * ridgeMask;
+    h += fbm(x / 9, z / 9, 3, seed + 9) * 0.55;
+    h += fbm(x / 2.2, z / 2.2, 2, seed + 13) * 0.11;
+    for (const c of craterBins[binOf(z) * bins + binOf(x)]) {
+      const d = Math.hypot(x - c.x, z - c.z);
+      if (d < c.r * 1.55) h += craterProfile(d, c);
+    }
+    return h;
+  };
   const padHeight = rawHeight(PAD_CENTER.x, PAD_CENTER.y) * 0.3;
   const heightFn = (x: number, z: number): number => {
     const h = rawHeight(x, z);
@@ -307,13 +336,36 @@ export function makeMoonTerrain(lite: boolean): TerrainHandle {
     const x = pos.getX(i); const z = pos.getZ(i);
     // Macro albedo: darker maria patches, brighter crater floors, a faint
     // bright halo on the pad where the landers have scattered dust.
-    let v = 0.96 + fbm(x / 40, z / 40, 3, seed + 33) * 0.12;
+    let v = 0.96 + fbm(x / 40, z / 40, 3, seed + 33) * 0.16 + fbm(x / 7, z / 7, 2, seed + 35) * 0.03;
+    // Old craters: floors a shade darker, and round the bigger ones a
+    // brighter blanket of ejecta thrown out in rays.
+    for (const c of craters) {
+      const dx = x - c.x; const dz = z - c.z;
+      if (dx > c.r * 2.4 || dx < -c.r * 2.4 || dz > c.r * 2.4 || dz < -c.r * 2.4) continue;
+      const q = Math.hypot(dx, dz) / c.r;
+      if (q < 0.85) v -= 0.05 * (1 - q / 0.85);
+      else if (c.r > 5 && q < 2.4) {
+        const rays = 0.55 + 0.45 * Math.sin(Math.atan2(dz, dx) * 7 + c.x * 0.3) * Math.sin(Math.atan2(dz, dx) * 3 + c.z * 0.2);
+        v += 0.08 * (1 - (q - 0.85) / 1.55) * rays;
+      }
+    }
     const d = Math.hypot(x - PAD_CENTER.x, z - PAD_CENTER.y);
     if (d < PAD_RADIUS + 10) v += 0.06 * (1 - d / (PAD_RADIUS + 10));
     colors[i * 3] = colors[i * 3 + 1] = colors[i * 3 + 2] = THREE.MathUtils.clamp(v, 0.7, 1.1);
   }
   geom.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-  geom.computeVertexNormals();
+  // Normals straight off the heightfield, so a fresh crater can re-light
+  // just the ground it dug instead of the whole map.
+  const nrmAttr = geom.attributes.normal as THREE.BufferAttribute;
+  const writeNormal = (i: number, j: number) => {
+    const il = Math.max(0, i - 1); const ir = Math.min(N, i + 1);
+    const jd = Math.max(0, j - 1); const ju = Math.min(N, j + 1);
+    const dx = (heights[j * (N + 1) + ir] - heights[j * (N + 1) + il]) / ((ir - il) * cell);
+    const dz = (heights[ju * (N + 1) + i] - heights[jd * (N + 1) + i]) / ((ju - jd) * cell);
+    const inv = 1 / Math.sqrt(dx * dx + 1 + dz * dz);
+    nrmAttr.setXYZ(j * (N + 1) + i, -dx * inv, inv, -dz * inv);
+  };
+  for (let j = 0; j <= N; j++) for (let i = 0; i <= N; i++) writeNormal(i, j);
   const uv = geom.attributes.uv as THREE.BufferAttribute;
   const repeat = size / 6;
   for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * repeat, uv.getY(i) * repeat);
@@ -358,7 +410,7 @@ export function makeMoonTerrain(lite: boolean): TerrainHandle {
 
   // Rocks: three cuts, a few hundred seats. Small stuff everywhere, boulders
   // only out on the plain and up the ridge.
-  const rockGeoms = [rockGeometry(1, lite ? 1 : 2), rockGeometry(2, lite ? 1 : 2), rockGeometry(3, lite ? 1 : 3)];
+  const rockGeoms = [rockGeometry(1, 1), rockGeometry(2, lite ? 1 : 2), rockGeometry(3, lite ? 1 : 2)];
   const rockMat = new THREE.MeshStandardMaterial({ color: 0xa8a5a0, roughness: 0.92, metalness: 0.02, normalMap: maps.normal, normalScale: new THREE.Vector2(0.5, 0.5) });
   const perCut = lite ? 90 : 180;
   const rocks = new THREE.Group();
@@ -367,10 +419,13 @@ export function makeMoonTerrain(lite: boolean): TerrainHandle {
   const m = new THREE.Matrix4(); const q = new THREE.Quaternion(); const spin = new THREE.Quaternion();
   const s = new THREE.Vector3(); const p = new THREE.Vector3();
   const nrm = new THREE.Vector3(); const up = new THREE.Vector3(0, 1, 0);
+  // Rocks are filed into a grid of chunks, each its own instanced mesh with
+  // a tight bounding sphere: the view and the shadow camera then only draw
+  // the chunks they can see, instead of every rock on the map every pass.
+  const CHUNKS = 4;
+  const chunkOf = (v: number) => THREE.MathUtils.clamp(Math.floor((v + half) / size * CHUNKS), 0, CHUNKS - 1);
   rockGeoms.forEach((rg, cut) => {
-    const im = new THREE.InstancedMesh(rg, rockMat, perCut);
-    im.castShadow = true;
-    im.receiveShadow = true;
+    const buckets: THREE.Matrix4[][] = Array.from({ length: CHUNKS * CHUNKS }, () => []);
     let placed = 0;
     for (let i = 0; i < perCut * 5 && placed < perCut; i++) {
       const k = i + cut * 1000;
@@ -388,13 +443,20 @@ export function makeMoonTerrain(lite: boolean): TerrainHandle {
       q.multiply(spin);
       s.set(scale * (0.8 + hash(k, 55, seed) * 0.5), scale * (0.7 + hash(k, 56, seed) * 0.5), scale * (0.8 + hash(k, 57, seed) * 0.5));
       m.compose(p, q, s);
-      im.setMatrixAt(placed, m);
+      buckets[chunkOf(z) * CHUNKS + chunkOf(x)].push(m.clone());
       placed += 1;
     }
-    im.count = placed;
-    im.instanceMatrix.needsUpdate = true;
-    rocks.add(im);
-    instanced.push(im);
+    for (const bucket of buckets) {
+      if (bucket.length === 0) continue;
+      const im = new THREE.InstancedMesh(rg, rockMat, bucket.length);
+      im.castShadow = true;
+      im.receiveShadow = true;
+      bucket.forEach((mat, k) => im.setMatrixAt(k, mat));
+      im.instanceMatrix.needsUpdate = true;
+      im.computeBoundingSphere();
+      rocks.add(im);
+      instanced.push(im);
+    }
   });
 
   const stampCrater = (cx: number, cz: number, r: number, depth: number) => {
@@ -417,13 +479,50 @@ export function makeMoonTerrain(lite: boolean): TerrainHandle {
         col.setXYZ(k, Math.min(1.1, col.getX(k) * bright), Math.min(1.1, col.getY(k) * bright), Math.min(1.1, col.getZ(k) * bright));
       }
     }
-    pos.needsUpdate = true;
-    col.needsUpdate = true;
-    geom.computeVertexNormals();
+    const jLo = Math.max(0, j0 - 1); const jHi = Math.min(N, j1 + 1);
+    for (let j = jLo; j <= jHi; j++) for (let i = Math.max(0, i0 - 1); i <= Math.min(N, i1 + 1); i++) writeNormal(i, j);
+    // Upload the rows that changed, not the whole map.
+    const start = jLo * (N + 1) * 3; const count = (jHi - jLo + 1) * (N + 1) * 3;
+    for (const a of [pos, col, nrmAttr]) { a.addUpdateRange(start, count); a.needsUpdate = true; }
+  };
+
+  const colAttr = geom.attributes.color as THREE.BufferAttribute;
+  /** Scale vertex colours in a box by 1 + k·falloff(distance). */
+  const shade = (x0: number, z0: number, x1: number, z1: number, falloff: (x: number, z: number) => number, k: number) => {
+    const i0 = Math.max(0, Math.floor((x0 + half) / cell)); const i1 = Math.min(N, Math.ceil((x1 + half) / cell));
+    const j0 = Math.max(0, Math.floor((z0 + half) / cell)); const j1 = Math.min(N, Math.ceil((z1 + half) / cell));
+    for (let j = j0; j <= j1; j++) {
+      for (let i = i0; i <= i1; i++) {
+        const f = falloff(-half + i * cell, -half + j * cell);
+        if (f <= 0) continue;
+        const idx = j * (N + 1) + i;
+        // A little grain in the edge so it reads as worn ground, not paint.
+        const g = 1 + k * f * (0.8 + hash(i, j, 404) * 0.4);
+        colAttr.setXYZ(idx, colAttr.getX(idx) * g, colAttr.getY(idx) * g, colAttr.getZ(idx) * g);
+      }
+    }
+    colAttr.needsUpdate = true;
+  };
+  const tint = (x: number, z: number, r: number, k: number) => {
+    shade(x - r, z - r, x + r, z + r, (px, pz) => 1 - smooth(Math.min(1, Math.hypot(px - x, pz - z) / r)), k);
+  };
+  const tintPath = (pts: [number, number][], width: number, k: number) => {
+    let x0 = Infinity; let z0 = Infinity; let x1 = -Infinity; let z1 = -Infinity;
+    for (const [x, z] of pts) { x0 = Math.min(x0, x); z0 = Math.min(z0, z); x1 = Math.max(x1, x); z1 = Math.max(z1, z); }
+    shade(x0 - width, z0 - width, x1 + width, z1 + width, (px, pz) => {
+      let best = Infinity;
+      for (let s = 0; s < pts.length - 1; s++) {
+        const [ax, az] = pts[s]; const [bx, bz] = pts[s + 1];
+        const vx = bx - ax; const vz = bz - az;
+        const t = THREE.MathUtils.clamp(((px - ax) * vx + (pz - az) * vz) / (vx * vx + vz * vz || 1), 0, 1);
+        best = Math.min(best, Math.hypot(px - ax - vx * t, pz - az - vz * t));
+      }
+      return 1 - smooth(Math.min(1, best / width));
+    }, k);
   };
 
   return {
-    mesh, rocks, heightAt, normalAt, stampCrater,
+    mesh, rocks, heightAt, normalAt, stampCrater, tint, tintPath,
     setSunView(v) { sunView.value.copy(v); },
     dispose() {
       geom.dispose(); mat.dispose();

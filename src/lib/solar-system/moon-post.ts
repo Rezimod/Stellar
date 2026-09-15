@@ -51,7 +51,8 @@ const FilmShader = {
 export function makeMoonPost(renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE.Camera, lite: boolean): MoonPostHandle {
   const composer = new EffectComposer(renderer);
   const size = renderer.getSize(new THREE.Vector2());
-  const bloomScale = lite ? 0.5 : 1;
+  // Bloom is a blur: at half resolution it looks the same and costs a quarter.
+  const bloomScale = 0.5;
   const renderPass = new RenderPass(scene, camera);
   const bloom = new UnrealBloomPass(new THREE.Vector2(size.x * bloomScale, size.y * bloomScale), 0.35, 0.6, 0.9);
   const film = new ShaderPass(FilmShader);

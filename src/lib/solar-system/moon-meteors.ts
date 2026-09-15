@@ -8,6 +8,7 @@ import * as THREE from 'three';
 import { softSpriteTexture } from '@/lib/solar-system/soft-sprite';
 import type { DustHandle } from '@/lib/solar-system/moon-fx';
 import type { Collider } from '@/lib/solar-system/moon-cosmonaut';
+import type { LightPool } from '@/lib/solar-system/moon-lights';
 
 export interface MeteorEvent {
   x: number;
@@ -20,6 +21,8 @@ export interface MeteorHandle {
   /** Camera shake amplitude this frame, 0..1. */
   shake: number;
   nudge: () => void;
+  /** Bring the next one down on this spot, now. */
+  strike: (x: number, z: number) => void;
   update: (dt: number, playerX: number, playerZ: number) => MeteorEvent | null;
   dispose: () => void;
 }
@@ -33,6 +36,7 @@ interface Params {
   /** First impact after this many seconds, then every `every` ± spread. */
   first: number;
   every: number;
+  lights?: LightPool;
 }
 
 const SPEED = 160;
@@ -55,8 +59,6 @@ export function makeMeteors(p: Params): MeteorHandle {
   const flashMat = new THREE.SpriteMaterial({ map: glowTex, color: 0xfff6e0, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending });
   const flash = new THREE.Sprite(flashMat);
   group.add(flash);
-  const light = new THREE.PointLight(0xffd9a0, 0, 60, 1.6);
-  group.add(light);
   const rock = new THREE.Mesh(new THREE.IcosahedronGeometry(0.35, 1), new THREE.MeshStandardMaterial({ color: 0x3a3632, roughness: 0.9 }));
   rock.visible = false;
   group.add(rock);
@@ -130,42 +132,17 @@ export function makeMeteors(p: Params): MeteorHandle {
   const up = new THREE.Vector3(0, 1, 0);
   let flashT = -1;
   let craterR = 3;
-  let audioCtx: AudioContext | null = null;
 
-  const thump = (distance: number) => {
-    try {
-      if (!audioCtx) audioCtx = new AudioContext();
-      const c = audioCtx;
-      if (c.state === 'suspended') void c.resume();
-      const gain = c.createGain();
-      const g = 0.16 * Math.max(0.08, 1 - distance / 160);
-      gain.gain.setValueAtTime(g, c.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + 1.4);
-      gain.connect(c.destination);
-      const osc = c.createOscillator();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(58, c.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(24, c.currentTime + 1.2);
-      osc.connect(gain);
-      osc.start();
-      osc.stop(c.currentTime + 1.4);
-      const buf = c.createBuffer(1, c.sampleRate * 0.5, c.sampleRate);
-      const d = buf.getChannelData(0);
-      for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length);
-      const noise = c.createBufferSource();
-      noise.buffer = buf;
-      const lp = c.createBiquadFilter();
-      lp.type = 'lowpass';
-      lp.frequency.value = 180;
-      noise.connect(lp);
-      lp.connect(gain);
-      noise.start();
-    } catch {
-      // No audio — the ground still shakes.
-    }
-  };
-
+  let forced: { x: number; z: number } | null = null;
   const pickTarget = (px: number, pz: number): boolean => {
+    if (forced) {
+      const f = forced;
+      forced = null;
+      if (Math.hypot(f.x - px, f.z - pz) > SAFE_FROM_PLAYER && Math.hypot(f.x, f.z) < p.walkRadius - 8) {
+        to.set(f.x, p.heightAt(f.x, f.z), f.z);
+        return true;
+      }
+    }
     for (let tries = 0; tries < 40; tries++) {
       const a = Math.random() * Math.PI * 2;
       const d = SAFE_FROM_PLAYER + 6 + Math.random() * 90;
@@ -187,6 +164,7 @@ export function makeMeteors(p: Params): MeteorHandle {
     group,
     shake: 0,
     nudge() { timer = 0; },
+    strike(x, z) { if (!flying) { forced = { x, z }; timer = 0; } },
     update(dt, px, pz) {
       handle.shake *= Math.exp(-dt * 3);
       updateEjecta(dt);
@@ -196,8 +174,8 @@ export function makeMeteors(p: Params): MeteorHandle {
         const k = Math.max(0, 1 - flashT / 0.55);
         flashMat.opacity = k * k;
         flash.scale.setScalar(6 + (1 - k) * 22);
-        light.intensity = 900 * k * k;
-        if (flashT > 0.6) { flashT = -1; flashMat.opacity = 0; light.intensity = 0; }
+        p.lights?.request(flash.position.x, flash.position.y + 0.8, flash.position.z, 0xffd9a0, 900 * k * k, 60, 1.6);
+        if (flashT > 0.6) { flashT = -1; flashMat.opacity = 0; }
       }
       if (!flying) {
         timer -= dt;
@@ -229,15 +207,13 @@ export function makeMeteors(p: Params): MeteorHandle {
         rock.position.copy(pos);
         rock.rotation.x += dt * 9;
         rock.rotation.y += dt * 7;
-        light.position.copy(pos);
-        light.intensity = 60;
+        p.lights?.request(pos.x, pos.y, pos.z, 0xffd9a0, 60, 60, 1.6);
         if (t >= 1) {
           flying = false;
           headMat.opacity = 0;
           trailMat.opacity = 0;
           rock.visible = false;
           flash.position.set(to.x, to.y + 1.2, to.z);
-          light.position.set(to.x, to.y + 2, to.z);
           flashT = 0;
           const depth = craterR * 0.3;
           p.stampCrater(to.x, to.z, craterR, depth);
@@ -246,7 +222,6 @@ export function makeMeteors(p: Params): MeteorHandle {
           p.dust.burst({ x: to.x, y: to.y, z: to.z, count: 120, speedMin: 2, speedMax: 6, cone: 1.4, size: 0.5, brightness: 0.9 });
           const distance = Math.hypot(to.x - px, to.z - pz);
           handle.shake = Math.max(0.1, 1 - distance / 130);
-          thump(distance);
           event = { x: to.x, z: to.z, distance };
         }
       }
@@ -256,7 +231,6 @@ export function makeMeteors(p: Params): MeteorHandle {
       headMat.dispose(); trailMat.dispose(); trailGeom.dispose(); flashMat.dispose();
       rock.geometry.dispose(); (rock.material as THREE.Material).dispose();
       ejGeom.dispose(); ejMat.dispose(); ejecta.dispose();
-      if (audioCtx) void audioCtx.close();
     },
   };
   return handle;

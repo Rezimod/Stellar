@@ -45,9 +45,11 @@ export function makeMoonDust(max: number): DustHandle {
       attribute float aSize; attribute float aShade; varying float vShade;
       uniform float uScale;
       void main() {
-        vShade = aShade;
+        // Grains right at the lens fade out rather than filling the screen:
+        // a capped size keeps a spray behind the wheels from costing a frame.
         vec4 mv = modelViewMatrix * vec4(position, 1.0);
-        gl_PointSize = aSize * uScale / max(1.0, -mv.z);
+        vShade = aShade * smoothstep(0.6, 2.2, -mv.z);
+        gl_PointSize = min(aSize * uScale / max(1.0, -mv.z), 40.0);
         gl_Position = projectionMatrix * mv;
       }`,
     fragmentShader: `
@@ -87,6 +89,7 @@ export function makeMoonDust(max: number): DustHandle {
       shade[i] = (b.brightness ?? 1) * (0.85 + Math.random() * 0.3);
     }
     alive = max;
+    sizeAttr.needsUpdate = true;
   };
 
   return {
@@ -110,10 +113,9 @@ export function makeMoonDust(max: number): DustHandle {
           pos[i * 3 + 1] = ground - 1;
         }
       }
-      if (!any) alive = 0;
+      if (!any) { alive = 0; return; }
       posAttr.needsUpdate = true;
       shadeAttr.needsUpdate = true;
-      sizeAttr.needsUpdate = true;
     },
     dispose() {
       geom.dispose();
