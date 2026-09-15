@@ -8,6 +8,7 @@
 // onto a floor with bunks, benches and a gym under the lit restraint layer.
 
 import * as THREE from 'three';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import type { Collider } from '@/lib/solar-system/moon-cosmonaut';
 import { PAD_CENTER } from '@/lib/solar-system/moon-terrain';
 import type { RoverParts } from '@/lib/solar-system/moon-rover';
@@ -298,7 +299,7 @@ export function makeMoonBase(heightAt: (x: number, z: number) => number, lite: b
       at(Math.PI, 3.6, new THREE.BoxGeometry(2.56, 0.04, 0.66), lockerDark, 0.92);
       at(Math.PI, 3.6, new THREE.CylinderGeometry(0.22, 0.22, 0.08, 16), steel, 0.95, 0.7);
       at(Math.PI, 3.6, new THREE.BoxGeometry(0.34, 0.42, 0.34), lockerDark, 1.15, -0.8);
-      at(Math.PI, 3.6, new THREE.BoxGeometry(0.12, 0.12, 0.02), screen, 1.25, -0.8).position.z += 0;
+      at(Math.PI, 3.6, new THREE.BoxGeometry(0.12, 0.12, 0.02), screen, 1.25, -0.8);
     } else {
       // Medical bay and gym: a bed under its monitor, a treadmill, a cabinet.
       at(2.3, 3.4, new THREE.BoxGeometry(2.0, 0.55, 0.85), pillow, 0.5);
@@ -310,7 +311,7 @@ export function makeMoonBase(heightAt: (x: number, z: number) => number, lite: b
       at(-2.3, 3.2, new THREE.BoxGeometry(0.3, 0.9, 0.06), steel, 0.6, -0.55);
       at(-2.3, 3.2, new THREE.BoxGeometry(1.3, 0.06, 0.06), steel, 1.03);
       at(Math.PI, 3.8, new THREE.BoxGeometry(1.8, 1.9, 0.5), locker, 0.95);
-      at(Math.PI, 3.8, new THREE.PlaneGeometry(1.6, 1.2), glass, 1.05).position.y += 0;
+      at(Math.PI, 3.8, new THREE.PlaneGeometry(1.6, 1.2), glass, 1.05);
       at(Math.PI + 0.9, 3.4, new THREE.CylinderGeometry(0.16, 0.16, 1.0, 12), steel, 0.5);
       at(Math.PI + 0.9, 3.4, new THREE.CylinderGeometry(0.28, 0.28, 0.08, 12), lockerDark, 1.02);
     }
@@ -525,17 +526,24 @@ export function makeMoonBase(heightAt: (x: number, z: number) => number, lite: b
       parent.add(pivot);
       const hub = new THREE.Group();
       pivot.add(hub);
-      mesh(hub, new THREE.CylinderGeometry(0.55, 0.55, 0.42, 36), wheelMat).rotation.z = Math.PI / 2;
-      // Chevron cleats: each a pair of bars meeting at the centreline.
-      for (let tr = 0; tr < 24; tr++) {
-        const a = tr * Math.PI / 12;
+      mesh(hub, new THREE.CylinderGeometry(0.55, 0.55, 0.42, lite ? 20 : 36), wheelMat).rotation.z = Math.PI / 2;
+      // Chevron cleats: each a pair of bars meeting at the centreline, the
+      // whole tread merged into one geometry so a wheel is one draw call.
+      const cleats: THREE.BufferGeometry[] = [];
+      const count = lite ? 14 : 22;
+      for (let tr = 0; tr < count; tr++) {
+        const a = (tr / count) * Math.PI * 2;
         for (const half of [-1, 1]) {
-          const bar = mesh(hub, new THREE.BoxGeometry(0.2, 0.05, 0.07), tread);
-          bar.position.set(half * 0.11, Math.cos(a) * 0.565, Math.sin(a) * 0.565);
-          bar.rotation.x = -a;
-          bar.rotation.z = half * 0.5;
+          const bar = new THREE.BoxGeometry(0.2, 0.05, 0.07);
+          bar.rotateZ(half * 0.5);
+          bar.rotateX(-a);
+          bar.translate(half * 0.11, Math.cos(a) * 0.565, Math.sin(a) * 0.565);
+          cleats.push(bar);
         }
       }
+      const treadGeom = mergeGeometries(cleats, false);
+      for (const c of cleats) c.dispose();
+      if (treadGeom) mesh(hub, treadGeom, tread);
       mesh(hub, new THREE.CylinderGeometry(0.2, 0.2, 0.46, 12), dark).rotation.z = Math.PI / 2;
       for (let sp = 0; sp < 3; sp++) mesh(hub, new THREE.BoxGeometry(0.47, 0.9, 0.05), steel).rotation.x = sp * Math.PI / 3;
       roverParts.spin.push(hub);

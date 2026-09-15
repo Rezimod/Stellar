@@ -250,7 +250,8 @@ export function makeMoonSurface(mount: HTMLElement): MoonSurfaceHandle {
   scene.add(cosmonaut.group);
   const audio = makeSuitAudio();
   cosmonaut.onStep = (e) => {
-    prints.stamp(e.x, e.y, e.z, e.yaw, e.side);
+    // Regolith takes prints; a habitat deck does not.
+    if (!base.inside) prints.stamp(e.x, e.y, e.z, e.yaw, e.side);
     audio.step(e.hard);
   };
   const rover = makeRover(base.rover, base.roverCollider, base.roverParts, terrain, dust, prints);
@@ -270,7 +271,11 @@ export function makeMoonSurface(mount: HTMLElement): MoonSurfaceHandle {
     canDrive: false, roverSpeed: 0, airlockOpen: false, inside: '',
   };
   /** The ground under the crew: the base's own floors where it has them. */
-  const floorHeight = (x: number, z: number) => base.floorAt(x, z) ?? terrain.heightAt(x, z);
+  const floorHeight = (x: number, z: number) => {
+    const ground = terrain.heightAt(x, z);
+    const floor = base.floorAt(x, z);
+    return floor === null ? ground : Math.max(floor, ground);
+  };
 
   // ── Camera. ──
   let view: SurfaceView = 'chase';

@@ -12,6 +12,10 @@ export interface FlightAudio {
   boom: () => void;
   /** Entering and leaving light speed. */
   whoosh: () => void;
+  /** The drive winding up: a swell that climbs for `dur` and then stops. */
+  charge: (dur: number) => void;
+  /** Cut the charge short — the jump was refused or interrupted. */
+  stopCharge: () => void;
   dispose: () => void;
 }
 
@@ -22,6 +26,8 @@ export function makeFlightAudio(): FlightAudio {
   let ctx: AudioContext | null = null;
   let master: GainNode | null = null;
   let noise: AudioBuffer | null = null;
+  /** The drive's wind-up, while it is sounding. */
+  let chargeVoice: { stop: () => void } | null = null;
 
   const ready = (): AudioContext => {
     if (!ctx) {
@@ -100,12 +106,58 @@ export function makeFlightAudio(): FlightAudio {
       });
     },
     whoosh() {
+      chargeVoice?.stop();
+      chargeVoice = null;
       safe((c) => {
         burst(c, 'lowpass', 200, 4200, 1.2, 1.2);
         tone(c, 'sine', 60, 900, 0.5, 0.9);
       });
     },
+    charge(dur) {
+      chargeVoice?.stop();
+      chargeVoice = null;
+      safe((c) => {
+        // Two detuned saws climbing an octave and a half into the jump,
+        // opened up by a filter as they go.
+        const gain = c.createGain();
+        gain.gain.setValueAtTime(0.0001, c.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.6, c.currentTime + dur * 0.85);
+        const filter = c.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.Q.value = 6;
+        filter.frequency.setValueAtTime(220, c.currentTime);
+        filter.frequency.exponentialRampToValueAtTime(2600, c.currentTime + dur);
+        gain.connect(filter);
+        filter.connect(master!);
+        const oscs = [0, 4].map((detune) => {
+          const o = c.createOscillator();
+          o.type = 'sawtooth';
+          o.detune.value = detune;
+          o.frequency.setValueAtTime(110, c.currentTime);
+          o.frequency.exponentialRampToValueAtTime(300, c.currentTime + dur);
+          o.connect(gain);
+          o.start();
+          o.stop(c.currentTime + dur + 0.1);
+          return o;
+        });
+        chargeVoice = {
+          stop() {
+            const now = c.currentTime;
+            gain.gain.cancelScheduledValues(now);
+            gain.gain.setValueAtTime(Math.max(0.0001, gain.gain.value), now);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.12);
+            for (const o of oscs) o.stop(now + 0.16);
+          },
+        };
+      });
+    },
+    stopCharge() {
+      chargeVoice?.stop();
+      chargeVoice = null;
+    },
     dispose() {
+      chargeVoice?.stop();
+      chargeVoice = null;
       void ctx?.close();
       ctx = null;
       master = null;

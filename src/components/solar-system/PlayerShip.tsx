@@ -25,7 +25,7 @@ interface PlayerShipProps {
 }
 const SHIPS: ShipKind[] = ['kestrel', 'xfoil', 'endurance'];
 const BARS = ['shield', 'energy', 'boost'] as const;
-const KEY_ROWS = ['r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r10', 'r12', 'r7', 'r8', 'r11', 'r9'] as const;
+const KEY_ROWS = ['r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r10', 'r12', 'r13', 'r7', 'r8', 'r11', 'r9'] as const;
 const TOUCH_ROWS = ['t1', 't2', 't3', 't11', 't6', 't13', 't12', 't9', 't5'] as const;
 const HELP_SEEN = 'stellar_explore_help';
 const ICONS = [Shield, Zap, ChevronsUp];
@@ -133,6 +133,8 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, landscape,
   const placedRefs = useRef<Partial<Record<Placeable, HTMLElement | null>>>({});
   const ghostRefs = useRef<Partial<Record<Placeable, HTMLElement | null>>>({});
   const layoutBefore = useRef<Layout>({});
+  /** Whether the deck was already paused when the editor was opened. */
+  const pausedBefore = useRef(false);
   /** The ghost being dragged: which, by which pointer, from where. Kept
    *  out of render so a re-render mid-drag does not lose the finger. */
   const dragRef = useRef<{ id: Placeable; pointer: number; x: number; y: number } | null>(null);
@@ -246,6 +248,14 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, landscape,
     onLandscape(false);
     onActiveChange(false);
   };
+  // Back up from the Moon: the deck was paused for the landing, so it picks
+  // the flight up again rather than leaving the pilot on a paused screen.
+  const wasLanded = useRef(false);
+  useEffect(() => {
+    if (wasLanded.current && !landed && active && session.paused) resume();
+    wasLanded.current = landed;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [landed, active]);
   useEffect(() => {
     const hidden = () => { if (document.hidden) pause(); };
     window.addEventListener('blur', pause);
@@ -306,6 +316,9 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, landscape,
       text(rangeLabelRef.current, tel.navId ? t('distance') : t('odometer'));
       text(rangeRef.current, `${fmt(tel.navId ? tel.navKm : tel.odometerKm)} km`);
       root?.style.setProperty('--speed', String(Math.min(1, tel.speedFrac)));
+      root?.style.setProperty('--flash', tel.jumpFlash.toFixed(3));
+      root?.style.setProperty('--warp', (tel.jumpPhase === 'charge' ? tel.jumpT * 0.6
+        : tel.jumpPhase === 'travel' ? 0.6 + 0.4 * Math.sin(Math.min(1, tel.jumpT) * Math.PI) : 0).toFixed(3));
       if (root) root.dataset.view = tel.view;
       let status = '';
       if (tel.crashed) status = t('respawn', { n: Math.ceil(tel.respawnIn) });
@@ -317,6 +330,12 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, landscape,
       // Low over the Moon in the ship: the way down opens.
       const canLand = tel.nearId === 'moon' && tel.nearAltKm < 2500 && tel.pilot === 'ship' && !tel.crashed && tel.jumpPhase === 'none' && !tel.docked && !session.paused;
       if (landRef.current) landRef.current.hidden = !canLand;
+      // L on a keyboard: with the pointer held for steering, no key on the
+      // deck can be clicked, so the way down has to be on the keys.
+      if (session.input.landRequest) {
+        session.input.landRequest = false;
+        if (canLand) landRef.current?.click();
+      }
       // A station in reach: the docking computer's key.
       const dockKey = dockRef.current;
       if (dockKey) {
@@ -469,6 +488,7 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, landscape,
     setMenu(false);
     setHelp(false);
     onLandscape(false);
+    pausedBefore.current = session.paused;
     pause();
     layoutBefore.current = layout;
     setPicked(null);
@@ -479,6 +499,7 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, landscape,
     else setLayout(layoutBefore.current);
     setEditing(false);
     setPicked(null);
+    if (!pausedBefore.current) resume();
   };
   const nudgeSize = (dir: number) => {
     if (!picked) return;
@@ -553,6 +574,10 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, landscape,
         <>
           {/* The look pad: the right of the glass, under everything else on it. */}
           {touch && <div className="flight-hud__lookpad" {...look} aria-hidden />}
+          {/* The jump on the glass: the rim closes in as the drive charges,
+              and the flash goes off at both ends of the jump. */}
+          <div className="flight-hud__warp" aria-hidden />
+          <div className="flight-hud__flash" aria-hidden />
 
           <div className="flight-hud__head" {...placed('head')}>
             <span ref={placeRef} className="flight-hud__title" />
@@ -647,10 +672,10 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, landscape,
           {/* The dock: the stick, the thumb keys, the console bar. */}
           <div className="flight-hud__dock">
             <div className="flight-hud__prompts">
-              <button ref={landRef} type="button" className="flight-hud__land" onClick={land} hidden>
+              <button ref={landRef} type="button" className="flight-hud__prompt flight-hud__land" onClick={land} hidden>
                 <ArrowDownToLine size={16} aria-hidden />{t('land')}
               </button>
-              <button ref={dockRef} type="button" className="flight-hud__land flight-hud__dock-key" onClick={() => { session.input.dockRequest = true; }} hidden>
+              <button ref={dockRef} type="button" className="flight-hud__prompt flight-hud__dock-key" onClick={() => { session.input.dockRequest = true; }} hidden>
                 <Anchor size={16} aria-hidden /><span ref={dockTextRef} />
               </button>
             </div>

@@ -1023,13 +1023,33 @@
   touch-action: none;
 }
 
+/* ── The jump on the glass ── */
+.flight-hud__warp {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  opacity: var(--warp, 0);
+  background:
+    radial-gradient(125% 95% at 50% 50%, rgba(120, 190, 255, 0) 34%, rgba(38, 96, 220, 0.3) 74%, rgba(6, 14, 42, 0.8) 100%);
+}
+.flight-hud__flash {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  pointer-events: none;
+  opacity: var(--flash, 0);
+  background: radial-gradient(58% 58% at 50% 50%, #f2f8ff 0%, rgba(168, 214, 255, 0.8) 42%, rgba(70, 140, 255, 0) 100%);
+  mix-blend-mode: screen;
+}
+
 /* ── The immersive view: only the eye is drawn; the stick and the look pad
    stay live but unseen, so the view is the whole screen and the ship still
    answers. ── */
 .flight-hud__unhide { position: absolute; top: var(--edge-top); right: var(--edge-right); display: none; }
 .flight-hud[data-immersive='true'] .flight-hud__unhide { display: flex; opacity: 0.55; }
-.flight-hud[data-immersive='true'] > :not(.flight-hud__unhide, .flight-hud__dock, .flight-hud__help, .flight-hud__lookpad) { display: none; }
-.flight-hud[data-immersive='true'] .flight-hud__dock > :not(.flight-hud__move) { visibility: hidden; }
+.flight-hud[data-immersive='true'] > :not(.flight-hud__unhide, .flight-hud__dock, .flight-hud__help, .flight-hud__lookpad, .flight-hud__warp, .flight-hud__flash) { display: none; }
+.flight-hud[data-immersive='true'] .flight-hud__dock > :not(.flight-hud__move, .flight-hud__prompts) { visibility: hidden; }
 .flight-hud[data-immersive='true'] .flight-hud__move { opacity: 0; }
 .flight-hud .flight-hud__turn[data-on='true'] { color: var(--hud-accent); }
 .flight-hud__turn[data-on='true'] svg { transform: rotate(90deg); }
@@ -1316,22 +1336,21 @@
 .flight-hud__prompts { grid-area: land; display: flex; gap: 8px; }
 .flight-hud .flight-hud__dock-key { border-color: rgba(77, 163, 255, 0.55); color: var(--hud-accent); }
 .flight-hud .flight-hud__dock-key[data-on='true'] { background: rgba(77, 163, 255, 0.2); }
-.flight-hud .flight-hud__dock-key span { white-space: nowrap; }
+
 .flight-hud__console { grid-area: console; }
 .flight-hud__keys { grid-area: keys; }
 .flight-hud__move { grid-area: move; }
-.flight-hud__look { grid-area: look; }
-.flight-hud .flight-hud__land {
+.flight-hud .flight-hud__prompt {
   gap: 8px;
   height: 42px;
   padding: 0 18px;
   border-radius: 999px;
   font-size: 12px;
-  border-color: rgba(255, 179, 71, 0.55);
-  color: #ffd9a0;
+  white-space: nowrap;
   animation: moon-impact 0.5s ease-out both;
 }
-.flight-hud__land[hidden] { display: none; }
+.flight-hud .flight-hud__land { border-color: rgba(255, 179, 71, 0.55); color: #ffd9a0; }
+.flight-hud__prompt[hidden] { display: none; }
 
 /* ── The console bar: the compass, the range, the dial, the systems ── */
 .flight-hud__console {
@@ -1432,8 +1451,8 @@
 }
 
 /* ── The two pads ── */
-.flight-hud__move, .flight-hud__look { width: var(--stick); height: var(--stick); }
-.flight-hud :is(.flight-hud__move, .flight-hud__look) .game-stick {
+.flight-hud__move { width: var(--stick); height: var(--stick); }
+.flight-hud .flight-hud__move .game-stick {
   width: 100%;
   height: 100%;
   border-color: var(--hud-line);

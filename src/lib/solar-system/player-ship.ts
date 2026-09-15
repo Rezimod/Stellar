@@ -108,6 +108,8 @@ const DOCK_WRECK_SPEED = 1.0 * U;
  *  flies the approach at this pace at most. */
 const DOCK_ASSIST_RADII = 14;
 const DOCK_ASSIST_SPEED = 0.5 * U;
+/** … and never less than this, or the ISS would have to be touched first. */
+const DOCK_ASSIST_MIN = 70 * H;
 const DOCK_GAP = 5 * H;
 /** The berth clamps on for this long before thrust can cast off again —
  *  without it the throttle that flew the ship in would release it at once. */
@@ -259,6 +261,8 @@ export interface FlightInput {
   hudToggle: boolean;
   /** One-shot: hand the approach to the docking computer — or take it back. */
   dockRequest: boolean;
+  /** One-shot for the deck: take the ship down to the surface below. */
+  landRequest: boolean;
   /** One-shot: cycle the navigation target outward (+1) or inward (-1). */
   targetStep: number;
   targetClear: boolean;
@@ -441,7 +445,7 @@ export function createFlightSession(): FlightSession {
     input: {
       thrust: 0, yaw: 0, lookYaw: 0, pitch: 0, roll: 0,
       boost: false, fire: false, align: false, mouseDX: 0, mouseDY: 0,
-      modeRequest: null, foilsToggle: false, eject: false, viewToggle: false, assistToggle: false, hudToggle: false, dockRequest: false,
+      modeRequest: null, foilsToggle: false, eject: false, viewToggle: false, assistToggle: false, hudToggle: false, dockRequest: false, landRequest: false,
       targetStep: 0, targetClear: false, targetRequest: null, targetKind: null,
       camZoom: 1, orbiting: false, orbitYaw: 0, orbitPitch: 0,
     },
@@ -904,10 +908,98 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
     depthWrite: false,
     blending: THREE.AdditiveBlending,
   });
+  // Each streak carries its own colour: cold blue out at the wall, white
+  // hot down the middle of the throat.
+  const tunnelCol = new Float32Array(TUNNEL_N * 6);
+  for (let i = 0; i < TUNNEL_N; i++) {
+    const warm = 1 - tunnelSeed[i * 3 + 1];
+    for (const end of [0, 3]) {
+      const o = i * 6 + end;
+      tunnelCol[o] = 0.35 + warm * 0.85;
+      tunnelCol[o + 1] = 0.6 + warm * 0.45;
+      tunnelCol[o + 2] = 1.5;
+    }
+  }
+  tunnelGeom.setAttribute('color', new THREE.BufferAttribute(tunnelCol, 3));
+  tunnelMat.vertexColors = true;
   const tunnel = new THREE.LineSegments(tunnelGeom, tunnelMat);
   tunnel.frustumCulled = false;
   tunnel.visible = false;
   fxGroup.add(tunnel);
+
+  // The tube itself: striations flowing past on the inside of a cylinder
+  // laid along the line of flight. Drawn from within, so its back faces.
+  const WARP_R = 13 * U;
+  const WARP_LEN = 110 * U;
+  const warpGeom = new THREE.CylinderGeometry(WARP_R, WARP_R, WARP_LEN, 48, 1, true);
+  const warpMat = new THREE.ShaderMaterial({
+    uniforms: { uTime: { value: 0 }, uOpen: { value: 0 }, uTight: { value: 1 } },
+    vertexShader: `
+      varying vec2 vUv;
+      void main() {
+        vUv = uv;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `,
+    fragmentShader: `
+      uniform float uTime;
+      uniform float uOpen;
+      uniform float uTight;
+      varying vec2 vUv;
+      /** Layered sine bands round the tube: a field of long, thin streaks. */
+      float streaks(float a, float t) {
+        float n = 0.55 * sin(a * 37.0 + t * 1.7)
+                + 0.32 * sin(a * 83.0 - t * 2.6)
+                + 0.18 * sin(a * 151.0 + t * 4.1)
+                + 0.12 * sin(a * 211.0 - t * 6.0);
+        return pow(max(0.0, n * 0.5 + 0.5), 7.0);
+      }
+      void main() {
+        float a = vUv.x * 6.2831853;
+        float s1 = streaks(a, uTime);
+        float s2 = streaks(a + 1.7, uTime * 1.6);
+        // Fade in behind the ship, fade out into the throat ahead.
+        float along = smoothstep(0.0, 0.2, vUv.y) * smoothstep(1.0, 0.6, vUv.y);
+        float body = (s1 * 0.75 + s2 * 0.5) * along;
+        // A longitudinal ripple, so the walls read as moving, not painted.
+        body *= 0.72 + 0.28 * sin(vUv.y * 26.0 - uTime * 9.0);
+        // The throat: everything converges on the light far ahead.
+        float throat = smoothstep(0.72, 1.0, vUv.y) * 0.55 * uTight;
+        vec3 cool = vec3(0.16, 0.42, 1.25);
+        vec3 hot = vec3(1.15, 1.05, 1.6);
+        vec3 col = mix(cool, hot, clamp(body * 1.7, 0.0, 1.0)) * (body + throat);
+        gl_FragColor = vec4(col * uOpen, 1.0);
+      }
+    `,
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    side: THREE.BackSide,
+  });
+  const warp = new THREE.Mesh(warpGeom, warpMat);
+  warp.frustumCulled = false;
+  warp.visible = false;
+  fxGroup.add(warp);
+  /** The ring: it collapses onto the hull as the drive charges, and is
+   *  thrown off again as a shockwave on arrival. */
+  const ringGeom = new THREE.TorusGeometry(1, 0.035, 8, 64);
+  const ringMat = new THREE.MeshBasicMaterial({
+    color: new THREE.Color(1.6, 2.0, 3.2),
+    transparent: true,
+    opacity: 0,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+  });
+  const ring = new THREE.Mesh(ringGeom, ringMat);
+  ring.frustumCulled = false;
+  ring.visible = false;
+  fxGroup.add(ring);
+  /** How far open the warp is (0 … 1) and the shockwave's own clock. */
+  let warpOpen = 0;
+  let shockT = -1;
+  const warpQ = new THREE.Quaternion();
+  const UP_Y = new THREE.Vector3(0, 1, 0);
+  const UP_Z = new THREE.Vector3(0, 0, 1);
 
   const vel = new THREE.Vector3();
   const angVel = new THREE.Vector3();
@@ -993,6 +1085,8 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
   let autodock: FlightBody | null = null;
   const berthDir = new THREE.Vector3();
   const berth = new THREE.Vector3();
+  /** How near a station has to be before its docking computer will answer. */
+  const dockReach = (b: FlightBody) => Math.max(b.radius * DOCK_ASSIST_RADII, DOCK_ASSIST_MIN);
   let orderId = '';
   let orderHits = ORDER_HITS;
   let orderDoneHold = 0;
@@ -1062,6 +1156,8 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
     sinceBoost = 99;
     crashT = -1;
     dockedTo = null;
+    autodock = null;
+    audio.stopCharge();
     dockHold = 0;
     mode = 'cruise';
     regime = regimes.cruise;
@@ -1242,6 +1338,11 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
     if (jumping) {
       flow.copy(jumpDir).multiplyScalar(JUMP_FLOW);
       stretch = 0.5;
+    } else if (jumpPhase === 'charge') {
+      // Charging: space begins to pour past before the ship moves at all.
+      const k = Math.min(1, jumpT / JUMP_CHARGE);
+      flow.copy(jumpDir).multiplyScalar(JUMP_FLOW * 0.18 * k * k);
+      stretch = 0.06 + 0.4 * k * k;
     } else {
       flow.copy(vel);
       // Motes at cruise, streaks once the ship is really moving, and long
@@ -1278,7 +1379,52 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
 
   /** The hyperspace tunnel: streaks on a ring around the line of flight,
    *  sliding toward the ship, growing brighter and tighter as the jump runs. */
-  const updateTunnel = () => {
+  const updateTunnel = (dt: number, timeSec: number) => {
+    // How far open the warp wants to be: a hint of it as the drive charges,
+    // all of it in the jump, and a tail that decompresses after arrival.
+    const target = jumpPhase === 'travel' ? 1 : jumpPhase === 'charge' ? 0.3 * Math.min(1, jumpT / JUMP_CHARGE) : 0;
+    warpOpen += (target - warpOpen) * (1 - Math.exp(-dt * (target > warpOpen ? 6 : 3.4)));
+    if (warpOpen < 0.004) warpOpen = 0;
+
+    // The shockwave thrown off on arrival.
+    if (shockT >= 0) {
+      shockT += dt;
+      const k = Math.min(1, shockT / 0.85);
+      ring.visible = true;
+      ring.position.copy(group.position);
+      warpQ.setFromUnitVectors(UP_Z, jumpDir);
+      ring.quaternion.copy(warpQ);
+      ring.scale.setScalar((1.5 + 44 * k * k) * U);
+      ringMat.opacity = (1 - k) * 0.9;
+      if (k >= 1) { shockT = -1; ring.visible = false; }
+    } else if (jumpPhase === 'charge') {
+      // Charging: a ring of light closes onto the hull.
+      const k = Math.min(1, jumpT / JUMP_CHARGE);
+      ring.visible = true;
+      ring.position.copy(group.position).addScaledVector(jumpDir, 2 * H);
+      warpQ.setFromUnitVectors(UP_Z, jumpDir);
+      ring.quaternion.copy(warpQ);
+      ring.scale.setScalar((14 - 12.4 * k * k) * U);
+      ringMat.opacity = 0.2 + 0.75 * k;
+    } else if (shockT < 0 && jumpPhase !== 'travel') {
+      ring.visible = false;
+    }
+
+    warp.visible = warpOpen > 0;
+    if (warp.visible) {
+      warpMat.uniforms.uTime.value = timeSec;
+      warpMat.uniforms.uOpen.value = warpOpen;
+      warpMat.uniforms.uTight.value = jumpPhase === 'travel' ? 1 : 0.35;
+      warp.position.copy(group.position).addScaledVector(jumpDir, WARP_LEN * 0.34);
+      warpQ.setFromUnitVectors(UP_Y, jumpDir);
+      warp.quaternion.copy(warpQ);
+      // The tube breathes: wide at entry, tight down the middle, blooming
+      // out again as the destination comes up.
+      const s = jumpPhase === 'travel' ? Math.min(1, jumpT / JUMP_TRAVEL) : 0;
+      const squeeze = 1 - 0.42 * Math.sin(s * Math.PI);
+      warp.scale.set(squeeze, 1, squeeze);
+    }
+
     if (jumpPhase !== 'travel') {
       tunnel.visible = false;
       return;
@@ -1291,7 +1437,7 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
     right.crossVectors(jumpDir, up).normalize();
     up.crossVectors(right, jumpDir).normalize();
     const p = group.position;
-    const len = 18 * U;
+    const len = (12 + 26 * Math.sin(s * Math.PI)) * U;
     for (let i = 0; i < TUNNEL_N; i++) {
       const a = tunnelSeed[i * 3];
       const r = tunnelSeed[i * 3 + 1] * 9 * U * tighten;
@@ -1325,6 +1471,7 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
     tel.navId = '';
     updateCamera(dt, camera, REGIMES.cruise.fov);
     updateDust(dt, 0);
+    updateTunnel(dt, 0);
     for (const j of shipParts.rcs) j.mat.opacity = 0;
   };
 
@@ -1344,11 +1491,12 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
       crash.update(dt);
       if (jumpPhase !== 'none' || crashT >= 0) {
         input.mouseDX = input.mouseDY = 0;
+        input.dockRequest = false;
         pendYaw = pendPitch = 0;
       }
       const enemies = aliens.enemies;
       tel.systemName = arrivedHold > 0 ? jumpName : jumpPhase === 'none' ? world.systemName : jumpOrigin;
-      if (arrivedHold > 0) arrivedHold -= 1;
+      if (arrivedHold > 0) arrivedHold -= dt;
       tel.targetName = jumpPhase === 'none' ? world.jump.name : jumpName;
       tel.targetLy = world.jump.distanceLy;
 
@@ -1447,9 +1595,14 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
           if (locked) {
             setAlert('masslock', 1.8);
           } else {
+            // Let go of the berth and of the docking computer: neither
+            // means anything in the system the drive is about to reach.
+            autodock = null;
+            dockedTo = null;
             mode = 'jump';
             jumpPhase = 'charge';
             jumpT = 0;
+            audio.charge(JUMP_CHARGE);
             foilsForced = null;
             jumpTarget.position.copy(world.jump.position);
             jumpTarget.lookAt.copy(world.jump.lookAt);
@@ -1495,13 +1648,15 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
           tel.jumpFlash = 1;
           rig.kick(0.8);
           audio.whoosh();
+          shockT = 0;
         }
       } else if (jumpPhase === 'travel') {
         jumpT += dt;
         const s = Math.min(1, jumpT / JUMP_TRAVEL);
         const e = s * s * (3 - 2 * s);
         group.position.lerpVectors(jumpStart, jumpTarget.position, e);
-        rig.kick(0.25);
+        // The ride shakes hardest through the middle of the run.
+        rig.kick(0.12 + 0.3 * Math.sin(s * Math.PI));
         if (s >= 1) {
           jumpPhase = 'none';
           mode = 'cruise';
@@ -1516,6 +1671,7 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
           angVel.set(0, 0, 0);
           rig.snap();
           arrivedHold = 3;
+          shockT = 0;
           tel.systemName = jumpName;
           tel.jumpFlash = 1;
           setAlert('arrived', 3);
@@ -1596,7 +1752,7 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
             for (const b of world.bodies) {
               if (b.destroyed || b.kind !== 'station') continue;
               const d = me.position.distanceTo(b.position);
-              if (d < b.radius * DOCK_ASSIST_RADII && d < bestD) { best = b; bestD = d; }
+              if (d < dockReach(b) && d < bestD) { best = b; bestD = d; }
             }
             if (best) {
               autodock = best;
@@ -1605,7 +1761,7 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
             }
           }
         }
-        if (autodock && (autodock.destroyed || pilot !== 'ship')) autodock = null;
+        if (autodock && (autodock.destroyed || pilot !== 'ship' || !world.bodies.includes(autodock))) autodock = null;
         if (autodock) {
           berth.copy(autodock.position).addScaledVector(berthDir, autodock.radius + HULL_RADIUS + DOCK_GAP);
           // Nose onto the station as it closes.
@@ -2044,12 +2200,22 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
       // ── Follow camera; the regime sets how far back it rides. ──
       fwd.set(0, 0, 1).applyQuaternion(me.quaternion);
       const camZoom = THREE.MathUtils.clamp(input.camZoom || 1, CAM_ZOOM_MIN, CAM_ZOOM_MAX);
+      const jumpK = jumpPhase === 'none' ? 0 : Math.min(1, jumpT / (jumpPhase === 'charge' ? JUMP_CHARGE : JUMP_TRAVEL));
+      const jumpBack = jumpPhase === 'charge'
+        // Charging: the camera creeps in on the hull.
+        ? THREE.MathUtils.lerp(regime.camBack, JUMP_CAM_BACK * 0.5, jumpK)
+        // Running: thrown back, then easing in as the destination comes up.
+        : JUMP_CAM_BACK * (1 - 0.2 * jumpK);
       const camBackTarget = Math.max(
         MIN_CAM_BACK,
-        (jumpPhase !== 'none' ? JUMP_CAM_BACK : regime.camBack) * camZoom,
+        (jumpPhase !== 'none' ? jumpBack : regime.camBack) * camZoom,
       );
       camBack += (camBackTarget - camBack) * (1 - Math.exp(-dt * 2.5));
-      const fovTarget = jumpPhase !== 'none' ? JUMP_FOV : view === 'cockpit' && pilot === 'ship' ? COCKPIT_FOV : regime.fov;
+      const fovTarget = jumpPhase === 'charge'
+        // The frame closes in with the charge, and blows open at entry.
+        ? THREE.MathUtils.lerp(regime.fov, 38, jumpK)
+        : jumpPhase === 'travel' ? JUMP_FOV + 14 * Math.sin(jumpK * Math.PI)
+        : view === 'cockpit' && pilot === 'ship' ? COCKPIT_FOV : regime.fov;
       updateCamera(dt, camera, fovTarget);
       if (navC) projectTarget(navPos, camera, tel.nav);
       // The velocity vector: a point down the line of flight, on the glass.
@@ -2086,7 +2252,7 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
         jumpGlow.visible = false;
       }
       updateDust(dt, speed);
-      updateTunnel();
+      updateTunnel(dt, timeSec);
 
       // ── Standing order: one world in this system to take apart. ──
       orderDoneHold -= dt;
@@ -2153,7 +2319,7 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
       let stationNear = false;
       if (pilot === 'ship' && !dockedTo && jumpPhase === 'none' && crashT < 0) {
         for (const b of world.bodies) {
-          if (!b.destroyed && b.kind === 'station' && me.position.distanceTo(b.position) < b.radius * DOCK_ASSIST_RADII) { stationNear = true; break; }
+          if (!b.destroyed && b.kind === 'station' && me.position.distanceTo(b.position) < dockReach(b)) { stationNear = true; break; }
         }
       }
       tel.canDock = stationNear;
@@ -2192,6 +2358,10 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
       tunnelGeom.dispose();
       tunnelMat.dispose();
       jumpGlowMat.dispose();
+      warpGeom.dispose();
+      warpMat.dispose();
+      ringGeom.dispose();
+      ringMat.dispose();
       const geoms = new Set<THREE.BufferGeometry>();
       const mats = new Set<THREE.Material>();
       for (const root of [group, evaG]) {
