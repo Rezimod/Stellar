@@ -427,6 +427,10 @@
 .solar-system[data-flying='true'] .solar-system__canvas,
 .solar-system[data-flying='true'] .solar-system__viewport--fill,
 .solar-system[data-flying='true'] .flight-hud { touch-action: none; }
+/* — except the panels that can outgrow the glass. Refusing every gesture on
+   the deck also refuses the one that scrolls a menu, so a menu too tall for
+   the screen could not be reached past its first screenful. */
+.solar-system[data-flying='true'] :is(.flight-hud__menu, .flight-hud__help) { touch-action: pan-y; }
 /* Landscape on a phone that will not turn: the whole viewport — canvas and
    deck — is drawn a quarter turn clockwise and sized to the screen's other
    way round. The deck's container queries then lay it out as landscape,
@@ -1598,6 +1602,19 @@
   .flight-hud__speed-value { font-size: 18px; }
   .flight-hud .flight-hud__radar { width: 44px; height: 44px; }
   .flight-hud__console { padding: 7px 12px; gap: 12px; }
+  /* Turned sideways there is barely 400px of height, and the menu is a dozen
+     rows: it ran off the bottom of the glass. Two columns, shorter rows, and
+     the whole of it is on screen at once. */
+  .flight-hud__menu {
+    width: min(420px, calc(100cqw - var(--hud-round) - 3 * var(--gutter)));
+    grid-template-columns: 1fr 1fr;
+    align-content: start;
+    gap: 2px 6px;
+  }
+  .flight-hud .flight-hud__menu button { height: 34px; padding: 0 9px; font-size: 11px; }
+  .flight-hud .flight-hud__menu button svg { width: 14px; height: 14px; }
+  .flight-hud__menu-group { grid-column: 1 / -1; grid-template-columns: 1fr 1fr; gap: 2px 6px; padding: 3px 0; }
+  .flight-hud__menu-row { grid-column: 1 / -1; }
 }
 
 /* ──────────────────── planet info chip (opens the facts card) ────────────────────
@@ -2704,6 +2721,9 @@
 /* Helmet off, nothing between the eye and the room. */
 .moon-surface[data-backrooms]:not([data-backrooms='']):not([data-backrooms='fall'])[data-helmet-on='false'] .moon-hud__crack,
 .moon-surface[data-backrooms]:not([data-backrooms='']):not([data-backrooms='fall'])[data-helmet-on='false'] .moon-hud__visor { display: none; }
+/* Nor is there a visor to look through when the camera is behind the crew
+   rather than inside their helmet. */
+.moon-surface:not([data-view='helmet']) .moon-hud__crack { display: none; }
 
 .moon-hud__br {
   position: absolute;

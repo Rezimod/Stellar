@@ -12,6 +12,15 @@
 // over-leans; hauling the stick round at a full lope does, and downhill that
 // is a fall. The feet are placed, not animated: a planted foot does not move
 // until it is lifted, and the next one lands where the body will be.
+//
+// One deliberate departure from all of that, because a sixth of a g is a
+// beautiful thing to watch and a miserable thing to steer. The legs are
+// worked at Earth's footing everywhere — a step is a step and a run is a run,
+// not the long two-footed skip the pendulum would otherwise force — and the
+// body is given Mars underfoot on any world lighter than that, so starting,
+// stopping and turning are brisk. What the crew throws into the air is the
+// one thing still answering to the lighter gravity, which is exactly where
+// the low-gravity feel belongs: the walking is ordinary and the jump hangs.
 
 export interface Collider { x: number; z: number; r: number }
 
@@ -29,7 +38,10 @@ export interface WalkInput {
 }
 
 export interface GaitProfile {
+  /** The world's gravity, m/s². */
   g: number;
+  /** What the crew's own body falls under: `g`, floored at Mars. */
+  bodyG: number;
   /** Pressurised suit (stiff, heavy) or not. */
   suited: boolean;
   /** Hip to sole, m. */
@@ -77,8 +89,9 @@ export interface GaitProfile {
 
 const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
-const EARTH_G = 9.81;
+export const EARTH_G = 9.81;
 export const LUNAR_G = 1.62;
+export const MARS_G = 3.72;
 
 /**
  * A profile for any gravity. `suited` is the pressurised EVA suit: about 157 kg
@@ -86,31 +99,39 @@ export const LUNAR_G = 1.62;
  * depressurised, soft suit with no pack or helmet — near enough ordinary.
  */
 export function gaitProfile(g: number, suited = true): GaitProfile {
-  const k = clamp((g - LUNAR_G) / (EARTH_G - LUNAR_G), 0, 1.2);
+  // The body's footing: never lighter than Mars, so the crew always has
+  // something to push against, and every one of the numbers below is worked
+  // from that rather than from the world's own gravity.
+  const bodyG = Math.max(g, MARS_G);
+  const k = clamp((bodyG - LUNAR_G) / (EARTH_G - LUNAR_G), 0, 1.2);
   const leg = 0.9;
-  const walkLimit = Math.sqrt(0.5 * g * leg);
-  // Take-off: v² = 2·(F/m − g)·d with a peak leg force F over push depth d.
-  // The suit is heavy and barely bends, so d is a few centimetres.
-  const force = suited ? 15.3 : 25.3;
-  const depth = suited ? 0.044 : 0.18;
-  // Never less than a quarter second off the ground, even in a suit on a heavy world.
-  const hop = Math.max(g * 0.13, Math.sqrt(Math.max(0, 2 * (force - g) * depth)));
+  const walkLimit = Math.sqrt(0.5 * bodyG * leg);
+  // Take-off speed. Not the suit's own push — a stiff pressure garment gives
+  // a few centimetres of travel and next to nothing with it — but the push
+  // the crew is given, chosen so a jump clears most of a metre on a light
+  // world and about a third of one on a heavy one.
+  const hop = suited ? 2.6 : 2.75;
   return {
-    g, suited, leg, walkLimit,
+    g, bodyG, suited, leg, walkLimit,
     walk: clamp(walkLimit * 1.4, 1.2, 1.4),
-    run: clamp(1.7 * Math.sqrt(g * leg), 2.2, suited ? 3.2 : 3.8),
+    run: clamp(1.7 * Math.sqrt(bodyG * leg), 2.2, suited ? 3.2 : 3.8),
     crouch: suited ? 0.55 : 0.8,
     grip: suited ? 0.5 : 0.8,
     walkLoad: 1.6,
     boundLoad: 3.6,
     muscle: suited ? 4.5 : 7,
-    leanMax: suited ? 0.9 : 1.0,
+    // How far the crew leans on purpose. Just inside what the boots can
+    // actually hold, so hauling the stick round at a full run still trips
+    // them — the whole point of the lean limit.
+    leanMax: suited ? 0.86 : 1.0,
     hop,
     runHop: suited ? 0.4 : 0.5,
     flightBase: lerp(0.28, 0.02, Math.min(1, k)),
     flightPerSpeed: lerp(0.2, 0.045, Math.min(1, k)),
     stance: lerp(0.26, 0.2, Math.min(1, k)),
-    skip: k < 0.5,
+    // Both boots together is the true one-sixth-g skip; with the body's
+    // footing floored at Mars nothing reaches it any more, and the crew runs.
+    skip: k < 0.2,
     turnStill: suited ? lerp(2.0, 4, Math.min(1, k)) : 8,
     turnRun: suited ? lerp(1.6, 2.5, Math.min(1, k)) : 4.5,
     turnChunk: suited ? 0.9 : Math.PI,
@@ -118,8 +139,8 @@ export function gaitProfile(g: number, suited = true): GaitProfile {
     kneeMax: suited ? 1.25 : 2.1,
     reach: suited ? 0.78 : 1.0,
     air: suited ? lerp(0.15, 0.5, Math.min(1, k)) : 0.6,
-    hardLand: Math.sqrt(2 * g * (suited ? 1.8 : 1.0)),
-    stumbleLand: Math.sqrt(2 * g * (suited ? 3.2 : 1.8)),
+    hardLand: Math.sqrt(2 * bodyG * (suited ? 1.8 : 1.0)),
+    stumbleLand: Math.sqrt(2 * bodyG * (suited ? 3.2 : 1.8)),
     getUp: suited ? 1.6 : 0.9,
   };
 }
@@ -240,7 +261,7 @@ export function makeLocomotion(position: Vec3, velocity: Vec3, initial: GaitProf
       state.gait = 'stand';
     },
     update(dt, input, heightAt, colliders, walkRadius, authority = 1) {
-      const g = P.g;
+      const g = P.bodyG;
       state.landed = false;
       state.impact = 0;
       state.stumble = Math.max(0, state.stumble - dt);
@@ -555,7 +576,7 @@ export function makeLocomotion(position: Vec3, velocity: Vec3, initial: GaitProf
     if (gait === 'bound') {
       const inAir = airborne || state.altitude > 1e-3;
       // Time to touchdown from the ballistics, not the plan: the ground moves.
-      const remain = (velocity.y + Math.sqrt(Math.max(0, velocity.y * velocity.y + 2 * P.g * Math.max(0, state.altitude)))) / P.g;
+      const remain = (velocity.y + Math.sqrt(Math.max(0, velocity.y * velocity.y + 2 * P.bodyG * Math.max(0, state.altitude)))) / P.bodyG;
       const reachAhead = speed * P.stance * 0.5;
       const k = inAir ? smooth(flightT / Math.max(1e-3, flightT + remain)) : 0;
       state.stepPhase = inAir ? 0.5 + 0.5 * k : 0.5 * Math.min(1, stanceT / P.stance);

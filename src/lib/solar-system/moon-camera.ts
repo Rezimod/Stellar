@@ -39,6 +39,10 @@ export interface ChaseTuning {
   vertical: number;
   /** Keep the camera under a roof and inside a radius (a habitat interior). */
   room?: { x: number; z: number; y: number; r: number } | null;
+  /** Somewhere the camera may not be, for a place built of walls rather than
+   *  of round footprints. Given it, the ground and the colliders are not
+   *  consulted at all: this is the whole answer. */
+  blocked?: ((x: number, y: number, z: number) => boolean) | null;
 }
 
 export interface CameraRig {
@@ -92,8 +96,15 @@ export function makeCameraRig(
   const wrap = (a: number) => { while (a > Math.PI) a -= Math.PI * 2; while (a < -Math.PI) a += Math.PI * 2; return a; };
 
   /** How far along focus→want the view is clear, 0…1. */
-  const clearance = (roomY: number | null): number => {
+  const clearance = (roomY: number | null, blocked?: ((x: number, y: number, z: number) => boolean) | null): number => {
     const steps = 10;
+    if (blocked) {
+      for (let i = 1; i <= steps; i++) {
+        probe.lerpVectors(focus, want, i / steps);
+        if (blocked(probe.x, probe.y, probe.z)) return (i - 1) / steps;
+      }
+      return 1;
+    }
     const cols = colliders();
     for (let i = 1; i <= steps; i++) {
       const f = i / steps;
@@ -172,8 +183,12 @@ export function makeCameraRig(
         if (r > tune.room.r) { want.x = tune.room.x + dx / r * tune.room.r; want.z = tune.room.z + dz / r * tune.room.r; }
         if (want.y > tune.room.y) want.y = tune.room.y;
       }
-      const clear = clearance(tune.room ? tune.room.y : null);
-      const hitDist = Math.max(1.2, desired * clear - (clear < 1 ? 0.3 : 0));
+      const clear = clearance(tune.room ? tune.room.y : null, tune.blocked);
+      // Somewhere built of walls, the camera comes all the way in rather than
+      // stopping at a comfortable distance inside one: a corridor is narrower
+      // than any distance that would look good in the open.
+      const closest = tune.blocked ? 0.34 : 1.2;
+      const hitDist = Math.max(closest, desired * clear - (clear < 1 ? 0.3 : 0));
       // In at once, out gently.
       if (snapNext || hitDist < actualDist) actualDist = hitDist;
       else actualDist += (hitDist - actualDist) * (1 - Math.exp(-dt * 3));

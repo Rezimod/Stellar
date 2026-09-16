@@ -14,7 +14,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import {
-  makeMaze, collide, CELL, DX, DZ, SIDE, hash, mod, type Dir, type Maze,
+  makeMaze, collide, CELL, CEILING, DX, DZ, SIDE, hash, mod, type Dir, type Maze,
 } from '@/lib/solar-system/backrooms-maze';
 import { makeChunkKit, PANEL_COLOR, type ChunkBuild } from '@/lib/solar-system/backrooms-chunks';
 import { makeChunkWindow } from '@/lib/solar-system/backrooms-window';
@@ -245,6 +245,18 @@ export function makeBackrooms(deps: BackroomsDeps): BackroomsHandle {
   const spawnZ = (maze.spawn.j + 0.5) * CELL;
   const eye = new THREE.Vector3();
   const lying = new THREE.Vector3();
+  // Where the camera may not go. Corridors are one cell wide, so the chase
+  // spends most of its life pulled in against a wall — which is what a
+  // corridor is for.
+  const probe = { x: 0, z: 0 };
+  const still = { x: 0, z: 0 };
+  const walled = (x: number, y: number, z: number) => {
+    if (y < 0.35 || y > CEILING - 0.25) return true;
+    probe.x = x; probe.z = z;
+    still.x = 0; still.z = 0;
+    collide(maze, probe, still, 0.24);
+    return Math.abs(probe.x - x) > 1e-9 || Math.abs(probe.z - z) > 1e-9;
+  };
   const tmp = new THREE.Vector3();
   const guided = new Set<number>();
 
@@ -491,12 +503,13 @@ export function makeBackrooms(deps: BackroomsDeps): BackroomsHandle {
 
       // ── The camera. ──
       if (telemetry.phase === 'explore' || telemetry.phase === 'stairs' || telemetry.phase === 'door') {
-        const rel = cam.yaw + Math.PI - cosmonaut.yaw;
-        const wrapped = Math.atan2(Math.sin(rel), Math.cos(rel));
-        if (cosmonaut.state.speed < 0.3 && Math.abs(wrapped) > 0.9) cosmonaut.yaw += wrapped * (1 - Math.exp(-dt * 4));
-        cosmonaut.look(Math.atan2(Math.sin(cam.yaw + Math.PI - cosmonaut.yaw), Math.cos(cam.yaw + Math.PI - cosmonaut.yaw)), cam.lookPitch);
-        cosmonaut.eye(eye);
-        cam.firstPerson(dt, eye, 0);
+        // Over the shoulder down here, not behind the eyes: the thing at the
+        // end of the corridor is worth having something between you and it.
+        cam.chase(dt, {
+          position: cosmonaut.position, velocity: cosmonaut.velocity, yaw: cosmonaut.yaw,
+          height: 1.34, distance: Math.min(cam.distance, 2.2),
+          speedFrac: Math.min(1, cosmonaut.state.speed / cosmonaut.profile.run),
+        }, { follow: 2.4, lead: 0.22, leadMax: 0.5, fovKick: 3, horizontal: 10, vertical: 5, blocked: walled });
       } else if (telemetry.phase === 'climb' || telemetry.phase === 'out') {
         const k = smooth(climbT / CLIMB);
         cosmonaut.eye(eye);

@@ -1,10 +1,13 @@
-// The cosmonaut's movement, held to the physics it claims: one-sixth-g
-// ballistics, traction-limited starts, stops and turns, boots that stay where
-// they are planted, and the same controller in Earth gravity for the Backrooms.
+// The cosmonaut's movement, held to what it claims: ordinary walking and
+// running speeds on any world, ballistics under the body's own footing (the
+// world's gravity, floored at Mars, so a jump still hangs but the steering
+// does not), traction-limited starts, stops and turns, boots that stay where
+// they are planted, and the same controller in Earth gravity for the
+// Backrooms.
 
 import * as THREE from 'three';
 import { describe, expect, it, vi } from 'vitest';
-import { gaitProfile, makeLocomotion, LUNAR_G, type GaitProfile, type WalkInput } from '@/lib/solar-system/suit-locomotion';
+import { gaitProfile, makeLocomotion, LUNAR_G, MARS_G, type GaitProfile, type WalkInput } from '@/lib/solar-system/suit-locomotion';
 import type { DustHandle } from '@/lib/solar-system/moon-fx';
 
 const DT = 1 / 120;
@@ -40,31 +43,37 @@ function hop(w: ReturnType<typeof walker>, over: Partial<WalkInput> = {}) {
 describe('the suit in one-sixth g', () => {
   const moon = gaitProfile(LUNAR_G, true);
 
-  it('hops like Apollo: a small hop hangs 1.2–1.5 s, and the arc is the ballistic one', () => {
+  it('hops high and hangs: most of a metre, well over a second, on the ballistic arc', () => {
     const w = walker(moon);
     const { air, apex } = hop(w);
     expect(air).toBeGreaterThanOrEqual(1.2);
-    expect(air).toBeLessThanOrEqual(1.5);
-    // v = g·t/2 and h = v²/2g for the take-off speed the profile uses.
-    expect(air).toBeCloseTo((2 * moon.hop) / LUNAR_G, 1);
-    expect(apex).toBeCloseTo((moon.hop * moon.hop) / (2 * LUNAR_G), 1);
+    expect(air).toBeLessThanOrEqual(1.6);
+    expect(apex).toBeGreaterThan(0.8);
+    // v = g·t/2 and h = v²/2g, under the footing the body actually has.
+    expect(moon.bodyG).toBeCloseTo(MARS_G, 5);
+    expect(air).toBeCloseTo((2 * moon.hop) / moon.bodyG, 1);
+    expect(apex).toBeCloseTo((moon.hop * moon.hop) / (2 * moon.bodyG), 1);
   });
 
-  it('cannot walk faster than the pendulum allows: it lopes instead', () => {
-    expect(moon.walkLimit).toBeCloseTo(Math.sqrt(0.5 * LUNAR_G * 0.9), 5);
-    expect(moon.run).toBeLessThanOrEqual(2.3);
+  it('walks and runs at ordinary speeds, a foot at a time', () => {
+    // The pendulum still caps the walk, but at the body's footing, so it is
+    // an ordinary 1.4 m/s rather than the 0.85 one-sixth g would allow.
+    expect(moon.walkLimit).toBeCloseTo(Math.sqrt(0.5 * moon.bodyG * 0.9), 5);
+    expect(moon.walk).toBeCloseTo(1.4, 2);
+    expect(moon.run).toBeGreaterThan(3);
+    expect(moon.skip).toBe(false);
     const w = walker(moon);
     let flights = 0; let was = false;
     w.run(6, { moveZ: 1, run: true }, () => { if (w.loco.state.airborne && !was) flights += 1; was = w.loco.state.airborne; });
     expect(w.loco.state.gait).toBe('bound');
     expect(flights).toBeGreaterThan(3);
-    expect(w.loco.state.speed).toBeGreaterThan(2);
+    expect(w.loco.state.speed).toBeGreaterThan(3);
   });
 
-  it('is slow to start: traction, not a speed switch', () => {
+  it('still has to get going: traction, not a speed switch', () => {
     const w = walker(moon);
-    w.run(0.25, { moveZ: 1 });
-    expect(w.loco.state.speed).toBeLessThan(0.6);
+    w.run(0.1, { moveZ: 1 });
+    expect(w.loco.state.speed).toBeLessThan(0.45);
     w.run(1.5, { moveZ: 1 });
     expect(w.loco.state.speed).toBeGreaterThan(moon.walk * 0.85);
   });
@@ -116,7 +125,7 @@ describe('the suit in one-sixth g', () => {
     }
   });
 
-  it('stumbles when the stick is hauled round at a full lope', () => {
+  it('stumbles when the stick is hauled round at a full run', () => {
     const w = walker(moon);
     w.run(6, { moveZ: 1, run: true });
     let stumbled = false;

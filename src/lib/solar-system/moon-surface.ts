@@ -696,6 +696,13 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
       b.frame(dt, press, input.use || press);
     }
     const bb = b.telemetry;
+    // Waking on the carpet and climbing back out are shot down the eyes;
+    // everything between them is over the shoulder, like the surface.
+    if (bb.phase !== bt.phase) {
+      const eyes = bb.phase === 'wake' || bb.phase === 'climb' || bb.phase === 'out';
+      if (eyes && view !== 'helmet') setView('helmet');
+      else if (!eyes && view !== 'chase') setView('chase');
+    }
     bt.phase = bb.phase;
     bt.black = brReady ? bb.black : 1;
     bt.helmet = bb.helmet;
