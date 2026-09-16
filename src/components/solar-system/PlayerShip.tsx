@@ -14,7 +14,7 @@ import { CosmicLoader } from './CosmicLoader';
 import { FlightGear, FlightJumpCard } from './FlightDrive';
 
 export type LandingSite = 'moon' | WorldId;
-import { GameStick } from './GameStick';
+import { GameStick, tapKey } from './GameStick';
 import { useLoadingTips } from './useLoadingTips';
 import { useSoundPref } from './useSoundPref';
 
@@ -733,10 +733,10 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, landscape,
           {/* The dock: the stick, the thumb keys, the console bar. */}
           <div className="flight-hud__dock">
             <div className="flight-hud__prompts">
-              <button ref={landRef} type="button" className="flight-hud__prompt flight-hud__land" onClick={land} hidden>
+              <button ref={landRef} type="button" className="flight-hud__prompt flight-hud__land" {...tapKey(land)} hidden>
                 <ArrowDownToLine size={16} aria-hidden /><span ref={landTextRef}>{t('landOn.moon')}</span>
               </button>
-              <button ref={dockRef} type="button" className="flight-hud__prompt flight-hud__dock-key" onClick={() => { session.input.dockRequest = true; }} hidden>
+              <button ref={dockRef} type="button" className="flight-hud__prompt flight-hud__dock-key" {...tapKey(() => { session.input.dockRequest = true; })} hidden>
                 <Anchor size={16} aria-hidden /><span ref={dockTextRef} />
               </button>
             </div>
@@ -768,7 +768,7 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, landscape,
               )}
             </div>
             <div className="flight-hud__console" {...placed('console')}>
-              <button type="button" className="flight-hud__radar" aria-label={t('target')} onClick={() => { session.input.targetStep = 1; }} disabled={keysOff}>
+              <button type="button" className="flight-hud__radar" aria-label={t('target')} {...tapKey(() => { session.input.targetStep = 1; })} disabled={keysOff}>
                 <canvas ref={radarRef} aria-hidden />
               </button>
               <div className="flight-hud__range">

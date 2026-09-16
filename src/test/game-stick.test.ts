@@ -1,7 +1,7 @@
 import { act, createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { GameStick } from '@/components/solar-system/GameStick';
+import { GameStick, tapKey } from '@/components/solar-system/GameStick';
 
 beforeAll(() => {
   vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
@@ -67,5 +67,29 @@ describe('game stick', () => {
     else if (event === 'blur') act(() => { window.dispatchEvent(new Event('blur')); });
     else pointer(stick, event, { pointerId: 1 });
     expect(onMove).toHaveBeenLastCalledWith(0, 0);
+  });
+});
+
+describe('tap keys', () => {
+  it('answer a second finger while the stick is held, once per press, and still take the keyboard', () => {
+    const { stick, onMove } = setup();
+    pointer(stick, 'pointerdown', { pointerId: 1, button: 0, clientX: 62, clientY: 0 });
+    const fn = vi.fn();
+    const holder = document.createElement('div');
+    document.body.append(holder);
+    const keyRoot = createRoot(holder);
+    act(() => keyRoot.render(createElement('button', { type: 'button', ...tapKey(fn) }, 'Run')));
+    const key = holder.firstElementChild as HTMLElement;
+    pointer(key, 'pointerdown', { pointerId: 2, button: 0 });
+    expect(fn).toHaveBeenCalledTimes(1);
+    // The click a mouse would follow up with does not fire it twice.
+    act(() => { key.dispatchEvent(new MouseEvent('click', { bubbles: true, detail: 1 })); });
+    expect(fn).toHaveBeenCalledTimes(1);
+    // Enter or Space on a focused key: a click with no pointer behind it.
+    act(() => { key.dispatchEvent(new MouseEvent('click', { bubbles: true, detail: 0 })); });
+    expect(fn).toHaveBeenCalledTimes(2);
+    // The stick never let go.
+    expect(onMove.mock.calls.at(-1)![1]).toBe(1);
+    act(() => keyRoot.unmount());
   });
 });

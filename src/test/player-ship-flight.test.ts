@@ -285,6 +285,8 @@ describe('gravity and solid bodies', () => {
   it('crashes on contact, holds the wreck, then respawns at home', () => {
     ship.group.position.set(1, 0, EARTH_R * 1.6);
     ship.group.lookAt(world.bodies[1].position);
+    // Into the Sun: a star is never a scrape, whatever the speed.
+    world.bodies[1] = { ...world.bodies[1], kind: 'star' };
     session.input.modeRequest = 'fast';
     session.input.thrust = 1;
     let crashedAt = -1;
@@ -305,6 +307,28 @@ describe('gravity and solid bodies', () => {
     expect(session.telemetry.hp).toBe(100);
     expect(ship.group.visible).toBe(true);
     expect(ship.group.position.distanceTo(world.home.position)).toBeLessThan(1e-4);
+  });
+
+  it('scrapes off a planet at cruise instead of wrecking, and pays for it', () => {
+    ship.group.position.set(1, 0, EARTH_R * 1.4);
+    ship.group.lookAt(world.bodies[1].position);
+    session.input.thrust = 1;
+    session.input.boost = true;
+    let touched = false;
+    for (let i = 0; i < 900; i++) {
+      step(1);
+      expect(session.telemetry.crashed).toBe(false);
+      const d = ship.group.position.distanceTo(world.bodies[1].position);
+      if (d < EARTH_R * 1.06) touched = true;
+      if (touched && session.telemetry.shield < 100) break;
+    }
+    expect(touched).toBe(true);
+    expect(session.telemetry.shield).toBeLessThan(100);
+    expect(ship.group.position.distanceTo(world.bodies[1].position)).toBeGreaterThan(EARTH_R);
+    // Pushed against the surface for seconds on end: no death by a thousand scrapes.
+    seconds(4);
+    expect(session.telemetry.crashed).toBe(false);
+    expect(session.telemetry.hp).toBeGreaterThan(50);
   });
 
   it('cannot tunnel through a small body between frames', () => {

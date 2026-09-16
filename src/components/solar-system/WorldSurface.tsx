@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 import { makeWorldSurface, type WorldSurfaceHandle } from '@/lib/solar-system/world-surface';
 import type { WorldId } from '@/lib/solar-system/world-profiles';
 import { setSoundOn, soundOn } from '@/lib/solar-system/sound-prefs';
-import { GameStick } from './GameStick';
+import { GameStick, tapKey } from './GameStick';
 import { CosmicLoader } from './CosmicLoader';
 import { useLoadingTips } from './useLoadingTips';
 import { useSoundPref } from './useSoundPref';
@@ -409,7 +409,7 @@ export function WorldSurface({ world, onReturn }: WorldSurfaceProps) {
           <Eye size={19} aria-hidden />
         </button>
         <div className="moon-hud__top">
-          <button type="button" className="moon-hud__round" onClick={cycleView} aria-label={t('camera')} title={t('camera')}>
+          <button type="button" className="moon-hud__round" {...tapKey(cycleView)} aria-label={t('camera')} title={t('camera')}>
             <Camera size={19} aria-hidden />
           </button>
           <button type="button" className="moon-hud__round" onClick={() => { setImmersive(true); setMenu(false); }} aria-label={t('hudHide')} title={t('hudHide')}>
@@ -473,10 +473,10 @@ export function WorldSurface({ world, onReturn }: WorldSurfaceProps) {
             if (touchRef.current) h.input.run = runRef.current || Math.hypot(x, y) > 0.93;
           }} />
           <div className="moon-hud__stance-keys">
-            <button type="button" className="moon-hud__key" data-on={run} onClick={toggleRun} aria-pressed={run} title={t('run')}>
+            <button type="button" className="moon-hud__key" data-on={run} {...tapKey(toggleRun)} aria-pressed={run} title={t('run')}>
               <ChevronsUp size={18} aria-hidden /><span>{tw('run')}</span>
             </button>
-            <button type="button" className="moon-hud__key" data-on={crouch} onClick={toggleCrouch} aria-pressed={crouch} title={t('crouch')}>
+            <button type="button" className="moon-hud__key" data-on={crouch} {...tapKey(toggleCrouch)} aria-pressed={crouch} title={t('crouch')}>
               <ChevronsDown size={18} aria-hidden /><span>{t('crouch')}</span>
             </button>
           </div>

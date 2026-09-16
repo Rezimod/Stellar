@@ -104,6 +104,9 @@ const STATION_HP = 6;
 const DOCK_SPEED = 0.45 * U;
 /** Faster than this into a station and it comes apart; slower is a bump. */
 const DOCK_WRECK_SPEED = 1.0 * U;
+/** Into a planet or moon slower than this — anything a cruise pass can do —
+ *  the ship scrapes and bounces off the surface instead of wrecking. */
+const SCRAPE_SPEED = 1.6 * U;
 /** The docking computer takes the con inside this many station radii, and
  *  flies the approach at this pace at most. */
 const DOCK_ASSIST_RADII = 14;
@@ -1075,6 +1078,8 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
   let sinceBoost = 99;
   let odometerKm = 0;
   let crashT = -1;
+  /** Seconds since the hull last scraped a surface: resting against one costs nothing more. */
+  let sinceScrape = 9;
   let alertHold = 0;
   let levelHold = 0;
   let heldAlert: FlightAlert = '';
@@ -1559,6 +1564,7 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
       sinceBoost += dt;
       if (sinceBoost > BOOST_REGEN_DELAY) boostCharge = Math.min(1, boostCharge + BOOST_REGEN * dt);
       sinceHit += dt;
+      sinceScrape += dt;
       if (shield < MAX_SHIELD && sinceHit > SHIELD_REGEN_DELAY) {
         shield = Math.min(MAX_SHIELD, shield + SHIELD_REGEN_PER_SEC * dt);
         tel.shield = shield;
@@ -1919,6 +1925,23 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
               damage(6, false);
               rig.kick(0.4);
               break;
+            }
+            // A glancing or slow contact: off the surface with the inward speed
+            // taken out and a little bounce, paid for in shield and hull.
+            const into = -vel.dot(tmp2);
+            if ((b.kind === 'planet' || b.kind === 'moon') && into < SCRAPE_SPEED) {
+              autodock = null;
+              me.position.copy(b.position).addScaledVector(tmp2, b.radius + hr + 0.3 * H);
+              if (into > 0) vel.addScaledVector(tmp2, into * 1.3);
+              vel.multiplyScalar(0.8);
+              if (sinceScrape > 0.6 && into > 0.05 * U) {
+                damage(8 + (into / U) * 25, false);
+                rig.kick(0.6);
+              }
+              sinceScrape = 0;
+              setAlert('proximity', 1.5);
+              if (crashT >= 0) break;
+              continue;
             }
             if (b.kind === 'station') destroyStation(b, prevPos);
             autodock = null;

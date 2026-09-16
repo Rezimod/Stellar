@@ -82,3 +82,17 @@ export function GameStick({ label, onMove, rotated = false }: GameStickProps) {
     </div>
   );
 }
+
+/** A key that answers the moment a finger lands, even with another thumb
+ *  already on the stick — touch browsers send no click while one is held.
+ *  Keyboard activation (a click with no pointer) still works. */
+export function tapKey(fn: () => void) {
+  return {
+    onPointerDown: (e: React.PointerEvent<HTMLElement>) => {
+      if (e.button !== 0) return;
+      e.preventDefault();
+      fn();
+    },
+    onClick: (e: React.MouseEvent<HTMLElement>) => { if (e.detail === 0) fn(); },
+  };
+}

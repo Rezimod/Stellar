@@ -5,6 +5,7 @@ import { ChevronRight, Gauge, Orbit } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import type { FlightSession, SpeedMode } from '@/lib/solar-system/player-ship';
 import { STAR_SYSTEMS, lightYearsBetween } from '@/lib/solar-system/star-routes';
+import { tapKey } from './GameStick';
 
 interface DriveProps {
   session: FlightSession;
@@ -65,7 +66,7 @@ export function FlightGear({ session, paused, touch }: DriveProps) {
   };
 
   return (
-    <button ref={gearRef} type="button" className="flight-drive__gear" data-mode="cruise" onClick={cycle} disabled={paused} aria-label={t('speedMode')}>
+    <button ref={gearRef} type="button" className="flight-drive__gear" data-mode="cruise" {...tapKey(cycle)} disabled={paused} aria-label={t('speedMode')}>
       <Gauge size={17} aria-hidden />
       <span ref={modeRef} className="flight-drive__mode" />
       <span className="flight-drive__pips" aria-hidden><i /><i /><i /></span>
