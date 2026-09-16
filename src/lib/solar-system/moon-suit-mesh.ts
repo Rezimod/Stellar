@@ -39,6 +39,8 @@ export interface SuitRig {
   pack: THREE.Group;
   neck: THREE.Group;
   helmet: THREE.Group;
+  /** The gold visor and the dark one behind it, hinged at the brow: rotation.x < 0 lifts them. */
+  visor: THREE.Group;
   sides: number[];
   shoulders: THREE.Group[];
   elbows: THREE.Group[];
@@ -290,6 +292,9 @@ export function buildSuit(lite: boolean, bareHead = false): SuitRig {
   ring(neck, 0.158, 0.032, bearing, 0.02);
   const helmet = new THREE.Group();
   neck.add(helmet);
+  const visorG = new THREE.Group();
+  visorG.position.y = HELMET_C;
+  helmet.add(visorG);
   if (bareHead) {
     pack.visible = false;
     const skin = std({ color: 0xc89a7c, roughness: 0.62, metalness: 0 });
@@ -306,8 +311,8 @@ export function buildSuit(lite: boolean, bareHead = false): SuitRig {
   if (!bareHead) {
     mesh(helmet, new THREE.SphereGeometry(0.185, seg + 6, seg), bubble, 0, HC, 0);
     // SphereGeometry's phi runs from −X; π/2 is straight ahead (+Z).
-    mesh(helmet, new THREE.SphereGeometry(0.196, seg + 8, seg + 2, Math.PI / 2 - 1.0, 2.0, 0.44, 1.46), inner, 0, HC, 0);
-    mesh(helmet, new THREE.SphereGeometry(0.205, seg + 8, seg + 2, Math.PI / 2 - 1.02, 2.04, 0.5, 1.36), visor, 0, HC, 0.004);
+    mesh(visorG, new THREE.SphereGeometry(0.196, seg + 8, seg + 2, Math.PI / 2 - 1.0, 2.0, 0.44, 1.46), inner, 0, 0, 0);
+    mesh(visorG, new THREE.SphereGeometry(0.205, seg + 8, seg + 2, Math.PI / 2 - 1.02, 2.04, 0.5, 1.36), visor, 0, 0, 0.004);
     const shell = mesh(helmet, new THREE.SphereGeometry(0.218, seg + 8, seg + 2, Math.PI / 2 + 1.0, Math.PI * 2 - 2.0, 0, Math.PI * 0.78), hard, 0, HC, -0.006);
     shell.scale.set(1, 1.02, 1.04);
     const brow = mesh(helmet, new THREE.TorusGeometry(0.214, 0.016, 8, seg + 8, 2.1), hard, 0, HC + 0.02, 0.01);
@@ -419,7 +424,7 @@ export function buildSuit(lite: boolean, bareHead = false): SuitRig {
   }
 
   return {
-    group, body, pelvis, chest, pack, neck, helmet, sides, shoulders, elbows, hands, hips, knees, ankles, geometries,
+    group, body, pelvis, chest, pack, neck, helmet, visor: visorG, sides, shoulders, elbows, hands, hips, knees, ankles, geometries,
     dispose() {
       for (const g of geometries) g.dispose();
       for (const mt of materials) mt.dispose();
