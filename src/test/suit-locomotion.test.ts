@@ -1,9 +1,8 @@
-// The cosmonaut's movement, held to what it claims: ordinary walking and
-// running speeds on any world, ballistics under the body's own footing (the
-// world's gravity, floored at Mars, so a jump still hangs but the steering
-// does not), traction-limited starts, stops and turns, boots that stay where
-// they are planted, and the same controller in Earth gravity for the
-// Backrooms.
+// The cosmonaut's movement, held to what it claims: a game character's
+// walk, run, turn and stop on any world — answered within a stride — with
+// ballistics under the body's own footing (the world's gravity, floored at
+// Mars, so a jump still hangs), boots that stay where they are planted, and
+// the same controller in Earth gravity for the Backrooms.
 
 import * as THREE from 'three';
 import { describe, expect, it, vi } from 'vitest';
@@ -56,9 +55,9 @@ describe('the suit in one-sixth g', () => {
   });
 
   it('walks and runs at ordinary speeds, a foot at a time', () => {
-    // The pendulum still caps the walk, but at the body's footing, so it is
-    // an ordinary 1.4 m/s rather than the 0.85 one-sixth g would allow.
-    expect(moon.walkLimit).toBeCloseTo(Math.sqrt(0.5 * moon.bodyG * 0.9), 5);
+    // The walk is an ordinary 1.4 m/s, and it is a walk: the limit sits
+    // above it, not at the 0.85 the pendulum in one-sixth g would allow.
+    expect(moon.walkLimit).toBeGreaterThan(moon.walk);
     expect(moon.walk).toBeCloseTo(1.4, 2);
     expect(moon.run).toBeGreaterThan(3);
     expect(moon.skip).toBe(false);
@@ -70,43 +69,52 @@ describe('the suit in one-sixth g', () => {
     expect(w.loco.state.speed).toBeGreaterThan(3);
   });
 
-  it('still has to get going: traction, not a speed switch', () => {
+  it('answers the stick within a stride, and is walking in a third of a second', () => {
     const w = walker(moon);
-    w.run(0.1, { moveZ: 1 });
-    expect(w.loco.state.speed).toBeLessThan(0.45);
-    w.run(1.5, { moveZ: 1 });
-    expect(w.loco.state.speed).toBeGreaterThan(moon.walk * 0.85);
+    w.run(0.05, { moveZ: 1 });
+    expect(w.loco.state.speed).toBeGreaterThan(0.15);
+    w.run(0.45, { moveZ: 1 });
+    expect(w.loco.state.speed).toBeGreaterThan(moon.walk * 0.9);
+    expect(w.loco.state.gait).toBe('walk');
   });
 
-  it('takes real distance to stop from a lope, and never stops in the air', () => {
+  it('stops in a plant, not a wall, and never in the air', () => {
     const w = walker(moon);
-    w.run(6, { moveZ: 1, run: true });
+    w.run(4, { moveZ: 1, run: true });
     const z0 = w.position.z;
     let t = 0;
-    while ((w.loco.state.speed > 0.02 || w.loco.state.airborne) && t < 10) { w.run(DT); t += DT; }
-    expect(w.position.z - z0).toBeGreaterThan(1.2);
-    expect(t).toBeGreaterThan(1);
+    while ((w.loco.state.speed > 0.05 || w.loco.state.airborne) && t < 10) { w.run(DT); t += DT; }
+    expect(w.position.z - z0).toBeGreaterThan(0.3);
+    expect(w.position.z - z0).toBeLessThan(1.2);
+    expect(t).toBeLessThan(1);
   });
 
-  it('does not turn on the spot above walking speed', () => {
+  it('turns hard at a run, and comes right round in well under half a second', () => {
     const w = walker(moon);
-    w.run(6, { moveZ: 1, run: true });
+    w.run(4, { moveZ: 1, run: true });
     const before = Math.atan2(w.velocity.x, w.velocity.z);
     w.run(0.25, { moveX: 1, run: true });
     const after = Math.atan2(w.velocity.x, w.velocity.z);
-    expect(Math.abs(after - before)).toBeLessThan(0.5);
-    // The facing follows at a rate the suit allows.
+    expect(Math.abs(after - before)).toBeGreaterThan(0.5);
+    // The facing follows at a rate the profile allows, and no faster.
     const yaw0 = w.loco.yaw;
     w.run(0.25, { moveX: 1, run: true });
     expect(Math.abs(w.loco.yaw - yaw0)).toBeLessThanOrEqual(moon.turnStill * 0.25 + 1e-6);
+    // A full reversal is a turn, not a fall.
+    w.run(4, { moveZ: 1, run: true });
+    let t = 0; let stumbled = false;
+    while (Math.abs(Math.atan2(w.velocity.x, w.velocity.z)) < Math.PI - 0.3 && t < 4) {
+      w.run(DT, { moveZ: -1, run: true }); stumbled ||= w.loco.state.stumble > 0 || w.loco.state.fallen; t += DT;
+    }
+    expect(t).toBeLessThan(0.5);
+    expect(stumbled).toBe(false);
   });
 
-  it('turns standing still a step at a time', () => {
+  it('turns standing still in one quick step', () => {
     const w = walker(moon);
     let t = 0;
     while (Math.abs(Math.abs(w.loco.yaw) - Math.PI) > 0.1 && t < 6) { w.run(DT, { moveZ: -0.3 }); t += DT; }
-    expect(t).toBeGreaterThan(1);
-    expect(t).toBeLessThan(3);
+    expect(t).toBeLessThan(0.8);
   });
 
   it('keeps a planted boot exactly where it was put', () => {
@@ -123,14 +131,6 @@ describe('the suit in one-sixth g', () => {
       expect(planted).toBeGreaterThan(100);
       expect(worst).toBeLessThan(1e-6);
     }
-  });
-
-  it('stumbles when the stick is hauled round at a full run', () => {
-    const w = walker(moon);
-    w.run(6, { moveZ: 1, run: true });
-    let stumbled = false;
-    w.run(2, { moveZ: -1, run: true }, () => { stumbled ||= w.loco.state.stumble > 0 || w.loco.state.fallen; });
-    expect(stumbled).toBe(true);
   });
 
   it('slides past about thirty degrees and holds below it', () => {

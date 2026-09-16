@@ -13,14 +13,14 @@
 // is a fall. The feet are placed, not animated: a planted foot does not move
 // until it is lifted, and the next one lands where the body will be.
 //
-// One deliberate departure from all of that, because a sixth of a g is a
-// beautiful thing to watch and a miserable thing to steer. The legs are
-// worked at Earth's footing everywhere — a step is a step and a run is a run,
-// not the long two-footed skip the pendulum would otherwise force — and the
-// body is given Mars underfoot on any world lighter than that, so starting,
-// stopping and turning are brisk. What the crew throws into the air is the
-// one thing still answering to the lighter gravity, which is exactly where
-// the low-gravity feel belongs: the walking is ordinary and the jump hangs.
+// Two deliberate departures from all of that, because a sixth of a g is a
+// beautiful thing to watch and a miserable thing to steer. The body is given
+// Mars underfoot on any world lighter than that, and the boots are given the
+// grip and the legs the push of a game character rather than a pressure
+// garment: the stick is answered in a stride, a turn is a step, a stop is a
+// plant. What the crew throws into the air is the one thing still answering
+// to the lighter gravity, which is exactly where the low-gravity feel
+// belongs: the running is a run, and the jump hangs.
 
 export interface Collider { x: number; z: number; r: number }
 
@@ -60,6 +60,8 @@ export interface GaitProfile {
   muscle: number;
   /** The furthest a person leans on purpose, rad; past it they stumble. */
   leanMax: number;
+  /** How hard a stop is allowed to be, m/s²: a plant, not a wall. */
+  brake: number;
   /** A standing hop's take-off speed, and what a full run adds, m/s. */
   hop: number;
   runHop: number;
@@ -105,7 +107,9 @@ export function gaitProfile(g: number, suited = true): GaitProfile {
   const bodyG = Math.max(g, MARS_G);
   const k = clamp((bodyG - LUNAR_G) / (EARTH_G - LUNAR_G), 0, 1.2);
   const leg = 0.9;
-  const walkLimit = Math.sqrt(0.5 * bodyG * leg);
+  // The pendulum's own limit, or a game walk's — whichever is higher, so an
+  // ordinary 1.4 m/s walk is a walk and not the bottom of a run.
+  const walkLimit = Math.max(Math.sqrt(0.5 * bodyG * leg), 1.6);
   // Take-off speed. Not the suit's own push — a stiff pressure garment gives
   // a few centimetres of travel and next to nothing with it — but the push
   // the crew is given, chosen so a jump clears most of a metre on a light
@@ -116,29 +120,33 @@ export function gaitProfile(g: number, suited = true): GaitProfile {
     walk: clamp(walkLimit * 1.4, 1.2, 1.4),
     run: clamp(1.7 * Math.sqrt(bodyG * leg), 2.2, suited ? 3.2 : 3.8),
     crouch: suited ? 0.55 : 0.8,
-    grip: suited ? 0.5 : 0.8,
+    // Grip and push are a game character's, not a pressure suit's: the
+    // stick is answered within a stride.
+    grip: 1.15,
     walkLoad: 1.6,
     boundLoad: 3.6,
-    muscle: suited ? 4.5 : 7,
-    // How far the crew leans on purpose. Just inside what the boots can
-    // actually hold, so hauling the stick round at a full run still trips
-    // them — the whole point of the lean limit.
-    leanMax: suited ? 0.86 : 1.0,
+    muscle: 13,
+    // Far enough that no amount of steering trips the crew; only a hard
+    // landing does.
+    leanMax: 1.3,
+    brake: 8,
     hop,
     runHop: suited ? 0.4 : 0.5,
-    flightBase: lerp(0.28, 0.02, Math.min(1, k)),
-    flightPerSpeed: lerp(0.2, 0.045, Math.min(1, k)),
-    stance: lerp(0.26, 0.2, Math.min(1, k)),
+    // Short flights between strides: a run, not a lope.
+    flightBase: lerp(0.09, 0.02, Math.min(1, k)),
+    flightPerSpeed: lerp(0.06, 0.045, Math.min(1, k)),
+    stance: lerp(0.24, 0.2, Math.min(1, k)),
     // Both boots together is the true one-sixth-g skip; with the body's
     // footing floored at Mars nothing reaches it any more, and the crew runs.
     skip: k < 0.2,
-    turnStill: suited ? lerp(2.0, 4, Math.min(1, k)) : 8,
-    turnRun: suited ? lerp(1.6, 2.5, Math.min(1, k)) : 4.5,
-    turnChunk: suited ? 0.9 : Math.PI,
-    turnStep: suited ? 0.42 : 0.22,
+    // A turn is a step, taken at once.
+    turnStill: 9,
+    turnRun: 6,
+    turnChunk: Math.PI,
+    turnStep: 0.22,
     kneeMax: suited ? 1.25 : 2.1,
     reach: suited ? 0.78 : 1.0,
-    air: suited ? lerp(0.15, 0.5, Math.min(1, k)) : 0.6,
+    air: 1.6,
     hardLand: Math.sqrt(2 * bodyG * (suited ? 1.8 : 1.0)),
     stumbleLand: Math.sqrt(2 * bodyG * (suited ? 3.2 : 1.8)),
     getUp: suited ? 1.6 : 0.9,
@@ -217,7 +225,9 @@ const HIP_W = 0.13;
 const COYOTE = 0.12;
 const JUMP_BUFFER = 0.2;
 /** How quickly the body tries to close the gap to the wanted velocity, s. */
-const TAU = 0.15;
+const TAU = 0.09;
+/** What boots standing still on regolith can hold against a slope. */
+const SLIP_GRIP = 0.55;
 
 const wrap = (a: number) => { while (a > Math.PI) a -= Math.PI * 2; while (a < -Math.PI) a += Math.PI * 2; return a; };
 const smooth = (t: number) => { const c = clamp(t, 0, 1); return c * c * (3 - 2 * c); };
@@ -320,14 +330,15 @@ export function makeLocomotion(position: Vec3, velocity: Vec3, initial: GaitProf
         const grip = Math.min(P.muscle, P.grip * load * g * norm);
         const reversing = want > 0.3 && tx * velocity.x + tz * velocity.z < -0.2 * speed0 * top;
         const voluntary = Math.min(grip, g * Math.tan(P.leanMax));
-        const cap = reversing ? grip : voluntary;
+        const stopping = want < 0.05;
+        const cap = reversing ? grip : stopping ? Math.min(voluntary, P.brake) : voluntary;
         let cx = (tx - velocity.x) / TAU - gax;
         let cz = (tz - velocity.z) / TAU - gaz;
         const want2 = Math.hypot(cx, cz);
         // Starting off, the suit has to come round to the push first.
         if (speed0 < 0.5 && want > 0.05) {
           const err = Math.abs(wrap(Math.atan2(wantX, wantZ) - loco.yaw));
-          const k = Math.max(P.suited ? 0.25 : 0.6, Math.cos(Math.min(err, Math.PI / 2)));
+          const k = Math.max(0.75, Math.cos(Math.min(err, Math.PI / 2)));
           cx *= k; cz *= k;
         }
         // Along the motion the lean limits it; across it, the boot edges do.
@@ -345,7 +356,7 @@ export function makeLocomotion(position: Vec3, velocity: Vec3, initial: GaitProf
         velocity.x += (cx + gax) * dt;
         velocity.z += (cz + gaz) * dt;
         // Standing still is a job too: past thirty degrees friction loses.
-        state.sliding = Math.hypot(gax, gaz) > P.grip * g * norm;
+        state.sliding = Math.hypot(gax, gaz) > SLIP_GRIP * g * norm;
         const fx = Math.sin(loco.yaw); const fz = Math.cos(loco.yaw);
         const along = (cx * fx + cz * fz);
         leanWant = Math.atan2(along, g);
@@ -483,7 +494,7 @@ export function makeLocomotion(position: Vec3, velocity: Vec3, initial: GaitProf
           turnT = 0;
           const d = wrap(Math.atan2(velocity.x, velocity.z) - loco.yaw);
           const cap = lerp(P.turnStill, P.turnRun, Math.min(1, speed / P.run)) * (airborne ? 0.3 : 1) * dt;
-          loco.yaw = wrap(loco.yaw + clamp(d * (1 - Math.exp(-dt * 8)), -cap, cap));
+          loco.yaw = wrap(loco.yaw + clamp(d * (1 - Math.exp(-dt * 14)), -cap, cap));
         } else if (turnT > 0) {
           turnT = Math.max(0, turnT - dt);
           const k = smooth(1 - turnT / P.turnStep);

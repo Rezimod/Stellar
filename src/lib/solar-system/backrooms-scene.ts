@@ -125,6 +125,13 @@ export function makeBackrooms(deps: BackroomsDeps): BackroomsHandle {
   const kit = makeChunkKit(maze);
   const root = new THREE.Group();
   scene.add(root);
+  // The walls carry their own light in their shader; the crew does not, and
+  // stood pitch black in the middle of a lit office. A fluorescent sky over
+  // carpet, and a tube that keeps station over the crew's head.
+  const fill = new THREE.HemisphereLight(0xfff2c2, 0x6a5c33, 0.9);
+  scene.add(fill);
+  const crewLamp = new THREE.PointLight(0xfff0c4, 5.5, 11, 1.7);
+  scene.add(crewLamp);
   const doors: ChunkBuild['door'][] = [];
   const win = makeChunkWindow<ChunkBuild>(2, 3, (cx, cz) => {
     const c = kit.build(cx, cz);
@@ -501,15 +508,17 @@ export function makeBackrooms(deps: BackroomsDeps): BackroomsHandle {
       }
       if (telemetry.phase !== 'climb') telemetry.gravity = cosmonaut.state.gravity;
 
+      crewLamp.position.set(cosmonaut.position.x, CEILING - 0.12, cosmonaut.position.z);
+
       // ── The camera. ──
       if (telemetry.phase === 'explore' || telemetry.phase === 'stairs' || telemetry.phase === 'door') {
         // Over the shoulder down here, not behind the eyes: the thing at the
         // end of the corridor is worth having something between you and it.
         cam.chase(dt, {
           position: cosmonaut.position, velocity: cosmonaut.velocity, yaw: cosmonaut.yaw,
-          height: 1.34, distance: Math.min(cam.distance, 2.2),
+          height: 1.42, distance: Math.min(cam.distance, 2.1),
           speedFrac: Math.min(1, cosmonaut.state.speed / cosmonaut.profile.run),
-        }, { follow: 2.4, lead: 0.22, leadMax: 0.5, fovKick: 3, horizontal: 10, vertical: 5, blocked: walled });
+        }, { follow: 2.4, lead: 0.22, leadMax: 0.5, fovKick: 3, horizontal: 10, vertical: 5, blocked: walled, shoulder: 0.38 });
       } else if (telemetry.phase === 'climb' || telemetry.phase === 'out') {
         const k = smooth(climbT / CLIMB);
         cosmonaut.eye(eye);

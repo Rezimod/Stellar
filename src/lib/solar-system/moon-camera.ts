@@ -43,6 +43,9 @@ export interface ChaseTuning {
    *  of round footprints. Given it, the ground and the colliders are not
    *  consulted at all: this is the whole answer. */
   blocked?: ((x: number, y: number, z: number) => boolean) | null;
+  /** Look past the crew's shoulder rather than through their pack: the
+   *  focus sits this far to the camera's right, m. */
+  shoulder?: number;
 }
 
 export interface CameraRig {
@@ -163,6 +166,7 @@ export function makeCameraRig(
       const leadX = THREE.MathUtils.clamp(vx * tune.lead, -tune.leadMax, tune.leadMax);
       const leadZ = THREE.MathUtils.clamp(vz * tune.lead, -tune.leadMax, tune.leadMax);
       goal.set(target.position.x + leadX, target.position.y + target.height, target.position.z + leadZ);
+      if (tune.shoulder) { goal.x += Math.cos(rig.yaw) * tune.shoulder; goal.z -= Math.sin(rig.yaw) * tune.shoulder; }
       if (snapNext) {
         focus.copy(goal);
         focusVel.set(0, 0, 0);
@@ -187,13 +191,17 @@ export function makeCameraRig(
       // Somewhere built of walls, the camera comes all the way in rather than
       // stopping at a comfortable distance inside one: a corridor is narrower
       // than any distance that would look good in the open.
-      const closest = tune.blocked ? 0.34 : 1.2;
+      const closest = tune.blocked ? 0.55 : 1.2;
       const hitDist = Math.max(closest, desired * clear - (clear < 1 ? 0.3 : 0));
       // In at once, out gently.
       if (snapNext || hitDist < actualDist) actualDist = hitDist;
       else actualDist += (hitDist - actualDist) * (1 - Math.exp(-dt * 3));
       snapNext = false;
       camera.position.lerpVectors(focus, want, actualDist / desired);
+      // Pulled right in, the camera climbs and looks over the helmet rather
+      // than filling the frame with the pack.
+      const tuck = tune.blocked ? THREE.MathUtils.clamp(1 - actualDist / 1.4, 0, 1) : 0;
+      camera.position.y += tuck * 0.42;
       const floor = floorAt(camera.position.x, camera.position.z) + 0.45;
       if (camera.position.y < floor) camera.position.y = floor;
       if (shakeAmp > 0.002) {
@@ -204,7 +212,7 @@ export function makeCameraRig(
       }
       camera.position.y += bob * 0.5;
       look.copy(focus);
-      look.y += bob * 0.2;
+      look.y += bob * 0.2 + tuck * 0.22;
       camera.lookAt(look);
       fov += (baseFov + tune.fovKick * target.speedFrac - fov) * (1 - Math.exp(-dt * 2.5));
       if (Math.abs(camera.fov - fov) > 0.01) { camera.fov = fov; camera.updateProjectionMatrix(); }
