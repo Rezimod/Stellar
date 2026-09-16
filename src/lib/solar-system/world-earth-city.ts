@@ -143,6 +143,32 @@ function facadeMaterial(): { material: THREE.MeshStandardMaterial; night: { valu
           diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * 0.12 + vec3(0.012, 0.016, 0.02), eWin);
           roughnessFactor = mix(roughnessFactor, 0.06, eWin);
           metalnessFactor = mix(metalnessFactor, 0.35, eWin);
+          float upper = step(1.0, cell.y);
+          if (eStyle > 0.5 && eStyle < 1.5) {
+            // Soviet blocks: each flat glazed or boxed in its loggia its own way, a slab under every storey.
+            float loggia = upper * step(fh(id + 5.3), 0.5);
+            float panel = loggia * step(0.08, f.x) * step(f.x, 0.92) * step(0.05, f.y) * step(f.y, 0.36);
+            vec3 tint = mix(vec3(0.82, 0.8, 0.74), mix(vec3(0.55, 0.62, 0.66), vec3(0.72, 0.58, 0.46), step(0.5, fh(id + 8.7))), step(0.4, fh(id + 2.2)));
+            diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * tint * 1.1, panel);
+            diffuseColor.rgb *= 1.0 - 0.45 * upper * (1.0 - step(0.045, f.y));
+            diffuseColor.rgb *= 1.0 - 0.25 * loggia * (step(f.x, 0.08) + step(0.92, f.x)) * step(f.y, 0.86);
+          } else if (eStyle > 1.5 && eStyle < 2.5) {
+            // Old Tbilisi: carved wooden balconies on some storeys, balusters and a rail.
+            float balcony = upper * step(fh(vec3(floor(cell.y), vStyle.y * 97.0, 4.0)), 0.45);
+            float band = balcony * step(0.02, f.y) * step(f.y, 0.3);
+            float baluster = step(0.5, fract(vFacade.x * 3.3));
+            vec3 wood = vec3(0.36, 0.24, 0.16) * mix(0.7, 1.0, baluster * step(0.06, f.y) * step(f.y, 0.26));
+            diffuseColor.rgb = mix(diffuseColor.rgb, wood, band);
+            eWin *= 1.0 - band;
+          } else if (eStyle > 2.5) {
+            // Mullions: thin frames between panes.
+            diffuseColor.rgb *= 1.0 - 0.3 * (1.0 - step(0.03, f.y));
+          }
+          // Ground floors: shopfronts.
+          float shop = (1.0 - upper) * step(fh(id + 1.7), 0.55) * step(eStyle, 2.5) * step(0.08, f.x) * step(f.x, 0.92) * step(0.08, f.y) * step(f.y, 0.78);
+          diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.02, 0.025, 0.03), shop);
+          roughnessFactor = mix(roughnessFactor, 0.08, shop);
+          eLit = max(eLit, shop * step(0.2, uNight));
         }
         if (eStyle > 3.5) roughnessFactor = 0.92;`)
       .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
@@ -224,6 +250,25 @@ export function makeCity(
       else batch.idx.push(start + a, start + c, start + b);
     }
   };
+  /** A flat roof's parapet: a band stood a little proud of the wall, a shade darker. */
+  const addCornice = (batch: Batch, p: Prepared, ring: Pt[]) => {
+    const ccw = ringArea(ring) > 0;
+    const band = tmp.copy(p.wall).multiplyScalar(0.78);
+    for (let k = 0; k < ring.length; k++) {
+      const [ax, az] = ring[k]; const [bx, bz] = ring[(k + 1) % ring.length];
+      const len = Math.hypot(bx - ax, bz - az);
+      if (len < 0.5) continue;
+      let nx = (bz - az) / len; let nz = -(bx - ax) / len;
+      if (!ccw) { nx = -nx; nz = -nz; }
+      const o = 0.22; const y0 = p.top - 0.55; const y1 = p.top + 0.6;
+      const a0 = batch.vert(ax + nx * o, y0, az + nz * o, nx, 0, nz, band, 0, -1, 0, p.seed);
+      const b0 = batch.vert(bx + nx * o, y0, bz + nz * o, nx, 0, nz, band, 0, -1, 0, p.seed);
+      const a1 = batch.vert(ax + nx * o, y1, az + nz * o, nx, 0, nz, band, 0, -1, 0, p.seed);
+      const b1 = batch.vert(bx + nx * o, y1, bz + nz * o, nx, 0, nz, band, 0, -1, 0, p.seed);
+      if (-nx * (bz - az) + nz * (bx - ax) > 0) batch.idx.push(a0, b0, a1, b0, b1, a1);
+      else batch.idx.push(a0, a1, b0, b0, a1, b1);
+    }
+  };
   /** A hip: a ridge along the long axis, every eave corner to its nearer ridge end. Convex, few-sided footprints only. */
   const addHipRoof = (batch: Batch, p: Prepared, outer: Pt[]) => {
     let lx = 1; let lz = 0; let best = 0;
@@ -294,7 +339,10 @@ export function makeCity(
       if (!coarse) for (const h of p.holes) addWalls(batch, p, h, true);
       const pitched = p.b.roof === ROOF.gabled || p.b.roof === ROOF.hipped || p.b.roof === ROOF.pyramidal;
       if (!coarse && pitched && outer.length <= 8 && !p.holes.length && convex(outer) && p.area < 900) addHipRoof(batch, p, outer);
-      else addFlatRoof(batch, p, outer, coarse ? [] : p.holes);
+      else {
+        addFlatRoof(batch, p, outer, coarse ? [] : p.holes);
+        if (!coarse && p.top - p.base > 5) addCornice(batch, p, outer);
+      }
     }
     const g = batch.geometry();
     if (g) geometries.push(g);

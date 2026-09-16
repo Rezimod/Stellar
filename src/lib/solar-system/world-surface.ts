@@ -35,6 +35,7 @@ import { EARTH_DESCENT, EARTH_WALK_RADIUS, makeEarthWorld, type EarthState } fro
 import { makeEarthEntry } from '@/lib/solar-system/world-earth-entry';
 import { haze } from '@/lib/solar-system/world-earth-haze';
 import { makeFlightAudio } from '@/lib/solar-system/flight-audio';
+import { EARTH_CHASE, earthGait } from '@/lib/solar-system/world-earth-gait';
 
 export type WorldView = 'chase' | 'helmet' | 'wide';
 const VIEWS: WorldView[] = ['chase', 'helmet', 'wide'];
@@ -63,14 +64,18 @@ export interface WorldOptions {
 
 export interface WorldTelemetry {
   ready: boolean;
-  phase: 'descent' | 'touchdown' | 'surface';
+  phase: 'descent' | 'touchdown' | 'surface' | 'ascent';
+  /** The lander has climbed out of sight: the scene is done and orbit can take over. */
+  ascended: boolean;
   landing: LanderTelemetry;
   grade: string;
   view: WorldView;
   poiId: string;
   altitude: number;
   speed: number;
-  hint: 'walk' | 'jump' | '';
+  hint: 'walk' | 'jump' | 'drive' | '';
+  /** At the wheel of the car (Earth). */
+  driving: boolean;
   o2: number;
   heartRate: number;
   suitTemp: number;
@@ -233,6 +238,8 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
   // Earth's air: no pressure suit, so an ordinary gait, and no helmet.
   const cosmonaut = makeCosmonaut(dust, lite, profile.gravity, !profile.breathable, !!profile.breathable);
   cosmonaut.onStep = (e) => { prints.stamp(e.x, e.y, e.z, e.yaw, e.side); audio.step(e.hard); cam.footfall(e.hard); };
+  // On Earth, a game character's run: jog on the stick, sprint on Shift.
+  if (earth) cosmonaut.setProfile(earthGait());
   scene.add(cosmonaut.group);
   const padX = profile.pad.x; const padZ = profile.pad.z + 26;
   const lander = makeLander(padX, padZ, heightAt, dust, lite, lightPool, profile.gravity, earth ? EARTH_DESCENT : undefined);
@@ -253,15 +260,15 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
   const cameraColliders = () => (aliens ? colliders.concat(aliens.colliders)
     : earth ? colliders.concat(earth.cameraColliders(cosmonaut.position.x, cosmonaut.position.z)) : colliders);
   const cam = makeCameraRig(camera, floorAt, cameraColliders, baseFov);
-  cam.distance = isMobile ? 5.6 : 5.2;
+  cam.distance = earth ? EARTH_CHASE.distance : isMobile ? 5.6 : 5.2;
 
   const input: WorldInput = {
     moveX: 0, moveY: 0, jump: false, run: false, crouch: false, orbitDX: 0, orbitDY: 0, zoom: 0,
     interact: false, use: false, viewToggle: false, throttle: 0,
   };
   const telemetry: WorldTelemetry = {
-    ready: false, phase: 'descent', landing: lander.telemetry, grade: '', view: 'chase', poiId: '',
-    altitude: 0, speed: 0, hint: 'walk', o2: 97.4, heartRate: 64, suitTemp: 21.5, outsideC: profile.ambientC,
+    ready: false, phase: 'descent', ascended: false, landing: lander.telemetry, grade: '', view: 'chase', poiId: '',
+    altitude: 0, speed: 0, hint: 'walk', driving: false, o2: 97.4, heartRate: 64, suitTemp: 21.5, outsideC: profile.ambientC,
     evaSeconds: 0, distanceM: 0, crouched: false, stumbling: false, sliding: false, heading: 0,
     prompt: interactions.prompt, readout: '', readoutHold: 0, banner: '', bannerHold: 0,
     aliens: aliens ? aliens.telemetry : null,
@@ -283,6 +290,32 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
     cam.snap();
   };
 
+  /** The lander is down: somewhere to walk round, and the way home. */
+  let landerSettled = false;
+  function settleLander() {
+    if (landerSettled) return;
+    landerSettled = true;
+    pois.push({ id: 'ourLander', x: lander.position.x, z: lander.position.z, r: 8 });
+    colliders.push({ x: lander.position.x, z: lander.position.z, r: 3.4 });
+    // The people in the park come over to see who has landed.
+    earth?.welcome(lander.position.x, lander.position.z, lander.telemetry.egressX, lander.telemetry.egressZ);
+    interactions.add({
+      id: 'boardLander', priority: 4,
+      where: () => (telemetry.phase === 'surface' && !earth?.driving() ? { x: lander.position.x, z: lander.position.z, r: 5.2 } : null),
+      kind: () => 'tap', label: () => 'boardLander',
+      use: () => {
+        telemetry.phase = 'ascent';
+        telemetry.banner = ''; telemetry.bannerHold = 0;
+        cosmonaut.group.visible = false;
+        lander.launch();
+        audio.thump(12);
+        cam.shake(0.5);
+        ascentFrom.copy(camera.position);
+      },
+    });
+  }
+  const ascentFrom = new THREE.Vector3();
+
   let t = 0;
   let acc = 0;
   let jumped = false;
@@ -298,7 +331,25 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
   const descentFocus = new THREE.Vector3();
   const descentPos = new THREE.Vector3();
   const wrap = (a: number) => { while (a > Math.PI) a -= Math.PI * 2; while (a < -Math.PI) a += Math.PI * 2; return a; };
-  const walkColliders = () => (earth ? colliders : cameraColliders());
+  const walkColliders = () => (earth ? colliders.concat(earth.walkers(cosmonaut.position.x, cosmonaut.position.z)) : cameraColliders());
+  const carVel = new THREE.Vector3();
+  let welcomed = false;
+  if (earth) {
+    earth.onEvent = (kind) => {
+      if (kind === 'enterCar') {
+        cosmonaut.group.visible = false;
+        cosmonaut.velocity.set(0, 0, 0);
+        audio.bleep();
+      } else if (kind === 'exitCar') {
+        earth.car.door(tmp);
+        place(tmp.x, floorAt(tmp.x, tmp.z), tmp.z);
+        cosmonaut.yaw = earth.car.yaw;
+        cosmonaut.settle();
+        cosmonaut.group.visible = true;
+        audio.bleep();
+      }
+    };
+  }
   const stepFrom = new THREE.Vector3();
   const place = (x: number, y: number, z: number) => {
     cosmonaut.position.set(x, y, z);
@@ -308,6 +359,11 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
 
   const simStep = (h: number, firstStep: boolean) => {
     if (earth?.carried()) return;
+    if (earth?.driving()) {
+      earth.drive(h, { throttle: input.moveY, steer: input.moveX, handbrake: input.jump }, colliders);
+      cosmonaut.position.copy(earth.car.position);
+      return;
+    }
     const fx = -Math.sin(cam.yaw); const fz = -Math.cos(cam.yaw);
     const rx = -fz; const rz = fx;
     walk.moveX = fx * input.moveY + rx * input.moveX;
@@ -369,6 +425,20 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
       camera.lookAt(entry.cameraAt);
       input.interact = false;
       cosmonaut.group.visible = false;
+    } else if (telemetry.phase === 'ascent') {
+      // ── Going home. The camera stays on the ground a moment, then rises
+      // after the vehicle and lets it go up into the sky. ──
+      lander.update(dt, { throttle: 0, moveX: 0, moveY: 0 }, heightAt);
+      input.interact = false;
+      const climb = lander.telemetry.climb;
+      tmp.copy(lander.position).y += 2.5;
+      const rise = THREE.MathUtils.smoothstep(climb, 1.5, 6);
+      descentPos.copy(ascentFrom).lerp(tmp, rise * 0.55);
+      descentPos.y = Math.max(ascentFrom.y, descentPos.y);
+      if (camera.position.distanceTo(descentPos) > 0.01) camera.position.lerp(descentPos, 1 - Math.exp(-dt * 3));
+      camera.lookAt(tmp);
+      if (lander.telemetry.throttle > 0.3 && lander.telemetry.altitude < 25) camera.position.y += Math.sin(t * 41) * 0.03 * lander.telemetry.throttle;
+      if (climb > 7.5) telemetry.ascended = true;
     } else if (telemetry.phase !== 'surface') {
       const lt = lander.telemetry;
       if (!lt.landed) {
@@ -379,8 +449,7 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
           egressHold = EGRESS_HOLD;
           audio.thump(lt.touchdown < 1.5 ? 40 : 6);
           cam.shake(Math.min(1, 0.25 + lt.touchdown * 0.2));
-          pois.push({ id: 'ourLander', x: lander.position.x, z: lander.position.z, r: 8 });
-          colliders.push({ x: lander.position.x, z: lander.position.z, r: 3.4 });
+          settleLander();
         }
       } else {
         lander.update(dt, { throttle: 0, moveX: 0, moveY: 0 }, heightAt);
@@ -440,11 +509,21 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
         steps += 1;
       }
       if (steps === MAX_STEPS) acc = 0;
-      cosmonaut.present(acc / STEP);
+      const atWheel = !!earth?.driving();
+      if (atWheel && earth) earth.car.present(acc / STEP);
+      else cosmonaut.present(acc / STEP);
 
-      interactions.update(dt, { x: crew.x, z: crew.z, yaw: cosmonaut.yaw, driving: false, press, held: input.use || press });
+      interactions.update(dt, { x: crew.x, z: crew.z, yaw: atWheel && earth ? earth.car.yaw : cosmonaut.yaw, driving: atWheel, press, held: input.use || press });
 
-      if (view === 'helmet') {
+      if (atWheel && earth) {
+        const car = earth.car;
+        carVel.set(Math.sin(car.yaw) * car.speed, 0, Math.cos(car.yaw) * car.speed);
+        cam.chase(dt, {
+          position: car.group.position, velocity: carVel, yaw: car.speed < -0.5 ? car.yaw + Math.PI : car.yaw,
+          height: 1.9, distance: Math.max(7, cam.distance * 1.7), speedFrac: Math.min(1, Math.abs(car.speed) / 30),
+        }, { follow: 5, lead: 0.22, leadMax: 4, fovKick: 14, horizontal: 12, vertical: 6 });
+        cam.shake(car.bump * 0.7);
+      } else if (view === 'helmet') {
         const rel = wrap(cam.yaw + Math.PI - cosmonaut.yaw);
         if (cosmonaut.state.speed < 0.3 && Math.abs(rel) > 0.9) cosmonaut.yaw += rel * (1 - Math.exp(-dt * 4));
         cosmonaut.look(wrap(cam.yaw + Math.PI - cosmonaut.yaw), cam.lookPitch);
@@ -454,21 +533,24 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
         const wide = view === 'wide';
         cam.chase(dt, {
           position: cosmonaut.group.position, velocity: cosmonaut.velocity, yaw: cosmonaut.yaw,
-          height: wide ? 2.2 : 1.35,
+          height: wide ? 2.2 : earth ? EARTH_CHASE.height : 1.35,
           distance: wide ? cam.distance * 4.2 + 14 : cam.distance,
           speedFrac: Math.min(1, cosmonaut.state.speed / cosmonaut.profile.run),
         }, wide
           ? { follow: 1, lead: 0, leadMax: 0, fovKick: 0, horizontal: 4, vertical: 3 }
-          : { follow: 2.6, lead: 0.16, leadMax: 0.8, fovKick: 4, horizontal: 14, vertical: 6.5 });
+          : earth ? EARTH_CHASE
+            : { follow: 2.6, lead: 0.16, leadMax: 0.8, fovKick: 4, horizontal: 14, vertical: 6.5 });
       }
       if (!walked && cosmonaut.state.speed > 0.5) walked = true;
       if (!jumped && cosmonaut.state.airborne && cosmonaut.state.altitude > 0.3) jumped = true;
-      telemetry.hint = !walked ? 'walk' : !jumped ? 'jump' : '';
+      telemetry.hint = atWheel ? 'drive' : !walked ? 'walk' : !jumped ? 'jump' : '';
+      if (earth && !welcomed && earth.cheering() > 0.5) { welcomed = true; banner('welcome'); }
     }
 
     // ── The glass. ──
+    telemetry.driving = !!earth?.driving();
     telemetry.altitude = cosmonaut.state.altitude;
-    telemetry.speed = cosmonaut.state.speed;
+    telemetry.speed = telemetry.driving && earth ? Math.abs(earth.car.speed) : cosmonaut.state.speed;
     telemetry.crouched = cosmonaut.state.crouched;
     telemetry.stumbling = cosmonaut.state.stumble > 0;
     telemetry.sliding = cosmonaut.state.sliding;
@@ -589,8 +671,11 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
       lander.position.set(padX, heightAt(padX, padZ) + 0.35, padZ);
       lander.telemetry.landed = true;
       lander.telemetry.touchdown = 0.6;
+      lander.telemetry.offset = 0;
+      lander.telemetry.drift = 0;
       lander.telemetry.egressX = padX;
       lander.telemetry.egressZ = padZ + 4.2;
+      settleLander();
       telemetry.phase = 'touchdown';
       telemetry.grade = 'feather';
       egressHold = 0.2;

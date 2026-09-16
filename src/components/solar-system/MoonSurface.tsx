@@ -54,6 +54,9 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
   const handleRef = useRef<MoonSurfaceHandle | null>(null);
   // Landing panel.
   const landAltRef = useRef<HTMLSpanElement>(null);
+  const landTitleRef = useRef<HTMLSpanElement>(null);
+  const onReturnRef = useRef(onReturn);
+  onReturnRef.current = onReturn;
   const landRateRef = useRef<HTMLSpanElement>(null);
   const landOffRef = useRef<HTMLSpanElement>(null);
   const landDriftRef = useRef<HTMLSpanElement>(null);
@@ -326,10 +329,12 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
       }
 
       // ── The way down. ──
+      if (tel.ascended) { tel.ascended = false; onReturnRef.current(); return; }
       if (tel.phase !== 'surface') {
         const l = tel.landing;
+        text(landTitleRef.current, tel.phase === 'ascent' ? t('landing.ascent') : t('landing.title'));
         text(landAltRef.current, `${l.altitude.toFixed(l.altitude < 10 ? 1 : 0)} m`);
-        text(landRateRef.current, `${l.descent.toFixed(1)} m/s`);
+        text(landRateRef.current, `${Math.abs(l.descent).toFixed(1)} m/s`);
         text(landOffRef.current, `${Math.round(l.offset)} m`);
         text(landDriftRef.current, `${l.drift.toFixed(1)} m/s`);
         if (landFuelRef.current) landFuelRef.current.style.width = `${Math.round(l.fuel * 100)}%`;
@@ -583,7 +588,7 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
         {/* ── The way down. ── */}
         <div className="moon-hud__landing">
           <div className="moon-hud__land-card">
-            <span className="moon-hud__land-title">{t('landing.title')}</span>
+            <span ref={landTitleRef} className="moon-hud__land-title">{t('landing.title')}</span>
             <span className="moon-hud__land-alt" ref={landAltRef} />
             <div className="moon-hud__land-rows">
               <span className="moon-hud__reading"><span>{t('landing.rate')}</span><span ref={landRateRef} /></span>

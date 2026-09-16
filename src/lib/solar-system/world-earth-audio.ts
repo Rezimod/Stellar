@@ -11,6 +11,10 @@ export interface CityAmbience {
   start: () => void;
   /** `river` is metres to the water; `height` how far above the valley floor the listener is, m. */
   update: (dt: number, night: number, river: number, height: number) => void;
+  /** The pilot's car: speed in m/s, or −1 on foot. */
+  engine: (speed: number) => void;
+  /** A crowd clapping and cheering, 0 none … 1 all of them. */
+  cheer: (k: number) => void;
   dispose: () => void;
 }
 
@@ -25,6 +29,9 @@ export function makeCityAmbience(): CityAmbience {
   let chirpT = 1.5;
   let cricketT = 0.4;
   let gust = 0;
+  let motor: { osc: OscillatorNode; sub: OscillatorNode; filter: BiquadFilterNode; gain: GainNode } | null = null;
+  let clapK = 0;
+  let clapT = 0;
   const unsubscribe = onSoundChange((on) => {
     if (master && ctx) master.gain.setTargetAtTime(on ? MASTER_GAIN : 0, ctx.currentTime, 0.05);
   });
@@ -114,6 +121,53 @@ export function makeCityAmbience(): CityAmbience {
           o.onended = () => { o.disconnect(); hp.disconnect(); e.disconnect(); };
           o.start(at); o.stop(at + 0.16);
         }
+      }
+    },
+    engine(speed) {
+      if (!ctx || !master) return;
+      if (!motor && speed >= 0) {
+        try {
+          const osc = ctx.createOscillator(); osc.type = 'sawtooth';
+          const sub = ctx.createOscillator(); sub.type = 'square';
+          const filter = ctx.createBiquadFilter(); filter.type = 'lowpass'; filter.frequency.value = 400;
+          const gain = ctx.createGain(); gain.gain.value = 0;
+          const subGain = ctx.createGain(); subGain.gain.value = 0.35;
+          osc.connect(filter); sub.connect(subGain).connect(filter); filter.connect(gain).connect(master);
+          osc.start(); sub.start();
+          motor = { osc, sub, filter, gain };
+        } catch { motor = null; }
+      }
+      if (!motor) return;
+      const now = ctx.currentTime;
+      // A small four-cylinder: idle near 800 rpm, a gear change every so often.
+      const on = speed >= 0;
+      const gearSpan = 7;
+      const inGear = on ? (speed % gearSpan) / gearSpan : 0;
+      const rpm = on ? 800 + inGear * 3200 + Math.min(speed, 34) * 25 : 0;
+      motor.osc.frequency.setTargetAtTime(rpm / 30, now, 0.08);
+      motor.sub.frequency.setTargetAtTime(rpm / 60, now, 0.08);
+      motor.filter.frequency.setTargetAtTime(300 + rpm * 0.25, now, 0.1);
+      motor.gain.gain.setTargetAtTime(on ? 0.06 + Math.min(1, speed / 25) * 0.08 : 0, now, 0.15);
+    },
+    cheer(k) {
+      if (!ctx || !master || !noise) return;
+      clapK += (k - clapK) * 0.05;
+      if (clapK < 0.02) return;
+      const c = ctx; const m = master; const buf = noise;
+      clapT -= 1 / 60;
+      while (clapT <= 0) {
+        clapT += 0.02 + Math.random() * 0.05 / clapK;
+        // One clap: a short burst of bright noise, a little random in level and colour.
+        const at = c.currentTime + Math.random() * 0.03;
+        const src = c.createBufferSource(); src.buffer = buf; src.playbackRate.value = 2.5 + Math.random();
+        const bp = c.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1400 + Math.random() * 1600; bp.Q.value = 0.9;
+        const g = c.createGain();
+        g.gain.setValueAtTime(0.0001, at);
+        g.gain.exponentialRampToValueAtTime(0.12 * clapK * (0.4 + Math.random() * 0.6), at + 0.004);
+        g.gain.exponentialRampToValueAtTime(0.0001, at + 0.05);
+        src.connect(bp).connect(g).connect(m);
+        src.onended = () => { src.disconnect(); bp.disconnect(); g.disconnect(); };
+        src.start(at, Math.random() * 2); src.stop(at + 0.07);
       }
     },
     dispose() {

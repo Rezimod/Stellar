@@ -94,6 +94,8 @@ export function WorldSurface({ world, onReturn }: WorldSurfaceProps) {
   const meterLabelRef = useRef<HTMLSpanElement>(null);
   const clockRef = useRef<HTMLSpanElement>(null);
   const landTitleRef = useRef<HTMLSpanElement>(null);
+  const onReturnRef = useRef(onReturn);
+  onReturnRef.current = onReturn;
   const movingRef = useRef(false);
   const keyboardMoveRef = useRef({ x: 0, y: 0 });
   const runRef = useRef(false);
@@ -245,11 +247,12 @@ export function WorldSurface({ world, onReturn }: WorldSurfaceProps) {
       root.dataset.phase = tel.phase;
       root.dataset.view = tel.view;
 
+      if (tel.ascended) { tel.ascended = false; onReturnRef.current(); return; }
       if (tel.phase !== 'surface') {
         const l = tel.landing;
-        text(landTitleRef.current, tel.entry ? tw('entry') : t('landing.title'));
+        text(landTitleRef.current, tel.entry ? tw('entry') : tel.phase === 'ascent' ? t('landing.ascent') : t('landing.title'));
         text(landAltRef.current, `${l.altitude.toFixed(l.altitude < 10 ? 1 : 0)} m`);
-        text(landRateRef.current, `${l.descent.toFixed(1)} m/s`);
+        text(landRateRef.current, `${Math.abs(l.descent).toFixed(1)} m/s`);
         text(landOffRef.current, `${Math.round(l.offset)} m`);
         text(landDriftRef.current, `${l.drift.toFixed(1)} m/s`);
         if (landFuelRef.current) landFuelRef.current.style.width = `${Math.round(l.fuel * 100)}%`;
@@ -265,7 +268,7 @@ export function WorldSurface({ world, onReturn }: WorldSurfaceProps) {
 
       if (stripRef.current) stripRef.current.style.transform = `translateX(${-(tel.heading + 360) * PPD}px)`;
       text(altRef.current, `${tel.altitude.toFixed(1)} m`);
-      text(speedRef.current, `${tel.speed.toFixed(1)} m/s`);
+      text(speedRef.current, tel.driving ? `${Math.round(tel.speed * 3.6)} km/h` : `${tel.speed.toFixed(1)} m/s`);
       text(gravRef.current, `${handle.profile.gravity.toFixed(2)} m/s²`);
       text(o2Ref.current, `${tel.o2.toFixed(1)}%`);
       if (o2BarRef.current) o2BarRef.current.style.width = `${Math.max(0, Math.min(100, tel.o2))}%`;

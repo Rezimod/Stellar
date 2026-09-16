@@ -23,6 +23,9 @@ import { makeCableCar } from '@/lib/solar-system/world-earth-cablecar';
 import { makeCityAmbience } from '@/lib/solar-system/world-earth-audio';
 import { duskFor, pickTarget, tbilisiClock, type SkyTarget } from '@/lib/solar-system/world-earth-tonight';
 import { makeTbilisiExpedition, type ExpeditionEvent, type ExpeditionTelemetry } from '@/lib/solar-system/world-earth-expedition';
+import { makeCar, type CarHandle, type CarInput } from '@/lib/solar-system/world-earth-car';
+import { makePeople, type Mover } from '@/lib/solar-system/world-earth-people';
+import { makeTraffic } from '@/lib/solar-system/world-earth-traffic';
 
 /** From 600 m over the city, sinking at 38 m/s, coming in from the north-west over the river. The
  *  guidance only closes about a tenth of the gap a second, so the entry leaves it nearly overhead. */
@@ -63,7 +66,18 @@ export interface EarthWorld {
   /** After a walking step: walls, water, the roof's edge. `prev` is where the step started. */
   confine: (pos: THREE.Vector3, prev: THREE.Vector3) => void;
   update: (dt: number, crew: THREE.Vector3, heading: number, use: boolean, cameraPos: THREE.Vector3, place: (x: number, y: number, z: number) => void) => void;
-  onEvent: ((kind: ExpeditionEvent | 'arrived') => void) | null;
+  onEvent: ((kind: ExpeditionEvent | 'arrived' | 'enterCar' | 'exitCar') => void) | null;
+  /** The pilot's car, parked by the pad. */
+  car: CarHandle;
+  driving: () => boolean;
+  /** One simulation step at the wheel. `colliders` are the scene's own (the lander, the landmarks). */
+  drive: (dt: number, input: CarInput, colliders: Collider[]) => void;
+  /** The lander is down: bring the people who were in the park. */
+  welcome: (x: number, z: number, faceX: number, faceZ: number) => void;
+  /** How much of the welcome crowd is cheering, 0…1. */
+  cheering: () => number;
+  /** Cars near the crew, as circles to walk round. */
+  walkers: (x: number, z: number) => Collider[];
   setTime: (iso: string) => void;
   advance: () => void;
   startAudio: () => void;
@@ -79,12 +93,43 @@ export function makeEarthWorld(renderer: THREE.WebGLRenderer, data: EarthData, l
   const streets = makeStreets(data, heightAt, lite);
   const L = data.manifest.landmarks;
   const bridgeCentre = L.bridgeOfPeace.deck ? centroid(L.bridgeOfPeace.deck) : [-200, 60] as [number, number];
-  const city = makeCity(data.buildings, heightAt, lite, [bridgeCentre[0], bridgeCentre[1] + 300]);
+  // OSM maps the Bridge of Peace's roof as a raised building part; the landmark builds the real thing.
+  const deck = L.bridgeOfPeace.deck ?? [];
+  const overBridge = (b: EarthData['buildings'][number]) => b.minHeight > 0 && b.rings.some((r) => {
+    const xs = r.pts.map((q) => q[0]); const zs = r.pts.map((q) => q[1]);
+    return deck.some(([x, z]) => x > Math.min(...xs) - 5 && x < Math.max(...xs) + 5 && z > Math.min(...zs) - 5 && z < Math.max(...zs) + 5);
+  });
+  const city = makeCity(data.buildings.filter((b) => !overBridge(b)), heightAt, lite, [bridgeCentre[0], bridgeCentre[1] + 300]);
   const landmarks = makeLandmarks(data, heightAt, lite);
   const cable = L.cableCar.line ? makeCableCar(L.cableCar.line, heightAt, lite) : null;
   group.add(terrain.group, streets.group, city.group, landmarks.group);
   if (cable) group.add(cable.group);
   const ambience = makeCityAmbience();
+  // The pilot's car, parked on the lawn east of the pad, nose to the north.
+  const car = makeCar(9, -3, Math.PI, heightAt, lite);
+  const traffic = makeTraffic(data, lite);
+  const blockedMemo = new Map<number, boolean>();
+  const people = makePeople(data, {
+    floorAt: (x, z) => { const d = streets.deckAt(x, z); return Number.isNaN(d) ? heightAt(x, z) : Math.max(heightAt(x, z) - 0.5, d); },
+    blocked: (x, z) => {
+      // A footprint test walks every building nearby: remember the answer per square metre.
+      const key = Math.round(x) * 8192 + Math.round(z);
+      let hit = blockedMemo.get(key);
+      if (hit === undefined) {
+        hit = streets.isWater(x, z) || !Number.isNaN(city.roofAt(x, z));
+        if (blockedMemo.size > 60000) blockedMemo.clear();
+        blockedMemo.set(key, hit);
+      }
+      return hit;
+    },
+  }, lite);
+  group.add(car.group, traffic.group, people.group);
+  let driving = false;
+  const movers: Mover[] = [];
+  const carMovers: Mover[] = [];
+  const nearPeople: Mover[] = [];
+  const walkerList: Collider[] = [];
+  const doorAt = new THREE.Vector3();
 
   const roof = city.rooftop;
   const site = (id: string) => landmarks.sites[id] ?? { x: 0, z: 0 };
@@ -155,7 +200,21 @@ export function makeEarthWorld(renderer: THREE.WebGLRenderer, data: EarthData, l
     group, sky, heightAt, floorAt,
     colliders: [...landmarks.colliders],
     pois: [...landmarks.pois],
-    interactables: expedition.interactables,
+    interactables: [
+      ...expedition.interactables,
+      {
+        id: 'enterCar', priority: 3, mode: 'foot',
+        where: () => { car.door(doorAt); return { x: doorAt.x, z: doorAt.z, r: 2.8 }; },
+        kind: () => 'tap', label: () => 'drive',
+        use: () => { driving = true; handle.onEvent?.('enterCar'); },
+      },
+      {
+        id: 'exitCar', priority: 3, mode: 'rover',
+        where: () => ({ x: car.position.x, z: car.position.z, r: 1e6 }),
+        kind: () => 'tap', label: () => (Math.abs(car.speed) < 2.5 ? 'getOut' : 'stopToExit'),
+        use: () => { if (Math.abs(car.speed) < 2.5) { driving = false; handle.onEvent?.('exitCar'); } },
+      },
+    ],
     state,
     heading: (camYaw) => {
       // The camera looks along (−sin yaw, −cos yaw); north is −z.
@@ -164,6 +223,26 @@ export function makeEarthWorld(renderer: THREE.WebGLRenderer, data: EarthData, l
     },
     cameraColliders: (x, z) => city.cameraColliders(x, z),
     carried: () => rideS >= 0,
+    car,
+    driving: () => driving,
+    drive(dt, input, colliders) {
+      traffic.movers(car.position.x, car.position.z, 30, carMovers);
+      const hits: Collider[] = colliders.concat(carMovers);
+      car.update(dt, input, {
+        floorAt: (x, z) => { const d = streets.deckAt(x, z); return Number.isNaN(d) ? heightAt(x, z) : Math.max(heightAt(x, z) - 0.5, d); },
+        pushOut: (pos, r) => city.pushOut(pos, r, false),
+        isWater: streets.isWater,
+        colliders: () => hits,
+      }, sky.state.night);
+    },
+    welcome: (x, z, faceX, faceZ) => people.welcome(x, z, faceX, faceZ),
+    cheering: () => people.cheering(),
+    walkers(x, z) {
+      traffic.movers(x, z, 20, carMovers);
+      walkerList.length = 0;
+      for (const m of carMovers) walkerList.push(m);
+      return walkerList;
+    },
     confine(pos, prev) {
       if (state.onRoof && roof) {
         if (!insideRing(pos.x, pos.z, roof.ring)) { pos.x = prev.x; pos.z = prev.z; }
@@ -209,6 +288,20 @@ export function makeEarthWorld(renderer: THREE.WebGLRenderer, data: EarthData, l
         }
       }
       expedition.update(dt, { x: crew.x, z: crew.z, heading, riding: rideS >= 0, onRoof: state.onRoof });
+
+      // ── The street: people make way for the pilot and the cars; the cars stop for both. ──
+      movers.length = 0;
+      if (driving) movers.push({ x: car.position.x, z: car.position.z, vx: Math.sin(car.yaw) * car.speed, vz: Math.cos(car.yaw) * car.speed, r: 1.9 });
+      else movers.push({ x: crew.x, z: crew.z, vx: 0, vz: 0, r: 0.5 });
+      traffic.movers(crew.x, crew.z, 60, carMovers);
+      for (const m of carMovers) movers.push(m);
+      people.update(dt, crew.x, crew.z, movers);
+      people.colliders(crew.x, crew.z, 120, nearPeople);
+      nearPeople.push(movers[0]);
+      if (!driving) nearPeople.push({ x: car.position.x, z: car.position.z, vx: 0, vz: 0, r: 1.9 });
+      traffic.update(dt, crew.x, crew.z, nearPeople, sky.state.night, floorAt);
+      ambience.engine(driving ? Math.abs(car.speed) : -1);
+      ambience.cheer(people.cheering());
       let river = Infinity;
       for (const [rx, rz] of data.manifest.river) river = Math.min(river, Math.hypot(rx - crew.x, rz - crew.z));
       ambience.update(dt, sky.state.night, Math.max(0, river - 35), crew.y - streets.riverLevel(crew.x, crew.z));
@@ -222,6 +315,9 @@ export function makeEarthWorld(renderer: THREE.WebGLRenderer, data: EarthData, l
     startAudio: () => ambience.start(),
     dispose() {
       ambience.dispose();
+      car.dispose();
+      traffic.dispose();
+      people.dispose();
       expedition.dispose();
       cable?.dispose();
       landmarks.dispose();

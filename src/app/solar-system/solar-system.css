@@ -1353,14 +1353,83 @@
   white-space: nowrap;
   animation: moon-impact 0.5s ease-out both;
 }
-.flight-hud .flight-hud__land { border-color: rgba(255, 179, 71, 0.55); color: #ffd9a0; }
-/* Over a world you could land on but are too high for: the key is there, so
+.flight-hud .flight-hud__land {
+  --land: 0;
+  height: auto;
+  min-width: 260px;
+  padding: 10px 14px 10px 10px;
+  gap: 12px;
+  border-radius: var(--hud-radius);
+  border-color: color-mix(in srgb, var(--terracotta) 55%, transparent);
+  background: var(--hud-deep);
+  color: var(--hud-ink);
+  text-align: left;
+  white-space: normal;
+  animation: land-card-in 0.42s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+.flight-hud__land-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--terracotta) 22%, transparent);
+  color: var(--terracotta);
+}
+.flight-hud__land[data-ready='true'] .flight-hud__land-icon { animation: land-icon-bob 1.4s ease-in-out infinite; }
+.flight-hud__land-text { display: grid; gap: 3px; min-width: 0; flex: 1; }
+.flight-hud__land-title { font-size: 14px; line-height: 1.2; }
+.flight-hud__land-place { font-size: 12px; color: var(--hud-dim); line-height: 1.2; }
+.flight-hud__land-gauge {
+  position: relative;
+  height: 3px;
+  margin-top: 4px;
+  border-radius: 2px;
+  background: var(--hud-line);
+  overflow: hidden;
+}
+.flight-hud__land-gauge i {
+  position: absolute;
+  inset: 0;
+  background: var(--terracotta);
+  transform: scaleX(var(--land));
+  transform-origin: left;
+  transition: transform 0.2s linear;
+}
+.flight-hud__land-state { font-family: var(--font-mono, ui-monospace, monospace); font-size: 12px; color: var(--hud-dim); }
+.flight-hud__land[data-ready='true'] .flight-hud__land-state { color: var(--terracotta); }
+.flight-hud__land-key {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--hud-line);
+  border-bottom-width: 3px;
+  border-radius: 8px;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 13px;
+  color: var(--hud-ink);
+}
+/* Over a world you could land on but are too high for: the card is there, so
    you know the way down exists, but it is plainly not lit yet. */
 .flight-hud .flight-hud__land[data-ready='false'] {
-  border-color: rgba(255, 179, 71, 0.22);
-  color: rgba(255, 217, 160, 0.5);
+  border-color: var(--hud-line);
   cursor: default;
-  animation: none;
+}
+.flight-hud__land[data-ready='false'] .flight-hud__land-icon { background: var(--hud-line); color: var(--hud-dim); }
+.flight-hud__land[data-ready='false'] .flight-hud__land-key { opacity: 0.4; }
+@keyframes land-card-in {
+  from { opacity: 0; transform: translateY(10px) scale(0.96); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes land-icon-bob {
+  0%, 100% { transform: translateY(-2px); }
+  50% { transform: translateY(2px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .flight-hud .flight-hud__land, .flight-hud__land[data-ready='true'] .flight-hud__land-icon { animation: none; }
 }
 .flight-hud__prompt[hidden] { display: none; }
 

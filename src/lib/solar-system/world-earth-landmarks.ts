@@ -61,7 +61,6 @@ export function makeLandmarks(data: EarthData, heightAt: (x: number, z: number) 
   const alu = mat('alu', { color: srgb(0.8, 0.81, 0.82), roughness: 0.35, metalness: 0.9 }, 0.9);
   const steelWhite = mat('steelWhite', { color: srgb(0.9, 0.9, 0.88), roughness: 0.45, metalness: 0.4 });
   const steelGrey = mat('steelGrey', { color: srgb(0.55, 0.56, 0.58), roughness: 0.5, metalness: 0.7 });
-  const redWhite = mat('tvPaint', { color: srgb(0.78, 0.76, 0.74), roughness: 0.6, metalness: 0.3 });
   // Clear glass: almost no body colour of its own, mostly the sky it reflects.
   const glass = mat('glass', { color: srgb(0.16, 0.2, 0.22), roughness: 0.04, metalness: 0.6, envMapIntensity: 1.4, transparent: true, opacity: 0.2, depthWrite: false, side: THREE.DoubleSide });
   const tubeSkin = mat('tube', { color: srgb(0.74, 0.76, 0.78), roughness: 0.3, metalness: 0.75 });
@@ -72,7 +71,6 @@ export function makeLandmarks(data: EarthData, heightAt: (x: number, z: number) 
   const redLamp = new THREE.MeshBasicMaterial({ color: 0xff2a1a });
   materials.push(redLamp);
   const textures: THREE.Texture[] = [];
-  let ledLine: THREE.Line | null = null;
 
   const add = <G extends THREE.BufferGeometry>(parent: THREE.Object3D, g: G, m: THREE.Material, x = 0, y = 0, z = 0) => {
     geometries.push(g);
@@ -193,7 +191,11 @@ export function makeLandmarks(data: EarthData, heightAt: (x: number, z: number) 
     pois.push({ id: 'kartlisDeda', x, z, r: 30 });
   }
 
-  // ── Sameba. ──
+  // ── Sameba: a Georgian cross-dome, 70.45 × 64.68 m in plan and 86.1 m to
+  // the top of its 7.5 m gilded cross, on a stepped stone podium. The four
+  // arms end in tall gables with arched windows, the altar end in an apse,
+  // and over the crossing a square base, a twelve-sided drum of arched
+  // windows, and the gold dome. ──
   if (L.sameba.outline) {
     const out = L.sameba.outline;
     const [cx, cz] = centroid(out);
@@ -202,7 +204,6 @@ export function makeLandmarks(data: EarthData, heightAt: (x: number, z: number) 
     const H = L.sameba.height;
     const g = new THREE.Group();
     g.position.set(cx, y, cz);
-    // The long axis of the plan orients the church.
     let lx = 1; let lz = 0; let best = 0;
     for (let k = 0; k < out.length; k++) {
       const [ax, az] = out[k]; const [bx, bz] = out[(k + 1) % out.length];
@@ -210,60 +211,127 @@ export function makeLandmarks(data: EarthData, heightAt: (x: number, z: number) 
       if (len > best) { best = len; lx = (bx - ax) / len; lz = (bz - az) / len; }
     }
     g.rotation.y = Math.atan2(lx, lz);
-    let span = 0;
-    for (const [px, pz] of out) span = Math.max(span, Math.hypot(px - cx, pz - cz));
-    const half = span * 0.62;
-    const body = H * 0.3;
-    add(g, new THREE.BoxGeometry(half * 1.3, body, half * 1.3), sandstone, 0, body / 2, 0);
-    add(g, new THREE.BoxGeometry(half * 0.9, body * 0.85, half * 1.75), sandstone, 0, body * 0.425, 0);
-    add(g, new THREE.BoxGeometry(half * 1.75, body * 0.85, half * 0.9), sandstone, 0, body * 0.425, 0);
-    const roofGeo = new THREE.CylinderGeometry(0.01, half * 0.9, H * 0.08, 4, 1);
-    add(g, roofGeo, steelGrey, 0, body + H * 0.04, 0).rotation.y = Math.PI / 4;
-    const drumR = half * 0.36;
-    add(g, new THREE.CylinderGeometry(drumR, drumR * 1.08, H * 0.34, seg), sandstone, 0, body + H * 0.17, 0);
-    for (let k = 0; k < 12; k++) {
-      const a = (k / 12) * Math.PI * 2;
-      add(g, new THREE.BoxGeometry(0.9, H * 0.12, 0.4), steelGrey, Math.sin(a) * drumR * 1.01, body + H * 0.2, Math.cos(a) * drumR * 1.01).rotation.y = a;
-    }
-    const domeBase = body + H * 0.34;
-    add(g, new THREE.LatheGeometry([[drumR * 1.08, 0], [drumR * 1.1, H * 0.04], [drumR * 0.95, H * 0.1], [drumR * 0.55, H * 0.16], [drumR * 0.12, H * 0.2], [0, H * 0.205]].map(([r, h]) => new THREE.Vector2(r, h)), seg), gold, 0, domeBase, 0);
-    add(g, new THREE.CylinderGeometry(0.5, 0.7, H * 0.04, 10), gold, 0, domeBase + H * 0.225, 0);
-    const crossY = domeBase + H * 0.245;
-    add(g, new THREE.BoxGeometry(0.5, H - crossY, 0.5), gold, 0, crossY + (H - crossY) / 2, 0);
-    add(g, new THREE.BoxGeometry(3.2, 0.45, 0.45), gold, 0, H - (H - crossY) * 0.3, 0);
+    // In the church's own frame: the long arm along z (70.45 m), the transept along x (64.68 m).
+    const LEN = 70.45; const WID = 64.68; const ARM = 24; const EAVES = 30;
+    const darkWin = mat('samebaWindow', { color: srgb(0.07, 0.08, 0.1), roughness: 0.2, metalness: 0.6 });
+    const roofLead = mat('samebaRoof', { color: srgb(0.42, 0.45, 0.43), roughness: 0.55, metalness: 0.5 });
+    add(g, new THREE.BoxGeometry(WID + 12, 2.4, LEN + 12), stone, 0, 1.2, 0);
+    add(g, new THREE.BoxGeometry(WID + 6, 1.6, LEN + 6), stone, 0, 3.2, 0);
+    const base = 4;
+    add(g, new THREE.BoxGeometry(ARM, EAVES, LEN - 12), sandstone, 0, base + EAVES / 2, 0);
+    add(g, new THREE.BoxGeometry(WID, EAVES, ARM), sandstone, 0, base + EAVES / 2, 0);
     for (const [sx, sz] of [[1, 1], [1, -1], [-1, 1], [-1, -1]]) {
-      const tx = sx * half * 0.5; const tz = sz * half * 0.5;
-      add(g, new THREE.CylinderGeometry(drumR * 0.4, drumR * 0.42, H * 0.12, seg), sandstone, tx, body + H * 0.06, tz);
-      add(g, new THREE.SphereGeometry(drumR * 0.42, seg, seg / 2, 0, Math.PI * 2, 0, Math.PI / 2), gold, tx, body + H * 0.12, tz);
+      add(g, new THREE.BoxGeometry((WID - ARM) / 2 - 4, EAVES * 0.72, (LEN - ARM) / 2 - 8), sandstone, sx * (ARM / 2 + (WID - ARM) / 4 - 2), base + EAVES * 0.36, sz * (ARM / 2 + (LEN - ARM) / 4 - 4));
     }
+    // The apse at the altar end, and its half-dome.
+    add(g, new THREE.CylinderGeometry(ARM / 2, ARM / 2, EAVES * 0.85, seg, 1, false, -Math.PI / 2, Math.PI), sandstone, 0, base + EAVES * 0.425, (LEN - 12) / 2);
+    add(g, new THREE.SphereGeometry(ARM / 2, seg, seg / 2, -Math.PI / 2, Math.PI, 0, Math.PI / 2), roofLead, 0, base + EAVES * 0.85, (LEN - 12) / 2);
+    // Gabled roofs over the arms: a ridge along each, the gables at the ends.
+    const gable = (length: number, width: number, rise: number) => {
+      const shape = new THREE.Shape([new THREE.Vector2(-width / 2 - 0.6, 0), new THREE.Vector2(width / 2 + 0.6, 0), new THREE.Vector2(0, rise)]);
+      return new THREE.ExtrudeGeometry(shape, { depth: length, bevelEnabled: false }).translate(0, 0, -length / 2);
+    };
+    add(g, gable(LEN - 12, ARM, 7), roofLead, 0, base + EAVES, 0);
+    add(g, gable(WID, ARM, 7), roofLead, 0, base + EAVES, 0).rotation.y = Math.PI / 2;
+    // Tall arched windows on every gable end and along the arms.
+    const archWindow = (w: number, h: number) => {
+      const s = new THREE.Shape();
+      s.moveTo(-w / 2, 0); s.lineTo(w / 2, 0); s.lineTo(w / 2, h - w / 2);
+      s.absarc(0, h - w / 2, w / 2, 0, Math.PI, false);
+      s.lineTo(-w / 2, 0);
+      return new THREE.ShapeGeometry(s, 6);
+    };
+    const windowOn = (px: number, py: number, pz: number, ry: number, w: number, h: number) => {
+      const o = add(g, archWindow(w, h), darkWin, px, py, pz);
+      o.rotation.y = ry;
+      o.castShadow = false;
+    };
+    for (const k of [-1, 0, 1]) {
+      windowOn(k * 6, base + 8, -(LEN - 12) / 2 - 0.05, Math.PI, 2.6, 14);
+      windowOn(-WID / 2 - 0.05, base + 8, k * 6, -Math.PI / 2, 2.6, 14);
+      windowOn(WID / 2 + 0.05, base + 8, k * 6, Math.PI / 2, 2.6, 14);
+    }
+    windowOn(0, base + EAVES + 1.5, -(LEN - 12) / 2 - 0.05, Math.PI, 1.6, 4);
+    // Over the crossing: the square base, the drum, the dome, the cross.
+    const drumBase = base + EAVES + 4;
+    add(g, new THREE.BoxGeometry(22, 8, 22), sandstone, 0, drumBase - 1, 0);
+    const drumR = 9.2; const drumH = 22;
+    add(g, new THREE.CylinderGeometry(drumR, drumR, drumH, 12), sandstone, 0, drumBase + 3 + drumH / 2, 0);
+    for (let k = 0; k < 12; k++) {
+      const a = ((k + 0.5) / 12) * Math.PI * 2;
+      windowOn(Math.sin(a) * (drumR + 0.05), drumBase + 7, Math.cos(a) * (drumR + 0.05), a, 1.8, 11);
+      add(g, new THREE.BoxGeometry(0.9, drumH, 0.6), stone, Math.sin((k / 12) * Math.PI * 2) * drumR, drumBase + 3 + drumH / 2, Math.cos((k / 12) * Math.PI * 2) * drumR).rotation.y = (k / 12) * Math.PI * 2;
+    }
+    add(g, new THREE.CylinderGeometry(drumR + 0.8, drumR + 0.8, 1.2, 12), stone, 0, drumBase + 3 + drumH, 0);
+    const domeFoot = drumBase + 3 + drumH + 0.6;
+    const crossFoot = H - 7.5 - 1.5;
+    const domeH = crossFoot - domeFoot;
+    // The dome's profile: a gilded, gently pointed helmet.
+    const prof: [number, number][] = [[drumR + 0.6, 0], [drumR + 0.4, domeH * 0.18], [drumR * 0.92, domeH * 0.4], [drumR * 0.7, domeH * 0.62], [drumR * 0.4, domeH * 0.82], [drumR * 0.14, domeH * 0.96], [0, domeH]];
+    add(g, new THREE.LatheGeometry(prof.map(([r, hh]) => new THREE.Vector2(r, hh)), seg + 8), gold, 0, domeFoot, 0);
+    add(g, new THREE.CylinderGeometry(0.7, 1.1, 1.5, 12), gold, 0, crossFoot + 0.75, 0);
+    add(g, new THREE.BoxGeometry(0.55, 7.5, 0.55), gold, 0, H - 3.75, 0);
+    add(g, new THREE.BoxGeometry(4, 0.55, 0.55), gold, 0, H - 2.3, 0);
+    add(g, new THREE.BoxGeometry(2.4, 0.4, 0.4), gold, 0, H - 4.6, 0).rotation.z = -0.3;
     group.add(g);
-    colliders.push({ x: cx, z: cz, r: half });
+    colliders.push({ x: cx, z: cz, r: Math.max(LEN, WID) * 0.5 });
     sites.sameba = { x: cx, z: cz, base: y, top: y + H };
-    pois.push({ id: 'sameba', x: cx, z: cz, r: half + 40 });
+    pois.push({ id: 'sameba', x: cx, z: cz, r: LEN * 0.5 + 40 });
   }
 
-  // ── The TV tower on Mtatsminda: four legs, platforms, the mast. ──
+  // ── The TV tower on Mtatsminda, 274.5 m: a Soviet steel lattice on a
+  // tripod base. Three legs splay out over the plateau and draw in to a
+  // slender lattice shaft; two enclosed equipment platforms; above them the
+  // antenna mast in aviation red and white. After dark its frame is lit in
+  // slowly changing colour, as the city knows it. ──
   let tvLamps: THREE.Mesh | null = null;
+  let tvGlow: THREE.MeshStandardMaterial | null = null;
   if (L.tvTower.at) {
     const [x, z] = L.tvTower.at;
     const y = heightAt(x, z);
     const H = L.tvTower.height;
     const tw = new THREE.Group();
     tw.position.set(x, y, z);
-    const lattice = H * 0.72;
-    const width = (h: number) => 16 * (1 - h / lattice) + 2.6 * (h / lattice);
-    const leg = (k: number, h: number) => { const w = width(h); const a = (k / 4) * Math.PI * 2 + Math.PI / 4; return new THREE.Vector3(Math.cos(a) * w, h, Math.sin(a) * w); };
-    const levels = lite ? 10 : 18;
-    for (let l = 0; l < levels; l++) {
-      const h0 = (l / levels) * lattice; const h1 = ((l + 1) / levels) * lattice;
-      for (let k = 0; k < 4; k++) {
-        bar(tw, leg(k, h0), leg(k, h1), 1.2, redWhite);
-        bar(tw, leg(k, h1), leg((k + 1) % 4, h1), 0.5, redWhite);
-        bar(tw, leg(k, h0), leg((k + 1) % 4, h1), 0.4, redWhite);
+    tvGlow = new THREE.MeshStandardMaterial({ color: srgb(0.62, 0.64, 0.66), roughness: 0.45, metalness: 0.7, emissive: new THREE.Color(0, 0, 0) });
+    withHaze(tvGlow, 'tv-lattice');
+    materials.push(tvGlow);
+    const red = mat('tvRed', { color: srgb(0.78, 0.12, 0.1), roughness: 0.55, metalness: 0.3 });
+    const LEGS = 3;
+    const SHAFT = H * 0.64;
+    const radius = (h: number) => {
+      // Legs curve in from 26 m to 4 m over the first third, then the shaft tapers to 2.2 m.
+      const k = h / (SHAFT * 0.38);
+      return k < 1 ? 4 + 22 * Math.pow(1 - k, 1.8) : 4 - 1.8 * ((h - SHAFT * 0.38) / (SHAFT * 0.62));
+    };
+    const corner = (k: number, h: number) => { const a = (k / LEGS) * Math.PI * 2 + Math.PI / 6; const r = radius(h); return new THREE.Vector3(Math.cos(a) * r, h, Math.sin(a) * r); };
+    const panels = lite ? 16 : 30;
+    for (let l = 0; l < panels; l++) {
+      const h0 = (l / panels) * SHAFT; const h1 = ((l + 1) / panels) * SHAFT;
+      for (let k = 0; k < LEGS; k++) {
+        const a0 = corner(k, h0); const a1 = corner(k, h1);
+        const b0 = corner((k + 1) % LEGS, h0); const b1 = corner((k + 1) % LEGS, h1);
+        bar(tw, a0, a1, l < panels * 0.4 ? 1.1 : 0.7, tvGlow);
+        bar(tw, a1, b1, 0.35, tvGlow);
+        // X-bracing on every face.
+        bar(tw, a0, b1, 0.25, tvGlow);
+        bar(tw, b0, a1, 0.25, tvGlow);
       }
     }
-    for (const ph of [0.3, 0.52]) add(tw, new THREE.CylinderGeometry(width(lattice * ph) + 3, width(lattice * ph) + 3, 3.2, 8), steelWhite, 0, lattice * ph, 0);
-    add(tw, new THREE.CylinderGeometry(0.9, 1.5, H - lattice, 10), redWhite, 0, lattice + (H - lattice) / 2, 0);
+    // Two enclosed platforms: six-sided cabins with a gallery rail.
+    for (const [ph, r, hh] of [[0.36, 9, 7], [0.58, 7, 5.5]] as const) {
+      const py = SHAFT * ph;
+      add(tw, new THREE.CylinderGeometry(r, r, hh, 6), steelWhite, 0, py + hh / 2, 0);
+      add(tw, new THREE.CylinderGeometry(r + 1.2, r + 1.2, 0.5, 6), steelGrey, 0, py, 0);
+      add(tw, new THREE.CylinderGeometry(r + 0.05, r + 0.05, hh * 0.35, 6, 1, true), mat('tvCabinGlass', { color: srgb(0.1, 0.12, 0.14), roughness: 0.1, metalness: 0.6 }), 0, py + hh * 0.6, 0);
+    }
+    // The mast: segments of red and white, narrowing to the tip.
+    const mastH = H - SHAFT;
+    const seg8 = 10;
+    for (let s = 0; s < seg8; s++) {
+      const h0 = SHAFT + (s / seg8) * mastH;
+      const r0 = 1.8 - (s / seg8) * 1.4; const r1 = 1.8 - ((s + 1) / seg8) * 1.4;
+      add(tw, new THREE.CylinderGeometry(r1, r0, mastH / seg8, 8), s % 2 ? steelWhite : red, 0, h0 + mastH / seg8 / 2, 0);
+    }
     tvLamps = keep(add(tw, new THREE.SphereGeometry(0.9, 8, 6), redLamp, 0, H + 0.4, 0));
     tvLamps.castShadow = false;
     group.add(tw);
@@ -306,12 +374,15 @@ export function makeLandmarks(data: EarthData, heightAt: (x: number, z: number) 
     sites.ferrisWheel = { x, z, base: y, top: y + H };
   }
 
-  // ── The Bridge of Peace's roof: ribs and a wave of glass along the deck. ──
+  // ── The Bridge of Peace: 150 m of footbridge under a bow-shaped roof of
+  // triangular glass panes in a tubular steel lattice, over a steel box deck
+  // with glass balustrades, carried on low steel arches. At night thousands
+  // of LEDs in the roof's nodes spell their patterns. ──
   const deck = L.bridgeOfPeace.deck;
+  let bridgeLeds: THREE.ShaderMaterial | null = null;
   if (deck && deck.length >= 2) {
     const br = new THREE.Group();
     br.name = 'bridge-of-peace';
-    const line: THREE.Vector3[] = [];
     let total = 0;
     for (let k = 0; k + 1 < deck.length; k++) total += Math.hypot(deck[k + 1][0] - deck[k][0], deck[k + 1][1] - deck[k][1]);
     const y0 = heightAt(deck[0][0], deck[0][1]) + 0.2; const y1 = heightAt(deck[deck.length - 1][0], deck[deck.length - 1][1]) + 0.2;
@@ -327,58 +398,117 @@ export function makeLandmarks(data: EarthData, heightAt: (x: number, z: number) 
       }
       return new THREE.Vector3(deck[0][0], 0, deck[0][1]);
     };
-    const steps = Math.max(8, Math.round(total / 3));
-    const glassPos: number[] = []; const glassIdx: number[] = [];
-    const ribs = 9;
-    for (let i = 0; i <= steps; i++) {
-      const s = (i / steps) * total;
+    const frameAt = (s: number) => {
       const p = at(s);
-      const q = at(Math.min(total, s + 1));
-      const dir = q.clone().sub(at(Math.max(0, s - 1))).setY(0).normalize();
+      const dir = at(Math.min(total, s + 1)).sub(at(Math.max(0, s - 1))).setY(0).normalize();
       const side = new THREE.Vector3(-dir.z, 0, dir.x);
-      const base = y0 + ((y1 - y0) * s) / total + 1.2;
-      // The roof rises and falls twice along the span, higher at the ends.
-      const rise = 3.2 + 2.6 * Math.abs(Math.sin((s / total) * Math.PI * 2)) + 1.2 * Math.sin((s / total) * Math.PI);
-      const start = glassPos.length / 3;
-      for (let r = 0; r <= ribs; r++) {
-        const a = (r / ribs) * Math.PI;
-        const w = 4.2 * Math.cos(a); const h = rise * Math.sin(a) + 0.4;
-        glassPos.push(p.x + side.x * w, base + h, p.z + side.z * w);
-      }
-      if (i > 0) for (let r = 0; r < ribs; r++) {
-        const a = start - (ribs + 1) + r; const b = start + r;
-        glassIdx.push(a, b, a + 1, a + 1, b, b + 1);
-      }
-      if (i % 4 === 0) {
-        const prev = new THREE.Vector3(); const cur = new THREE.Vector3();
-        for (let r = 0; r <= ribs; r++) {
-          const a = (r / ribs) * Math.PI;
-          cur.set(p.x + side.x * 4.2 * Math.cos(a), base + rise * Math.sin(a) + 0.4, p.z + side.z * 4.2 * Math.cos(a));
-          if (r > 0) bar(br, prev, cur, 0.22, steelWhite);
-          prev.copy(cur);
-        }
-        for (const sgn of [-1, 1]) bar(br, new THREE.Vector3(p.x + side.x * 4.2 * sgn, base - 1.2, p.z + side.z * 4.2 * sgn), new THREE.Vector3(p.x + side.x * 4.2 * sgn, base + 0.4, p.z + side.z * 4.2 * sgn), 0.2, steelWhite);
-      }
-      line.push(p);
+      const deckY = y0 + ((y1 - y0) * s) / total;
+      return { p, side, deckY };
+    };
+    const HALF = 4.6;
+    const U = lite ? 26 : 44; const V = lite ? 6 : 8;
+    // The roof's surface: an arch across the deck whose height swells and
+    // falls along the span, low at both banks, highest past the middle.
+    const roofPoint = (u: number, v: number, out: THREE.Vector3) => {
+      const s = u * total;
+      const { p, side, deckY } = frameAt(s);
+      const swell = Math.pow(Math.sin(Math.PI * u), 0.9) * (0.75 + 0.25 * Math.sin(Math.PI * (u * 1.3 - 0.15)));
+      const rise = 2.4 + 5.2 * swell;
+      const a = v * Math.PI;
+      const w = HALF * (1 + 0.12 * swell) * Math.cos(a);
+      return out.set(p.x + side.x * w, deckY + 1.1 + rise * Math.pow(Math.sin(a), 0.8), p.z + side.z * w);
+    };
+    const nodes: THREE.Vector3[][] = [];
+    for (let i = 0; i <= U; i++) {
+      const row: THREE.Vector3[] = [];
+      for (let j = 0; j <= V; j++) row.push(roofPoint(i / U, j / V, new THREE.Vector3()));
+      nodes.push(row);
     }
+    // Glass in triangles, the steel along their edges.
+    const glassPos: number[] = [];
+    const tri = (a: THREE.Vector3, b: THREE.Vector3, c: THREE.Vector3) => glassPos.push(a.x, a.y, a.z, b.x, b.y, b.z, c.x, c.y, c.z);
+    for (let i = 0; i < U; i++) for (let j = 0; j < V; j++) {
+      const a = nodes[i][j]; const b = nodes[i + 1][j]; const c = nodes[i][j + 1]; const d = nodes[i + 1][j + 1];
+      if ((i + j) % 2) { tri(a, b, d); tri(a, d, c); bar(br, a, d, 0.16, steelWhite); }
+      else { tri(a, b, c); tri(b, d, c); bar(br, b, c, 0.16, steelWhite); }
+      bar(br, a, b, 0.2, steelWhite);
+      bar(br, a, c, 0.14, steelWhite);
+    }
+    for (let j = 0; j < V; j++) bar(br, nodes[U][j], nodes[U][j + 1], 0.14, steelWhite);
     const gg = new THREE.BufferGeometry();
     gg.setAttribute('position', new THREE.Float32BufferAttribute(glassPos, 3));
-    gg.setIndex(glassIdx);
     gg.computeVertexNormals();
     const glassMesh = add(br, gg, glass);
     glassMesh.castShadow = false;
     keep(glassMesh);
-    // The deck's LED strip, which Tbilisi knows it by at night.
-    const ledGeom = new THREE.BufferGeometry().setFromPoints(line.map((p, i) => new THREE.Vector3(p.x, y0 + ((y1 - y0) * i) / Math.max(1, line.length - 1) + 1.25, p.z)));
+    // The deck: a steel box with a fascia, glass balustrades, a handrail, and the arches under it.
+    const deckSteps = Math.max(8, Math.round(total / 6));
+    // The walking surface: a strip between the balustrades.
+    const floor: number[] = [];
+    for (let i = 0; i < deckSteps; i++) {
+      const A = frameAt((i / deckSteps) * total); const B = frameAt(((i + 1) / deckSteps) * total);
+      const al = A.p.clone().addScaledVector(A.side, -HALF).setY(A.deckY); const ar = A.p.clone().addScaledVector(A.side, HALF).setY(A.deckY);
+      const bl = B.p.clone().addScaledVector(B.side, -HALF).setY(B.deckY); const brr = B.p.clone().addScaledVector(B.side, HALF).setY(B.deckY);
+      floor.push(al.x, al.y, al.z, bl.x, bl.y, bl.z, ar.x, ar.y, ar.z, ar.x, ar.y, ar.z, bl.x, bl.y, bl.z, brr.x, brr.y, brr.z);
+    }
+    const fg = new THREE.BufferGeometry();
+    fg.setAttribute('position', new THREE.Float32BufferAttribute(floor, 3));
+    fg.computeVertexNormals();
+    add(br, fg, mat('bridgeDeck', { color: srgb(0.46, 0.44, 0.42), roughness: 0.8, side: THREE.DoubleSide })).castShadow = false;
+    for (let i = 0; i < deckSteps; i++) {
+      const A = frameAt((i / deckSteps) * total); const B = frameAt(((i + 1) / deckSteps) * total);
+      for (const sgn of [-1, 1]) {
+        const a = A.p.clone().addScaledVector(A.side, HALF * sgn).setY(A.deckY);
+        const b = B.p.clone().addScaledVector(B.side, HALF * sgn).setY(B.deckY);
+        bar(br, a.clone().setY(a.y - 0.6), b.clone().setY(b.y - 0.6), 0.9, steelWhite);
+        bar(br, a.clone().setY(a.y + 1.1), b.clone().setY(b.y + 1.1), 0.08, steelGrey);
+        const pane = add(br, new THREE.PlaneGeometry(a.distanceTo(b), 1.0), glass, (a.x + b.x) / 2, (a.y + b.y) / 2 + 0.55, (a.z + b.z) / 2);
+        pane.rotation.y = Math.atan2(b.x - a.x, b.z - a.z) + Math.PI / 2;
+        pane.castShadow = false;
+        keep(pane);
+        if (i % 2 === 0) bar(br, a.clone().setY(a.y - 0.1), a.clone().setY(a.y + 1.1), 0.1, steelGrey);
+      }
+    }
+    for (const sgn of [-1, 1]) {
+      let prev: THREE.Vector3 | null = null;
+      for (let i = 0; i <= 20; i++) {
+        const u = i / 20;
+        const f = frameAt(u * total);
+        const cur = f.p.clone().addScaledVector(f.side, (HALF - 0.8) * sgn).setY(f.deckY - 1.2 - 5 * (1 - Math.sin(Math.PI * u)));
+        if (prev) bar(br, prev, cur, 0.7, steelWhite);
+        prev = cur;
+      }
+    }
+    // LEDs: a point at every node of the roof, lit after dark and twinkling in their rows.
+    const ledPos: number[] = []; const ledSeed: number[] = [];
+    for (let i = 0; i <= U; i++) for (let j = 0; j <= V; j++) { ledPos.push(nodes[i][j].x, nodes[i][j].y + 0.12, nodes[i][j].z); ledSeed.push(i * 0.37 + j * 1.3); }
+    const ledGeom = new THREE.BufferGeometry();
+    ledGeom.setAttribute('position', new THREE.Float32BufferAttribute(ledPos, 3));
+    ledGeom.setAttribute('aSeed', new THREE.Float32BufferAttribute(ledSeed, 1));
     geometries.push(ledGeom);
-    ledLine = new THREE.Line(ledGeom, new THREE.LineBasicMaterial({ color: 0x9fe8ff, transparent: true, opacity: 0 }));
-    materials.push(ledLine.material as THREE.Material);
-    br.add(keep(ledLine));
+    bridgeLeds = new THREE.ShaderMaterial({
+      uniforms: { uNight: { value: 0 }, uTime: { value: 0 } },
+      vertexShader: `attribute float aSeed; uniform float uNight; uniform float uTime; varying float vOn;
+        void main() {
+          vec4 mv = modelViewMatrix * vec4(position, 1.0);
+          // Rows of light running along the span, like a message passing over.
+          float wave = step(0.55, fract(aSeed * 0.21 - uTime * 0.35)) * step(0.3, fract(sin(aSeed * 12.9) * 43758.5));
+          vOn = uNight * (0.25 + 0.75 * wave);
+          gl_PointSize = clamp(260.0 / max(-mv.z, 1.0), 1.0, 6.0);
+          gl_Position = projectionMatrix * mv;
+        }`,
+      fragmentShader: `varying float vOn; void main() { vec2 c = gl_PointCoord - 0.5; float a = exp(-dot(c, c) * 14.0) * vOn; if (a < 0.01) discard; gl_FragColor = vec4(vec3(0.75, 0.9, 1.0) * a * 2.4, a); }`,
+      transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+    });
+    materials.push(bridgeLeds);
+    const leds = new THREE.Points(ledGeom, bridgeLeds);
+    leds.frustumCulled = false;
+    br.add(keep(leds));
     group.add(br);
-    const mid = at(total / 2);
-    sites.bridgeOfPeace = { x: mid.x, z: mid.z, base: (y0 + y1) / 2, top: (y0 + y1) / 2 + 8 };
+    const mid = frameAt(total / 2);
+    sites.bridgeOfPeace = { x: mid.p.x, z: mid.p.z, base: (y0 + y1) / 2, top: (y0 + y1) / 2 + 8 };
     sites.bridgeWest = deck[0][0] < deck[deck.length - 1][0] ? { x: deck[0][0], z: deck[0][1], base: y0, top: y0 } : { x: deck[deck.length - 1][0], z: deck[deck.length - 1][1], base: y1, top: y1 };
-    pois.push({ id: 'bridgeOfPeace', x: mid.x, z: mid.z, r: 80 });
+    pois.push({ id: 'bridgeOfPeace', x: mid.p.x, z: mid.p.z, r: 80 });
   }
 
   // ── Rike Park's two tubes, along the long axis of their footprint. ──
@@ -576,7 +706,8 @@ export function makeLandmarks(data: EarthData, heightAt: (x: number, z: number) 
         for (const c of cabins) c.rotation.z = -rotor.rotation.z;
       }
       if (tvLamps) tvLamps.visible = night > 0.2 && Math.sin(t * 3) > 0;
-      if (ledLine) (ledLine.material as THREE.LineBasicMaterial).opacity = night * (0.6 + 0.4 * Math.sin(t * 2 + 1));
+      if (tvGlow) tvGlow.emissive.setHSL((t * 0.02) % 1, 0.8, 0.28 * night);
+      if (bridgeLeds) { bridgeLeds.uniforms.uNight.value = night; bridgeLeds.uniforms.uTime.value = t; }
     },
     dispose() {
       for (const g of geometries) g.dispose();

@@ -46,6 +46,8 @@ export interface LanderTelemetry {
   /** Where the crew steps off. */
   egressX: number;
   egressZ: number;
+  /** Seconds since the engine was lit to leave, or −1 on the ground. */
+  climb: number;
 }
 
 export interface LanderHandle {
@@ -55,6 +57,8 @@ export interface LanderHandle {
   position: THREE.Vector3;
   yaw: number;
   update: (dt: number, input: LanderInput, heightAt: (x: number, z: number) => number) => void;
+  /** The crew is aboard: light the engine and go back up. */
+  launch: () => void;
   dispose: () => void;
 }
 
@@ -161,7 +165,7 @@ export function makeLander(
   const telemetry: LanderTelemetry = {
     altitude: start.alt, descent: start.descent, ground: padY, fuel: 1, throttle: 0,
     offset: 0, drift: 0, driftX: vel.x, driftZ: vel.z,
-    assist: false, landed: false, touchdown: 0, egressX: padX, egressZ: padZ,
+    assist: false, landed: false, touchdown: 0, egressX: padX, egressZ: padZ, climb: -1,
   };
   let flicker = 0;
   let dustAcc = 0;
@@ -169,6 +173,37 @@ export function makeLander(
   const handle: LanderHandle = {
     group, telemetry, position, yaw: 0,
     update(dt, input, height) {
+      if (telemetry.climb >= 0) {
+        // Going home: the engine comes up to full over a second, the vehicle
+        // hangs a moment while it overcomes its own weight, then climbs.
+        telemetry.climb += dt;
+        telemetry.throttle += (1 - telemetry.throttle) * (1 - Math.exp(-dt * 2.5));
+        vel.y += (telemetry.throttle * MAX_THRUST - g) * dt;
+        if (vel.y < 0 && position.y - height(position.x, position.z) <= TOUCH + 1e-3) vel.y = 0;
+        position.y += vel.y * dt;
+        flicker += dt * 30;
+        const t = telemetry.throttle;
+        plumeMat.opacity = t * (0.5 + 0.1 * Math.sin(flicker));
+        plume.scale.set(0.85 + t * 0.35, 0.6 + t * 0.9 + 0.08 * Math.sin(flicker * 1.7), 0.85 + t * 0.35);
+        const g2 = height(position.x, position.z);
+        const alt = position.y - g2;
+        lights?.request(position.x, position.y - 1.2, position.z, 0xaad6ff, t * 30, 24 + alt * 0.6, 2);
+        const blast = t * Math.max(0, 1 - alt / 35);
+        dustAcc += blast * dt * 90;
+        while (dustAcc >= 1) {
+          dustAcc -= 1;
+          const a = Math.random() * Math.PI * 2;
+          const r = 1.5 + Math.random() * (3 + blast * 10);
+          dust.burst({
+            x: position.x + Math.cos(a) * r, y: g2, z: position.z + Math.sin(a) * r,
+            count: 1, speedMin: 2, speedMax: 4 + blast * 9, cone: 1.5, size: 0.15,
+            dirX: Math.cos(a), dirZ: Math.sin(a), bias: 2.4 + blast * 2,
+          });
+        }
+        telemetry.altitude = Math.max(0, alt - TOUCH);
+        telemetry.descent = -vel.y;
+        return;
+      }
       if (telemetry.landed) {
         // Down and quiet: the plume dies, the dust settles.
         telemetry.throttle += (0 - telemetry.throttle) * (1 - Math.exp(-dt * 6));
@@ -269,6 +304,11 @@ export function makeLander(
       telemetry.driftX = vel.x;
       telemetry.driftZ = vel.z;
       telemetry.drift = Math.hypot(vel.x, vel.z);
+    },
+    launch() {
+      if (!telemetry.landed || telemetry.climb >= 0) return;
+      telemetry.climb = 0;
+      vel.set(0, 0, 0);
     },
     dispose() {
       for (const g of geoms) g.dispose();

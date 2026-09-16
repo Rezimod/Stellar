@@ -1435,7 +1435,7 @@
         "t12": "Menu, top right — targets, camera, landscape, and Customize the deck: drag every control where you want it, size it, save",
         "r12": "K — docking computer: bring the ship in to a station nearby",
         "t13": "Dock key — near a station it appears; tap and the computer brings you in. Push forward to leave.",
-        "r13": "L — down to the surface. The key comes up over the Moon, Mars and Proxima b, and lights when you are low enough.",
+        "r13": "L — down to the surface. The landing card comes up over Earth, the Moon, Mars and Proxima b, and lights when you are low enough.",
         "r14": "M — sound on and off",
         "t14": "Sound — on and off in the menu",
         "r15": "Z — flight assist · V — step out in the suit, and back aboard · R — clear the target",
@@ -1485,7 +1485,8 @@
       "docking": "Docking… tap to cancel",
       "soundOn": "Sound on",
       "soundOff": "Sound off",
-      "landBelow": "{body} — below {n} km"
+      "landReady": "Ready to land",
+      "landDescend": "Descend below {n} km"
     },
     "moon": {
       "place": "Stellar Base · Moon",
@@ -1586,7 +1587,8 @@
         "assist": "Guidance has the stick",
         "throttle": "Engine",
         "touchdown": "{n} m/s at contact",
-        "drift": "Drift"
+        "drift": "Drift",
+        "ascent": "Lift-off"
       },
       "gears": {
         "creep": "Creep",
@@ -1678,7 +1680,8 @@
           "charger": "Charger"
         },
         "placeBeacon": "Set up the beacon",
-        "logSinkhole": "Log the sinkhole"
+        "logSinkhole": "Log the sinkhole",
+        "boardLander": "Board the lander — lift off"
       },
       "airlock": {
         "cycling": "Equalising — {n}%",
@@ -1856,7 +1859,8 @@
             "greenhouse": "Crop status",
             "isru": "Plant status",
             "power": "Reactor status"
-          }
+          },
+          "boardLander": "Board the lander — lift off"
         },
         "readout": {
           "habitat": "HAB-1 · 101 kPa · 21 °C · CO₂ 0.4 % · shielding 2.1 m regolith · 4 crew asleep",
@@ -1905,7 +1909,8 @@
           "ourLander": "Your descent vehicle"
         },
         "act": {
-          "greet": "Greet"
+          "greet": "Greet",
+          "boardLander": "Board the lander — lift off"
         },
         "readout": {
           "none": ""
@@ -1939,17 +1944,19 @@
         "run": "Run",
         "credits": "Map data © OpenStreetMap contributors (ODbL) · Terrain: SRTM and GMTED2010 (USGS), ETOPO1 (NOAA), via AWS Terrain Tiles · Weather: Open-Meteo.com (CC BY 4.0)",
         "hints": {
-          "walk": "W A S D — walk. Hold Shift to run. One g, and a real walking pace.",
-          "jump": "Space — jump. About forty centimetres: this is home.",
-          "walkTouch": "Left stick — walk. Drag anywhere else to look around.",
-          "jumpTouch": "Jump is bottom right. About forty centimetres: this is home."
+          "walk": "W A S D — jog. Shift — sprint. The red car by the pad is yours: E to get in.",
+          "jump": "Space — jump. The red car by the pad is yours: E to get in.",
+          "walkTouch": "Left stick — jog; push it to the rim to sprint. Drag anywhere else to look around.",
+          "jumpTouch": "Jump is bottom right. The red car by the pad: the amber key gets you in.",
+          "drive": "W / S — drive and brake (reverse when stopped) · A / D — steer · Space — handbrake · E — get out",
+          "driveTouch": "Stick up and down — drive and brake · left and right — steer · Jump key — handbrake"
         },
         "keys": {
-          "r1": "W A S D / arrows — walk · Shift — run · C — crouch",
+          "r1": "W A S D / arrows — jog · Shift — sprint · C — crouch",
           "r2": "Space — jump; on the way down it is the descent engine",
           "r3": "Mouse drag — look around · wheel — zoom",
           "r4": "V — walk the camera round: over the shoulder, first person, wide",
-          "r5": "E — the thing in front of you: board, climb, assemble, look",
+          "r5": "E — the thing in front of you: the car, the lander, the cable car, the roof, the telescope",
           "r6": "The Bridge of Peace is west of the pad; the cable car starts beside it",
           "r7": "Hold E in the cable car to ride six times as fast",
           "t1": "Left stick — walk; push it to the rim to run",
@@ -1981,7 +1988,11 @@
           "faceNorth": "Face north to align",
           "slew": "Slew to the target",
           "eyepiece": "Look through the eyepiece",
-          "closeEyepiece": "Close the eyepiece"
+          "closeEyepiece": "Close the eyepiece",
+          "boardLander": "Board the lander — lift off",
+          "drive": "Get in the car",
+          "getOut": "Get out",
+          "stopToExit": "Stop to get out"
         },
         "readout": {
           "none": ""
@@ -1993,7 +2004,8 @@
           "overlook": "Act 3 — Read the city from the walls",
           "rooftop": "Act 4 — A telescope on an Avlabari roof",
           "firstLight": "Act 5 — First light",
-          "done": "First light — Tbilisi, tonight"
+          "done": "First light — Tbilisi, tonight",
+          "welcome": "Tbilisi comes out to meet you"
         },
         "dialog": {
           "who": ""

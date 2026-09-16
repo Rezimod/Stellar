@@ -86,7 +86,9 @@ export interface SurfaceOptions {
 export interface SurfaceTelemetry {
   /** Programs are compiled and frames are being drawn. */
   ready: boolean;
-  phase: 'descent' | 'touchdown' | 'surface';
+  phase: 'descent' | 'touchdown' | 'surface' | 'ascent';
+  /** The lander has climbed out of sight: orbit can take over. */
+  ascended: boolean;
   touchdownIn: number;
   landing: LanderTelemetry;
   grade: string;
@@ -476,7 +478,7 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
   };
   const interactions = makeInteractions();
   const telemetry: SurfaceTelemetry = {
-    ready: false, phase: 'descent', touchdownIn: 0, landing: lander.telemetry, grade: '',
+    ready: false, phase: 'descent', ascended: false, touchdownIn: 0, landing: lander.telemetry, grade: '',
     view: 'chase', driving: false, poiId: '', poiDist: 0, impactDist: 0, impactHold: 0,
     airborne: false, altitude: 0, speed: 0, hint: 'walk', craters: 0,
     o2: 97.4, heartRate: 64, suitTemp: 21.5, evaSeconds: 0, distanceM: 0,
@@ -578,7 +580,22 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
     const hull = { x: lander.position.x, z: lander.position.z, r: 3.4 };
     base.colliders.push(hull);
     base.walkColliders.push(hull);
+    // The way home: climb aboard and go back up.
+    interactions.add({
+      id: 'boardLander', priority: 4,
+      where: () => (telemetry.phase === 'surface' && !driving() && !br && !fall.active ? { x: lander.position.x, z: lander.position.z, r: 5.2 } : null),
+      kind: () => 'tap', label: () => 'boardLander',
+      use: () => {
+        telemetry.phase = 'ascent';
+        cosmonaut.group.visible = false;
+        lander.launch();
+        audio.thump(12);
+        cam.shake(0.5);
+        ascentFrom.copy(camera.position);
+      },
+    });
   };
+  const ascentFrom = new THREE.Vector3();
 
   // ── The sinkhole, the fall, and the Backrooms under it. ──
   const fall = makeFall({ cosmonaut, camera, cam, dust, thump: (d) => audio.thump(d), g: MOON_G });
@@ -811,7 +828,20 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
       underground(dt);
       return;
     }
-    if (telemetry.phase !== 'surface') {
+    if (telemetry.phase === 'ascent') {
+      // ── Going home: the camera stays on the ground a moment, then follows the vehicle up. ──
+      lander.update(dt, { throttle: 0, moveX: 0, moveY: 0 }, terrain.heightAt);
+      input.interact = false;
+      const climb = lander.telemetry.climb;
+      tmp.copy(lander.position).y += 2.5;
+      descentPos.copy(ascentFrom).lerp(tmp, THREE.MathUtils.smoothstep(climb, 1.5, 6) * 0.55);
+      descentPos.y = Math.max(ascentFrom.y, descentPos.y);
+      camera.position.lerp(descentPos, 1 - Math.exp(-dt * 3));
+      camera.lookAt(tmp);
+      rover.update(dt, 0, 0, base.colliders, TERRAIN_WALK_RADIUS);
+      rover.present(1);
+      if (climb > 7.5) telemetry.ascended = true;
+    } else if (telemetry.phase !== 'surface') {
       // ── The landing. The vehicle is flown; the camera rides low on its
       // quarter, so it looms, and it sways with the engine. ──
       const lt = lander.telemetry;

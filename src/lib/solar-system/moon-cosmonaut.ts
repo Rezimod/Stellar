@@ -68,6 +68,8 @@ export interface CosmonautHandle {
   ankles: readonly THREE.Object3D[];
   /** Change the world under the boots: gravity, and whether the suit is pressurised. */
   setGravity: (g: number, suited: boolean) => void;
+  /** Move to a hand-tuned profile (a world that wants its own feel). */
+  setProfile: (p: GaitProfile) => void;
   /** Eye point inside the helmet, world space. */
   eye: (out: THREE.Vector3) => THREE.Vector3;
   setHelmetView: (on: boolean) => void;
@@ -228,6 +230,11 @@ export function makeCosmonaut(dust: DustHandle, lite = false, g = MOON_G, suited
       loco.setProfile(gaitProfile(gravity, pressurised));
       handle.profile = loco.profile;
       state.gravity = gravity;
+    },
+    setProfile(p) {
+      loco.setProfile(p);
+      handle.profile = loco.profile;
+      state.gravity = p.g;
     },
     eye(out) {
       group.updateMatrixWorld(true);

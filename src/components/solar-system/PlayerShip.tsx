@@ -103,6 +103,7 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, landscape,
   const t = useTranslations('solarSystem.flight');
   const tb = useTranslations('solarSystem.bodies');
   const tl = useTranslations('solarSystem.loading');
+  const ts = useTranslations('solarSystem');
   const tips = useLoadingTips();
   const [sound, toggleSound] = useSoundPref();
   const [active, setActive] = useState(false);
@@ -142,6 +143,9 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, landscape,
   const orderBarRef = useRef<HTMLSpanElement>(null);
   const landRef = useRef<HTMLButtonElement>(null);
   const landTextRef = useRef<HTMLSpanElement>(null);
+  const landPlaceRef = useRef<HTMLSpanElement>(null);
+  const landStateRef = useRef<HTMLSpanElement>(null);
+  const landFillRef = useRef(-1);
   const dockRef = useRef<HTMLButtonElement>(null);
   const dockTextRef = useRef<HTMLSpanElement>(null);
   const railRefs = useRef<(HTMLButtonElement | null)[]>([]);
@@ -394,8 +398,17 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, landscape,
         if (!landKey.hidden) landSiteRef.current = tel.nearId as LandingSite;
         if (!landKey.hidden && landLabelRef.current !== label) {
           landLabelRef.current = label;
-          const where = t(`landOn.${tel.nearId}`);
-          text(landTextRef.current, ready ? where : t('landBelow', { body: where, n: fmt(ceiling) }));
+          text(landTextRef.current, t(`landOn.${tel.nearId}`));
+          text(landPlaceRef.current, ts(tel.nearId === 'moon' ? 'moon.place' : `worlds.${tel.nearId}.place`));
+          text(landStateRef.current, ready ? t('landReady') : t('landDescend', { n: fmt(ceiling) }));
+        }
+        // How far down to the ceiling, on a log scale: full once under it.
+        if (!landKey.hidden) {
+          const fill = ready ? 1 : Math.max(0, Math.min(1, 1 - Math.log(tel.nearAltKm / ceiling) / Math.log(40)));
+          if (Math.abs(fill - landFillRef.current) > 0.005) {
+            landFillRef.current = fill;
+            landKey.style.setProperty('--land', fill.toFixed(3));
+          }
         }
       }
       // L on a keyboard: with the pointer held for steering, no key on the
@@ -748,7 +761,14 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, landscape,
           <div className="flight-hud__dock">
             <div className="flight-hud__prompts">
               <button ref={landRef} type="button" className="flight-hud__prompt flight-hud__land" {...tapKey(land)} hidden>
-                <ArrowDownToLine size={16} aria-hidden /><span ref={landTextRef}>{t('landOn.moon')}</span>
+                <span className="flight-hud__land-icon"><ArrowDownToLine size={18} aria-hidden /></span>
+                <span className="flight-hud__land-text">
+                  <span ref={landTextRef} className="flight-hud__land-title">{t('landOn.moon')}</span>
+                  <span ref={landPlaceRef} className="flight-hud__land-place" />
+                  <span className="flight-hud__land-gauge" aria-hidden><i /></span>
+                  <span ref={landStateRef} className="flight-hud__land-state" />
+                </span>
+                {!touch && <kbd className="flight-hud__land-key">L</kbd>}
               </button>
               <button ref={dockRef} type="button" className="flight-hud__prompt flight-hud__dock-key" {...tapKey(() => { session.input.dockRequest = true; })} hidden>
                 <Anchor size={16} aria-hidden /><span ref={dockTextRef} />
