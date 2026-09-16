@@ -67,6 +67,19 @@
     "trust": {
       "astronomers": "Trusted by amateur astronomers",
       "rewards": "Real rewards from Astroman"
+    },
+    "explore": {
+      "eyebrow": "Explore Mode · 3D",
+      "title": "Fly to the planets. Land on the Moon.",
+      "subtitle": "Take the ship out yourself: light-speed jumps between the planets, a real landing, and a walk on the surface in a Georgian suit. Your sky, in 3D.",
+      "chipsLabel": "What you can do",
+      "chips": {
+        "fly": "Fly the ship",
+        "land": "Land on the Moon",
+        "find": "Find what’s in the crater"
+      },
+      "cta": "Launch Explore Mode",
+      "note": "Works on your phone — two thumbs are enough"
     }
   },
   "sky": {
@@ -2435,7 +2448,8 @@
           "title": "Earn",
           "desc": "Complete missions to earn rewards"
         }
-      }
+      },
+      "ctaExplore": "Explore in 3D"
     },
     "partners": "Partner brands",
     "achievements": {

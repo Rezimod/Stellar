@@ -3,6 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 import HomeHeroSaturn from '@/components/home/HomeHeroSaturn';
+import HomeExplore from '@/components/home/HomeExplore';
 import ComparisonTable from '@/components/home/ComparisonTable';
 import ScrollReveals from '@/components/home/ScrollReveals';
 
@@ -1050,6 +1051,7 @@ export default async function HomePage() {
           HERO — Saturn parallax, screenshot redesign
          ============================================================ */}
       <HomeHeroSaturn />
+      <HomeExplore />
 
       <section className="relative px-4 md:px-8 pt-14 md:pt-20 pb-2">
         <div className="relative max-w-[960px] mx-auto" data-reveal>
