@@ -33,6 +33,8 @@ export interface FlightAudio {
   confirm: () => void;
   /** The black hole's organ, 0 far away and 1 at the horizon. Call every frame. */
   drone: (k: number) => void;
+  /** The roar of air on a re-entry heat shield, 0 silent … 1 at peak heating. Call every frame. */
+  reentry: (k: number) => void;
   /** Hold everything while the deck is paused. */
   setPaused: (paused: boolean) => void;
   dispose: () => void;
@@ -52,6 +54,7 @@ export function makeFlightAudio(): FlightAudio {
   /** The black hole's organ, once it has been heard. */
   let droneGain: GainNode | null = null;
   let droneK = 0;
+  let roar: { gain: GainNode; filter: BiquadFilterNode; src: AudioBufferSourceNode; rumble: OscillatorNode } | null = null;
   let lastHit = -1;
   let paused = false;
   let disposed = false;
@@ -316,6 +319,43 @@ export function makeFlightAudio(): FlightAudio {
           }
         }
         droneGain.gain.setTargetAtTime(droneK * 1.1, c.currentTime, droneK > 0 ? 0.9 : 0.5);
+      });
+    },
+    reentry(k) {
+      const next = Math.max(0, Math.min(1, k));
+      if (!roar && next < 0.01) return;
+      safe((c) => {
+        if (!master || !noise) return;
+        if (!roar) {
+          // Air torn apart at the shield: brown-ish noise through a moving low-pass, and a rumble under it.
+          const src = c.createBufferSource();
+          src.buffer = noise;
+          src.loop = true;
+          const filter = c.createBiquadFilter();
+          filter.type = 'lowpass';
+          filter.frequency.value = 200;
+          filter.Q.value = 0.7;
+          const gain = c.createGain();
+          gain.gain.value = 0;
+          const rumble = c.createOscillator();
+          rumble.type = 'sine';
+          rumble.frequency.value = 38;
+          const rg = c.createGain();
+          rg.gain.value = 0.5;
+          src.connect(filter).connect(gain).connect(master);
+          rumble.connect(rg).connect(gain);
+          src.start();
+          rumble.start();
+          roar = { gain, filter, src, rumble };
+        }
+        roar.gain.gain.setTargetAtTime(next * 2.4, c.currentTime, 0.15);
+        roar.filter.frequency.setTargetAtTime(180 + next * 1400, c.currentTime, 0.2);
+        roar.rumble.frequency.setTargetAtTime(30 + next * 16, c.currentTime, 0.3);
+        if (next < 0.01) {
+          const r = roar;
+          roar = null;
+          window.setTimeout(() => { try { r.src.stop(); r.rumble.stop(); r.gain.disconnect(); } catch { /* already gone */ } }, 900);
+        }
       });
     },
     setPaused(next) {

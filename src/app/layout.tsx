@@ -72,8 +72,6 @@ export const metadata: Metadata = {
     default: 'Stellar — Observe the Night Sky, Earn Rewards, Collect Discoveries',
     template: '%s',
   },
-  description:
-    'The companion app for telescope, smartphone, and camera owners. Photograph the sky, earn Stars, redeem for real telescopes at Astroman.',
   metadataBase: new URL('https://stellarr.club'),
   alternates: { canonical: '/' },
   robots: {
@@ -89,8 +87,6 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: 'Stellar — Your default astronomy app',
-    description:
-      'The companion app for telescope, smartphone, and camera owners. Photograph the sky, earn Stars, redeem for real telescopes at Astroman.',
     url: 'https://stellarr.club',
     siteName: 'Stellar',
     images: ['/opengraph-image'],
@@ -98,8 +94,6 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Stellar — Your default astronomy app',
-    description:
-      'Photograph the sky, earn Stars, redeem for real telescopes at Astroman.',
     images: ['/opengraph-image'],
     creator: '@StellarClub26',
   },

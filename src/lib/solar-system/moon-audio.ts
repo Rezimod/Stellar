@@ -23,7 +23,8 @@ export interface SuitAudio {
   dispose: () => void;
 }
 
-export function makeSuitAudio(): SuitAudio {
+/** `open`: no helmet and no pack — no fan, and breath only when it is hard work. */
+export function makeSuitAudio(open = false): SuitAudio {
   let ctx: AudioContext | null = null;
   let master: GainNode | null = null;
   let breathGain: GainNode | null = null;
@@ -114,14 +115,14 @@ export function makeSuitAudio(): SuitAudio {
     },
     update(dt, exertion, helmet) {
       if (!ctx || !breathGain || !fanGain) return;
-      helmetK += ((helmet ? 1 : 0.45) - helmetK) * (1 - Math.exp(-dt * 4));
+      helmetK += ((open ? 0 : helmet ? 1 : 0.45) - helmetK) * (1 - Math.exp(-dt * 4));
       rate += ((0.24 + exertion * 0.55) - rate) * (1 - Math.exp(-dt * 0.5));
       breathT += dt * rate;
       // In through the first 40 % of the cycle, out through the next 45 %, a rest.
       const ph = breathT % 1;
       const env = ph < 0.4 ? Math.sin(ph / 0.4 * Math.PI) : ph < 0.85 ? Math.sin((ph - 0.4) / 0.45 * Math.PI) * 0.75 : 0;
       const depth = 0.05 + exertion * 0.16;
-      breathGain.gain.setTargetAtTime(env * depth * helmetK, ctx.currentTime, 0.05);
+      breathGain.gain.setTargetAtTime(env * depth * (open ? Math.max(0, exertion - 0.45) * 0.8 : helmetK), ctx.currentTime, 0.05);
       fanGain.gain.setTargetAtTime(0.05 * helmetK, ctx.currentTime, 0.1);
     },
     step(hard) {

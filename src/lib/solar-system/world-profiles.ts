@@ -14,10 +14,14 @@
 // and B as a brilliant double star; aurorae from the star's flares; and a
 // biosphere that photosynthesises under red light — so its leaves are near
 // black — and talks to itself with light, so the twilight is full of colour.
+//
+// Earth is Tbilisi, and nothing on it is invented: the ground, the city and
+// the sky come from baked open data and astronomy-engine (world-earth-*).
+// The profile only holds what the shared rig reads before that loads.
 
 import * as THREE from 'three';
 
-export type WorldId = 'mars' | 'proximaB';
+export type WorldId = 'mars' | 'proximaB' | 'earth';
 
 export interface SkyMoon {
   id: string;
@@ -94,6 +98,8 @@ export interface WorldProfile {
   walkRadius: number;
   /** Where the descent aims. */
   pad: { x: number; z: number };
+  /** Air to breathe: no helmet, no oxygen reading. */
+  breathable?: boolean;
 }
 
 const v = (x: number, y: number, z: number) => new THREE.Vector3(x, y, z).normalize();
@@ -168,11 +174,41 @@ export const PROXIMA_B: WorldProfile = {
   pad: { x: 0, z: -6 },
 };
 
-export const WORLDS: Record<WorldId, WorldProfile> = { mars: MARS, proximaB: PROXIMA_B };
+export const EARTH: WorldProfile = {
+  id: 'earth',
+  gravity: 9.81,
+  // Replaced every frame by the real Sun over Tbilisi.
+  sunDir: v(0.3, 0.6, 0.5),
+  sun: {
+    color: 0xfff4e6, intensity: 3,
+    disc: c(5, 4.8, 4.5), discScale: 40,
+    halo: 0xfff1d6, haloOpacity: 0.2, haloScale: 300,
+  },
+  sky: {
+    zenith: c(0.18, 0.32, 0.62), horizon: c(0.62, 0.7, 0.8),
+    glow: c(1, 0.95, 0.85), glowPower: 10,
+    fillSky: 0xa9c4e8, fillGround: 0x6a5a48, fill: 0.6,
+    fog: 0x9fb2c8, fogNear: 400, fogFar: 20000,
+    stars: 0, aurora: false, moons: [], stars2: [],
+  },
+  ground: {
+    plain: [0.3, 0.28, 0.24], dark: [0.2, 0.19, 0.17], pale: [0.4, 0.38, 0.34],
+    rockA: 0x6a6258, rockB: 0x8a8074,
+    dust: [0.42, 0.38, 0.32], dunes: 0, craters: 0, relief: 0,
+    water: null, seed: 4144,
+  },
+  ambientC: 0,
+  walkRadius: 1950,
+  // The bake puts the pad at the origin; the descent aims 26 m on from here.
+  pad: { x: 0, z: -26 },
+  breathable: true,
+};
 
-/** The bodies a ship can go down to, and how low it must be, km. */
-export const LANDING_SITES: Record<string, number> = { moon: 2500, mars: 4200, proximaB: 4200 };
+export const WORLDS: Record<WorldId, WorldProfile> = { mars: MARS, proximaB: PROXIMA_B, earth: EARTH };
+
+/** The bodies a ship can go down to, and how low it must be, km. Anywhere over Earth comes down in Tbilisi. */
+export const LANDING_SITES: Record<string, number> = { moon: 2500, mars: 4200, proximaB: 4200, earth: 6000 };
 
 export function isWorldId(id: string): id is WorldId {
-  return id === 'mars' || id === 'proximaB';
+  return id === 'mars' || id === 'proximaB' || id === 'earth';
 }

@@ -1450,7 +1450,8 @@
       "landOn": {
         "moon": "Land on the Moon",
         "mars": "Land at Mars Base",
-        "proximaB": "Land on Proxima b"
+        "proximaB": "Land on Proxima b",
+        "earth": "Land in Tbilisi"
       },
       "jumpLabel": "Light-year jump",
       "jumpShort": "Jump",
@@ -1927,6 +1928,121 @@
           "stone": "This one wants you to follow. It keeps looking toward the stone.",
           "gift": "They have added a mark to the stone: a suit, standing next to one of them. You are in their record now."
         }
+      },
+      "earth": {
+        "place": "Tbilisi · Rike Park",
+        "loading": "Descending to Tbilisi",
+        "loadingDetail": "Loading the Mtkvari valley — 34,000 buildings, the Caucasus on the horizon",
+        "loadError": "Tbilisi's map did not load. Check the connection and land again.",
+        "outside": "Outside",
+        "localTime": "Tbilisi",
+        "run": "Run",
+        "credits": "Map data © OpenStreetMap contributors (ODbL) · Terrain: SRTM and GMTED2010 (USGS), ETOPO1 (NOAA), via AWS Terrain Tiles · Weather: Open-Meteo.com (CC BY 4.0)",
+        "hints": {
+          "walk": "W A S D — walk. Hold Shift to run. One g, and a real walking pace.",
+          "jump": "Space — jump. About forty centimetres: this is home.",
+          "walkTouch": "Left stick — walk. Drag anywhere else to look around.",
+          "jumpTouch": "Jump is bottom right. About forty centimetres: this is home."
+        },
+        "keys": {
+          "r1": "W A S D / arrows — walk · Shift — run · C — crouch",
+          "r2": "Space — jump; on the way down it is the descent engine",
+          "r3": "Mouse drag — look around · wheel — zoom",
+          "r4": "V — walk the camera round: over the shoulder, first person, wide",
+          "r5": "E — the thing in front of you: board, climb, assemble, look",
+          "r6": "The Bridge of Peace is west of the pad; the cable car starts beside it",
+          "r7": "Hold E in the cable car to ride six times as fast",
+          "t1": "Left stick — walk; push it to the rim to run",
+          "t2": "Right half — drag to look around",
+          "t3": "Run and crouch — beside the stick; jump — bottom right",
+          "t4": "Camera — walk the view round: shoulder, first person, wide",
+          "t5": "The amber key does the thing in front of you",
+          "t6": "The Bridge of Peace is west of the pad; the cable car starts beside it"
+        },
+        "pois": {
+          "narikala": "Narikala — the fortress on the Sololaki ridge, from the 4th century",
+          "kartlisDeda": "Kartlis Deda — Mother of Georgia, 20 m, 1958",
+          "sameba": "Sameba — the Holy Trinity Cathedral, 87 m",
+          "bridgeOfPeace": "Bridge of Peace — 150 m of steel and glass over the Mtkvari, 2010",
+          "rikeTubes": "Rike Park Music Theatre and Exhibition Hall — the two tubes",
+          "abanotubani": "Abanotubani — the sulphur baths under their brick domes",
+          "ourLander": "Your descent vehicle"
+        },
+        "act": {
+          "board": "Board the cable car",
+          "climb": "Up to the roof",
+          "descend": "Down the stairwell",
+          "part": {
+            "tripod": "Set up the tripod",
+            "mount": "Fit the mount",
+            "tube": "Mount the telescope"
+          },
+          "align": "Align on north",
+          "faceNorth": "Face north to align",
+          "slew": "Slew to the target",
+          "eyepiece": "Look through the eyepiece",
+          "closeEyepiece": "Close the eyepiece"
+        },
+        "readout": {
+          "none": ""
+        },
+        "banner": {
+          "arrived": "Tbilisi — welcome home",
+          "bridge": "Act 1 — Cross the Bridge of Peace",
+          "cable": "Act 2 — Ride up to Narikala",
+          "overlook": "Act 3 — Read the city from the walls",
+          "rooftop": "Act 4 — A telescope on an Avlabari roof",
+          "firstLight": "Act 5 — First light",
+          "done": "First light — Tbilisi, tonight"
+        },
+        "dialog": {
+          "who": ""
+        },
+        "expedition": {
+          "title": "Expedition",
+          "obj": {
+            "bridge": "Cross the Bridge of Peace into the Old Town",
+            "cable": "Walk to the Rike cable car station and board",
+            "riding": "Riding up to Narikala — three minutes",
+            "overlook": "From the walls, find Sameba, the TV tower and the Bridge of Peace — look straight at each",
+            "rooftop": "Find the stairwell of the flat-roofed building in Avlabari",
+            "assemble": "Put the telescope together",
+            "align": "Face north and align the mount",
+            "backToRoof": "Back up to the roof — it is dusk",
+            "slew": "Slew the telescope to tonight's target",
+            "look": "Look",
+            "done": "Expedition complete — come back at dusk any day",
+            "doneRoof": "The eyepiece is yours: tonight's sky over Tbilisi"
+          },
+          "spot": "Looking for {name}",
+          "found": "{n} of 3 found",
+          "names": {
+            "sameba": "Sameba",
+            "tvTower": "the TV tower",
+            "bridgeOfPeace": "the Bridge of Peace"
+          }
+        },
+        "eyepiece": {
+          "title": "Eyepiece · {mag}×",
+          "close": "Close",
+          "alt": "Altitude",
+          "az": "Azimuth",
+          "brightness": "Magnitude",
+          "size": "Size",
+          "phase": "Lit",
+          "time": "Tbilisi",
+          "note": "Positions for Tbilisi from astronomy-engine",
+          "targets": {
+            "saturn": "Saturn",
+            "jupiter": "Jupiter",
+            "moon": "The Moon",
+            "mars": "Mars",
+            "venus": "Venus",
+            "mercury": "Mercury",
+            "star": "{name}"
+          }
+        },
+        "entry": "Entry interface"
       }
     }
   },

@@ -2767,3 +2767,91 @@
 @media (prefers-reduced-motion: reduce) {
   .moon-hud__br, .moon-hud__br-carrier { animation: none; }
 }
+
+/* ═══════════ Earth: Tbilisi ═══════════ */
+.moon-surface--earth { background: var(--canvas); }
+.moon-surface--earth .moon-hud { --hud-warm: var(--terracotta); --hud-accent: var(--seafoam); }
+.moon-surface--earth .moon-hud__objective { top: calc(var(--edge-top) + 112px); }
+.earth-hud__credits {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(560px, calc(100% - 320px));
+  bottom: calc(var(--edge-bottom) + 58px);
+  margin: 0;
+  font: 400 12px/1.35 var(--font-body), system-ui, sans-serif;
+  letter-spacing: 0;
+  color: var(--text-muted);
+  opacity: 0.7;
+  text-align: center;
+  pointer-events: none;
+}
+.moon-surface:not([data-phase='surface']) .earth-hud__credits,
+.moon-surface[data-immersive='true'] .earth-hud__credits { display: none; }
+.earth-hud__retry {
+  position: absolute;
+  left: 50%;
+  bottom: calc(max(14px, env(safe-area-inset-bottom)) + 48px);
+  transform: translateX(-50%);
+  z-index: 30;
+  pointer-events: auto;
+}
+
+/* The rooftop telescope's eyepiece: the field stop, and the numbers beside it. */
+.earth-eyepiece {
+  position: absolute;
+  inset: 0;
+  z-index: 25;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  padding: 16px;
+  background: color-mix(in oklab, var(--canvas) 30%, black 70%);
+  animation: earth-eyepiece-in 0.5s ease-out both;
+}
+.earth-eyepiece__field {
+  width: min(520px, 78vmin);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: 0 0 0 1px var(--border);
+}
+.earth-eyepiece__canvas { display: block; width: 100%; height: 100%; }
+.earth-eyepiece__card {
+  display: grid;
+  gap: 8px;
+  min-width: 220px;
+  max-width: 280px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-panel);
+  color: var(--text);
+  font: 500 14px/1.4 var(--font-body), system-ui, sans-serif;
+}
+.earth-eyepiece__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.earth-eyepiece__name { font-size: 18px; }
+.earth-eyepiece__close {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  min-height: 0;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+}
+.earth-eyepiece__tag { font: 400 12px var(--font-mono), monospace; letter-spacing: 0.12em; text-transform: uppercase; color: var(--terracotta); }
+.earth-eyepiece__rows { display: grid; gap: 4px; margin: 0; }
+.earth-eyepiece__rows > div { display: flex; justify-content: space-between; gap: 12px; }
+.earth-eyepiece__rows dt { color: var(--text-muted); font-size: 12px; }
+.earth-eyepiece__rows dd { margin: 0; font: 400 13px var(--font-mono), monospace; font-variant-numeric: tabular-nums; }
+.earth-eyepiece__note { margin: 0; font-size: 12px; color: var(--text-muted); }
+@keyframes earth-eyepiece-in { from { opacity: 0; } to { opacity: 1; } }
+@media (max-width: 720px) {
+  .earth-eyepiece { flex-direction: column; gap: 12px; }
+  .earth-eyepiece__card { max-width: none; width: min(520px, 100%); }
+}

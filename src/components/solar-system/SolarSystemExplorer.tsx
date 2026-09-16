@@ -90,8 +90,10 @@ export default function SolarSystemExplorer() {
   useEffect(() => {
     window.dispatchEvent(new Event('resize'));
   }, [landscape]);
+  // The orrery's clock stands still while a surface is open: the orbit scene is
+  // suspended, and ticking it would re-render the whole surface HUD every frame.
   useEffect(() => {
-    if (!playing || flightActive) return;
+    if (!playing || flightActive || landed !== null) return;
     let last = performance.now();
     let raf = 0;
     const tick = (now: number) => {
@@ -102,7 +104,7 @@ export default function SolarSystemExplorer() {
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [playing, speedIdx, flightActive]);
+  }, [playing, speedIdx, flightActive, landed]);
 
   return (
     <div className="solar-system solar-system--immersive" data-flying={flightActive} onContextMenu={(e) => e.preventDefault()} onDragStart={(e) => e.preventDefault()} onSelect={(e) => e.preventDefault()}>
