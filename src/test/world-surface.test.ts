@@ -109,10 +109,11 @@ describe('the villagers', () => {
 });
 
 describe('where a ship may go down', () => {
-  it('knows the three surfaces and nothing else', () => {
-    expect(Object.keys(LANDING_SITES).sort()).toEqual(['mars', 'moon', 'proximaB']);
+  it('knows the four surfaces and nothing else', () => {
+    expect(Object.keys(LANDING_SITES).sort()).toEqual(['earth', 'mars', 'moon', 'proximaB']);
     expect(isWorldId('mars')).toBe(true);
+    expect(isWorldId('earth')).toBe(true);
     expect(isWorldId('moon')).toBe(false);
-    expect(isWorldId('earth')).toBe(false);
+    expect(isWorldId('venus')).toBe(false);
   });
 });

@@ -69,6 +69,10 @@ const FUEL_BURN = 0.035;
 const PROFILE = 0.8;
 const TOUCH = 0.35;
 
+/** Where the powered descent begins: height over the pad, sink rate, and how far off it the vehicle is. */
+export interface DescentStart { alt: number; descent: number; offsetX: number; offsetZ: number; driftX: number; driftZ: number }
+const MOON_START: DescentStart = { alt: START_ALT, descent: START_DESCENT, offsetX: -34, offsetZ: 52, driftX: 1.6, driftZ: -2.4 };
+
 export function makeLander(
   padX: number,
   padZ: number,
@@ -77,6 +81,7 @@ export function makeLander(
   lite: boolean,
   lights?: LightPool,
   g = MOON_G,
+  start: DescentStart = MOON_START,
 ): LanderHandle {
   const MAX_THRUST = THRUST_G * g;
   const RCS = RCS_G * g;
@@ -150,11 +155,11 @@ export function makeLander(
   geoms.push(...mergeStatic(group, { minCaster: 0.1 }).geometries);
 
   const position = group.position;
-  const vel = new THREE.Vector3(1.6, -START_DESCENT, -2.4);
+  const vel = new THREE.Vector3(start.driftX, -start.descent, start.driftZ);
   const padY = heightAt(padX, padZ);
-  position.set(padX - 34, padY + START_ALT, padZ + 52);
+  position.set(padX + start.offsetX, padY + start.alt, padZ + start.offsetZ);
   const telemetry: LanderTelemetry = {
-    altitude: START_ALT, descent: START_DESCENT, ground: padY, fuel: 1, throttle: 0,
+    altitude: start.alt, descent: start.descent, ground: padY, fuel: 1, throttle: 0,
     offset: 0, drift: 0, driftX: vel.x, driftZ: vel.z,
     assist: false, landed: false, touchdown: 0, egressX: padX, egressZ: padZ,
   };
@@ -184,7 +189,7 @@ export function makeLander(
       // computer takes the stick, because from there on nothing the pilot
       // does gets it down gently.
       const safe = Math.sqrt(2 * net * Math.max(0, alt - 1.2)) * PROFILE;
-      const want = Math.max(0.6, Math.min(START_DESCENT, safe));
+      const want = Math.max(0.6, Math.min(Math.max(START_DESCENT, start.descent * (1 - 1 / (1 + alt / 60))), safe));
       // Landing thirty metres off the middle of a pad that is forty-six
       // across is a landing; landing in the rocks beyond it is not, so the
       // computer also steps in for a pilot who has not killed the drift.

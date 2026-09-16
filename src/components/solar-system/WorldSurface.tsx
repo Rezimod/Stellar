@@ -4,7 +4,10 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Camera, ChevronsDown, ChevronsUp, Eye, EyeOff, Flame, Hand, HelpCircle, Menu, Rocket, Volume2, VolumeX, Wind, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { makeWorldSurface, type WorldSurfaceHandle } from '@/lib/solar-system/world-surface';
-import type { WorldId } from '@/lib/solar-system/world-profiles';
+import { WORLDS, type WorldId } from '@/lib/solar-system/world-profiles';
+import { loadTbilisi, type EarthData } from '@/lib/solar-system/world-earth-data';
+import type { SkyTarget } from '@/lib/solar-system/world-earth-tonight';
+import { TelescopeEyepiece } from './TelescopeEyepiece';
 import { setSoundOn, soundOn } from '@/lib/solar-system/sound-prefs';
 import { GameStick, tapKey } from './GameStick';
 import { CosmicLoader } from './CosmicLoader';
@@ -42,6 +45,11 @@ export function WorldSurface({ world, onReturn }: WorldSurfaceProps) {
   const [immersive, setImmersive] = useState(false);
   const [run, setRun] = useState(false);
   const [crouch, setCrouch] = useState(false);
+  const isEarth = world === 'earth';
+  const breathable = !!WORLDS[world].breathable;
+  const [earthData, setEarthData] = useState<EarthData | null>(null);
+  const [earthError, setEarthError] = useState(false);
+  const [eyepiece, setEyepiece] = useState<{ target: SkyTarget; date: Date } | null>(null);
   const mountRef = useRef<HTMLDivElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   const handleRef = useRef<WorldSurfaceHandle | null>(null);
@@ -78,6 +86,14 @@ export function WorldSurface({ world, onReturn }: WorldSurfaceProps) {
   const actionRef = useRef<HTMLButtonElement>(null);
   const actionTextRef = useRef<HTMLSpanElement>(null);
   const stanceRef = useRef<HTMLDivElement>(null);
+  const objRef = useRef<HTMLDivElement>(null);
+  const objTextRef = useRef<HTMLSpanElement>(null);
+  const objRangeRef = useRef<HTMLSpanElement>(null);
+  const pipRef = useRef<HTMLDivElement>(null);
+  const meterRef = useRef<HTMLDivElement>(null);
+  const meterLabelRef = useRef<HTMLSpanElement>(null);
+  const clockRef = useRef<HTMLSpanElement>(null);
+  const landTitleRef = useRef<HTMLSpanElement>(null);
   const movingRef = useRef(false);
   const keyboardMoveRef = useRef({ x: 0, y: 0 });
   const runRef = useRef(false);
@@ -102,12 +118,25 @@ export function WorldSurface({ world, onReturn }: WorldSurfaceProps) {
     return out;
   }, []);
 
+  // Tbilisi's ground and city are real data: fetch them before building the scene.
+  useEffect(() => {
+    if (!isEarth || earthData) return;
+    const abort = new AbortController();
+    setEarthError(false);
+    loadTbilisi(abort.signal).then(setEarthData, (e: unknown) => {
+      if ((e as { name?: string })?.name !== 'AbortError') setEarthError(true);
+    });
+    return () => abort.abort();
+  }, [isEarth, earthData]);
+
   useEffect(() => {
     const mount = mountRef.current;
     const root = rootRef.current;
     if (!mount || !root) return;
+    if (isEarth && !earthData) return;
     let rebuildTimer = 0;
     const handle = makeWorldSurface(mount, world, {
+      earth: earthData ?? undefined,
       startOnSurface: resumeRef.current,
       onContextLost: () => {
         setGpuLost(true);
@@ -203,6 +232,7 @@ export function WorldSurface({ world, onReturn }: WorldSurfaceProps) {
     const tel = handle.telemetry;
     const text = (el: HTMLElement | null, v: string) => { if (el && el.textContent !== v) el.textContent = v; };
     const show = (el: HTMLElement | null, on: boolean) => { if (el && el.hidden === on) el.hidden = !on; };
+    let eyepieceOpen = false;
     let raf = 0;
     let lastPaint = 0;
     const isTouch = window.matchMedia('(pointer: coarse)').matches;
@@ -217,6 +247,7 @@ export function WorldSurface({ world, onReturn }: WorldSurfaceProps) {
 
       if (tel.phase !== 'surface') {
         const l = tel.landing;
+        text(landTitleRef.current, tel.entry ? tw('entry') : t('landing.title'));
         text(landAltRef.current, `${l.altitude.toFixed(l.altitude < 10 ? 1 : 0)} m`);
         text(landRateRef.current, `${l.descent.toFixed(1)} m/s`);
         text(landOffRef.current, `${Math.round(l.offset)} m`);
@@ -240,7 +271,7 @@ export function WorldSurface({ world, onReturn }: WorldSurfaceProps) {
       if (o2BarRef.current) o2BarRef.current.style.width = `${Math.max(0, Math.min(100, tel.o2))}%`;
       text(hrRef.current, `${Math.round(tel.heartRate)}`);
       text(tempRef.current, `${tel.suitTemp.toFixed(1)}°`);
-      text(outRef.current, `${tel.outsideC}°`);
+      text(outRef.current, tel.earth && tel.earth.outsideC === null ? '—' : `${tel.outsideC}°`);
       text(evaRef.current, fmtTime(tel.evaSeconds));
       text(distRef.current, fmtRange(tel.distanceM));
 
@@ -279,6 +310,58 @@ export function WorldSurface({ world, onReturn }: WorldSurfaceProps) {
         show(banner, tel.banner !== '');
         if (tel.banner) text(banner.firstElementChild as HTMLElement, tw(`banner.${tel.banner}`));
       }
+      const ea = tel.earth;
+      if (ea) {
+        const ex = ea.expedition;
+        text(clockRef.current, ea.clock);
+        const obj = objRef.current;
+        if (obj) {
+          const on = !!ex.objective;
+          show(obj, on);
+          if (on) {
+            text(objTextRef.current, tw(`expedition.obj.${ex.objective}`));
+            const range = ex.stage === 'overlook'
+              ? tw('expedition.found', { n: ex.found.length })
+              : ex.distance >= 0 && ex.distance > 6 ? fmtRange(ex.distance) : '';
+            text(objRangeRef.current, range);
+          }
+        }
+        const pip = pipRef.current;
+        if (pip) {
+          const on = ex.bearing >= 0 && ex.distance > 6;
+          show(pip, on);
+          if (on) {
+            let rel = ((ex.bearing - tel.heading + 540) % 360) - 180;
+            pip.dataset.edge = String(Math.abs(rel) > 58);
+            rel = Math.max(-58, Math.min(58, rel));
+            pip.style.transform = `translateX(calc(-50% + ${rel * PPD}px))`;
+          }
+        }
+        const meter = meterRef.current;
+        if (meter) {
+          const spotting = ex.stage === 'overlook' && !!ex.spotting;
+          const working = ex.work > 0 && !spotting;
+          show(meter, spotting || working);
+          if (spotting) {
+            meter.style.setProperty('--v', ex.spotWork.toFixed(3));
+            text(meterLabelRef.current, tw('expedition.spot', { name: tw(`expedition.names.${ex.spotting}`) }));
+          } else if (working) {
+            meter.style.setProperty('--v', ex.work.toFixed(3));
+            text(meterLabelRef.current, label || tw(`expedition.obj.${ex.objective}`));
+          }
+        }
+        if (ex.eyepiece !== eyepieceOpen) {
+          eyepieceOpen = ex.eyepiece;
+          setEyepiece(ex.eyepiece && ea.target ? { target: ea.target, date: new Date(ea.date) } : null);
+        }
+        if (!tel.banner && ex.banner) {
+          const bannerEl = bannerRef.current;
+          if (bannerEl) {
+            show(bannerEl, true);
+            text(bannerEl.firstElementChild as HTMLElement, tw(`banner.${ex.banner}`));
+          }
+        }
+      }
       const readout = readoutRef.current;
       if (readout) {
         show(readout, !!tel.readout);
@@ -314,7 +397,7 @@ export function WorldSurface({ world, onReturn }: WorldSurfaceProps) {
       handle.dispose();
       handleRef.current = null;
     };
-  }, [t, tw, world, glGeneration]);
+  }, [t, tw, world, glGeneration, isEarth, earthData]);
 
   const capture = (e: React.PointerEvent<HTMLElement>) => {
     try { e.currentTarget.setPointerCapture(e.pointerId); } catch { /* no live pointer: the key still works */ }
@@ -350,14 +433,19 @@ export function WorldSurface({ world, onReturn }: WorldSurfaceProps) {
   return (
     <div ref={rootRef} className={`moon-surface moon-surface--${world}`} data-phase="descent" data-ready="false" data-immersive={immersive}>
       <div ref={mountRef} className="moon-surface__canvas" />
-      <CosmicLoader className={gpuLost ? 'moon-surface__loader is-forced' : 'moon-surface__loader'} variant="descent"
-        label={gpuLost ? tl('gpu') : tw('loading')} detail={gpuLost ? undefined : tw('loadingDetail')} tips={tips} />
+      <CosmicLoader className={gpuLost || earthError ? 'moon-surface__loader is-forced' : 'moon-surface__loader'} variant="descent"
+        label={gpuLost ? tl('gpu') : earthError ? tw('loadError') : tw('loading')} detail={gpuLost || earthError ? undefined : tw('loadingDetail')} tips={tips} />
+      {earthError && (
+        <button type="button" className="moon-hud__key earth-hud__retry" onClick={onReturn}>
+          <Rocket size={18} aria-hidden /><span>{t('returnOrbit')}</span>
+        </button>
+      )}
       <div className="moon-hud">
         <div className="moon-hud__visor" aria-hidden />
 
         <div className="moon-hud__landing">
           <div className="moon-hud__land-card">
-            <span className="moon-hud__land-title">{t('landing.title')}</span>
+            <span ref={landTitleRef} className="moon-hud__land-title">{t('landing.title')}</span>
             <span className="moon-hud__land-alt" ref={landAltRef} />
             <div className="moon-hud__land-rows">
               <span className="moon-hud__reading"><span>{t('landing.rate')}</span><span ref={landRateRef} /></span>
@@ -384,8 +472,15 @@ export function WorldSurface({ world, onReturn }: WorldSurfaceProps) {
               ))}
             </div>
           </div>
+          {isEarth && <div ref={pipRef} className="moon-hud__pip" hidden />}
           <span className="moon-hud__needle" />
         </div>
+        {isEarth && (
+          <div ref={meterRef} className="moon-hud__meter" hidden>
+            <span className="moon-hud__meter-bar"><i /></span>
+            <span ref={meterLabelRef} />
+          </div>
+        )}
 
         <div className="moon-hud__head">
           <span className="moon-hud__place">{tw('place')}</span>
@@ -393,13 +488,21 @@ export function WorldSurface({ world, onReturn }: WorldSurfaceProps) {
             <span className="moon-hud__reading"><span>{t('altitude')}</span><span ref={altRef} /></span>
             <span className="moon-hud__reading"><span>{t('speed')}</span><span ref={speedRef} /></span>
             <span className="moon-hud__reading"><span>{t('gravity')}</span><span ref={gravRef} /></span>
+            {isEarth && <span className="moon-hud__reading"><span>{tw('localTime')}</span><span ref={clockRef} /></span>}
           </div>
         </div>
+        {isEarth && (
+          <div ref={objRef} className="moon-hud__objective" hidden>
+            <span className="moon-hud__objective-tag">{tw('expedition.title')}</span>
+            <span ref={objTextRef} className="moon-hud__objective-text" />
+            <span ref={objRangeRef} className="moon-hud__objective-range" />
+          </div>
+        )}
 
         <div className="moon-hud__vitals">
-          <span className="moon-hud__vital"><i>O₂</i><span ref={o2Ref} /><b className="moon-hud__bar"><i ref={o2BarRef} /></b></span>
+          {!breathable && <span className="moon-hud__vital"><i>O₂</i><span ref={o2Ref} /><b className="moon-hud__bar"><i ref={o2BarRef} /></b></span>}
           <span className="moon-hud__vital"><i>{t('pulse')}</i><span ref={hrRef} /></span>
-          <span className="moon-hud__vital"><i>{t('suitTemp')}</i><span ref={tempRef} /></span>
+          {!breathable && <span className="moon-hud__vital"><i>{t('suitTemp')}</i><span ref={tempRef} /></span>}
           <span className="moon-hud__vital"><i>{tw('outside')}</i><span ref={outRef} /></span>
           <span className="moon-hud__vital"><i>{t('eva')}</i><span ref={evaRef} /></span>
           <span className="moon-hud__vital"><i>{t('distance')}</i><span ref={distRef} /></span>
@@ -461,6 +564,7 @@ export function WorldSurface({ world, onReturn }: WorldSurfaceProps) {
           <div ref={poiRef} className="moon-hud__poi" hidden />
           <p ref={hintRef} className="moon-hud__hint" hidden />
         </div>
+        {isEarth && <p className="earth-hud__credits">{tw('credits')}</p>}
 
         <div className="moon-hud__move">
           <GameStick label={t('move')} onMove={(x, y) => {
@@ -496,6 +600,12 @@ export function WorldSurface({ world, onReturn }: WorldSurfaceProps) {
           </button>
         </div>
       </div>
+      {eyepiece && (
+        <TelescopeEyepiece target={eyepiece.target} date={eyepiece.date} onClose={() => {
+          const ex = handleRef.current?.telemetry.earth?.expedition;
+          if (ex) ex.eyepiece = false;
+        }} />
+      )}
     </div>
   );
 }

@@ -122,8 +122,9 @@ function solveLeg(tx: number, ty: number, tz: number, kneeMax: number): { alpha:
   return { alpha: clamp(alpha, -1.15, 0.65), theta, beta };
 }
 
-export function makeCosmonaut(dust: DustHandle, lite = false, g = MOON_G, suited = true): CosmonautHandle {
-  const rig = buildSuit(lite);
+/** `bareHead`: on a world with air the pilot comes out without the helmet and pack. */
+export function makeCosmonaut(dust: DustHandle, lite = false, g = MOON_G, suited = true, bareHead = false): CosmonautHandle {
+  const rig = buildSuit(lite, bareHead);
   const { group, body, pelvis, chest, pack, neck, helmet, sides, shoulders, elbows, hands, hips, knees, ankles } = rig;
   // Every joint is a group; everything rigid inside one becomes a draw call per material.
   const merged = mergeStatic(group, { isPivot: (o) => (o as THREE.Group).isGroup === true, minCaster: 0.05 });
@@ -163,7 +164,7 @@ export function makeCosmonaut(dust: DustHandle, lite = false, g = MOON_G, suited
   let held = false;
   let lookYaw = 0; let lookPitch = 0;
   let helmetView = false;
-  const eyeLocal = new THREE.Vector3(0, HELMET_C, 0.08);
+  const eyeLocal = bareHead ? new THREE.Vector3(0, 0.16, 0.1) : new THREE.Vector3(0, HELMET_C, 0.08);
 
   loco.onStep = (s) => {
     if (!handle.indoors) {

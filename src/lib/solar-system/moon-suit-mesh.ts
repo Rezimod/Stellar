@@ -91,7 +91,8 @@ const limb = (rTop: number, rMid: number, rBottom: number, length: number, seg: 
   [rMid, -length * 0.5], [rTop, -0.05], [rTop * 0.7, -0.012], [0, 0],
 ], seg);
 
-export function buildSuit(lite: boolean): SuitRig {
+/** `bareHead`: on a world with air — no pack, no helmet, the pilot's own head. */
+export function buildSuit(lite: boolean, bareHead = false): SuitRig {
   const seg = lite ? 14 : 22;
   const group = new THREE.Group();
   group.name = 'cosmonaut';
@@ -289,30 +290,44 @@ export function buildSuit(lite: boolean): SuitRig {
   ring(neck, 0.158, 0.032, bearing, 0.02);
   const helmet = new THREE.Group();
   neck.add(helmet);
+  if (bareHead) {
+    pack.visible = false;
+    const skin = std({ color: 0xc89a7c, roughness: 0.62, metalness: 0 });
+    const hair = std({ color: 0x2a211c, roughness: 0.9, metalness: 0 });
+    materials.push(skin, hair);
+    mesh(helmet, new THREE.CylinderGeometry(0.055, 0.065, 0.12, seg), skin, 0, 0.05, 0);
+    mesh(helmet, new THREE.SphereGeometry(0.1, seg, seg), skin, 0, 0.17, 0.01).scale.set(0.9, 1.15, 1.02);
+    mesh(helmet, new THREE.SphereGeometry(0.104, seg, seg, 0, Math.PI * 2, 0, Math.PI * 0.52), hair, 0, 0.19, -0.004).scale.set(0.94, 1.12, 1.06);
+    for (const sx of [-1, 1]) mesh(helmet, new THREE.SphereGeometry(0.022, 8, 6), skin, sx * 0.09, 0.165, 0).scale.set(0.5, 1, 0.8);
+    mesh(helmet, new THREE.ConeGeometry(0.016, 0.04, 8), skin, 0, 0.16, 0.115).rotation.x = Math.PI / 2;
+    for (const sx of [-1, 1]) mesh(helmet, new THREE.SphereGeometry(0.009, 8, 6), dark, sx * 0.034, 0.185, 0.098);
+  }
   const HC = HELMET_C;
-  mesh(helmet, new THREE.SphereGeometry(0.185, seg + 6, seg), bubble, 0, HC, 0);
-  // SphereGeometry's phi runs from −X; π/2 is straight ahead (+Z).
-  mesh(helmet, new THREE.SphereGeometry(0.196, seg + 8, seg + 2, Math.PI / 2 - 1.0, 2.0, 0.44, 1.46), inner, 0, HC, 0);
-  mesh(helmet, new THREE.SphereGeometry(0.205, seg + 8, seg + 2, Math.PI / 2 - 1.02, 2.04, 0.5, 1.36), visor, 0, HC, 0.004);
-  const shell = mesh(helmet, new THREE.SphereGeometry(0.218, seg + 8, seg + 2, Math.PI / 2 + 1.0, Math.PI * 2 - 2.0, 0, Math.PI * 0.78), hard, 0, HC, -0.006);
-  shell.scale.set(1, 1.02, 1.04);
-  const brow = mesh(helmet, new THREE.TorusGeometry(0.214, 0.016, 8, seg + 8, 2.1), hard, 0, HC + 0.02, 0.01);
-  brow.rotation.set(0.42, 0, Math.PI / 2 - 1.05);
-  const chin = mesh(helmet, new THREE.TorusGeometry(0.2, 0.014, 8, seg + 8, 2.0), bearing, 0, HC - 0.02, 0.01);
-  chin.rotation.set(-1.2, 0, Math.PI / 2 - 1.0);
-  rbox(helmet, 0.04, 0.012, 0.2, 0.005, hard, 0, HC + 0.215, -0.02);
-  // GEORGIA across the brow — a band that sits just proud of the shell —
-  // and the flag on the right temple.
-  const band = mesh(helmet, new THREE.CylinderGeometry(0.2, 0.208, 0.058, seg + 8, 1, true, -0.62, 1.24), helmetMat, 0, HC + 0.125, -0.006);
-  band.castShadow = false;
-  const temple = mesh(helmet, new THREE.PlaneGeometry(0.05, 0.034), flagMat, 0.2, HC + 0.04, -0.08);
-  temple.rotation.y = Math.PI / 2 + 0.35;
-  temple.castShadow = false;
-  for (const s of [-1, 1]) {
-    const pod = rbox(helmet, 0.055, 0.06, 0.12, 0.018, dark, s * 0.212, HC + 0.07, 0.03);
-    pod.rotation.z = s * 0.3;
-    mesh(pod, new THREE.CircleGeometry(0.02, 14), lamp, 0, 0.012, 0.061).castShadow = false;
-    mesh(pod, new THREE.CircleGeometry(0.01, 10), dark, 0, -0.018, 0.062).castShadow = false;
+  if (!bareHead) {
+    mesh(helmet, new THREE.SphereGeometry(0.185, seg + 6, seg), bubble, 0, HC, 0);
+    // SphereGeometry's phi runs from −X; π/2 is straight ahead (+Z).
+    mesh(helmet, new THREE.SphereGeometry(0.196, seg + 8, seg + 2, Math.PI / 2 - 1.0, 2.0, 0.44, 1.46), inner, 0, HC, 0);
+    mesh(helmet, new THREE.SphereGeometry(0.205, seg + 8, seg + 2, Math.PI / 2 - 1.02, 2.04, 0.5, 1.36), visor, 0, HC, 0.004);
+    const shell = mesh(helmet, new THREE.SphereGeometry(0.218, seg + 8, seg + 2, Math.PI / 2 + 1.0, Math.PI * 2 - 2.0, 0, Math.PI * 0.78), hard, 0, HC, -0.006);
+    shell.scale.set(1, 1.02, 1.04);
+    const brow = mesh(helmet, new THREE.TorusGeometry(0.214, 0.016, 8, seg + 8, 2.1), hard, 0, HC + 0.02, 0.01);
+    brow.rotation.set(0.42, 0, Math.PI / 2 - 1.05);
+    const chin = mesh(helmet, new THREE.TorusGeometry(0.2, 0.014, 8, seg + 8, 2.0), bearing, 0, HC - 0.02, 0.01);
+    chin.rotation.set(-1.2, 0, Math.PI / 2 - 1.0);
+    rbox(helmet, 0.04, 0.012, 0.2, 0.005, hard, 0, HC + 0.215, -0.02);
+    // GEORGIA across the brow — a band that sits just proud of the shell —
+    // and the flag on the right temple.
+    const band = mesh(helmet, new THREE.CylinderGeometry(0.2, 0.208, 0.058, seg + 8, 1, true, -0.62, 1.24), helmetMat, 0, HC + 0.125, -0.006);
+    band.castShadow = false;
+    const temple = mesh(helmet, new THREE.PlaneGeometry(0.05, 0.034), flagMat, 0.2, HC + 0.04, -0.08);
+    temple.rotation.y = Math.PI / 2 + 0.35;
+    temple.castShadow = false;
+    for (const s of [-1, 1]) {
+      const pod = rbox(helmet, 0.055, 0.06, 0.12, 0.018, dark, s * 0.212, HC + 0.07, 0.03);
+      pod.rotation.z = s * 0.3;
+      mesh(pod, new THREE.CircleGeometry(0.02, 14), lamp, 0, 0.012, 0.061).castShadow = false;
+      mesh(pod, new THREE.CircleGeometry(0.01, 10), dark, 0, -0.018, 0.062).castShadow = false;
+    }
   }
 
   // ── Limbs. ──
