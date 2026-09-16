@@ -81,6 +81,8 @@ export interface TerrainHandle {
   normalAt: (x: number, z: number, out: THREE.Vector3) => THREE.Vector3;
   /** Dig a fresh crater and re-light the ground around it. */
   stampCrater: (x: number, z: number, r: number, depth: number) => void;
+  /** Open a shaft: the ground within r drops away by depth, darker the deeper it goes. */
+  punch: (x: number, z: number, r: number, depth: number) => void;
   /** Sun direction in view space, updated by the scene each frame. */
   setSunView: (v: THREE.Vector3) => void;
   /** Darken (k < 0, compacted) or brighten (k > 0, blasted) the regolith
@@ -486,6 +488,28 @@ export function makeMoonTerrain(lite: boolean): TerrainHandle {
     for (const a of [pos, col, nrmAttr]) { a.addUpdateRange(start, count); a.needsUpdate = true; }
   };
 
+  const punch = (cx: number, cz: number, r: number, depth: number) => {
+    const i0 = Math.max(0, Math.floor((cx - r + half) / cell)); const i1 = Math.min(N, Math.ceil((cx + r + half) / cell));
+    const j0 = Math.max(0, Math.floor((cz - r + half) / cell)); const j1 = Math.min(N, Math.ceil((cz + r + half) / cell));
+    const col = geom.attributes.color as THREE.BufferAttribute;
+    for (let j = j0; j <= j1; j++) {
+      for (let i = i0; i <= i1; i++) {
+        const d = Math.hypot(-half + i * cell - cx, -half + j * cell - cz);
+        if (d >= r) continue;
+        const k = j * (N + 1) + i;
+        const q = smooth(Math.min(1, (r - d) / (r * 0.35)));
+        heights[k] -= depth * q;
+        pos.setY(k, heights[k]);
+        const dark = 1 - q * 0.92;
+        col.setXYZ(k, col.getX(k) * dark, col.getY(k) * dark, col.getZ(k) * dark);
+      }
+    }
+    const jLo = Math.max(0, j0 - 1); const jHi = Math.min(N, j1 + 1);
+    for (let j = jLo; j <= jHi; j++) for (let i = Math.max(0, i0 - 1); i <= Math.min(N, i1 + 1); i++) writeNormal(i, j);
+    const start = jLo * (N + 1) * 3; const count = (jHi - jLo + 1) * (N + 1) * 3;
+    for (const a of [pos, col, nrmAttr]) { a.addUpdateRange(start, count); a.needsUpdate = true; }
+  };
+
   const colAttr = geom.attributes.color as THREE.BufferAttribute;
   /** Scale vertex colours in a box by 1 + k·falloff(distance). */
   const shade = (x0: number, z0: number, x1: number, z1: number, falloff: (x: number, z: number) => number, k: number) => {
@@ -522,7 +546,7 @@ export function makeMoonTerrain(lite: boolean): TerrainHandle {
   };
 
   return {
-    mesh, rocks, heightAt, normalAt, stampCrater, tint, tintPath,
+    mesh, rocks, heightAt, normalAt, stampCrater, punch, tint, tintPath,
     setSunView(v) { sunView.value.copy(v); },
     dispose() {
       geom.dispose(); mat.dispose();

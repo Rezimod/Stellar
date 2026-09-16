@@ -2659,3 +2659,74 @@
   transition: opacity 0.6s ease, visibility 0s linear 0.6s;
 }
 .moon-surface__loader { z-index: 30; }
+
+/* ═══════════ Underground: the fall, the Backrooms ═══════════ */
+.moon-hud__black {
+  position: absolute;
+  inset: 0;
+  background: #000;
+  opacity: var(--black, 0);
+  pointer-events: none;
+}
+.moon-hud__crack {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0;
+  fill: none;
+  stroke: rgba(235, 240, 245, 0.55);
+  stroke-width: 2.2;
+  stroke-linejoin: bevel;
+  transition: opacity 0.08s linear;
+}
+.moon-hud__crack circle { fill: rgba(235, 240, 245, 0.18); stroke-width: 1.5; }
+.moon-hud__crack .moon-hud__crack-fine { stroke-width: 1; stroke: rgba(235, 240, 245, 0.35); }
+.moon-hud__crack[data-on='true'] { opacity: 1; }
+/* Helmet off, nothing between the eye and the room. */
+.moon-surface[data-backrooms]:not([data-backrooms='']):not([data-backrooms='fall'])[data-helmet-on='false'] .moon-hud__crack,
+.moon-surface[data-backrooms]:not([data-backrooms='']):not([data-backrooms='fall'])[data-helmet-on='false'] .moon-hud__visor { display: none; }
+
+.moon-hud__br {
+  position: absolute;
+  top: var(--edge-top);
+  left: var(--edge-left);
+  display: grid;
+  gap: 4px;
+  max-width: min(360px, calc(100% - 32px));
+  padding: 8px 12px;
+  border-radius: 4px;
+  background: var(--hud-glass);
+  color: var(--hud-ink);
+  font-size: 12px;
+  opacity: calc(1 - var(--glitch, 0) * 0.55);
+}
+.moon-hud__br[hidden] { display: none; }
+.moon-hud__br-place { font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--hud-dim); }
+.moon-hud__br-grav { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.moon-hud__br-grav[data-earth='true'] { color: var(--hud-warm); }
+.moon-hud__br-read { color: var(--hud-ink); }
+.moon-hud__br-read[hidden] { display: none; }
+.moon-hud__br-carrier { font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--hud-dim); animation: moon-carrier 1.7s steps(2, end) infinite; }
+@keyframes moon-carrier { 0% { opacity: 0.35; } 50% { opacity: 0.8; } }
+/* With the helmet on the glass flickers, the way a HUD does when it is reading nonsense. */
+.moon-surface[data-helmet-on='true'] .moon-hud__br { animation: moon-hud-flicker 0.9s steps(3, end) infinite; }
+@keyframes moon-hud-flicker { 0%, 100% { transform: translateX(0); } 33% { transform: translateX(1px); } 66% { transform: translateX(-1px); } }
+.moon-hud__radio[data-static='true'] { color: var(--hud-warm); font-family: var(--font-mono); font-size: 12px; }
+
+/* Underground, the surface instruments have nothing to say. */
+.moon-surface:not([data-backrooms='']):not([data-backrooms='fall'])[data-backrooms] :is(
+  .moon-hud__compass, .moon-hud__meter, .moon-hud__head, .moon-hud__objective, .moon-hud__vitals,
+  .moon-hud__impact, .moon-hud__banner, .moon-hud__poi, .moon-hud__hint, .moon-hud__airlock, .moon-hud__stance-keys
+) { display: none; }
+.moon-surface[data-backrooms='fall'] .moon-hud__foot,
+.moon-surface[data-backrooms='fall'] .moon-hud__move,
+.moon-surface[data-backrooms='fall'] .moon-hud__thumb,
+.moon-surface[data-backrooms='wake'] .moon-hud__move,
+.moon-surface[data-backrooms='door'] .moon-hud__move,
+.moon-surface[data-backrooms='climb'] .moon-hud__move,
+.moon-surface[data-backrooms='fall'] :is(.moon-hud__compass, .moon-hud__head, .moon-hud__objective, .moon-hud__vitals, .moon-hud__radio) { display: none; }
+@media (prefers-reduced-motion: reduce) {
+  .moon-hud__br, .moon-hud__br-carrier { animation: none; }
+}

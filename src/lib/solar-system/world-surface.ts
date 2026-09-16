@@ -11,7 +11,7 @@
 import * as THREE from 'three';
 import { makeMoonPost } from '@/lib/solar-system/moon-post';
 import { makeMoonDust } from '@/lib/solar-system/moon-fx';
-import { makeCosmonaut, RUN, type WalkInput } from '@/lib/solar-system/moon-cosmonaut';
+import { makeCosmonaut, type WalkInput } from '@/lib/solar-system/moon-cosmonaut';
 import { makePrints } from '@/lib/solar-system/moon-prints';
 import { makeSuitAudio } from '@/lib/solar-system/moon-audio';
 import { makeLander, type LanderTelemetry } from '@/lib/solar-system/moon-lander';
@@ -196,7 +196,7 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
   }
 
   const cosmonaut = makeCosmonaut(dust, lite, profile.gravity);
-  cosmonaut.onStep = (e) => { prints.stamp(e.x, e.y, e.z, e.yaw, e.side); audio.step(e.hard); };
+  cosmonaut.onStep = (e) => { prints.stamp(e.x, e.y, e.z, e.yaw, e.side); audio.step(e.hard); cam.footfall(e.hard); };
   scene.add(cosmonaut.group);
   const padX = profile.pad.x; const padZ = profile.pad.z + 26;
   const lander = makeLander(padX, padZ, terrain.heightAt, dust, lite, lightPool, profile.gravity);
@@ -385,7 +385,7 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
           position: cosmonaut.group.position, velocity: cosmonaut.velocity, yaw: cosmonaut.yaw,
           height: wide ? 2.2 : 1.35,
           distance: wide ? cam.distance * 4.2 + 14 : cam.distance,
-          speedFrac: Math.min(1, cosmonaut.state.speed / RUN),
+          speedFrac: Math.min(1, cosmonaut.state.speed / cosmonaut.profile.run),
         }, wide
           ? { follow: 1, lead: 0, leadMax: 0, fovKick: 0, horizontal: 4, vertical: 3 }
           : { follow: 2.6, lead: 0.16, leadMax: 0.8, fovKick: 4, horizontal: 14, vertical: 6.5 });
@@ -402,7 +402,7 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
     telemetry.stumbling = cosmonaut.state.stumble > 0;
     telemetry.sliding = cosmonaut.state.sliding;
     telemetry.heading = (THREE.MathUtils.radToDeg(Math.atan2(-Math.sin(cam.yaw), -Math.cos(cam.yaw))) + 360) % 360;
-    const work = Math.min(1, cosmonaut.state.speed / 4.6) + (cosmonaut.state.airborne ? 0.3 : 0) + (interactions.prompt.holding ? 0.35 : 0);
+    const work = Math.min(1, cosmonaut.state.effort + (interactions.prompt.holding ? 0.35 : 0));
     exertion += (work - exertion) * (1 - Math.exp(-dt * 0.35));
     if (telemetry.phase === 'surface') {
       telemetry.evaSeconds += dt;

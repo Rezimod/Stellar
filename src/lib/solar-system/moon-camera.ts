@@ -7,7 +7,9 @@
 // travel only while moving forward and not being dragged. A marched ray
 // pulls the camera in front of anything between it and the crew, at once,
 // and lets it back out gently. Speed widens the lens a little; shake is a
-// smooth decaying wobble rather than per-frame noise.
+// smooth decaying wobble rather than per-frame noise. Weight comes from the
+// feet, not a sine: each footfall and each landing kicks a small spring that
+// dips the view and lets it come back.
 
 import * as THREE from 'three';
 import type { Collider } from '@/lib/solar-system/moon-cosmonaut';
@@ -55,6 +57,10 @@ export interface CameraRig {
   snap: () => void;
   /** Add a shake impulse, 0…1. */
   shake: (amount: number) => void;
+  /** A boot came down, 0…1 how hard. */
+  footfall: (hard: number) => void;
+  /** The body landed at this vertical speed, m/s. */
+  land: (impact: number) => void;
   /** Seconds since the pointer last turned the camera. */
   dragAge: () => number;
   update: (dt: number) => void;
@@ -81,6 +87,8 @@ export function makeCameraRig(
   let fov = baseFov;
   let shakeAmp = 0;
   let shakeT = 0;
+  let bob = 0;
+  let bobVel = 0;
   const wrap = (a: number) => { while (a > Math.PI) a -= Math.PI * 2; while (a < -Math.PI) a += Math.PI * 2; return a; };
 
   /** How far along focus→want the view is clear, 0…1. */
@@ -119,11 +127,15 @@ export function makeCameraRig(
     },
     snap() { snapNext = true; },
     shake(amount) { shakeAmp = Math.max(shakeAmp, amount); },
+    footfall(hard) { bobVel -= 0.05 + hard * 0.3; },
+    land(impact) { bobVel -= Math.min(1.6, impact * 0.28); },
     dragAge: () => drag,
     update(dt) {
       drag += dt;
       shakeAmp *= Math.exp(-dt * 3.2);
       shakeT += dt;
+      bobVel += (-bob * 110 - bobVel * 13) * dt;
+      bob += bobVel * dt;
     },
     chase(dt, target, tune) {
       // Ease round behind the direction of travel — only when going forward
@@ -175,7 +187,10 @@ export function makeCameraRig(
         camera.position.y += Math.sin(shakeT * 27.3 + 1.3) * a * 0.7;
         camera.position.z += Math.sin(shakeT * 23.9 + 2.1) * Math.sin(shakeT * 11.3) * a;
       }
-      camera.lookAt(focus);
+      camera.position.y += bob * 0.5;
+      look.copy(focus);
+      look.y += bob * 0.2;
+      camera.lookAt(look);
       fov += (baseFov + tune.fovKick * target.speedFrac - fov) * (1 - Math.exp(-dt * 2.5));
       if (Math.abs(camera.fov - fov) > 0.01) { camera.fov = fov; camera.updateProjectionMatrix(); }
     },
@@ -184,6 +199,7 @@ export function makeCameraRig(
       else camera.position.copy(eye);
       snapNext = false;
       if (shakeAmp > 0.002) camera.position.y += Math.sin(shakeT * 29) * shakeAmp * 0.05;
+      camera.position.y += bob;
       const cpitch = Math.cos(rig.lookPitch);
       look.set(camera.position.x - Math.sin(rig.yaw) * cpitch, camera.position.y + Math.sin(rig.lookPitch), camera.position.z - Math.cos(rig.yaw) * cpitch);
       camera.lookAt(look);

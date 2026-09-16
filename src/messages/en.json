@@ -1536,7 +1536,9 @@
         "ourLander": "Your descent vehicle",
         "science": "Geology lab — the mission computer",
         "logistics": "Rover bay and charger",
-        "landingZone": "Landing zone — keep clear"
+        "landingZone": "Landing zone — keep clear",
+        "sinkhole": "Collapsed lava tube — keep back",
+        "hatch": "Maintenance hatch"
       },
       "eva": "EVA",
       "pulse": "Pulse",
@@ -1548,6 +1550,8 @@
       "hudHide": "Hide the glass",
       "hudShow": "Show the glass",
       "stance": {
+        "fallen": "Down — push the stick or jump to get up",
+        "fallenTouch": "Down — push the stick or tap jump to get up",
         "crouch": "Crouched",
         "slide": "Sliding — that slope will not hold boots",
         "stumble": "Stumbling — get the feet back under you"
@@ -1656,7 +1660,9 @@
           "power": "Power status",
           "comms": "Link status",
           "charger": "Charger"
-        }
+        },
+        "placeBeacon": "Set up the beacon",
+        "logSinkhole": "Log the sinkhole"
       },
       "airlock": {
         "cycling": "Equalising — {n}%",
@@ -1680,21 +1686,24 @@
           "samples": "Two samples returned to the store",
           "comms": "Earth link realigned",
           "rover": "Rover wheel serviced",
-          "seismo": "Seismometer deployed"
+          "seismo": "Seismometer deployed",
+          "sinkhole": "Sinkhole marked with a beacon"
         },
         "start": {
           "solar": "Job — array B string is offline",
           "samples": "Job — two tagged samples to bring in",
           "comms": "Job — the Earth link has degraded",
           "rover": "Job — a rover wheel sensor has faulted",
-          "seismo": "Job — deploy a seismometer"
+          "seismo": "Job — deploy a seismometer",
+          "sinkhole": "Job — mark the sinkhole before someone else walks into it"
         },
         "done": {
           "solar": "Array B back on the sun — full power",
           "samples": "Samples sealed in the store",
           "comms": "Dish on Earth — link restored",
           "rover": "Wheel serviced — all gears back",
-          "seismo": "Seismometer listening"
+          "seismo": "Seismometer listening",
+          "sinkhole": "Beacon at the sinkhole — logged"
         },
         "steps": {
           "solar": {
@@ -1722,11 +1731,42 @@
             "place": "Set it down",
             "level": "Level it — let go when the bubble centres",
             "activate": "Switch it on"
+          },
+          "sinkhole": {
+            "go": "Go to the sinkhole — stay back from the rim",
+            "place": "Set up the warning beacon",
+            "log": "Log the sinkhole at the mission computer"
           }
         }
       },
       "soundOn": "Sound on",
-      "soundOff": "Sound off"
+      "soundOff": "Sound off",
+      "backrooms": {
+        "place": "Level 0",
+        "gravityRead": "Gravity {n} m/s² · {g} g",
+        "air": "Outside air",
+        "noCarrier": "No carrier",
+        "elapsed": "Off comms",
+        "log": "Came back out of the Backrooms — {time}",
+        "act": {
+          "removeHelmet": "Take the helmet off",
+          "openDoor": "Open the door",
+          "climb": "Climb"
+        },
+        "radio": {
+          "hint": "…base to EVA… there is a hum on channel two… out past the comms mast… say again…",
+          "static": "No carrier. The set is searching.",
+          "guide": "The panels ahead are coming on, one after another.",
+          "back": "Where were you? You were off comms for 47 minutes."
+        },
+        "readout": {
+          "air": "External atmosphere: 20.9% O₂ · 101 kPa · 23 °C",
+          "gravity": "Gravity 9.81 m/s² — one full g. This is not the Moon.",
+          "repress": "Helmet sealed — suit repressurising"
+        },
+        "wake": "Get up.",
+        "crack": "Visor cracked"
+      }
     },
     "loading": {
       "title": "Opening the solar system",

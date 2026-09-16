@@ -104,6 +104,12 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
   const gearTextRef = useRef<HTMLSpanElement>(null);
   const airlockRef = useRef<HTMLDivElement>(null);
   const stanceRef = useRef<HTMLDivElement>(null);
+  // Underground.
+  const blackRef = useRef<HTMLDivElement>(null);
+  const crackRef = useRef<SVGSVGElement>(null);
+  const brRef = useRef<HTMLDivElement>(null);
+  const brGravRef = useRef<HTMLSpanElement>(null);
+  const brReadRef = useRef<HTMLSpanElement>(null);
   const movingRef = useRef(false);
   const keyboardMoveRef = useRef({ x: 0, y: 0 });
   const runRef = useRef(false);
@@ -256,14 +262,58 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
     let lastPaint = 0;
     const isTouch = window.matchMedia('(pointer: coarse)').matches;
     root.dataset.touch = String(isTouch);
+    // A standard-mapping gamepad: left stick moves, right stick looks, A jumps,
+    // X is the action key, B crouches, the left trigger or stick click runs, Y turns the camera.
+    const padWas: boolean[] = [];
+    let padMoving = false;
+    const pollPad = () => {
+      const pads = typeof navigator.getGamepads === 'function' ? navigator.getGamepads() : [];
+      const pad = Array.from(pads).find((p) => p && p.mapping === 'standard');
+      if (!pad) return;
+      const dz = (v: number) => (Math.abs(v) < 0.15 ? 0 : (v - Math.sign(v) * 0.15) / 0.85);
+      const mx = dz(pad.axes[0] ?? 0); const my = -dz(pad.axes[1] ?? 0);
+      const down = (i: number) => !!pad.buttons[i]?.pressed;
+      const edge = (i: number) => { const on = down(i); const was = padWas[i]; padWas[i] = on; return on && !was; };
+      if (mx !== 0 || my !== 0) { padMoving = true; input.moveX = mx; input.moveY = my; handle.startAudio(); }
+      else if (padMoving) { padMoving = false; input.moveX = keyboardMoveRef.current.x; input.moveY = keyboardMoveRef.current.y; }
+      input.orbitDX += dz(pad.axes[2] ?? 0) * 14;
+      input.orbitDY += dz(pad.axes[3] ?? 0) * 10;
+      // Held buttons are let go only on their own release, so the keyboard and the touch keys keep theirs.
+      const jumpWas = !!padWas[0]; const useWas = !!padWas[2];
+      if (edge(0)) input.jump = true; else if (jumpWas && !down(0) && !pressed.has('Space')) input.jump = false;
+      if (edge(2)) { input.interact = true; input.use = true; } else if (useWas && !down(2) && !pressed.has('KeyE') && !pressed.has('KeyF')) input.use = false;
+      if (edge(1)) { crouchRef.current = !crouchRef.current; setCrouch(crouchRef.current); input.crouch = crouchRef.current; }
+      if (edge(3)) input.viewToggle = true;
+      const runPad = down(6) || down(10);
+      if (runPad || padWas[6] || padWas[10]) input.run = runPad || runRef.current || pressed.has('ShiftLeft') || pressed.has('ShiftRight');
+      padWas[6] = down(6); padWas[10] = down(10);
+    };
     const paint = (now: number) => {
       raf = requestAnimationFrame(paint);
+      pollPad();
       if (now - lastPaint < 33) return;
       lastPaint = now;
       root.dataset.ready = String(tel.ready);
       root.dataset.phase = tel.phase;
       root.dataset.view = tel.view;
       root.dataset.driving = String(tel.driving);
+      const bt = tel.backrooms;
+      const under = bt.phase !== '' && bt.phase !== 'fall';
+      root.dataset.backrooms = bt.phase;
+      root.dataset.helmetOn = String(bt.helmet);
+      setVar(blackRef.current, '--black', bt.black.toFixed(3));
+      if (crackRef.current) crackRef.current.dataset.on = String(bt.crack);
+      const brPanel = brRef.current;
+      if (brPanel) {
+        show(brPanel, under);
+        if (under) {
+          text(brGravRef.current, t('backrooms.gravityRead', { n: bt.gravity.toFixed(2), g: (bt.gravity / 9.81).toFixed(2) }));
+          if (brGravRef.current) brGravRef.current.dataset.earth = String(bt.gravity > 5);
+          show(brReadRef.current, !!bt.readout);
+          if (bt.readout) text(brReadRef.current, t(`backrooms.readout.${bt.readout}`));
+          setVar(brPanel, '--glitch', bt.glitch.toFixed(2));
+        }
+      }
 
       // ── The way down. ──
       if (tel.phase !== 'surface') {
@@ -323,9 +373,9 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
       text(evaRef.current, fmtTime(tel.evaSeconds));
       text(distRef.current, fmtRange(tel.distanceM));
 
-      // ── The one key. ──
-      const p = tel.prompt;
-      const label = p.active ? t(`act.${p.label}`) : '';
+      // ── The one key: underground, the Backrooms' own. ──
+      const p = under ? bt.prompt : tel.prompt;
+      const label = !p.active ? '' : under ? t(`backrooms.act.${p.label}`) : t(`act.${p.label}`);
       const action = actionRef.current;
       if (action) {
         show(action, p.active);
@@ -379,7 +429,7 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
       if (stance) {
         const s = tel.driving
           ? (tel.roverFault ? t('rover.fault') : tel.charging ? t('rover.charging', { n: Math.round(tel.battery * 100) }) : '')
-          : tel.stumbling ? t('stance.stumble') : tel.sliding ? t('stance.slide') : tel.crouched ? t('stance.crouch') : '';
+          : tel.fallen ? t(isTouch ? 'stance.fallenTouch' : 'stance.fallen') : tel.stumbling ? t('stance.stumble') : tel.sliding ? t('stance.slide') : tel.crouched ? t('stance.crouch') : '';
         show(stance, s !== '');
         text(stance, s);
       }
@@ -407,8 +457,10 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
       }
       const radio = radioRef.current;
       if (radio) {
-        show(radio, !!m.radio);
-        if (m.radio) text(radio, t(`mission.${m.radio}`));
+        const line = bt.radio ? t(`backrooms.radio.${bt.radio}`) : m.radio ? t(`mission.${m.radio}`) : '';
+        show(radio, line !== '');
+        if (line) text(radio, line);
+        radio.dataset.static = String(!!bt.radio);
       }
       const readout = readoutRef.current;
       if (readout) {
@@ -493,6 +545,7 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
   };
   const rewards = handleRef.current?.telemetry.mission.rewards ?? [];
   const jobsDone = handleRef.current?.telemetry.jobs.done ?? [];
+  const underground = handleRef.current?.telemetry.backrooms;
 
   return (
     <div ref={rootRef} className="moon-surface" data-phase="descent" data-ready="false" data-immersive={immersive}>
@@ -501,6 +554,18 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
         label={gpuLost ? tl('gpu') : tl('moon')} detail={gpuLost ? undefined : tl('moonDetail')} tips={tips} />
       <div className="moon-hud">
         <div className="moon-hud__visor" aria-hidden />
+        <div ref={blackRef} className="moon-hud__black" aria-hidden />
+        <svg ref={crackRef} className="moon-hud__crack" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden data-on="false">
+          <path d="M612 318 L655 262 L668 180 L702 120 M655 262 L742 246 L820 262 M612 318 L560 290 L498 300 L430 262 M612 318 L640 392 L628 470 L672 540 M640 392 L716 420 L790 404 L860 440 M560 290 L540 220 L552 150" />
+          <path className="moon-hud__crack-fine" d="M668 180 L640 150 M742 246 L760 200 M498 300 L470 350 M628 470 L590 500 M716 420 L730 470 M540 220 L500 205" />
+          <circle cx="612" cy="318" r="9" />
+        </svg>
+        <div ref={brRef} className="moon-hud__br" role="status" hidden>
+          <span className="moon-hud__br-place">{t('backrooms.place')}</span>
+          <span ref={brGravRef} className="moon-hud__br-grav" data-earth="true" />
+          <span ref={brReadRef} className="moon-hud__br-read" hidden />
+          <span className="moon-hud__br-carrier">{t('backrooms.noCarrier')}</span>
+        </div>
 
         {/* ── The way down. ── */}
         <div className="moon-hud__landing">
@@ -632,7 +697,10 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
             </div>
             <p className="moon-hud__log-brief">{t('mission.brief')}</p>
             <div className="moon-hud__log-rewards">
-              {rewards.length === 0 && jobsDone.length === 0 && <p>{t('mission.none')}</p>}
+              {rewards.length === 0 && jobsDone.length === 0 && !underground?.escaped && <p>{t('mission.none')}</p>}
+              {underground?.escaped && (
+                <p className="moon-hud__reward"><Trophy size={14} aria-hidden /><span>{t('backrooms.log', { time: fmtTime(underground.bestSeconds) })}</span></p>
+              )}
               {rewards.map((r) => (
                 <p key={r} className="moon-hud__reward"><Trophy size={14} aria-hidden /><span>{t(`mission.rewards.${r}`)}</span></p>
               ))}
