@@ -1350,6 +1350,14 @@
   animation: moon-impact 0.5s ease-out both;
 }
 .flight-hud .flight-hud__land { border-color: rgba(255, 179, 71, 0.55); color: #ffd9a0; }
+/* Over a world you could land on but are too high for: the key is there, so
+   you know the way down exists, but it is plainly not lit yet. */
+.flight-hud .flight-hud__land[data-ready='false'] {
+  border-color: rgba(255, 179, 71, 0.22);
+  color: rgba(255, 217, 160, 0.5);
+  cursor: default;
+  animation: none;
+}
 .flight-hud__prompt[hidden] { display: none; }
 
 /* ── The console bar: the compass, the range, the dial, the systems ── */
@@ -2272,7 +2280,7 @@
   .moon-hud__action { width: 66px; height: 66px; }
   .moon-hud__work { width: 82px; height: 82px; -webkit-mask: radial-gradient(circle, transparent 37px, #000 38px); mask: radial-gradient(circle, transparent 37px, #000 38px); }
   .moon-hud__banner { top: 20%; }
-  .moon-hud__impact { top: calc(var(--edge-top) + 200px); }
+  .moon-hud__impact { top: calc(var(--edge-top) + 310px); }
 }
 @media (max-height: 460px) {
   .moon-hud__objective { display: none; }
@@ -2349,6 +2357,12 @@
 .moon-hud__objective-job { display: grid; gap: 2px; margin-top: 4px; padding-top: 5px; border-top: 1px solid var(--hud-line); font-size: 11px; line-height: 1.35; }
 .moon-hud__objective-job[hidden] { display: none; }
 .moon-hud__pip--job { background: var(--hud-warm); }
+/* The hum on channel two: not an objective, so it does not get an
+   objective's colour — just something the compass will not let you forget.
+   It keeps that colour off the end of the ribbon too, where two amber pips
+   would be two of the same thing. */
+.moon-hud__pip--hole,
+.moon-hud__pip--hole[data-edge='true'] { background: #b98cff; filter: drop-shadow(0 0 5px rgba(185, 140, 255, 0.85)); }
 .moon-hud__meter {
   position: absolute;
   top: calc(var(--edge-top) + 44px);
@@ -2450,7 +2464,10 @@
   .moon-hud__drill { top: auto; bottom: calc(var(--edge-bottom) + 262px); transform: none; width: 156px; }
   .moon-hud__readout { bottom: calc(var(--edge-bottom) + 290px); }
   .moon-hud__meter { top: calc(var(--edge-top) + 36px); left: var(--edge-left); right: auto; margin-inline: 0; width: min(220px, calc(100vw - 172px)); }
-  .moon-hud__radio { top: calc(var(--edge-top) + 168px); }
+  /* On a phone the objective card runs down the left of the glass and can
+     carry a job under it, so the radio clears its worst case rather than
+     printing across it. */
+  .moon-hud__radio { top: calc(var(--edge-top) + 226px); }
 }
 /* In the rover the jump key is gone: the gear key takes its place under the action key. */
 .moon-surface[data-driving='true'] .moon-hud__gear { grid-column: 2; grid-row: 2; width: auto; min-width: 78px; padding: 0 10px; flex-direction: row; gap: 6px; }

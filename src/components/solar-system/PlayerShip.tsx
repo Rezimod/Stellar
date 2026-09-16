@@ -36,7 +36,7 @@ interface PlayerShipProps {
 const SHIPS: ShipKind[] = ['kestrel', 'xfoil', 'endurance'];
 const BARS = ['shield', 'energy', 'boost'] as const;
 const KEY_ROWS = ['r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r10', 'r12', 'r13', 'r7', 'r15', 'r8', 'r16', 'r11', 'r14', 'r9'] as const;
-const TOUCH_ROWS = ['t1', 't2', 't3', 't11', 't6', 't13', 't12', 't9', 't14', 't5'] as const;
+const TOUCH_ROWS = ['t1', 't2', 't3', 't11', 't6', 't15', 't13', 't12', 't9', 't14', 't5'] as const;
 const HELP_SEEN = 'stellar_explore_help';
 const ICONS = [Shield, Zap, ChevronsUp];
 /** The quick targets in the menu: a named world, or a kind to walk through.
@@ -250,6 +250,8 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, landscape,
     attach();
   };
   const landSiteRef = useRef<LandingSite>('moon');
+  /** The site and the state the land key's wording was last painted for. */
+  const landLabelRef = useRef('');
   const land = () => {
     pause();
     onLand(landSiteRef.current);
@@ -376,19 +378,31 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, landscape,
       else if (tel.supply) status = t('supplying');
       else if (tel.pilot === 'eva') status = t(tel.canBoard ? 'evaBoardTouch' : 'evaOut');
       text(statusRef.current, status);
-      // Low over a world with ground to reach in the ship: the way down opens.
+      // A world with ground to reach in the ship. The key comes up as soon as
+      // that world is the near one, so you know the way down exists and what
+      // it costs — dim, with the height to get under, until you are under it.
       const ceiling = LANDING_SITES[tel.nearId];
-      const canLand = ceiling !== undefined && tel.nearAltKm < ceiling && tel.pilot === 'ship' && !tel.crashed && tel.jumpPhase === 'none' && !tel.docked && !session.paused;
-      if (landRef.current) landRef.current.hidden = !canLand;
-      if (canLand && landSiteRef.current !== tel.nearId) {
-        landSiteRef.current = tel.nearId as LandingSite;
-        text(landTextRef.current, t(`landOn.${tel.nearId}`));
+      const flyable = tel.pilot === 'ship' && !tel.crashed && tel.jumpPhase === 'none' && !tel.docked && !session.paused;
+      const ready = ceiling !== undefined && tel.nearAltKm < ceiling;
+      const canLand = ready && flyable;
+      const landKey = landRef.current;
+      if (landKey) {
+        landKey.hidden = ceiling === undefined || !flyable;
+        landKey.dataset.ready = String(ready);
+        landKey.disabled = !ready;
+        const label = `${tel.nearId}:${ready}`;
+        if (!landKey.hidden) landSiteRef.current = tel.nearId as LandingSite;
+        if (!landKey.hidden && landLabelRef.current !== label) {
+          landLabelRef.current = label;
+          const where = t(`landOn.${tel.nearId}`);
+          text(landTextRef.current, ready ? where : t('landBelow', { body: where, n: fmt(ceiling) }));
+        }
       }
       // L on a keyboard: with the pointer held for steering, no key on the
       // deck can be clicked, so the way down has to be on the keys.
       if (session.input.landRequest) {
         session.input.landRequest = false;
-        if (canLand) landRef.current?.click();
+        if (canLand) land();
       }
       // A station in reach: the docking computer's key.
       const dockKey = dockRef.current;

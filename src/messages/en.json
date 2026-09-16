@@ -1422,11 +1422,12 @@
         "t12": "Menu, top right — targets, camera, landscape, and Customize the deck: drag every control where you want it, size it, save",
         "r12": "K — docking computer: bring the ship in to a station nearby",
         "t13": "Dock key — near a station it appears; tap and the computer brings you in. Push forward to leave.",
-        "r13": "L — down to the surface when the Moon is below",
+        "r13": "L — down to the surface. The key comes up over the Moon, Mars and Proxima b, and lights when you are low enough.",
         "r14": "M — sound on and off",
         "t14": "Sound — on and off in the menu",
         "r15": "Z — flight assist · V — step out in the suit, and back aboard · R — clear the target",
-        "r16": "+ / − or [ ] — pull the camera in and out · wheel does the same"
+        "r16": "+ / − or [ ] — pull the camera in and out · wheel does the same",
+        "t15": "Fly low over the Moon, Mars or Proxima b — the amber key by the stick takes you down"
       },
       "dockedAt": "Docked at {body} — push forward to leave",
       "supplying": "Taking on fuel and stores",
@@ -1469,7 +1470,8 @@
       "dock": "Dock",
       "docking": "Docking… tap to cancel",
       "soundOn": "Sound on",
-      "soundOff": "Sound off"
+      "soundOff": "Sound off",
+      "landBelow": "{body} — below {n} km"
     },
     "moon": {
       "place": "Stellar Base · Moon",

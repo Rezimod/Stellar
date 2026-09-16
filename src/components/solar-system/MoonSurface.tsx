@@ -65,7 +65,9 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
   const plaqueSpeedRef = useRef<HTMLSpanElement>(null);
   // Surface.
   const stripRef = useRef<HTMLDivElement>(null);
+  const compassRef = useRef<HTMLDivElement>(null);
   const pipRef = useRef<HTMLDivElement>(null);
+  const holePipRef = useRef<HTMLDivElement>(null);
   const jobPipRef = useRef<HTMLDivElement>(null);
   const meterRef = useRef<HTMLDivElement>(null);
   const meterLabelRef = useRef<HTMLSpanElement>(null);
@@ -248,13 +250,21 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
     const text = (el: HTMLElement | null, v: string) => { if (el && el.textContent !== v) el.textContent = v; };
     const show = (el: HTMLElement | null, on: boolean) => { if (el && el.hidden === on) el.hidden = !on; };
     const setVar = (el: HTMLElement | null, name: string, v: string) => { if (el && el.style.getPropertyValue(name) !== v) el.style.setProperty(name, v); };
+    /** How many degrees the ribbon can show either side of the needle. The
+     *  strip is narrower on a phone than on a desk, so this is measured
+     *  rather than assumed: a fixed clamp put the pip off the end of it. */
+    let pipLimit = 58;
+    const measureCompass = () => {
+      const w = compassRef.current?.clientWidth ?? 0;
+      if (w > 0) pipLimit = Math.max(12, (w / 2 - 9) / PPD);
+    };
     const pipAt = (el: HTMLElement | null, bearing: number, heading: number, on: boolean) => {
       if (!el) return;
       show(el, on);
       if (!on) return;
       let rel = ((bearing * 180) / Math.PI - heading + 540) % 360 - 180;
-      const edge = Math.abs(rel) > 58;
-      rel = Math.max(-58, Math.min(58, rel));
+      const edge = Math.abs(rel) > pipLimit;
+      rel = Math.max(-pipLimit, Math.min(pipLimit, rel));
       el.style.transform = `translateX(calc(-50% + ${rel * PPD}px))`;
       el.dataset.edge = String(edge);
     };
@@ -334,12 +344,15 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
       }
 
       // ── The compass, and where the crew is being sent. ──
+      measureCompass();
       const heading = tel.heading;
       if (stripRef.current) stripRef.current.style.transform = `translateX(${-(heading + 360) * PPD}px)`;
       const m = tel.mission;
       const j = tel.jobs;
       pipAt(pipRef.current, m.bearing, heading, m.distance >= 0 && (m.task === '' || !m.atSite));
       pipAt(jobPipRef.current, j.bearing, heading, j.active !== '' && j.distance >= 0);
+      // The hum on channel two, once the base has mentioned it.
+      pipAt(holePipRef.current, bt.bearing, heading, bt.known && !bt.escaped && bt.distance >= 0 && tel.phase === 'surface');
       // One meter under the compass: a job's alignment when there is one,
       // otherwise the expedition's scanner.
       const meter = meterRef.current;
@@ -588,7 +601,7 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
         </div>
 
         {/* ── The compass ribbon, what it points at, and the meter under it. ── */}
-        <div className="moon-hud__compass" aria-hidden>
+        <div ref={compassRef} className="moon-hud__compass" aria-hidden>
           <div className="moon-hud__strip-wrap">
             <div ref={stripRef} className="moon-hud__strip">
               {ticks.map((k) => (
@@ -600,6 +613,7 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
           </div>
           <div ref={pipRef} className="moon-hud__pip" hidden />
           <div ref={jobPipRef} className="moon-hud__pip moon-hud__pip--job" hidden />
+          <div ref={holePipRef} className="moon-hud__pip moon-hud__pip--hole" hidden />
           <span className="moon-hud__needle" />
         </div>
         <div ref={meterRef} className="moon-hud__meter" hidden>

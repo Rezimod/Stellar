@@ -155,6 +155,11 @@ export interface UndergroundTelemetry {
   seconds: number;
   escaped: boolean;
   bestSeconds: number;
+  /** The base has called the hum in and nobody has been down yet: the
+   *  compass carries a bearing to the hole until they have. */
+  known: boolean;
+  bearing: number;
+  distance: number;
 }
 
 export interface MoonSurfaceHandle {
@@ -189,6 +194,10 @@ declare global {
 
 /** How long the touchdown plaque stays up before the crew steps out. */
 const EGRESS_HOLD = 4.2;
+/** How long the crew is outside before the base gets round to mentioning the
+ *  hum on channel two. Long enough not to talk over the first expedition act,
+ *  short enough that nobody leaves without hearing it. */
+const HOLE_CALL_AFTER = 75;
 const STEP = 1 / 120;
 const MAX_STEPS = 12;
 const SUN_DIR = new THREE.Vector3(-0.62, 0.46, 0.64).normalize();
@@ -479,6 +488,7 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
     backrooms: {
       phase: '', black: 0, crack: false, helmet: true, gravity: MOON_G, prompt: { active: false, label: '', kind: 'tap', progress: -1 },
       radio: '', radioHold: 0, readout: '', glitch: 0, guiding: false, seconds: 0, escaped: saved.escaped, bestSeconds: saved.bestSeconds,
+      known: false, bearing: 0, distance: -1,
     },
   };
 
@@ -901,11 +911,24 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
       // ── The one key. ──
       interactions.update(dt, { x: crew.x, z: crew.z, yaw: driving() ? rover.yaw : cosmonaut.yaw, driving: driving(), press, held: input.use || press });
       mission.update(dt, t, { crewX: crew.x, crewZ: crew.z, driving: driving() });
-      // The sinkhole: a hum on the radio that should not be there, and an edge that gives.
+      // ── The sinkhole: a hum on the radio that should not be there, and an
+      // edge that gives. The base calls it in once the crew has been out a
+      // while — before that the hole is a hundred metres of empty mare away
+      // with nothing to walk toward — and from then on the compass carries a
+      // bearing to it until somebody has been down. ──
       const hole = Math.hypot(crew.x - SINKHOLE.x, crew.z - SINKHOLE.z);
       brAudio.hum(hole < HINT_RANGE && !driving() ? (1 - hole / HINT_RANGE) * 0.4 : 0, 1);
-      if (hole < HINT_RANGE && !holeHinted) { holeHinted = true; bt.radio = 'hint'; bt.radioHold = 8; brAudio.statics(2); }
-      if (hole > HINT_RANGE * 1.5) holeHinted = false;
+      if (!bt.escaped) {
+        if ((hole < HINT_RANGE || telemetry.evaSeconds > HOLE_CALL_AFTER) && !holeHinted) {
+          holeHinted = true;
+          bt.known = true;
+          bt.radio = 'hint';
+          bt.radioHold = 9;
+          brAudio.statics(2);
+        }
+      }
+      bt.distance = bt.known && !bt.escaped ? hole : -1;
+      bt.bearing = Math.atan2(SINKHOLE.x - crew.x, SINKHOLE.z - crew.z);
       if (!driving() && mountT <= 0 && sinkhole.onEdge(crew.x, crew.z)) startFall();
       jobs.update(dt, { crewX: crew.x, crewZ: crew.z, driving: driving() });
 
