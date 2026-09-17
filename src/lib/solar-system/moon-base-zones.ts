@@ -77,7 +77,7 @@ export function buildZones(
     const x = g.position.x + lx * c + lz * s; const z = g.position.z - lx * s + lz * c;
     return { x, z };
   };
-  const solid = (g: THREE.Object3D, lx: number, lz: number, r: number) => { const p = world(g, lx, lz); colliders.push({ x: p.x, z: p.z, r }); };
+  const solid = (g: THREE.Object3D, lx: number, lz: number, r: number, h?: number) => { const p = world(g, lx, lz); colliders.push(h === undefined ? { x: p.x, z: p.z, r } : { x: p.x, z: p.z, r, h }); };
   const anchorAt = (g: THREE.Object3D, lx: number, lz: number, yaw = 0): Anchor => {
     const p = world(g, lx, lz);
     return { x: p.x, z: p.z, y: heightAt(p.x, p.z), yaw: g.rotation.y + yaw };
@@ -370,7 +370,8 @@ export function buildZones(
   const lid = kit.box(bay, 0.78, 0.05, 0.62, m.orange, 4.55, 0.5, 1.5);
   lid.rotation.z = -1.15;
   for (let k = 0; k < 3; k++) kit.cyl(bay, 0.08, 0.08, 0.28, m.shell, 4.35 + (k % 2) * 0.18, 0.27, 1.2 + k * 0.2, 10);
-  solid(bay, 4.0, 1.4, 1.1);
+  // Low enough to vault at a run.
+  solid(bay, 4.0, 1.4, 1.1, 0.75);
   // The tool rack: scoop, rake, tongs, hammer — and one empty hook.
   const rack = new THREE.Group();
   rack.position.set(-3.8, 0, 1.3);

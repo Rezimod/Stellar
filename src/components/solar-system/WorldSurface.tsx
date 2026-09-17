@@ -9,6 +9,7 @@ import { loadTbilisi, type EarthData } from '@/lib/solar-system/world-earth-data
 import type { SkyTarget } from '@/lib/solar-system/world-earth-tonight';
 import { TelescopeEyepiece } from './TelescopeEyepiece';
 import { setSoundOn, soundOn } from '@/lib/solar-system/sound-prefs';
+import { deadZone } from '@/lib/solar-system/surface-input';
 import { GameStick, tapKey } from './GameStick';
 import { CosmicLoader } from './CosmicLoader';
 import { useLoadingTips } from './useLoadingTips';
@@ -19,11 +20,11 @@ interface WorldSurfaceProps {
   onReturn: () => void;
 }
 
-const KEY_ROWS = ['r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r7'] as const;
+const KEY_ROWS = ['r1', 'r2', 'r8', 'r3', 'r4', 'r9', 'r5', 'r6', 'r7'] as const;
 const TOUCH_ROWS = ['t1', 't2', 't3', 't4', 't5', 't6'] as const;
 const HANDLED = new Set([
   'KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
-  'Space', 'ShiftLeft', 'ShiftRight', 'KeyE', 'KeyC', 'KeyF', 'KeyV', 'KeyM', 'ControlLeft',
+  'Space', 'ShiftLeft', 'ShiftRight', 'KeyE', 'KeyC', 'KeyF', 'KeyV', 'KeyM', 'ControlLeft', 'KeyQ', 'AltLeft', 'AltRight',
 ]);
 const fmtTime = (s: number) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 const fmtRange = (m: number) => (m >= 1000 ? `${(m / 1000).toFixed(2)} km` : `${Math.round(m)} m`);
@@ -159,7 +160,10 @@ export function WorldSurface({ world, onReturn }: WorldSurfaceProps) {
       const len = Math.hypot(x, y) || 1;
       keyboardMoveRef.current = { x: x / len, y: y / len };
       if (!movingRef.current) { input.moveX = x / len; input.moveY = y / len; }
-      input.run = has('ShiftLeft') || has('ShiftRight') || runRef.current;
+      // Shift is a sprint (held, or tapped to latch); Alt is a deliberate walk; the touch key is a run.
+      input.run = runRef.current;
+      input.sprint = has('ShiftLeft') || has('ShiftRight');
+      input.walk = has('AltLeft') || has('AltRight');
       input.crouch = has('ControlLeft') || crouchRef.current;
       input.use = has('KeyE') || has('KeyF');
       input.throttle = has('Space') ? 1 : 0;
@@ -172,6 +176,7 @@ export function WorldSurface({ world, onReturn }: WorldSurfaceProps) {
       pressed.add(e.code);
       if (e.code === 'KeyE' || e.code === 'KeyF') input.interact = true;
       if (e.code === 'KeyV') input.viewToggle = true;
+      if (e.code === 'KeyQ') input.shoulderSwap = true;
       if (e.code === 'KeyC') { crouchRef.current = !crouchRef.current; setCrouch(crouchRef.current); }
       if (e.code === 'KeyM') setSoundOn(!soundOn());
       sync();
@@ -185,7 +190,7 @@ export function WorldSurface({ world, onReturn }: WorldSurfaceProps) {
     const onBlur = () => {
       pressed.clear();
       input.moveX = input.moveY = 0;
-      input.jump = false; input.run = false; input.use = false; input.throttle = 0;
+      input.jump = false; input.run = false; input.sprint = false; input.walk = false; input.use = false; input.throttle = 0;
       keyboardMoveRef.current = { x: 0, y: 0 };
       input.orbitDX = input.orbitDY = 0;
       orbitId = -1;
@@ -239,8 +244,34 @@ export function WorldSurface({ world, onReturn }: WorldSurfaceProps) {
     let lastPaint = 0;
     const isTouch = window.matchMedia('(pointer: coarse)').matches;
     root.dataset.touch = String(isTouch);
+    // A standard-mapping gamepad: left stick moves (its length picks the gait), right stick looks,
+    // A jumps, X is the action key, B crouches, LT runs, L3 sprints, RB swaps the shoulder, Y turns the camera.
+    const padWas: boolean[] = [];
+    let padMoving = false;
+    const pollPad = () => {
+      const pads = typeof navigator.getGamepads === 'function' ? navigator.getGamepads() : [];
+      const pad = Array.from(pads).find((p) => p && p.mapping === 'standard');
+      if (!pad) return;
+      const mx = deadZone(pad.axes[0] ?? 0); const my = -deadZone(pad.axes[1] ?? 0);
+      const down = (i: number) => !!pad.buttons[i]?.pressed;
+      const edge = (i: number) => { const on = down(i); const was = padWas[i]; padWas[i] = on; return on && !was; };
+      if (mx !== 0 || my !== 0) { padMoving = true; input.moveX = mx; input.moveY = my; handle.startAudio(); }
+      else if (padMoving) { padMoving = false; input.moveX = keyboardMoveRef.current.x; input.moveY = keyboardMoveRef.current.y; }
+      input.orbitDX += deadZone(pad.axes[2] ?? 0) * 14;
+      input.orbitDY += deadZone(pad.axes[3] ?? 0) * 10;
+      const jumpWas = !!padWas[0]; const useWas = !!padWas[2];
+      if (edge(0)) input.jump = true; else if (jumpWas && !down(0) && !pressed.has('Space')) input.jump = false;
+      if (edge(2)) { input.interact = true; input.use = true; } else if (useWas && !down(2) && !pressed.has('KeyE') && !pressed.has('KeyF')) input.use = false;
+      if (edge(1)) { crouchRef.current = !crouchRef.current; setCrouch(crouchRef.current); input.crouch = crouchRef.current; }
+      if (edge(3)) input.viewToggle = true;
+      if (edge(5)) input.shoulderSwap = true;
+      if (down(6) || padWas[6]) input.run = down(6) || runRef.current;
+      if (down(10) || padWas[10]) input.sprint = down(10) || pressed.has('ShiftLeft') || pressed.has('ShiftRight');
+      padWas[6] = down(6); padWas[10] = down(10);
+    };
     const paint = (now: number) => {
       raf = requestAnimationFrame(paint);
+      pollPad();
       if (now - lastPaint < 33) return;
       lastPaint = now;
       root.dataset.ready = String(tel.ready);

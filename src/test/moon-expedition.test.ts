@@ -423,6 +423,38 @@ describe('the rover', () => {
     expect(d.rover.speed).toBeGreaterThan(24);
   });
 
+  it('lets the back go on the handbrake, and bites again without it', () => {
+    const d = driveFor();
+    d.rover.driving = true;
+    d.rover.select(1);
+    d.run(4, 1);
+    const dt = 1 / 60;
+    for (let i = 0; i < 60; i++) d.rover.update(dt, 0, 1, [d.collider], 400, true);
+    const sliding = d.rover.slip;
+    expect(sliding).toBeGreaterThan(0.8);
+    d.run(2, 0.5, 0);
+    expect(d.rover.slip).toBeLessThan(0.3);
+  });
+
+  it('leaves the ground over a drop and comes down again', () => {
+    const cliff = { heightAt: (_x: number, z: number) => (z > 20 ? -3 : 0), normalAt: (_x: number, _z: number, out: THREE.Vector3) => out.set(0, 1, 0) } as unknown as TerrainHandle;
+    const group = new THREE.Group();
+    const collider: Collider = { x: 0, z: 0, r: 2.8 };
+    const rover = makeRover(group, collider, roverParts(), cliff, dust, prints);
+    rover.driving = true;
+    rover.select(2);
+    const dt = 1 / 60;
+    let flew = false; let landed = false;
+    for (let i = 0; i < 60 * 12; i++) {
+      rover.update(dt, 1, 0, [collider], 400);
+      if (rover.airborne) flew = true;
+      if (flew && !rover.airborne) landed = true;
+    }
+    expect(flew).toBe(true);
+    expect(landed).toBe(true);
+    expect(rover.position.y).toBeCloseTo(-3, 1);
+  });
+
   it('coasts to a stop when nobody is driving it', () => {
     const d = driveFor();
     d.rover.driving = true;

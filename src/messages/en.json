@@ -1505,14 +1505,14 @@
       "close": "Close",
       "impact": "Meteoroid impact — {n} m away",
       "hints": {
-        "walk": "W A S D — walk. Hold Shift to lope.",
+        "walk": "W A S D — jog. Shift to sprint, Alt to walk.",
         "jump": "Space — jump. One sixth g: you will be up there a while.",
         "walkTouch": "Left stick — walk. Drag anywhere else to look around.",
         "jumpTouch": "Jump is bottom right. One sixth g: you will be up there a while."
       },
       "keys": {
         "r1": "W A S D / arrows — walk",
-        "r2": "Shift — lope (the fast gait)",
+        "r2": "Shift — sprint: hold it, or tap it to latch. How hard you push the stick picks walk, jog or run",
         "r3": "Space — jump; on the way down it is the descent engine",
         "r4": "Mouse drag — look around · wheel — zoom",
         "r5": "V — walk the camera round: over the shoulder, in the helmet, wide",
@@ -1535,7 +1535,9 @@
         "r13": "The mission computer in the geology lab hands out the day’s jobs",
         "t10": "The mission computer in the geology lab hands out the day’s jobs",
         "r14": "M — sound on and off",
-        "t11": "Sound — on and off in the menu"
+        "t11": "Sound — on and off in the menu",
+        "r15": "Alt — walk on purpose · Q — look over the other shoulder",
+        "r16": "The rover: E to climb in · hold E at a roll to bail out · Space is the handbrake"
       },
       "pois": {
         "habitatA": "Habitat A — crew quarters",
@@ -1668,11 +1670,6 @@
         "placePackage": "Set down",
         "levelPackage": "Level it",
         "activate": "Switch on",
-        "drive": "Drive",
-        "dismount": "Climb out",
-        "stopToExit": "Stop to climb out",
-        "cycleAirlock": "Cycle airlock",
-        "closeAirlock": "Close airlock",
         "read": {
           "isru": "Plant status",
           "power": "Power status",
@@ -1681,7 +1678,12 @@
         },
         "placeBeacon": "Set up the beacon",
         "logSinkhole": "Log the sinkhole",
-        "boardLander": "Board the lander — lift off"
+        "boardLander": "Board the lander — lift off",
+        "enterAirlock": "Enter the airlock",
+        "exitAirlock": "Leave through the airlock",
+        "getIn": "Get in",
+        "getOut": "Get out",
+        "bailOut": "Hold to bail out"
       },
       "airlock": {
         "cycling": "Equalising — {n}%",
@@ -1822,7 +1824,7 @@
           "jumpTouch": "Jump is bottom right. A metre, no more: this is a real planet."
         },
         "keys": {
-          "r1": "W A S D / arrows — walk · Shift — run · C — crouch",
+          "r1": "W A S D / arrows — jog · Shift — sprint · Alt — walk · C — crouch",
           "r2": "Space — jump; on the way down it is the descent engine",
           "r3": "Mouse drag — look around · wheel — zoom",
           "r4": "V — walk the camera round: over the shoulder, in the helmet, wide",
@@ -1834,7 +1836,9 @@
           "t3": "Run and crouch — beside the stick; jump — bottom right",
           "t4": "Camera — walk the view round: shoulder, helmet, wide",
           "t5": "The amber key reads the panel in front of you",
-          "t6": "The base is north of the pad: habitats, greenhouse, the plant, the reactors"
+          "t6": "The base is north of the pad: habitats, greenhouse, the plant, the reactors",
+          "r8": "Q — look over the other shoulder",
+          "r9": "Push the stick a little to walk, hard to run; a tap of Shift latches a sprint"
         },
         "pois": {
           "habitat0": "Habitat 1 — crew quarters, under two metres of regolith",
@@ -1888,7 +1892,7 @@
           "jumpTouch": "Jump is bottom right. Not far: this is 1.1 g."
         },
         "keys": {
-          "r1": "W A S D / arrows — walk · Shift — run · C — crouch",
+          "r1": "W A S D / arrows — jog · Shift — sprint · Alt — walk · C — crouch",
           "r2": "Space — jump; on the way down it is the descent engine",
           "r3": "Mouse drag — look around · wheel — zoom",
           "r4": "V — walk the camera round: over the shoulder, in the helmet, wide",
@@ -1900,7 +1904,9 @@
           "t3": "Run and crouch — beside the stick; jump — bottom right",
           "t4": "Camera — walk the view round: shoulder, helmet, wide",
           "t5": "The amber key greets a villager who has come to meet you",
-          "t6": "The settlement is by the lake, east of the pad. Greet them three times and one will lead you somewhere."
+          "t6": "The settlement is by the lake, east of the pad. Greet them three times and one will lead you somewhere.",
+          "r8": "Q — look over the other shoulder",
+          "r9": "Push the stick a little to walk, hard to run; a tap of Shift latches a sprint"
         },
         "pois": {
           "lake": "The lake — still, and lit from below",
@@ -1952,7 +1958,7 @@
           "driveTouch": "Stick up and down — drive and brake · left and right — steer · Jump key — handbrake"
         },
         "keys": {
-          "r1": "W A S D / arrows — jog · Shift — sprint · C — crouch",
+          "r1": "W A S D / arrows — jog · Shift — sprint · Alt — walk · C — crouch",
           "r2": "Space — jump; on the way down it is the descent engine",
           "r3": "Mouse drag — look around · wheel — zoom",
           "r4": "V — walk the camera round: over the shoulder, first person, wide",
@@ -1964,7 +1970,9 @@
           "t3": "Run and crouch — beside the stick; jump — bottom right",
           "t4": "Camera — walk the view round: shoulder, first person, wide",
           "t5": "The amber key does the thing in front of you",
-          "t6": "The Bridge of Peace is west of the pad; the cable car starts beside it"
+          "t6": "The Bridge of Peace is west of the pad; the cable car starts beside it",
+          "r8": "Q — look over the other shoulder",
+          "r9": "Push the stick a little to walk, hard to run; a tap of Shift latches a sprint"
         },
         "pois": {
           "narikala": "Narikala — the fortress on the Sololaki ridge, from the 4th century",

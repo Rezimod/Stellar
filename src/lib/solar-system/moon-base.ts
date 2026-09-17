@@ -43,7 +43,16 @@ export interface Airlock {
 }
 
 /** A habitat the crew can stand in. */
-export interface Inside { id: string; x: number; z: number; y: number }
+export interface Inside { id: string; x: number; z: number; y: number; pressurised: boolean }
+
+/** The way in through an airlock: a mark on the landing outside, the middle of the chamber, a spot on the deck inside. */
+export interface Doorway {
+  outside: { x: number; y: number; z: number };
+  chamber: { x: number; y: number; z: number };
+  inside: { x: number; y: number; z: number };
+  /** Facing when walking in. */
+  yawIn: number;
+}
 
 export interface BaseHandle {
   group: THREE.Group;
@@ -53,6 +62,11 @@ export interface BaseHandle {
   walkColliders: Collider[];
   /** The floor under a point on the base's own structure, or null on open ground. */
   floorAt: (x: number, z: number) => number | null;
+  /** The roof over a point inside a habitat, or null under the sky. */
+  ceilingAt: (x: number, z: number) => number | null;
+  /** Somewhere the camera may not be: inside a dome's shell or the airlock module's walls. */
+  blocked: (x: number, y: number, z: number) => boolean;
+  doorway: (a: Airlock) => Doorway;
   /** Keep a walker on the ramps, inside the dome walls, out of the domes
    *  from outside, and on their own side of a shut airlock door. */
   confine: (p: { x: number; z: number }) => void;
@@ -468,6 +482,48 @@ export function makeMoonBase(
     }
     return null;
   };
+  const DOME_RY = 5.25 * 0.86;
+  const ceilingAt = (x: number, z: number): number | null => {
+    for (const h of habs) {
+      local(h, x, z);
+      const r = Math.hypot(lp.x, lp.z);
+      if (r < DOME_R) return h.cy + 1.95 + DOME_RY * Math.sqrt(Math.max(0, 1 - (r * r) / (5.25 * 5.25)));
+      if (Math.abs(lp.x) < DOOR_HALF && lp.z >= 4.2 && lp.z < 6.75) return h.cy + 4.1;
+    }
+    return null;
+  };
+  const blocked = (x: number, y: number, z: number): boolean => {
+    for (const h of habs) {
+      local(h, x, z);
+      const lx = lp.x; const lz = lp.z;
+      const r = Math.hypot(lx, lz);
+      if (r > 16) continue;
+      const doorway = Math.abs(lx) < DOOR_HALF && lz > 3.8;
+      // The shell, the deck under it, and the roof of the chamber.
+      if (r < 5.8 && !doorway) {
+        if (y < h.cy + FLOOR + 0.05 && r < DOME_R) return true;
+        const ry = (y - (h.cy + 1.95)) / DOME_RY;
+        const rr = r / 5.25;
+        if (rr * rr + ry * ry > 0.92 && y > h.cy + FLOOR) return true;
+      }
+      // The airlock module: solid but for its chamber.
+      if (Math.abs(lx) < 1.65 && lz > 4.3 && lz < 6.95 && y > h.cy + 1.8 && y < h.cy + 4.45) {
+        // The chamber is drawn as a box seen from within, so a camera in its
+        // dome-side half would look at its back face: only the door half is open to it.
+        const chamber = Math.abs(lx) < DOOR_HALF - 0.05 && lz > 5.0 && lz < 6.75 && y < h.cy + 4.0 && y > h.cy + FLOOR + 0.05;
+        if (!chamber) return true;
+      }
+    }
+    return false;
+  };
+  const worldOf = (h: Hab, lx: number, ly: number, lz: number) => {
+    const c = Math.cos(h.yaw); const s = Math.sin(h.yaw);
+    return { x: h.x + lx * c + lz * s, y: h.cy + ly, z: h.z - lx * s + lz * c };
+  };
+  const doorway = (a: Airlock): Doorway => {
+    const h = habs.find((hh) => hh.airlock === a) ?? habs[0];
+    return { outside: worldOf(h, 0, rampY(7.7), 7.7), chamber: worldOf(h, 0, FLOOR, 5.4), inside: worldOf(h, 0, FLOOR, 2.8), yawIn: h.yaw + Math.PI };
+  };
   /** Going indoors takes walking at the door and cycling the lock: the apron
    *  in front of the ramp gathers an approach onto the centreline, and a shut
    *  door holds the walker on the side they are on. */
@@ -510,7 +566,7 @@ export function makeMoonBase(
 
   const setLamp = (a: Airlock) => a.lamp.emissive.setHex(LAMP[a.state]);
   const handle: BaseHandle = {
-    group, colliders, walkColliders, pois, spawn, airlocks, rover, roverCollider, roverParts, zones, floorAt, confine, inside: null,
+    group, colliders, walkColliders, pois, spawn, airlocks, rover, roverCollider, roverParts, zones, floorAt, ceilingAt, blocked, doorway, confine, inside: null,
     cycleAirlock(a) {
       if (a.state === 'closed') { a.state = 'cycling'; a.cycle = 0; }
       else if (a.state === 'open') a.state = 'closed';
@@ -522,7 +578,7 @@ export function makeMoonBase(
         local(h, crewX, crewZ);
         const r = Math.hypot(lp.x, lp.z);
         const here = r < DOME_R || (Math.abs(lp.x) < DOOR_HALF && lp.z >= 4.2 && lp.z < 6.75);
-        if (here) inside = { id: h.id, x: h.x, z: h.z, y: h.cy + FLOOR };
+        if (here) inside = { id: h.id, x: h.x, z: h.z, y: h.cy + FLOOR, pressurised: true };
         h.glow += ((here ? 1 : 0) - h.glow) * (1 - Math.exp(-dt * 3));
         if (h.glow > 0.01) lights?.request(h.x, h.cy + 4.6, h.z, 0xfff1dc, h.glow * 1.9, 22, 1.5);
       }

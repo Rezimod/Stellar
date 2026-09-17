@@ -21,7 +21,11 @@ import { softSpriteTexture } from '@/lib/solar-system/soft-sprite';
 import { makeMoonTerrain, makeMoonHorizon, TERRAIN_WALK_RADIUS, PAD_CENTER } from '@/lib/solar-system/moon-terrain';
 import { makeMoonDust } from '@/lib/solar-system/moon-fx';
 import { makeCosmonaut, type SuitAnim, type WalkInput } from '@/lib/solar-system/moon-cosmonaut';
-import type { Gait } from '@/lib/solar-system/suit-locomotion';
+import type { Gait, Mode, Track } from '@/lib/solar-system/suit-locomotion';
+import { walkTrack } from '@/lib/solar-system/suit-scripted';
+import { makeSprintLatch, sprintFrom, walkFromStick } from '@/lib/solar-system/surface-input';
+import { makeAirlockRun, type AirlockRun } from '@/lib/solar-system/moon-airlock';
+import { bailVelocity, boardTrack, doorSide, doorSpot, seatSpot } from '@/lib/solar-system/moon-rover-seat';
 import { makeMoonBase, type Airlock } from '@/lib/solar-system/moon-base';
 import { makeMeteors } from '@/lib/solar-system/moon-meteors';
 import { makePrints } from '@/lib/solar-system/moon-prints';
@@ -52,7 +56,12 @@ export interface SurfaceInput {
   moveY: number;
   jump: boolean;
   run: boolean;
+  /** Held: the sprint key (a tap latches while the stick is held); the walk key. */
+  sprint: boolean;
+  walk: boolean;
   crouch: boolean;
+  /** Edge-triggered: look over the other shoulder. Consumed. */
+  shoulderSwap: boolean;
   /** Pointer drag since last frame, CSS px; consumed by the camera. */
   orbitDX: number;
   orbitDY: number;
@@ -120,6 +129,9 @@ export interface SurfaceTelemetry {
   sliding: boolean;
   anim: SuitAnim;
   gait: Gait;
+  mode: Mode;
+  sprinting: boolean;
+  stamina: number;
   /** m/s², and the last step's length (m) and rate (steps/s). */
   gravity: number;
   stride: number;
@@ -171,7 +183,11 @@ export interface MoonSurfaceHandle {
   /** Development hooks. */
   nudgeMeteor: () => void;
   teleport: (x: number, z: number) => void;
+  /** Point the camera so that "forward" is this world direction. */
+  face: (dx: number, dz: number) => void;
   where: () => { x: number; z: number; y: number };
+  /** Where the camera is, and whether the base says it may be there. */
+  cameraAt: () => { x: number; y: number; z: number; blocked: boolean; view: SurfaceView };
   advanceMission: () => void;
   startJob: (id?: JobId) => void;
   skipDescent: () => void;
@@ -413,6 +429,7 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
   scene.add(horizon);
 
   const cosmonaut = makeCosmonaut(dust, lite);
+  cosmonaut.setCeiling(base.ceilingAt);
   cosmonaut.position.copy(base.spawn);
   cosmonaut.yaw = Math.PI;
   cosmonaut.settle();
@@ -425,7 +442,8 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
   cosmonaut.onStep = (e) => {
     if (!base.inside) prints.stamp(e.x, e.y, e.z, e.yaw, e.side);
     audio.step(e.hard);
-    cam.footfall(e.hard);
+    // Only the heavy gaits put weight into the view.
+    cam.footfall(e.hard, cosmonaut.state.gait === 'run' || cosmonaut.state.gait === 'sprint' ? 1 : 0.25);
   };
   const gears: RoverGear[] = missionComplete() ? ['creep', 'cruise', 'sprint', 'ion'] : ['creep', 'cruise', 'sprint'];
   const rover = makeRover(base.rover, base.roverCollider, base.roverParts, terrain, dust, prints, gears);
@@ -473,7 +491,7 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
   cam.distance = isMobile ? 5.6 : 5.2;
 
   const input: SurfaceInput = {
-    moveX: 0, moveY: 0, jump: false, run: false, crouch: false, orbitDX: 0, orbitDY: 0, zoom: 0,
+    moveX: 0, moveY: 0, jump: false, run: false, sprint: false, walk: false, crouch: false, shoulderSwap: false, orbitDX: 0, orbitDY: 0, zoom: 0,
     interact: false, use: false, viewToggle: false, throttle: 0, gearRequest: null,
   };
   const interactions = makeInteractions();
@@ -483,7 +501,7 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
     airborne: false, altitude: 0, speed: 0, hint: 'walk', craters: 0,
     o2: 97.4, heartRate: 64, suitTemp: 21.5, evaSeconds: 0, distanceM: 0,
     roverSpeed: 0, gear: rover.gear, gears: rover.gears, roverTop: rover.top, battery: 1, charging: false, roverFault: false,
-    crouched: false, stumbling: false, sliding: false, anim: 'idle', gait: 'stand', gravity: cosmonaut.state.gravity, stride: 0, cadence: 0,
+    crouched: false, stumbling: false, sliding: false, anim: 'idle', gait: 'stand', mode: 'idle', sprinting: false, stamina: 1, gravity: cosmonaut.state.gravity, stride: 0, cadence: 0,
     grounded: true, fallen: false, heading: 0,
     mission: mission.telemetry, jobs: jobs.telemetry, prompt: interactions.prompt,
     airlock: { near: false, state: 'closed', cycle: 0 }, readout: '', readoutHold: 0, inside: '',
@@ -496,22 +514,35 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
 
   // ── Everything the one key can do. ──
   let view: SurfaceView = 'chase';
-  let mountT = 0;
   const driving = () => ROVER_VIEWS.includes(view);
-  const setView = (next: SurfaceView) => {
+  const setView = (next: SurfaceView, snap = true) => {
     view = next;
     telemetry.view = next;
-    const onFoot = FOOT_VIEWS.includes(next);
+    // The crew is drawn from outside — walking, or in the saddle — and never from their own eyes.
     cosmonaut.setHelmetView(next === 'helmet');
-    cosmonaut.group.visible = onFoot;
+    cosmonaut.group.visible = next !== 'helmet' && next !== 'cockpit' && next !== 'mast';
     post.setHelmet(next === 'helmet' || next === 'cockpit' ? 1 : 0);
     if (next === 'helmet') { cam.yaw = cosmonaut.yaw + Math.PI; cam.lookPitch = 0; }
     if (next === 'cockpit' || next === 'mast') { cam.yaw = rover.yaw + Math.PI; cam.lookPitch = next === 'mast' ? -0.08 : -0.05; }
-    if (next === 'rover') { cam.yaw = rover.yaw + Math.PI; cam.pitch = 0.3; }
-    if (next === 'chase') cam.pitch = 0.3;
+    if (next === 'rover' && snap) { cam.yaw = rover.yaw + Math.PI; cam.pitch = 0.3; }
+    if (next === 'chase' && snap) cam.pitch = 0.3;
     if (next === 'wide') cam.pitch = 0.5;
-    cam.snap();
+    if (snap) cam.snap();
   };
+  /** The crew is being carried along a track (a vault, a door, a climb). */
+  const TRACKED: Mode[] = ['vault', 'enterDoor', 'exitDoor', 'enterVehicle', 'exitVehicle'];
+  const tracking = () => TRACKED.includes(cosmonaut.state.mode);
+  const queue: { track: Track; then: Mode }[] = [];
+  const chain = (tracks: Track[], then: Mode) => {
+    queue.length = 0;
+    tracks.forEach((track, i) => queue.push({ track, then: i === tracks.length - 1 ? then : 'idle' }));
+    cosmonaut.hold(true);
+  };
+  const roverFrame = () => ({ x: rover.position.x, y: rover.position.y, z: rover.position.z, yaw: rover.yaw });
+  const clearSpot = (x: number, z: number) => !base.walkColliders.some((col) => col !== base.roverCollider && Math.hypot(x - col.x, z - col.z) < col.r + 0.6);
+  let airlockRun: AirlockRun | null = null;
+  let airlockDoor: Airlock | null = null;
+  let bailHold = 0;
   const cycleView = () => {
     const set = driving() ? ROVER_VIEWS : FOOT_VIEWS;
     setView(set[(set.indexOf(view) + 1) % set.length]);
@@ -521,37 +552,70 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
   for (const i of jobs.interactables) interactions.add(i);
   base.airlocks.forEach((a, k) => interactions.add({
     id: `airlock${k}`, priority: 2,
-    where: () => (a.state === 'cycling' ? null : { x: a.x, z: a.z, r: 3.0 }),
+    where: () => {
+      if (airlockRun || tracking()) return null;
+      const d = base.doorway(a);
+      // From inside, the whole deck is near enough: the crew walks to the chamber themselves.
+      const inside = base.inside?.id === a.habitat;
+      const p = inside ? d.inside : d.outside;
+      return { x: p.x, z: p.z, r: inside ? 6 : 3.2 };
+    },
     kind: () => 'tap',
-    label: () => (a.state === 'open' ? 'closeAirlock' : 'cycleAirlock'),
-    use: () => { base.cycleAirlock(a); audio.bleep(); },
+    label: () => (base.inside?.id === a.habitat ? 'exitAirlock' : 'enterAirlock'),
+    use: () => {
+      airlockRun = makeAirlockRun(base.doorway(a), base.inside?.id === a.habitat ? 'exit' : 'enter');
+      airlockDoor = a;
+      cosmonaut.hold(true);
+      audio.bleep();
+    },
   }));
+  // Getting in: walk to the nearer clear side, climb up and sit. Out: the reverse, on a clear side.
   interactions.add({
     id: 'roverEnter', priority: 1,
-    where: () => (mountT > 0 ? null : { x: base.roverCollider.x, z: base.roverCollider.z, r: base.roverCollider.r + 2.8 }),
-    kind: () => 'tap', label: () => 'drive',
-    use: () => { mountT = 0.45; cosmonaut.play('enterRover', 0.45); audio.bleep(); },
+    where: () => (tracking() || airlockRun || Math.abs(rover.speed) > 0.5 ? null : { x: base.roverCollider.x, z: base.roverCollider.z, r: base.roverCollider.r + 2.8 }),
+    kind: () => 'tap', label: () => 'getIn',
+    use: () => {
+      const frame = roverFrame();
+      const side = doorSide(frame, cosmonaut.position.x, cosmonaut.position.z, clearSpot);
+      const mark = doorSpot(frame, side, 0);
+      const spot = { ...mark, y: floorHeight(mark.x, mark.z) };
+      const from = { x: cosmonaut.position.x, y: cosmonaut.position.y, z: cosmonaut.position.z, yaw: cosmonaut.yaw };
+      chain([walkTrack('enterVehicle', from, spot, 1.3), boardTrack('enterVehicle', frame, side, spot.y, MOON_G < 5)], 'seated');
+      audio.bleep();
+    },
   });
   interactions.add({
     id: 'roverExit', mode: 'rover',
-    where: () => ({ x: rover.position.x, z: rover.position.z, r: 1e6 }),
-    kind: () => 'tap', label: () => (Math.abs(rover.speed) < 1.2 ? 'dismount' : 'stopToExit'),
-    use: () => {
-      if (Math.abs(rover.speed) >= 1.2) return;
-      rover.driving = false;
-      // Step off on whichever side is clear.
-      const c = Math.cos(rover.yaw); const s = Math.sin(rover.yaw);
-      for (const side of [-1, 1]) {
-        const x = rover.position.x + c * side * 3.2; const z = rover.position.z - s * side * 3.2;
-        const blocked = base.walkColliders.some((col) => col !== base.roverCollider && Math.hypot(x - col.x, z - col.z) < col.r + 0.6);
-        cosmonaut.position.set(x, floorHeight(x, z), z);
-        if (!blocked) break;
+    where: () => (tracking() ? null : { x: rover.position.x, z: rover.position.z, r: 1e6 }),
+    kind: () => (Math.abs(rover.speed) < 1.2 ? 'tap' : 'hold'),
+    label: () => (Math.abs(rover.speed) < 1.2 ? 'getOut' : 'bailOut'),
+    progress: () => (Math.abs(rover.speed) >= 1.2 ? bailHold / 0.4 : -1),
+    use: (dt) => {
+      const speed = Math.abs(rover.speed);
+      const frame = roverFrame();
+      if (speed < 1.2) {
+        rover.driving = false;
+        const side = doorSide(frame, cosmonaut.position.x + Math.cos(rover.yaw), cosmonaut.position.z - Math.sin(rover.yaw), clearSpot);
+        const spot = doorSpot(frame, side, 0);
+        chain([boardTrack('exitVehicle', frame, side, floorHeight(spot.x, spot.z), MOON_G < 5)], 'idle');
+        setView('chase', false);
+        audio.bleep();
+        return;
       }
-      cosmonaut.velocity.set(0, 0, 0);
-      cosmonaut.yaw = rover.yaw;
-      cosmonaut.settle();
-      cosmonaut.play('exitRover', 0.5);
-      setView('chase');
+      // Holding the key on the move: over the side, and take the landing as it comes.
+      bailHold += dt;
+      if (bailHold < 0.4) return;
+      bailHold = 0;
+      rover.driving = false;
+      // The driver sits on the left, and goes out that way.
+      const side = -1;
+      const v = bailVelocity(frame, side, rover.speed, MOON_G < 5);
+      const out = doorSpot(frame, side, frame.y + 1.0);
+      cosmonaut.position.set(out.x, out.y, out.z);
+      cosmonaut.release(v.vx, v.vy, v.vz, 'bail');
+      cosmonaut.hold(false);
+      setView('chase', false);
+      cam.shake(0.4);
       audio.bleep();
     },
   });
@@ -701,6 +765,7 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
         walk.moveX = fx * input.moveY - fz * input.moveX;
         walk.moveZ = fz * input.moveY + fx * input.moveX;
         walk.run = input.run && !input.crouch;
+        walk.sprint = input.sprint && !input.crouch;
         walk.crouch = input.crouch;
         walk.jump = steps === 0 && jumpEdge;
         walk.work = false;
@@ -761,34 +826,33 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
   let egressHold = 0;
   let jumpLatch = false;
   let jumpEdge = false;
-  let autoHelmet = false;
   const walk: WalkInput = { moveX: 0, moveZ: 0, jump: false, run: false, crouch: false, work: false };
   const tmp = new THREE.Vector3();
   const roverVel = new THREE.Vector3();
   const descentFocus = new THREE.Vector3();
   const descentPos = new THREE.Vector3();
   const wrap = (a: number) => { while (a > Math.PI) a -= Math.PI * 2; while (a < -Math.PI) a += Math.PI * 2; return a; };
-  const room = { x: 0, z: 0, y: 0, r: 4.4 };
 
+  const sprintLatch = makeSprintLatch();
   const simStep = (h: number, firstStep: boolean) => {
     if (driving()) {
-      rover.update(h, input.moveY, input.moveX, base.colliders, TERRAIN_WALK_RADIUS);
-      cosmonaut.position.copy(rover.position);
-      cosmonaut.settle();
+      rover.update(h, input.moveY, input.moveX, base.colliders, TERRAIN_WALK_RADIUS, input.jump);
+      // In the saddle: the crew sits where the seat is, facing the way the rover does.
+      const seat = seatSpot(roverFrame());
+      cosmonaut.update(h, walk, floorHeight, base.walkColliders, TERRAIN_WALK_RADIUS);
+      cosmonaut.position.set(seat.x, seat.y, seat.z);
+      cosmonaut.yaw = rover.yaw;
       return;
     }
     rover.update(h, 0, 0, base.colliders, TERRAIN_WALK_RADIUS);
-    const fx = -Math.sin(cam.yaw); const fz = -Math.cos(cam.yaw);
-    const rx = -fz; const rz = fx;
-    walk.moveX = fx * input.moveY + rx * input.moveX;
-    walk.moveZ = fz * input.moveY + rz * input.moveX;
-    walk.run = input.run && !input.crouch;
-    walk.crouch = input.crouch;
-    walk.jump = firstStep && jumpEdge;
-    walk.work = interactions.prompt.holding;
+    const moving = Math.hypot(input.moveX, input.moveY) > 0.2;
+    const sprint = sprintFrom(sprintLatch, input.sprint, moving, h);
+    walkFromStick(walk, { moveX: input.moveX, moveY: input.moveY, jump: false, run: input.run, sprint, walk: input.walk, crouch: input.crouch }, cam.yaw, firstStep && jumpEdge, interactions.prompt.holding);
+    const wasTracking = tracking();
     cosmonaut.update(h, walk, floorHeight, base.walkColliders, TERRAIN_WALK_RADIUS);
-    base.confine(cosmonaut.position);
+    if (!wasTracking && !tracking()) base.confine(cosmonaut.position);
     if (cosmonaut.state.impact > 1) cam.land(cosmonaut.state.impact);
+    if (cosmonaut.state.landing === 'hard' || cosmonaut.state.landing === 'fall') cam.shake(0.5);
   };
 
   let raf = 0;
@@ -906,8 +970,11 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
       jumpLatch = input.jump;
       if (input.viewToggle) {
         input.viewToggle = false;
-        autoHelmet = false;
         cycleView();
+      }
+      if (input.shoulderSwap) {
+        input.shoulderSwap = false;
+        cam.swapShoulder();
       }
       if (input.gearRequest !== null) {
         const want = input.gearRequest;
@@ -931,22 +998,35 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
       cosmonaut.present(alpha);
       rover.present(alpha);
 
-      // Getting on: a moment's climb, then the seat.
-      if (mountT > 0) {
-        mountT -= dt;
-        if (mountT <= 0) {
-          rover.driving = true;
-          setView('rover');
-        }
+      // ── Scripted moves: the next track in a chain, the airlock's sequence, the seat. ──
+      if (queue.length && !tracking()) {
+        const next = queue.shift()!;
+        cosmonaut.script(next.track, next.then);
+        if (!queue.length && next.then !== 'seated') cosmonaut.hold(false);
       }
-      if (!driving()) {
-        cosmonaut.indoors = !!base.inside;
-        if (base.inside && view !== 'helmet') { setView('helmet'); autoHelmet = true; }
-        else if (!base.inside && autoHelmet) { autoHelmet = false; if (view === 'helmet') setView('chase'); }
+      if (!queue.length && !tracking() && cosmonaut.state.mode === 'seated' && !driving()) {
+        rover.driving = true;
+        cosmonaut.hold(false);
+        setView('rover', false);
       }
+      if (airlockRun && airlockDoor) {
+        const a = airlockDoor;
+        const ev = airlockRun.update(dt, {
+          doorOpen: a.open, cycling: a.state === 'cycling', tracking: tracking(),
+          from: { x: cosmonaut.position.x, y: cosmonaut.position.y, z: cosmonaut.position.z, yaw: cosmonaut.yaw },
+        });
+        if (ev?.kind === 'track') cosmonaut.script(ev.track, 'idle');
+        else if (ev?.kind === 'open') { if (a.state === 'closed') base.cycleAirlock(a); audio.bleep(); }
+        else if (ev?.kind === 'close') { if (a.state === 'open') base.cycleAirlock(a); audio.bleep(); }
+        else if (ev?.kind === 'pressurised') { cosmonaut.setGravity(MOON_G, false); cosmonaut.visor(true); audio.bleep(); }
+        else if (ev?.kind === 'depressurised') { cosmonaut.setGravity(MOON_G, true); cosmonaut.visor(false); audio.bleep(); }
+        else if (ev?.kind === 'done') { airlockRun = null; airlockDoor = null; cosmonaut.hold(false); }
+      }
+      if (!driving()) cosmonaut.indoors = !!base.inside;
 
       // ── The one key. ──
       interactions.update(dt, { x: crew.x, z: crew.z, yaw: driving() ? rover.yaw : cosmonaut.yaw, driving: driving(), press, held: input.use || press });
+      if (!interactions.prompt.holding) bailHold = 0;
       mission.update(dt, t, { crewX: crew.x, crewZ: crew.z, driving: driving() });
       // ── The sinkhole: a hum on the radio that should not be there, and an
       // edge that gives. The base calls it in once the crew has been out a
@@ -966,7 +1046,7 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
       }
       bt.distance = bt.known && !bt.escaped ? hole : -1;
       bt.bearing = Math.atan2(SINKHOLE.x - crew.x, SINKHOLE.z - crew.z);
-      if (!driving() && mountT <= 0 && sinkhole.onEdge(crew.x, crew.z)) startFall();
+      if (!driving() && !tracking() && sinkhole.onEdge(crew.x, crew.z)) startFall();
       jobs.update(dt, { crewX: crew.x, crewZ: crew.z, driving: driving() });
 
       // ── The camera. ──
@@ -991,16 +1071,18 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
         cam.firstPerson(dt, tmp, 0);
       } else {
         const inside = base.inside;
-        if (inside) { room.x = inside.x; room.z = inside.z; room.y = inside.y + 1.35; }
         const wide = view === 'wide' && !inside;
+        // Near a habitat the walls are the whole answer to where the camera may be.
+        const nearHab = base.airlocks.some((a) => Math.hypot(a.x - crew.x, a.z - crew.z) < 15);
         cam.chase(dt, {
           position: cosmonaut.group.position, velocity: cosmonaut.velocity, yaw: cosmonaut.yaw,
           height: wide ? 2.2 : 1.35,
-          distance: wide ? cam.distance * 4.2 + 14 : inside ? Math.min(cam.distance, 2.6) : cam.distance,
-          speedFrac: Math.min(1, cosmonaut.state.speed / cosmonaut.profile.run),
+          distance: wide ? cam.distance * 4.2 + 14 : inside ? Math.min(cam.distance, 2.8) : cam.distance,
+          speedFrac: cosmonaut.state.speedFrac,
+          fovExtra: cosmonaut.state.sprinting ? 5 : 0,
         }, wide
           ? { follow: 1, lead: 0, leadMax: 0, fovKick: 0, horizontal: 4, vertical: 3 }
-          : { follow: 2.2, lead: 0.3, leadMax: 0.8, fovKick: 4, horizontal: 9, vertical: 4, room: inside ? room : null });
+          : { follow: 2.4, lead: 0.3, leadMax: 0.8, fovKick: 4, horizontal: 9, vertical: 4, shoulder: 0.4, blocked: nearHab ? base.blocked : null });
       }
       if (!walked && cosmonaut.state.speed > 0.5) walked = true;
       if (!jumped && cosmonaut.state.airborne && cosmonaut.state.altitude > 0.3) jumped = true;
@@ -1028,6 +1110,9 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
     telemetry.sliding = cosmonaut.state.sliding;
     telemetry.anim = cosmonaut.state.anim;
     telemetry.gait = cosmonaut.state.gait;
+    telemetry.mode = cosmonaut.state.mode;
+    telemetry.sprinting = cosmonaut.state.sprinting;
+    telemetry.stamina = cosmonaut.state.stamina;
     telemetry.gravity = cosmonaut.state.gravity;
     telemetry.stride = cosmonaut.state.stride;
     telemetry.cadence = cosmonaut.state.cadence;
@@ -1154,12 +1239,19 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
     startAudio: () => { audio.start(); brAudio.start(); },
     nudgeMeteor: meteors.nudge,
     teleport(x, z) {
+      queue.length = 0;
+      airlockRun = null; airlockDoor = null;
+      if (driving()) { rover.driving = false; setView('chase'); }
+      cosmonaut.hold(false);
+      cosmonaut.release(0, 0, 0, 'idle');
       cosmonaut.position.set(x, floorHeight(x, z), z);
       cosmonaut.velocity.set(0, 0, 0);
       cosmonaut.settle();
       cam.snap();
     },
+    face(dx, dz) { cam.yaw = Math.atan2(-dx, -dz); cam.snap(); },
     where: () => ({ x: cosmonaut.position.x, y: cosmonaut.position.y, z: cosmonaut.position.z }),
+    cameraAt: () => ({ x: camera.position.x, y: camera.position.y, z: camera.position.z, blocked: base.blocked(camera.position.x, camera.position.y, camera.position.z), view }),
     advanceMission: mission.advance,
     startJob: (id) => { jobs.start(id); },
     skipDescent() {

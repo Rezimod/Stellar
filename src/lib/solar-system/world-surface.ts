@@ -14,6 +14,7 @@ import * as THREE from 'three';
 import { makeMoonPost } from '@/lib/solar-system/moon-post';
 import { makeMoonDust } from '@/lib/solar-system/moon-fx';
 import { makeCosmonaut, type WalkInput } from '@/lib/solar-system/moon-cosmonaut';
+import { makeSprintLatch, sprintFrom, walkFromStick } from '@/lib/solar-system/surface-input';
 import { makePrints } from '@/lib/solar-system/moon-prints';
 import { makeSuitAudio } from '@/lib/solar-system/moon-audio';
 import { makeLander, type LanderTelemetry } from '@/lib/solar-system/moon-lander';
@@ -45,7 +46,10 @@ export interface WorldInput {
   moveY: number;
   jump: boolean;
   run: boolean;
+  sprint: boolean;
+  walk: boolean;
   crouch: boolean;
+  shoulderSwap: boolean;
   orbitDX: number;
   orbitDY: number;
   zoom: number;
@@ -106,6 +110,8 @@ export interface WorldSurfaceHandle {
   profile: WorldProfile;
   startAudio: () => void;
   teleport: (x: number, z: number) => void;
+  /** Point the camera so that "forward" is this world direction. */
+  face: (dx: number, dz: number) => void;
   where: () => { x: number; z: number; y: number };
   skipDescent: () => void;
   perf: () => PerfSample;
@@ -237,7 +243,7 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
 
   // Earth's air: no pressure suit, so an ordinary gait, and no helmet.
   const cosmonaut = makeCosmonaut(dust, lite, profile.gravity, !profile.breathable, !!profile.breathable);
-  cosmonaut.onStep = (e) => { prints.stamp(e.x, e.y, e.z, e.yaw, e.side); audio.step(e.hard); cam.footfall(e.hard); };
+  cosmonaut.onStep = (e) => { prints.stamp(e.x, e.y, e.z, e.yaw, e.side); audio.step(e.hard); cam.footfall(e.hard, cosmonaut.state.gait === 'run' || cosmonaut.state.gait === 'sprint' ? 1 : 0.25); };
   // On Earth, a game character's run: jog on the stick, sprint on Shift.
   if (earth) cosmonaut.setProfile(earthGait());
   scene.add(cosmonaut.group);
@@ -263,7 +269,7 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
   cam.distance = earth ? EARTH_CHASE.distance : isMobile ? 5.6 : 5.2;
 
   const input: WorldInput = {
-    moveX: 0, moveY: 0, jump: false, run: false, crouch: false, orbitDX: 0, orbitDY: 0, zoom: 0,
+    moveX: 0, moveY: 0, jump: false, run: false, sprint: false, walk: false, crouch: false, shoulderSwap: false, orbitDX: 0, orbitDY: 0, zoom: 0,
     interact: false, use: false, viewToggle: false, throttle: 0,
   };
   const telemetry: WorldTelemetry = {
@@ -351,6 +357,7 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
     };
   }
   const stepFrom = new THREE.Vector3();
+  const sprintLatch = makeSprintLatch();
   const place = (x: number, y: number, z: number) => {
     cosmonaut.position.set(x, y, z);
     cosmonaut.velocity.set(0, 0, 0);
@@ -364,17 +371,14 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
       cosmonaut.position.copy(earth.car.position);
       return;
     }
-    const fx = -Math.sin(cam.yaw); const fz = -Math.cos(cam.yaw);
-    const rx = -fz; const rz = fx;
-    walk.moveX = fx * input.moveY + rx * input.moveX;
-    walk.moveZ = fz * input.moveY + rz * input.moveX;
-    walk.run = input.run && !input.crouch;
-    walk.crouch = input.crouch;
-    walk.jump = firstStep && jumpEdge;
-    walk.work = interactions.prompt.holding;
+    const moving = Math.hypot(input.moveX, input.moveY) > 0.2;
+    const sprint = sprintFrom(sprintLatch, input.sprint, moving, h);
+    walkFromStick(walk, { moveX: input.moveX, moveY: input.moveY, jump: false, run: input.run, sprint, walk: input.walk, crouch: input.crouch }, cam.yaw, firstStep && jumpEdge, interactions.prompt.holding);
     stepFrom.copy(cosmonaut.position);
     cosmonaut.update(h, walk, floorAt, walkColliders(), walkRadius);
     earth?.confine(cosmonaut.position, stepFrom);
+    if (cosmonaut.state.impact > 1) cam.land(cosmonaut.state.impact);
+    if (cosmonaut.state.landing === 'hard' || cosmonaut.state.landing === 'fall') cam.shake(0.5);
   };
 
   let raf = 0;
@@ -501,6 +505,10 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
         input.viewToggle = false;
         setView(VIEWS[(VIEWS.indexOf(view) + 1) % VIEWS.length]);
       }
+      if (input.shoulderSwap) {
+        input.shoulderSwap = false;
+        cam.swapShoulder();
+      }
       acc += dt;
       let steps = 0;
       while (acc >= STEP && steps < MAX_STEPS) {
@@ -535,11 +543,12 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
           position: cosmonaut.group.position, velocity: cosmonaut.velocity, yaw: cosmonaut.yaw,
           height: wide ? 2.2 : earth ? EARTH_CHASE.height : 1.35,
           distance: wide ? cam.distance * 4.2 + 14 : cam.distance,
-          speedFrac: Math.min(1, cosmonaut.state.speed / cosmonaut.profile.run),
+          speedFrac: cosmonaut.state.speedFrac,
+          fovExtra: cosmonaut.state.sprinting ? 5 : 0,
         }, wide
           ? { follow: 1, lead: 0, leadMax: 0, fovKick: 0, horizontal: 4, vertical: 3 }
           : earth ? EARTH_CHASE
-            : { follow: 2.6, lead: 0.16, leadMax: 0.8, fovKick: 4, horizontal: 14, vertical: 6.5 });
+            : { follow: 2.6, lead: 0.16, leadMax: 0.8, fovKick: 4, horizontal: 14, vertical: 6.5, shoulder: 0.4 });
       }
       if (!walked && cosmonaut.state.speed > 0.5) walked = true;
       if (!jumped && cosmonaut.state.airborne && cosmonaut.state.altitude > 0.3) jumped = true;
@@ -662,6 +671,7 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
       cosmonaut.settle();
       cam.snap();
     },
+    face(dx, dz) { cam.yaw = Math.atan2(-dx, -dz); cam.snap(); },
     where: () => ({ x: cosmonaut.position.x, y: cosmonaut.position.y, z: cosmonaut.position.z }),
     skipDescent() {
       if (telemetry.phase === 'surface') return;

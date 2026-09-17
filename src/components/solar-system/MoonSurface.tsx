@@ -18,11 +18,11 @@ interface MoonSurfaceProps {
   onReturn: () => void;
 }
 
-const KEY_ROWS = ['r1', 'r2', 'r9', 'r3', 'r4', 'r5', 'r10', 'r6', 'r11', 'r12', 'r8', 'r13', 'r14', 'r7'] as const;
+const KEY_ROWS = ['r1', 'r2', 'r15', 'r9', 'r3', 'r4', 'r16', 'r5', 'r10', 'r6', 'r11', 'r12', 'r8', 'r13', 'r14', 'r7'] as const;
 const TOUCH_ROWS = ['t1', 't2', 't3', 't7', 't4', 't8', 't9', 't6', 't10', 't11', 't5'] as const;
 const HANDLED = new Set([
   'KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
-  'Space', 'ShiftLeft', 'ShiftRight', 'KeyE', 'KeyC', 'KeyF', 'KeyV', 'KeyM', 'ControlLeft',
+  'Space', 'ShiftLeft', 'ShiftRight', 'KeyE', 'KeyC', 'KeyF', 'KeyV', 'KeyM', 'ControlLeft', 'KeyQ', 'AltLeft', 'AltRight',
   'Digit1', 'Digit2', 'Digit3', 'Digit4',
 ]);
 const fmtTime = (s: number) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
@@ -169,7 +169,10 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
         input.moveX = x / len;
         input.moveY = y / len;
       }
-      input.run = has('ShiftLeft') || has('ShiftRight') || runRef.current;
+      // Shift is a sprint (held, or tapped to latch); Alt is a deliberate walk; the touch key is a run.
+      input.run = runRef.current;
+      input.sprint = has('ShiftLeft') || has('ShiftRight');
+      input.walk = has('AltLeft') || has('AltRight');
       input.crouch = has('ControlLeft') || crouchRef.current;
       // E and F both hold the job in front of you; E also presses it.
       input.use = has('KeyE') || has('KeyF');
@@ -184,6 +187,7 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
       pressed.add(e.code);
       if (e.code === 'KeyE' || e.code === 'KeyF') input.interact = true;
       if (e.code === 'KeyV') input.viewToggle = true;
+      if (e.code === 'KeyQ') input.shoulderSwap = true;
       if (e.code === 'KeyC') { crouchRef.current = !crouchRef.current; setCrouch(crouchRef.current); }
       if (e.code === 'KeyM') setSoundOn(!soundOn());
       if (e.code.startsWith('Digit')) input.gearRequest = Number(e.code.slice(5)) - 1;
@@ -198,7 +202,7 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
     const onBlur = () => {
       pressed.clear();
       input.moveX = input.moveY = 0;
-      input.jump = false; input.run = false; input.use = false; input.throttle = 0;
+      input.jump = false; input.run = false; input.sprint = false; input.walk = false; input.use = false; input.throttle = 0;
       keyboardMoveRef.current = { x: 0, y: 0 };
       input.orbitDX = input.orbitDY = 0;
       orbitId = -1;
@@ -275,8 +279,8 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
     let lastPaint = 0;
     const isTouch = window.matchMedia('(pointer: coarse)').matches;
     root.dataset.touch = String(isTouch);
-    // A standard-mapping gamepad: left stick moves, right stick looks, A jumps,
-    // X is the action key, B crouches, the left trigger or stick click runs, Y turns the camera.
+    // A standard-mapping gamepad: left stick moves (its length picks the gait), right stick looks,
+    // A jumps, X is the action key, B crouches, LT runs, L3 sprints, RB swaps the shoulder, Y turns the camera.
     const padWas: boolean[] = [];
     let padMoving = false;
     const pollPad = () => {
@@ -297,8 +301,10 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
       if (edge(2)) { input.interact = true; input.use = true; } else if (useWas && !down(2) && !pressed.has('KeyE') && !pressed.has('KeyF')) input.use = false;
       if (edge(1)) { crouchRef.current = !crouchRef.current; setCrouch(crouchRef.current); input.crouch = crouchRef.current; }
       if (edge(3)) input.viewToggle = true;
-      const runPad = down(6) || down(10);
-      if (runPad || padWas[6] || padWas[10]) input.run = runPad || runRef.current || pressed.has('ShiftLeft') || pressed.has('ShiftRight');
+      if (edge(5)) input.shoulderSwap = true;
+      // LT runs, L3 sprints; the stick's own length picks the gait below that.
+      if (down(6) || padWas[6]) input.run = down(6) || runRef.current;
+      if (down(10) || padWas[10]) input.sprint = down(10) || pressed.has('ShiftLeft') || pressed.has('ShiftRight');
       padWas[6] = down(6); padWas[10] = down(10);
     };
     const paint = (now: number) => {

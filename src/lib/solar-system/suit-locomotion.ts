@@ -369,7 +369,10 @@ export function makeLocomotion(position: Vec3, velocity: Vec3, initial: GaitProf
         const impact = -velocity.y;
         if (!wasGrounded) {
           state.impact = impact;
-          const kind = classifyLanding(P, impact);
+          // Bailing out of a moving vehicle is never a soft landing.
+          const bailed = state.mode === 'bail';
+          const k0 = classifyLanding(P, impact);
+          const kind: Landing = bailed && speed0 > P.run ? (k0 === 'fall' ? 'fall' : 'hard') : bailed && k0 === 'soft' ? 'roll' : k0;
           const fromStride = state.striding && !state.jumping && state.mode !== 'fall';
           if (!fromStride || kind !== 'soft') {
             state.landing = kind; lastLanding = kind; state.landT = 0;

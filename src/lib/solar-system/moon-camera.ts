@@ -3,8 +3,9 @@
 // fraction of a second, not by a leash. The focus point is sprung toward the
 // target — tight horizontally, softer vertically so a lunar bound does not
 // yank the horizon — and led slightly by velocity so the crew runs into the
-// frame rather than out of it. Yaw eases round behind the direction of
-// travel only while moving forward and not being dragged. A marched ray
+// frame rather than out of it. The view sits over one shoulder (swappable)
+// and, a second and a half after the last look input, eases round behind
+// the direction of travel. A marched ray
 // pulls the camera in front of anything between it and the crew, at once,
 // and lets it back out gently. Speed widens the lens a little; shake is a
 // smooth decaying wobble rather than per-frame noise. Weight comes from the
@@ -24,6 +25,8 @@ export interface ChaseTarget {
   distance: number;
   /** 0 standing … 1 flat out, for the lens and the pull-back. */
   speedFrac: number;
+  /** Extra lens, degrees: a sprint. */
+  fovExtra?: number;
 }
 
 export interface ChaseTuning {
@@ -44,7 +47,7 @@ export interface ChaseTuning {
    *  consulted at all: this is the whole answer. */
   blocked?: ((x: number, y: number, z: number) => boolean) | null;
   /** Look past the crew's shoulder rather than through their pack: the
-   *  focus sits this far to the camera's right, m. */
+   *  focus sits this far to the side the rig has chosen, m. */
   shoulder?: number;
 }
 
@@ -55,6 +58,10 @@ export interface CameraRig {
   lookPitch: number;
   /** User zoom: the preferred chase distance, m. */
   distance: number;
+  /** Which shoulder the view looks over: +1 right, −1 left. */
+  shoulderSide: number;
+  swapShoulder: () => void;
+  /** Mouse, touch drag and right stick all come through here. */
   orbit: (dx: number, dy: number, firstPerson: boolean) => void;
   zoom: (steps: number) => void;
   chase: (dt: number, target: ChaseTarget, tune: ChaseTuning) => void;
@@ -64,8 +71,8 @@ export interface CameraRig {
   snap: () => void;
   /** Add a shake impulse, 0…1. */
   shake: (amount: number) => void;
-  /** A boot came down, 0…1 how hard. */
-  footfall: (hard: number) => void;
+  /** A boot came down, 0…1 how hard; `weight` scales the dip (heavy gaits only). */
+  footfall: (hard: number, weight?: number) => void;
   /** The body landed at this vertical speed, m/s. */
   land: (impact: number) => void;
   /** Seconds since the pointer last turned the camera. */
@@ -75,6 +82,8 @@ export interface CameraRig {
 
 const CAM_MIN = 2.6;
 const CAM_MAX = 10;
+/** Seconds after the last look input before the view recentres behind the movement. */
+const RECENTER_AFTER = 1.5;
 
 export function makeCameraRig(
   camera: THREE.PerspectiveCamera,
@@ -96,6 +105,8 @@ export function makeCameraRig(
   let shakeT = 0;
   let bob = 0;
   let bobVel = 0;
+  let shoulderK = 1;
+  let desiredNow = -1;
   const wrap = (a: number) => { while (a > Math.PI) a -= Math.PI * 2; while (a < -Math.PI) a += Math.PI * 2; return a; };
 
   /** How far along focus→want the view is clear, 0…1. */
@@ -128,7 +139,8 @@ export function makeCameraRig(
   };
 
   const rig: CameraRig = {
-    yaw: Math.PI, pitch: 0.3, lookPitch: 0, distance: 5.2,
+    yaw: Math.PI, pitch: 0.3, lookPitch: 0, distance: 5.2, shoulderSide: 1,
+    swapShoulder() { rig.shoulderSide = -rig.shoulderSide; },
     orbit(dx, dy, firstPerson) {
       if (dx === 0 && dy === 0) return;
       rig.yaw -= dx * (firstPerson ? 0.0036 : 0.0052);
@@ -141,7 +153,7 @@ export function makeCameraRig(
     },
     snap() { snapNext = true; },
     shake(amount) { shakeAmp = Math.max(shakeAmp, amount); },
-    footfall(hard) { bobVel -= 0.05 + hard * 0.3; },
+    footfall(hard, weight = 1) { bobVel -= (0.05 + hard * 0.3) * weight; },
     land(impact) { bobVel -= Math.min(1.6, impact * 0.28); },
     dragAge: () => drag,
     update(dt) {
@@ -150,13 +162,14 @@ export function makeCameraRig(
       shakeT += dt;
       bobVel += (-bob * 110 - bobVel * 13) * dt;
       bob += bobVel * dt;
+      shoulderK += (rig.shoulderSide - shoulderK) * (1 - Math.exp(-dt * 6));
     },
     chase(dt, target, tune) {
       // Ease round behind the direction of travel — only when going forward
       // relative to the view, so backing toward the camera never spins it.
       const vx = target.velocity.x; const vz = target.velocity.z;
       const sp = Math.hypot(vx, vz);
-      if (drag > 0.8 && sp > 0.8) {
+      if (drag > RECENTER_AFTER && sp > 0.8) {
         const forward = (-Math.sin(rig.yaw) * vx - Math.cos(rig.yaw) * vz) / sp;
         if (forward > -0.2) {
           const rate = tune.follow * Math.min(1, sp / 2.5) * (0.35 + 0.65 * Math.max(0, forward));
@@ -166,7 +179,7 @@ export function makeCameraRig(
       const leadX = THREE.MathUtils.clamp(vx * tune.lead, -tune.leadMax, tune.leadMax);
       const leadZ = THREE.MathUtils.clamp(vz * tune.lead, -tune.leadMax, tune.leadMax);
       goal.set(target.position.x + leadX, target.position.y + target.height, target.position.z + leadZ);
-      if (tune.shoulder) { goal.x += Math.cos(rig.yaw) * tune.shoulder; goal.z -= Math.sin(rig.yaw) * tune.shoulder; }
+      if (tune.shoulder) { goal.x += Math.cos(rig.yaw) * tune.shoulder * shoulderK; goal.z -= Math.sin(rig.yaw) * tune.shoulder * shoulderK; }
       if (snapNext) {
         focus.copy(goal);
         focusVel.set(0, 0, 0);
@@ -178,7 +191,11 @@ export function makeCameraRig(
         focusVel.y += ((goal.y - focus.y) * wv * wv - focusVel.y * 2 * wv) * dt;
         focus.addScaledVector(focusVel, dt);
       }
-      const desired = target.distance * (1 + 0.14 * target.speedFrac);
+      // The preferred distance itself eases — into a tighter interior framing, back out through a door.
+      const wantDist = target.distance * (1 + 0.14 * target.speedFrac);
+      if (snapNext || desiredNow < 0) desiredNow = wantDist;
+      else desiredNow += (wantDist - desiredNow) * (1 - Math.exp(-dt * 3.5));
+      const desired = desiredNow;
       const cp = Math.cos(rig.pitch);
       want.set(focus.x + Math.sin(rig.yaw) * desired * cp, focus.y + Math.sin(rig.pitch) * desired, focus.z + Math.cos(rig.yaw) * desired * cp);
       if (tune.room) {
@@ -214,7 +231,7 @@ export function makeCameraRig(
       look.copy(focus);
       look.y += bob * 0.2 + tuck * 0.22;
       camera.lookAt(look);
-      fov += (baseFov + tune.fovKick * target.speedFrac - fov) * (1 - Math.exp(-dt * 2.5));
+      fov += (baseFov + tune.fovKick * target.speedFrac + (target.fovExtra ?? 0) - fov) * (1 - Math.exp(-dt * 2.5));
       if (Math.abs(camera.fov - fov) > 0.01) { camera.fov = fov; camera.updateProjectionMatrix(); }
     },
     firstPerson(dt, eye, smooth) {

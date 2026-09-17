@@ -10,6 +10,7 @@ import type { LightPool } from '@/lib/solar-system/moon-lights';
 import type { DustHandle } from '@/lib/solar-system/moon-fx';
 import { makeAliens, GREETINGS_TO_LEAD, NOTICE_RANGE, POLITE_DISTANCE, LOSE_RANGE } from '@/lib/solar-system/world-aliens';
 import { LANDING_SITES, MARS, PROXIMA_B, isWorldId } from '@/lib/solar-system/world-profiles';
+import { gaitProfile, LUNAR_G } from '@/lib/solar-system/suit-locomotion';
 
 const flat = () => 0;
 const dust: DustHandle = { points: new THREE.Points(), burst: vi.fn(), update: vi.fn(), dispose: vi.fn() };
@@ -105,6 +106,18 @@ describe('the villagers', () => {
     expect(aliens.telemetry.atStone).toBe(true);
     expect(onEvent).toHaveBeenCalledWith('stone');
     expect(aliens.telemetry.phrase).toBe('gift');
+  });
+});
+
+describe('walking on a heavier world', () => {
+  it('is slower, shorter in the air and quicker to stop than the Moon, with no numbers of its own', () => {
+    const moon = gaitProfile(LUNAR_G, true); const mars = gaitProfile(MARS.gravity, true); const prox = gaitProfile(PROXIMA_B.gravity, true);
+    expect(mars.hop * mars.hop / (2 * mars.g)).toBeLessThan(moon.hop * moon.hop / (2 * moon.g));
+    expect(prox.hop * prox.hop / (2 * prox.g)).toBeLessThan(mars.hop * mars.hop / (2 * mars.g));
+    expect(prox.sprint).toBeLessThan(mars.sprint);
+    expect(prox.brake).toBeGreaterThan(mars.brake);
+    expect(mars.brake).toBeGreaterThan(moon.brake);
+    expect(prox.cadenceRun).toBeGreaterThan(mars.cadenceRun);
   });
 });
 
