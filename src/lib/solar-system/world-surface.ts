@@ -36,6 +36,7 @@ import { EARTH_DESCENT, EARTH_WALK_RADIUS, makeEarthWorld, type EarthState } fro
 import { makeEarthEntry } from '@/lib/solar-system/world-earth-entry';
 import { haze } from '@/lib/solar-system/world-earth-haze';
 import { makeFlightAudio } from '@/lib/solar-system/flight-audio';
+import { getSettings, onSettingsChange } from '@/game/settings';
 import { EARTH_CHASE, earthGait } from '@/lib/solar-system/world-earth-gait';
 
 export type WorldView = 'chase' | 'helmet' | 'wide';
@@ -115,6 +116,8 @@ export interface WorldSurfaceHandle {
   where: () => { x: number; z: number; y: number };
   skipDescent: () => void;
   perf: () => PerfSample;
+  /** The game shell's pause: no frames, no sim, no sound until resumed. */
+  setPaused: (on: boolean) => void;
   /** Earth: move the clock (any ISO date), finish an expedition act, point the camera (degrees from north, pitch rad). */
   setTime: (iso: string) => void;
   advance: () => void;
@@ -160,7 +163,7 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
   const scene = new THREE.Scene();
   // Earth's air is in its own materials (world-earth-haze), out to the Caucasus.
   if (!earth) scene.fog = new THREE.Fog(profile.sky.fog, profile.sky.fogNear, profile.sky.fogFar);
-  const baseFov = isMobile ? 62 : 52;
+  let baseFov = getSettings().fov;
   const camera = new THREE.PerspectiveCamera(baseFov, mount.clientWidth / mount.clientHeight, earth ? 0.1 : 0.05, earth ? 30000 : 4000);
   const SUN_DIR = earth ? earth.sky.state.keyDir.clone() : profile.sunDir;
 
@@ -266,6 +269,7 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
   const cameraColliders = () => (aliens ? colliders.concat(aliens.colliders)
     : earth ? colliders.concat(earth.cameraColliders(cosmonaut.position.x, cosmonaut.position.z)) : colliders);
   const cam = makeCameraRig(camera, floorAt, cameraColliders, baseFov);
+  const unsubSettings = onSettingsChange((s) => { baseFov = s.fov; cam.setBaseFov(s.fov); });
   cam.distance = earth ? EARTH_CHASE.distance : isMobile ? 5.6 : 5.2;
 
   const input: WorldInput = {
@@ -385,10 +389,11 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
   let last = performance.now();
   let docVisible = !document.hidden;
   let contextLost = false;
+  let paused = false;
   const onVis = () => {
     docVisible = !document.hidden;
     last = performance.now();
-    if (docVisible && !raf && telemetry.ready && !contextLost) raf = requestAnimationFrame(loop);
+    if (docVisible && !paused && !raf && telemetry.ready && !contextLost) raf = requestAnimationFrame(loop);
   };
   const onContextLost = (e: Event) => {
     e.preventDefault();
@@ -400,7 +405,7 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
   renderer.domElement.addEventListener('webglcontextlost', onContextLost);
   const loop = () => {
     raf = 0;
-    if (!docVisible) return;
+    if (!docVisible || paused) return;
     raf = requestAnimationFrame(loop);
     const now = performance.now();
     const dt = Math.min(0.1, (now - last) / 1000);
@@ -691,6 +696,13 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
       egressHold = 0.2;
     },
     perf: perf.sample,
+    setPaused(on) {
+      if (paused === on) return;
+      paused = on;
+      last = performance.now();
+      if (on && raf) { cancelAnimationFrame(raf); raf = 0; }
+      if (!on && !raf && docVisible && telemetry.ready && !contextLost) raf = requestAnimationFrame(loop);
+    },
     setTime: (iso) => earth?.setTime(iso),
     advance: () => earth?.advance(),
     layer(name, on) {
@@ -720,6 +732,7 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
       window.removeEventListener('resize', onResize);
       document.removeEventListener('visibilitychange', onVis);
       renderer.domElement.removeEventListener('webglcontextlost', onContextLost);
+      unsubSettings();
       audio.dispose();
       if (renderer.domElement.parentNode === mount) mount.removeChild(renderer.domElement);
       compiling.then(release, release);

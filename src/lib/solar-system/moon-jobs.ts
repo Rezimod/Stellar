@@ -90,6 +90,10 @@ function loadDone(): JobId[] {
     return [];
   }
 }
+/** Which side jobs are finished, for the mission list outside the scene. */
+export function readJobsDone(): JobId[] {
+  return loadDone();
+}
 function saveDone(done: JobId[]) {
   try { localStorage.setItem(STORE, JSON.stringify({ done })); } catch { /* keep playing */ }
 }

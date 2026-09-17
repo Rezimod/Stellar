@@ -7,6 +7,7 @@
 // acceleration cue as a small head lag.
 
 import * as THREE from 'three';
+import { fovOffset } from '@/game/settings';
 
 export type CameraView = 'chase' | 'cockpit' | 'crash';
 
@@ -191,7 +192,7 @@ export function makeCameraRig(): CameraRig {
           .addScaledVector(fwd, wobble(clock, 6.1) * s * 0.4);
       }
 
-      const fovTarget = f.fov + (f.boost ? 9 : 0) + 5 * Math.min(1, f.speedFrac) ** 2;
+      const fovTarget = f.fov + fovOffset() + (f.boost ? 9 : 0) + 5 * Math.min(1, f.speedFrac) ** 2;
       if (snap || fov === 0) fov = fovTarget;
       fov += (fovTarget - fov) * (1 - Math.exp(-dt * 3.2));
       if (Math.abs(fov - camera.fov) > 0.01) {

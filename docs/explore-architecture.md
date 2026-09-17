@@ -187,8 +187,8 @@ _Paths relative to repo root._
   - Loaders are hidden with CSS `.is-done` (opacity/visibility, `solar-system.css:2757-2763`) and are never unmounted.
 - **Per-frame cost:** none from React. The hidden loader's 3.8 s `setInterval` keeps re-rendering it (`CosmicLoader.tsx:45-49`), and its 11 infinite keyframe animations stay attached under `visibility:hidden`.
 - **Known problems:**
-  - The loader shows no real progress: `cosmic-loader__bar` is decorative. Phase 0.5 needs stage progress.
-  - `useLoadingTips` shuffles with `Math.random()` inside `useMemo` (`useLoadingTips.ts:14`), and `SolarLoadingScreen` is server-rendered from `loading.tsx`. The server and client pick different first tips, which is a hydration text mismatch.
+  - ~~The loader shows no real progress: `cosmic-loader__bar` is decorative.~~ Phase 0.5: `CosmicLoader` takes `progress`, and the game shell's loading screen follows the surface's `module → build → compile → ready` stages (`src/game/state.ts`).
+  - ~~`useLoadingTips` shuffles with `Math.random()` inside `useMemo`~~ Phase 0.5: the shuffle happens in an effect after mount, so the server and the first paint agree.
   - Each of the three sequential loaders restarts the tip order, so the visible tip jumps at every handoff.
   - `data-solar-immersive` is set in two places (`SolarLoadingScreen.tsx:14`, `SolarSystemExplorer.tsx:58`).
 
@@ -204,8 +204,10 @@ _Paths relative to repo root._
 | `stellar_moon_backrooms_v1` | `backrooms-save.ts:12` (`:17`, `:31`) | outside this area |
 | `stellar_proxima_contact` | `world-surface.ts:139` (`:227`) | outside this area |
 | `stellar_tbilisi_expedition_v1` | `world-earth-expedition.ts:24` (`:101`, `:126`) | outside this area |
+| `stellar_explore_settings` (Phase 0.5) | `src/game/settings.ts` | `{v:1, quality, sensitivity, invertY, fov}`; the volume lives in `stellar_sound_level` beside the switch |
+| `stellar_explore_save` (Phase 0.5) | `src/game/save.ts` | `{v:1, scene, savedAt}`: the checkpoint the title's Continue resumes |
 
-The orrery itself (`SolarSystemCanvas`/`SolarSystemExplorer`) persists nothing: speed, selection and camera all reset on every mount. That makes 9 separate keys and 4 different versioning conventions, which Phase 0.5 should fold into one versioned store.
+The orrery itself (`SolarSystemCanvas`/`SolarSystemExplorer`) persists nothing: speed, selection and camera all reset on every mount. Phase 0.5 added the settings and checkpoint keys above; folding the mission keys into one store is Phase 7's migration.
 
 ### 4.2 Flight, ship, aliens, flight controls
 
@@ -963,16 +965,16 @@ Later phases pull their work from here. A finding that spans phases appears unde
 - [x] A07 / B20 / C23: the orrery and flight have no `perf()` hook, and the descent isn't benched. **Resolved without a source change:** `scripts/explore-bench.mjs` counts draw calls and triangles at the WebGL layer. The counts match `__stellarMoon.perf()` exactly, and the surfaces are benched after `skipDescent()`. Benching the descent itself is deferred to Phase 9.
 
 ### Phase 0.5 — game shell + asset pipeline
-- [ ] A15 (P2): move `MoonSurface`, `WorldSurface` and `PlayerShip` behind dynamic imports so `/solar-system` JS can shrink.
-- [ ] A16 (P2): replace the Explorer's 10 useStates with a state machine. Make `?moon` / `?land=` deep links work in production (for the `/play` redirect). Exit returns to `/solar-system`, not `/sky`.
-- [ ] B02 (P1): add a production path to reach the Moon (title → Continue → Moon). The approach cinematic itself is Phase 9.
-- [ ] A10 (P2): build the galactic, interstellar and Gargantua layers lazily so the loader isn't paying for content the slice never shows.
-- [ ] A14 (P2): fix the loading-tip `Math.random()` hydration mismatch.
-- [ ] A21 (P3): one loader controller instead of two copies of the frame-wait-and-fade poll.
-- [ ] B05 (P2): settings for sensitivity, invert and FOV. Gamepad wiring is Phase 2.
-- [ ] B09 (P2): gate cannons, hostile waves and the planet-shooting standing order out of `/play`. Don't delete them.
-- [ ] C03 (P2): stop the scene rebuilding on a locale change. Drop `t` from the effect deps in MoonSurface and WorldSurface (E23 too).
-- [ ] C22 (P3): make `mergeStatic` keep vertex colours, uv1 and tangents before any GLB goes through it.
+- [x] A15 (P2): `/solar-system` is the orrery guide only; flight and the surfaces load in the `/play` chunk (`src/components/play/PlayClient.tsx`). `/solar-system` First Load JS stayed at 120 kB.
+- [x] A16 (P2): `src/game/state.ts` (`boot → title → loading → playing ⇄ paused → exiting`). `/play?moon`, `?land=`, `?orbit` work in production; `/solar-system?moon|land` redirect there (`src/middleware.ts`). Exit returns to `/solar-system`.
+- [x] B02 (P1): title → Continue → Moon (`GameShell` → `GameWorld`). The approach cinematic is Phase 9.
+- [ ] A10 (P2): the orbit canvas is not built at all until the player first goes to orbit (`GameWorld.orbitVisited`), so the Moon slice never pays for it. The galactic layers themselves still build eagerly when it is → Phase 1.
+- [x] A14 (P2): the tip shuffle runs after mount.
+- [x] A21 (P3): `src/game/settle.ts` owns the frame-wait; the launch loader and the orbit return both use it.
+- [x] B05 (P2): sensitivity, invert and FOV in `src/game/settings.ts`, read by `moon-camera.orbit`, `flight-input` and both surfaces' lenses. Gamepad in Phase 2.
+- [x] B09 (P2): `FlightSession.combat` (default on, off in the game): no cannon fire, no standing order, no provocation so no hostile waves; the order card and fire key hide.
+- [x] C03 (P2): both surface effects read `t` through a ref; deps are `[glGeneration]` / `[world, glGeneration, isEarth, earthData]`.
+- [x] C22 (P3): `prepare()` keeps `color`, `uv1`, `tangent`; a bucket drops any channel its parts do not all share.
 
 ### Phase 1 — performance foundation
 Measurement and lifecycle first, because later numbers depend on them:

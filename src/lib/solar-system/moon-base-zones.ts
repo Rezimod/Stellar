@@ -15,6 +15,11 @@ import type { Collider } from '@/lib/solar-system/moon-cosmonaut';
 import type { Kit } from '@/lib/solar-system/moon-kit';
 import type { PointOfInterest } from '@/lib/solar-system/moon-base';
 import { pivot } from '@/lib/solar-system/moon-batch';
+import { acquireModel, firstMesh } from '@/game/models';
+
+/** The supply crate, built in Blender (assets-src/blender/crate.py). */
+const CRATE_MODEL = '/explore/models/crate.glb';
+const UP = new THREE.Vector3(0, 1, 0);
 
 export interface Anchor { x: number; z: number; y: number; yaw: number }
 export type AnchorId =
@@ -353,20 +358,18 @@ export function buildZones(
   solid(bay, -3.2, -2.2, 0.5);
   anchors.charger = anchorAt(bay, -2.2, -1.2, 0);
   anchors.serviceBay = anchorAt(bay, 0, 0, 0);
-  // Pallets of numbered cargo, one crate opened and not closed again.
-  const crate = (parent: THREE.Object3D, x: number, y: number, z: number, id: string) => {
-    kit.rbox(parent, 0.75, 0.6, 0.6, 0.04, m.shell, x, y + 0.3, z);
-    noShadow(kit.box(parent, 0.4, 0.14, 0.02, kit.label([id], { w: 128, h: 48 }), x, y + 0.36, z + 0.31));
-    noShadow(kit.box(parent, 0.77, 0.04, 0.62, m.orange, x, y + 0.56, z));
-  };
+  // Pallets of cargo, one crate opened and not closed again. The crate is a
+  // real model: every copy is one instance of it, placed once the file is in.
+  const crateSpots: { parent: THREE.Object3D; x: number; y: number; z: number; yaw: number }[] = [];
+  const crate = (parent: THREE.Object3D, x: number, y: number, z: number, yaw = 0) => { crateSpots.push({ parent, x, y, z, yaw }); };
   kit.box(bay, 1.8, 0.12, 1.3, m.anodised, 3.8, 0.06, -1.6);
-  crate(bay, 3.4, 0.12, -1.9, 'C-014');
-  crate(bay, 4.2, 0.12, -1.9, 'C-015');
-  crate(bay, 3.8, 0.72, -1.9, 'C-022');
-  crate(bay, 3.6, 0.12, -1.25, 'C-031');
+  crate(bay, 3.4, 0.12, -1.9);
+  crate(bay, 4.2, 0.12, -1.9, 0.06);
+  crate(bay, 3.8, 0.72, -1.9, -0.04);
+  crate(bay, 3.6, 0.12, -1.25, 0.12);
   solid(bay, 3.8, -1.6, 1.2);
   kit.box(bay, 1.8, 0.12, 1.3, m.anodised, 4.0, 0.06, 1.4);
-  crate(bay, 3.7, 0.12, 1.4, 'S-007');
+  crate(bay, 3.7, 0.12, 1.4, -0.1);
   const lid = kit.box(bay, 0.78, 0.05, 0.62, m.orange, 4.55, 0.5, 1.5);
   lid.rotation.z = -1.15;
   for (let k = 0; k < 3; k++) kit.cyl(bay, 0.08, 0.08, 0.28, m.shell, 4.35 + (k % 2) * 0.18, 0.27, 1.2 + k * 0.2, 10);
@@ -430,7 +433,7 @@ export function buildZones(
   kit.box(cargoB, 1.8, 0.9, 1.3, m.shellDusty, 0, 0.45, 0);
   const cargoLid = kit.box(cargoB, 1.8, 0.06, 1.3, m.blanket, 0, 0.3, 1.15);
   cargoLid.rotation.x = 1.35;
-  crate(cargoB, -1.4, 0, 0.9, 'C-009');
+  crate(cargoB, -1.4, 0, 0.9, 0.35);
   colliders.push({ x: -9, z: 34, r: 1.4 });
   pois.push({ id: 'landingZone', x: lz.x, z: lz.z, r: 11 });
 
@@ -461,6 +464,28 @@ export function buildZones(
     [[24, 7], [34, 4], [44, 12], [40, 26], [26, 22]],
   ];
 
+  let crates: THREE.InstancedMesh | null = null;
+  let releaseCrate: (() => void) | null = null;
+  let disposed = false;
+  acquireModel(CRATE_MODEL).then(({ scene, release }) => {
+    const src = firstMesh(scene);
+    if (disposed || !src) { release(); return; }
+    releaseCrate = release;
+    const inst = new THREE.InstancedMesh(src.geometry, src.material, crateSpots.length);
+    const mat = new THREE.Matrix4(); const q = new THREE.Quaternion(); const p = new THREE.Vector3(); const one = new THREE.Vector3(1, 1, 1);
+    crateSpots.forEach((s, i) => {
+      s.parent.updateMatrix();
+      inst.setMatrixAt(i, mat.compose(p.set(s.x, s.y, s.z), q.setFromAxisAngle(UP, s.yaw), one).premultiply(s.parent.matrix));
+    });
+    inst.instanceMatrix.needsUpdate = true;
+    inst.castShadow = true;
+    inst.receiveShadow = true;
+    inst.computeBoundingSphere();
+    inst.name = 'crates';
+    group.add(inst);
+    crates = inst;
+  }, () => undefined);
+
   const tmp = new THREE.Vector3();
   const aim = new THREE.Vector3();
   const setStatus: ZonesHandle['setStatus'] = (which, state) => status[which].emissive.setHex(STATUS[state]);
@@ -482,7 +507,11 @@ export function buildZones(
       reflector.emissiveIntensity = 0.55 + 0.15 * Math.sin(t * 0.7);
     },
     dispose() {
+      disposed = true;
       for (const o of owned) o.dispose();
+      crates?.removeFromParent();
+      crates?.dispose();
+      releaseCrate?.();
     },
   };
   return handle;

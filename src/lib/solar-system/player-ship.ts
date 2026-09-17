@@ -402,6 +402,8 @@ export interface FlightSession {
   paused: boolean;
   /** Chosen in the hangar before launch. */
   shipKind: ShipKind;
+  /** Cannons, standing orders and hostile waves. The game runs without them. */
+  combat: boolean;
   /** The system the hyperdrive is set for; the canvas resolves it against
    *  the one the ship is in. */
   destination: string;
@@ -445,11 +447,12 @@ export interface FlightWorld {
   systemName: string;
 }
 
-export function createFlightSession(): FlightSession {
+export function createFlightSession(opts: { combat?: boolean } = {}): FlightSession {
   return {
     active: false,
     paused: false,
     shipKind: 'kestrel',
+    combat: opts.combat ?? true,
     destination: 'alphaCentauri',
     input: {
       thrust: 0, yaw: 0, lookYaw: 0, pitch: 0, roll: 0,
@@ -1956,7 +1959,7 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
         }
 
         fireAcc -= dt;
-        if (input.fire && fireAcc <= 0 && pilot === 'ship' && cannonTips.length > 0 && energy >= ENERGY_PER_SHOT) {
+        if (input.fire && session.combat && fireAcc <= 0 && pilot === 'ship' && cannonTips.length > 0 && energy >= ENERGY_PER_SHOT) {
           fireAcc = FIRE_INTERVAL;
           energy -= ENERGY_PER_SHOT;
           fire(enemies);
@@ -2045,7 +2048,7 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
 
       // ── Wings: spread for a fight (firing, or contacts on the radar),
       // swept flat for speed. F overrides until the next regime change. ──
-      const foilsAuto = jumpPhase === 'none' && !isDrive(mode) && (input.fire || aliens.contactState === 'hostile');
+      const foilsAuto = jumpPhase === 'none' && !isDrive(mode) && ((input.fire && session.combat) || aliens.contactState === 'hostile');
       const foilsOpen = pilot === 'ship' && jumpPhase === 'none' && (foilsForced ?? foilsAuto);
       foilT += ((foilsOpen ? 1 : 0) - foilT) * (1 - Math.exp(-dt * 3.2));
       for (const w of shipParts.wings) {
@@ -2338,7 +2341,7 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
         const target = world.bodies.find((b) => b.id === orderId);
         if (!target || target.destroyed || me.position.distanceTo(target.position) > SYSTEM_REACH) orderId = '';
       }
-      if (!orderId && orderDoneHold <= 0 && jumpPhase === 'none' && crashT < 0) pickOrder(world, me.position);
+      if (!orderId && session.combat && orderDoneHold <= 0 && jumpPhase === 'none' && crashT < 0) pickOrder(world, me.position);
       tel.orderId = orderId;
       tel.orderIntegrity = orderId ? Math.max(0, orderHits / ORDER_HITS) : 0;
       tel.orderDone = orderDoneHold > 0;

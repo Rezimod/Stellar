@@ -1,0 +1,122 @@
+'use client';
+
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Pause, Play, RotateCcw, X } from 'lucide-react';
+import { useFormatter, useTranslations } from 'next-intl';
+import { SolarSystemCanvas } from '@/components/solar-system/SolarSystemCanvas';
+import { PlayerShip } from '@/components/solar-system/PlayerShip';
+import { MoonSurface } from '@/components/solar-system/MoonSurface';
+import { WorldSurface } from '@/components/solar-system/WorldSurface';
+import { createFlightSession, type FlightSession } from '@/lib/solar-system/player-ship';
+import type { SolarBodyId } from '@/lib/solar-system/ephemeris';
+import { game, type GameState } from '@/game/state';
+import type { GameScene } from '@/game/save';
+import { settle } from '@/game/settle';
+
+/** The climb back to orbit stays up at least this long, and until the deck has flown a few frames. */
+const ORBIT_MIN_MS = 1600;
+const ORBIT_FRAMES = 2;
+
+const SPEED_STEPS = [
+  { id: 'realtime', rate: 1 },
+  { id: '10m', rate: 600 },
+  { id: '1h', rate: 3600 },
+  { id: '1d', rate: 86400 },
+] as const;
+
+interface GameWorldProps {
+  scene: GameScene;
+  state: GameState;
+}
+
+/** The orrery, the ship and the surfaces, composed by the game's scene.
+ *  The orbit canvas is not built until the player first goes to orbit. */
+export function GameWorld({ scene, state }: GameWorldProps) {
+  const t = useTranslations('solarSystem');
+  const format = useFormatter();
+  const landed = scene === 'orbit' ? null : scene;
+  const paused = state === 'paused';
+  const flightRef = useRef<FlightSession | null>(null);
+  if (!flightRef.current) flightRef.current = createFlightSession({ combat: false });
+  const session = flightRef.current;
+  const [epochMs, setEpochMs] = useState(() => Date.now());
+  const [selectedId, setSelectedId] = useState<SolarBodyId | null>(null);
+  const [playing, setPlaying] = useState(true);
+  const [speedIdx, setSpeedIdx] = useState(2);
+  const [flightActive, setFlightActive] = useState(false);
+  const [landscape, setLandscape] = useState(false);
+  const [zoomTo, setZoomTo] = useState<number | null>(null);
+  const [orbitReady, setOrbitReady] = useState(false);
+  const [orbitVisited, setOrbitVisited] = useState(scene === 'orbit');
+  const onSceneReady = useCallback(() => setOrbitReady(true), []);
+  const zoomToSun = useCallback(() => { setSelectedId(null); setZoomTo(26); }, []);
+  const consumeZoom = useCallback(() => setZoomTo(null), []);
+  useEffect(() => { if (scene === 'orbit') setOrbitVisited(true); }, [scene]);
+  // Orbit: the canvas builds on mount and reports its first frame; the
+  // screen then waits for the deck to have flown a little, or to be idle.
+  useEffect(() => {
+    if (scene !== 'orbit' || state !== 'loading') return;
+    if (!orbitReady) { game.progress('build'); return; }
+    return settle({
+      minMs: ORBIT_MIN_MS, frames: ORBIT_FRAMES,
+      frame: () => session.telemetry.frame,
+      idle: () => !session.active || session.paused,
+      onSettled: () => game.progress('ready'),
+    });
+  }, [scene, state, orbitReady, session]);
+  // The turned viewport has new sides; the renderer refits on the resize it
+  // would otherwise never hear about.
+  useEffect(() => { window.dispatchEvent(new Event('resize')); }, [landscape]);
+  // The orrery's clock stands still while a surface is open or the game is
+  // paused: ticking it would re-render the whole surface HUD every frame.
+  useEffect(() => {
+    if (!playing || flightActive || landed !== null || paused) return;
+    let last = performance.now();
+    let raf = 0;
+    const tick = (now: number) => {
+      const dt = Math.min(0.1, (now - last) / 1000);
+      last = now;
+      setEpochMs((e) => e + SPEED_STEPS[speedIdx].rate * dt * 1000);
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [playing, speedIdx, flightActive, landed, paused]);
+  const returnToOrbit = useCallback(() => game.travel('orbit'), []);
+  const showChrome = !flightActive && landed === null;
+
+  return (
+    <div className="solar-system solar-system--immersive" data-flying={flightActive}>
+      {showChrome && <div className="solar-system__chrome-float">
+        <button type="button" className="solar-system__fab solar-system__fab--close" onClick={game.exit} aria-label={t('immersive.exit')}>
+          <X size={20} aria-hidden />
+        </button>
+        <span className="solar-system__mini-clock">
+          {selectedId ? t(`bodies.${selectedId}.name`) : format.dateTime(new Date(epochMs), { month: 'short', day: 'numeric' })}
+        </span>
+      </div>}
+      <div className="solar-system__viewport solar-system__viewport--fill" data-rotate={landscape && flightActive ? 'cw' : undefined}>
+        {orbitVisited && <>
+          <SolarSystemCanvas epochMs={epochMs} scaleMode="orrery" includePluto selectedId={selectedId} focusBodyId={selectedId}
+            onSelect={setSelectedId} onZoomToSun={zoomToSun} zoomTo={zoomTo} onZoomToConsumed={consumeZoom} flight={session} suspended={landed !== null}
+            onReady={onSceneReady} />
+          <PlayerShip session={session} onActiveChange={setFlightActive} onLand={(site) => { setLandscape(false); game.travel(site); }} landed={landed !== null}
+            landscape={landscape} onLandscape={setLandscape} shellPaused={paused} onPauseRequest={game.pause} />
+        </>}
+        {landed === 'moon' && <MoonSurface onReturn={returnToOrbit} paused={paused} onProgress={game.progress} onPauseRequest={game.pause} />}
+        {landed !== null && landed !== 'moon' && <WorldSurface world={landed} onReturn={returnToOrbit} paused={paused} onProgress={game.progress} onPauseRequest={game.pause} />}
+      </div>
+      {showChrome && <div className="solar-system__dockbar" role="group" aria-label={t('time.title')}>
+        <button type="button" className="solar-system__dockbtn" onClick={() => setPlaying((p) => !p)} aria-label={t(playing ? 'time.pause' : 'time.play')}>
+          {playing ? <Pause size={16} aria-hidden /> : <Play size={16} aria-hidden />}
+        </button>
+        <button type="button" className="solar-system__chip solar-system__ratebtn" onClick={() => setSpeedIdx((i) => (i + 1) % SPEED_STEPS.length)} aria-label={t('time.speedAria')}>
+          {t(`time.speed.${SPEED_STEPS[speedIdx].id}`)}
+        </button>
+        <button type="button" className="solar-system__dockbtn" onClick={() => { setEpochMs(Date.now()); zoomToSun(); }} aria-label={t('time.now')}>
+          <RotateCcw size={16} aria-hidden />
+        </button>
+      </div>}
+    </div>
+  );
+}

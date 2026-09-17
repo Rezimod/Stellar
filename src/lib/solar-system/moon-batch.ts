@@ -64,6 +64,12 @@ function prepare(src: THREE.BufferGeometry, m: THREE.Matrix4): THREE.BufferGeome
   const count = g.getAttribute('position').count;
   const uv = src.getAttribute('uv');
   g.setAttribute('uv', uv ? uv.clone() : new THREE.BufferAttribute(new Float32Array(count * 2), 2));
+  // A real model's extra channels survive the merge; a bucket drops any
+  // channel its parts do not all share (see mergeStatic).
+  for (const name of ['color', 'uv1', 'tangent']) {
+    const a = src.getAttribute(name);
+    if (a) g.setAttribute(name, a.clone());
+  }
   if (src.index) g.setIndex(src.index.clone());
   else {
     const idx = new (count > 65535 ? Uint32Array : Uint16Array)(count);
@@ -132,6 +138,12 @@ export function mergeStatic(root: THREE.Object3D, opts: MergeOptions = {}): Merg
       b.parts.push(g);
     }
     for (const b of buckets.values()) {
+      if (b.parts.length > 1) {
+        // mergeGeometries needs every part to carry the same attributes.
+        const shared = new Set(Object.keys(b.parts[0].attributes));
+        for (const part of b.parts) for (const name of shared) if (!part.getAttribute(name)) shared.delete(name);
+        for (const part of b.parts) for (const name of Object.keys(part.attributes)) if (!shared.has(name)) part.deleteAttribute(name);
+      }
       const merged = b.parts.length === 1 ? b.parts[0] : mergeGeometries(b.parts, false);
       if (!merged) continue;
       if (merged !== b.parts[0]) for (const part of b.parts) part.dispose();

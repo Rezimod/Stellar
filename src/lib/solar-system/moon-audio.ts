@@ -4,7 +4,7 @@
 // and landings carried up through the suit, a comms bleep when the base
 // names something. Synthesised in Web Audio, created on the first gesture.
 
-import { onSoundChange, soundOn } from '@/lib/solar-system/sound-prefs';
+import { onSoundChange, soundLevel } from '@/lib/solar-system/sound-prefs';
 
 const MASTER_GAIN = 0.22;
 
@@ -35,8 +35,8 @@ export function makeSuitAudio(open = false): SuitAudio {
   let helmetK = 0;
   let drillOsc: OscillatorNode | null = null;
   let drillGain: GainNode | null = null;
-  const unsubscribe = onSoundChange((on) => {
-    if (master && ctx) master.gain.setTargetAtTime(on ? MASTER_GAIN : 0, ctx.currentTime, 0.05);
+  const unsubscribe = onSoundChange((_on, level) => {
+    if (master && ctx) master.gain.setTargetAtTime(level * MASTER_GAIN, ctx.currentTime, 0.05);
   });
 
   const start = () => {
@@ -44,7 +44,7 @@ export function makeSuitAudio(open = false): SuitAudio {
       if (!ctx) {
         ctx = new AudioContext();
         master = ctx.createGain();
-        master.gain.value = soundOn() ? MASTER_GAIN : 0;
+        master.gain.value = soundLevel() * MASTER_GAIN;
         master.connect(ctx.destination);
         noise = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
         const d = noise.getChannelData(0);

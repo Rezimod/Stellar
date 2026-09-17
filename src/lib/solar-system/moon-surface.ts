@@ -38,6 +38,7 @@ import { makeMoonPerf, type PerfSample } from '@/lib/solar-system/moon-perf';
 import { makeLightPool } from '@/lib/solar-system/moon-lights';
 import { makeKit } from '@/lib/solar-system/moon-kit';
 import { makeCameraRig } from '@/lib/solar-system/moon-camera';
+import { getSettings, onSettingsChange } from '@/game/settings';
 import { makeInteractions, type InteractionPrompt } from '@/lib/solar-system/moon-interactions';
 import { makeSinkhole, makeFall, SINKHOLE, HATCH, HINT_RANGE } from '@/lib/solar-system/moon-sinkhole';
 import { makeBackrooms, type BackroomsHandle, type BackroomsTelemetry } from '@/lib/solar-system/backrooms-scene';
@@ -192,6 +193,8 @@ export interface MoonSurfaceHandle {
   startJob: (id?: JobId) => void;
   skipDescent: () => void;
   perf: () => PerfSample;
+  /** The game shell's pause: no frames, no sim, no sound until resumed. */
+  setPaused: (on: boolean) => void;
   roverAt: () => { x: number; z: number };
   /** Walk onto the sinkhole's edge. */
   fallIntoBackrooms: () => void;
@@ -303,7 +306,7 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
   const scene = new THREE.Scene();
   scene.environment = makeEnvironment(renderer);
   scene.environmentIntensity = 0.45;
-  const baseFov = isMobile ? 62 : 52;
+  let baseFov = getSettings().fov;
   const camera = new THREE.PerspectiveCamera(baseFov, mount.clientWidth / mount.clientHeight, 0.05, 4000);
 
   // ── Light: one hard sun; a faint bounce off the regolith from below; earthshine. ──
@@ -488,6 +491,7 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
     return floor === null ? ground : Math.max(floor, ground);
   };
   const cam = makeCameraRig(camera, floorHeight, () => base.colliders, baseFov);
+  const unsubSettings = onSettingsChange((s) => { baseFov = s.fov; cam.setBaseFov(s.fov); });
   cam.distance = isMobile ? 5.6 : 5.2;
 
   const input: SurfaceInput = {
@@ -859,10 +863,11 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
   let last = performance.now();
   let docVisible = !document.hidden;
   let contextLost = false;
+  let paused = false;
   const onVis = () => {
     docVisible = !document.hidden;
     last = performance.now();
-    if (docVisible && !raf && telemetry.ready && !contextLost) raf = requestAnimationFrame(loop);
+    if (docVisible && !paused && !raf && telemetry.ready && !contextLost) raf = requestAnimationFrame(loop);
   };
   const onContextLost = (e: Event) => {
     e.preventDefault();
@@ -874,7 +879,7 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
   renderer.domElement.addEventListener('webglcontextlost', onContextLost);
   const loop = () => {
     raf = 0;
-    if (!docVisible) return;
+    if (!docVisible || paused) return;
     raf = requestAnimationFrame(loop);
     const now = performance.now();
     const dt = Math.min(0.1, (now - last) / 1000);
@@ -1267,6 +1272,13 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
       egressHold = 0.2;
     },
     perf: perf.sample,
+    setPaused(on) {
+      if (paused === on) return;
+      paused = on;
+      last = performance.now();
+      if (on && raf) { cancelAnimationFrame(raf); raf = 0; }
+      if (!on && !raf && docVisible && telemetry.ready && !contextLost) raf = requestAnimationFrame(loop);
+    },
     roverAt: () => ({ x: base.roverCollider.x, z: base.roverCollider.z }),
     fallIntoBackrooms() {
       if (telemetry.phase !== 'surface' || br || fall.active) return;
@@ -1294,6 +1306,7 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
       document.removeEventListener('visibilitychange', onVis);
       renderer.domElement.removeEventListener('webglcontextlost', onContextLost);
       earthTexCancelled = true;
+      unsubSettings();
       audio.dispose();
       brAudio.dispose();
       releaseBackrooms();

@@ -1,6 +1,8 @@
 // Explore Mode bench: node scripts/explore-bench.mjs [--url http://localhost:3000] [--only a,c] [--label name] [--out dir] [--sample ms]
 // Headless Chromium on the real GPU (ANGLE Metal), 1280x800, pinned pixel ratio.
 // Needs a dev server (dev hooks and ?fixedpx exist only outside production).
+// The orrery is benched on the guide page; flight and the surfaces open through
+// the game's deep links (/play?orbit, ?moon, ?land=) which skip its title screen.
 //
 // Counts are taken at the WebGL layer, so every scenario — including the orrery
 // and flight, which have no perf() hook — is measured the same way, and a
@@ -124,8 +126,8 @@ const SCENARIOS = {
     return measure(page, 'a-orrery');
   },
   async b(page) {
-    await page.goto(`${BASE}/solar-system`, { waitUntil: 'commit', timeout: 300_000 });
-    await waitFor(page, () => !!document.querySelector('.flight-hud__explore'));
+    await page.goto(`${BASE}/play?orbit=1`, { waitUntil: 'commit', timeout: 300_000 });
+    await waitFor(page, () => !!document.querySelector('.flight-hud__explore') && !document.querySelector('.game-shell__loader'));
     await page.waitForTimeout(3000);
     await page.click('.flight-hud__explore');
     await waitFor(page, () => !!window.__stellarFlight);
@@ -141,19 +143,19 @@ const SCENARIOS = {
     return measure(page, 'b-flight-earth', where);
   },
   async c(page) {
-    await land(page, `${BASE}/solar-system?moon=1&fixedpx=1`, '__stellarMoon');
+    await land(page, `${BASE}/play?moon=1&fixedpx=1`, '__stellarMoon');
     await page.waitForTimeout(3000);
     return measure(page, 'c-moon-lander', await hookPerf(page, '__stellarMoon'));
   },
   async d(page) {
-    await land(page, `${BASE}/solar-system?moon=1&fixedpx=1`, '__stellarMoon');
+    await land(page, `${BASE}/play?moon=1&fixedpx=1`, '__stellarMoon');
     // South of the pad, looking north across it at the habitats.
     await page.evaluate(() => { window.__stellarMoon.teleport(0, 12); window.__stellarMoon.face(0, -1); });
     await page.waitForTimeout(3000);
     return measure(page, 'd-moon-base', await hookPerf(page, '__stellarMoon'));
   },
   async e(page) {
-    await land(page, `${BASE}/solar-system?moon=1&fixedpx=1`, '__stellarMoon');
+    await land(page, `${BASE}/play?moon=1&fixedpx=1`, '__stellarMoon');
     const input = (patch) => page.evaluate((patch) => Object.assign(window.__stellarMoon.input, patch), patch);
     const r = await page.evaluate(() => window.__stellarMoon.roverAt());
     await page.evaluate((r) => { window.__stellarMoon.teleport(r.x - 3.6, r.z + 1); window.__stellarMoon.face(1, 0); }, r);
@@ -169,7 +171,7 @@ const SCENARIOS = {
     return row;
   },
   async f(page) {
-    await land(page, `${BASE}/solar-system?land=mars&fixedpx=1`, '__stellarWorld');
+    await land(page, `${BASE}/play?land=mars&fixedpx=1`, '__stellarWorld');
     // Habitats stand at z -52…-58; look at them from the south.
     await page.evaluate(() => { window.__stellarWorld.teleport(0, -30); window.__stellarWorld.face(0, -1); });
     await page.waitForTimeout(3000);

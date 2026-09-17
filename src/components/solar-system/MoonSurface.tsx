@@ -11,11 +11,18 @@ import { DRILL_BAND } from '@/lib/solar-system/moon-mission';
 import { setSoundOn, soundOn } from '@/lib/solar-system/sound-prefs';
 import { GameStick, tapKey } from './GameStick';
 import { CosmicLoader } from './CosmicLoader';
+import { lockPointer, unlockPointer } from '@/game/console';
 import { useLoadingTips } from './useLoadingTips';
 import { useSoundPref } from './useSoundPref';
 
 interface MoonSurfaceProps {
   onReturn: () => void;
+  /** The game shell's pause: the sim, the sound and the keys all stop. */
+  paused?: boolean;
+  /** Where the build is; the shell's loading screen follows it and this one stays hidden. */
+  onProgress?: (stage: 'build' | 'compile' | 'ready') => void;
+  /** The mouse was let go of (Esc under pointer lock): the shell should pause. */
+  onPauseRequest?: () => void;
 }
 
 const KEY_ROWS = ['r1', 'r2', 'r15', 'r9', 'r3', 'r4', 'r16', 'r5', 'r10', 'r6', 'r11', 'r12', 'r8', 'r13', 'r14', 'r7'] as const;
@@ -33,7 +40,7 @@ const fmtApprox = (m: number) => `~${fmtRange(Math.round(m / 10) * 10)}`;
 const PPD = 3.1;
 const TURNS = 3;
 
-export function MoonSurface({ onReturn }: MoonSurfaceProps) {
+export function MoonSurface({ onReturn, paused, onProgress, onPauseRequest }: MoonSurfaceProps) {
   const t = useTranslations('solarSystem.moon');
   const tl = useTranslations('solarSystem.loading');
   const tips = useLoadingTips();
@@ -57,6 +64,16 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
   const landTitleRef = useRef<HTMLSpanElement>(null);
   const onReturnRef = useRef(onReturn);
   onReturnRef.current = onReturn;
+  const onProgressRef = useRef(onProgress);
+  onProgressRef.current = onProgress;
+  const onPauseRequestRef = useRef(onPauseRequest);
+  onPauseRequestRef.current = onPauseRequest;
+  const pausedRef = useRef(false);
+  pausedRef.current = !!paused;
+  // The translator is read through a ref: a new identity (a locale switch)
+  // must not tear the scene down and rebuild it.
+  const tRef = useRef(t);
+  tRef.current = t;
   const landRateRef = useRef<HTMLSpanElement>(null);
   const landOffRef = useRef<HTMLSpanElement>(null);
   const landDriftRef = useRef<HTMLSpanElement>(null);
@@ -145,6 +162,8 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
     const root = rootRef.current;
     if (!mount || !root) return;
     let rebuildTimer = 0;
+    const tt = (key: string, values?: Record<string, string | number>) => tRef.current(key, values);
+    onProgressRef.current?.('build');
     const handle = makeMoonSurface(mount, {
       startOnSurface: resumeRef.current,
       onContextLost: () => {
@@ -157,6 +176,8 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
       },
     });
     handleRef.current = handle;
+    onProgressRef.current?.('compile');
+    let readyReported = false;
     const input = handle.input;
     const pressed = new Set<string>();
     const sync = () => {
@@ -181,7 +202,7 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
       input.jump = has('Space');
     };
     const onKeyDown = (e: KeyboardEvent) => {
-      if (!HANDLED.has(e.code)) return;
+      if (!HANDLED.has(e.code) || pausedRef.current) return;
       handle.startAudio();
       if (e.repeat) { e.preventDefault(); return; }
       pressed.add(e.code);
@@ -228,13 +249,19 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
     let lastX = 0; let lastY = 0;
     const onDown = (e: PointerEvent) => {
       handle.startAudio();
-      if (e.button !== 0 || orbitId >= 0) return;
+      if (e.button !== 0 || orbitId >= 0 || pausedRef.current) return;
+      // A mouse on the desk owns the view outright while play lasts; Esc gives it back.
+      if (!touchRef.current) lockPointer(mount);
       orbitId = e.pointerId;
       lastX = e.clientX; lastY = e.clientY;
       mount.setPointerCapture(e.pointerId);
       e.preventDefault();
     };
     const onMove = (e: PointerEvent) => {
+      if (document.pointerLockElement === mount) {
+        if (!pausedRef.current) { input.orbitDX += e.movementX; input.orbitDY += e.movementY; }
+        return;
+      }
       if (e.pointerId === orbitId) {
         input.orbitDX += e.clientX - lastX;
         input.orbitDY += e.clientY - lastY;
@@ -245,6 +272,16 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
       if (e.pointerId === orbitId) orbitId = -1;
     };
     const onWheel = (e: WheelEvent) => { input.zoom += Math.sign(e.deltaY); e.preventDefault(); };
+    // The lock is held from the first click; losing it (Esc) is a pause.
+    let lockHeld = false;
+    const onLockChange = () => {
+      if (document.pointerLockElement === mount) { lockHeld = true; return; }
+      if (!lockHeld) return;
+      lockHeld = false;
+      input.orbitDX = input.orbitDY = 0;
+      if (!pausedRef.current) onPauseRequestRef.current?.();
+    };
+    document.addEventListener('pointerlockchange', onLockChange);
     mount.addEventListener('pointerdown', onDown);
     mount.addEventListener('pointermove', onMove);
     mount.addEventListener('pointerup', onUp);
@@ -313,6 +350,7 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
       if (now - lastPaint < 33) return;
       lastPaint = now;
       root.dataset.ready = String(tel.ready);
+      if (tel.ready && !readyReported) { readyReported = true; onProgressRef.current?.('ready'); }
       root.dataset.phase = tel.phase;
       root.dataset.view = tel.view;
       root.dataset.driving = String(tel.driving);
@@ -326,10 +364,10 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
       if (brPanel) {
         show(brPanel, under);
         if (under) {
-          text(brGravRef.current, t('backrooms.gravityRead', { n: bt.gravity.toFixed(2), g: (bt.gravity / 9.81).toFixed(2) }));
+          text(brGravRef.current, tt('backrooms.gravityRead', { n: bt.gravity.toFixed(2), g: (bt.gravity / 9.81).toFixed(2) }));
           if (brGravRef.current) brGravRef.current.dataset.earth = String(bt.gravity > 5);
           show(brReadRef.current, !!bt.readout);
-          if (bt.readout) text(brReadRef.current, t(`backrooms.readout.${bt.readout}`));
+          if (bt.readout) text(brReadRef.current, tt(`backrooms.readout.${bt.readout}`));
           setVar(brPanel, '--glitch', bt.glitch.toFixed(2));
         }
       }
@@ -338,7 +376,7 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
       if (tel.ascended) { tel.ascended = false; onReturnRef.current(); return; }
       if (tel.phase !== 'surface') {
         const l = tel.landing;
-        text(landTitleRef.current, tel.phase === 'ascent' ? t('landing.ascent') : t('landing.title'));
+        text(landTitleRef.current, tel.phase === 'ascent' ? tt('landing.ascent') : tt('landing.title'));
         text(landAltRef.current, `${l.altitude.toFixed(l.altitude < 10 ? 1 : 0)} m`);
         text(landRateRef.current, `${Math.abs(l.descent).toFixed(1)} m/s`);
         text(landOffRef.current, `${Math.round(l.offset)} m`);
@@ -348,8 +386,8 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
         show(assistRef.current, l.assist);
         show(plaqueRef.current, tel.phase === 'touchdown');
         if (tel.phase === 'touchdown') {
-          text(plaqueGradeRef.current, t(`grades.${tel.grade || 'good'}`));
-          text(plaqueSpeedRef.current, t('landing.touchdown', { n: l.touchdown.toFixed(2) }));
+          text(plaqueGradeRef.current, tt(`grades.${tel.grade || 'good'}`));
+          text(plaqueSpeedRef.current, tt('landing.touchdown', { n: l.touchdown.toFixed(2) }));
         }
         return;
       }
@@ -375,17 +413,17 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
           meter.dataset.kind = align ? 'align' : 'scan';
           meter.dataset.ping = String(m.ping);
           setVar(meter, '--v', (align ? j.meter : m.signal).toFixed(3));
-          text(meterLabelRef.current, align ? t('jobs.meter') : m.task === 'scan' ? t('mission.scanLock', { n: Math.round(m.work * 100) }) : t('mission.scanner'));
+          text(meterLabelRef.current, align ? tt('jobs.meter') : m.task === 'scan' ? tt('mission.scanLock', { n: Math.round(m.work * 100) }) : tt('mission.scanner'));
         }
       }
       show(objRef.current, (m.distance >= 0 || m.complete || j.active !== '') && !m.banner && !j.banner);
-      text(objTextRef.current, t(`mission.${m.objective || 'obj.done'}`));
+      text(objTextRef.current, tt(`mission.${m.objective || 'obj.done'}`));
       text(objRangeRef.current,
         m.task === 'drill' && m.atSite ? `${m.drill.depth.toFixed(1)} / ${5.2} m`
-        : m.task === 'clear' && m.atSite ? t('mission.patches', { n: m.cleared, total: m.patches })
+        : m.task === 'clear' && m.atSite ? tt('mission.patches', { n: m.cleared, total: m.patches })
         : m.distance >= 0 ? (m.approx ? fmtApprox(m.distance) : fmtRange(m.distance)) : '');
       show(jobRef.current, j.active !== '');
-      if (j.active && j.objective) text(jobTextRef.current, `${t(`jobs.steps.${j.objective}`)}${j.distance >= 0 && j.distance > 4 ? ` · ${fmtRange(j.distance)}` : ''}`);
+      if (j.active && j.objective) text(jobTextRef.current, `${tt(`jobs.steps.${j.objective}`)}${j.distance >= 0 && j.distance > 4 ? ` · ${fmtRange(j.distance)}` : ''}`);
 
       text(altRef.current, `${tel.altitude.toFixed(1)} m`);
       text(speedRef.current, `${tel.speed.toFixed(1)} m/s`);
@@ -399,7 +437,7 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
 
       // ── The one key: underground, the Backrooms' own. ──
       const p = under ? bt.prompt : tel.prompt;
-      const label = !p.active ? '' : under ? t(`backrooms.act.${p.label}`) : t(`act.${p.label}`);
+      const label = !p.active ? '' : under ? tt(`backrooms.act.${p.label}`) : tt(`act.${p.label}`);
       const action = actionRef.current;
       if (action) {
         show(action, p.active);
@@ -436,7 +474,7 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
           const heatEl = drillHeatRef.current;
           setVar(heatEl, '--v', d.heat.toFixed(3));
           if (heatEl) heatEl.dataset.state = d.heat > 0.75 ? 'hot' : 'ok';
-          const warn = d.stalled ? t('mission.drill.stalled') : d.ready ? t('mission.drill.ready') : d.hard ? t('mission.drill.hard') : '';
+          const warn = d.stalled ? tt('mission.drill.stalled') : d.ready ? tt('mission.drill.ready') : d.hard ? tt('mission.drill.hard') : '';
           show(drillWarnRef.current, warn !== '');
           text(drillWarnRef.current, warn);
         }
@@ -446,42 +484,42 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
         show(gear, tel.driving);
         if (tel.driving) {
           gear.dataset.gear = tel.gear;
-          text(gearTextRef.current, `${t(`gears.${tel.gear}`)} · ${Math.round(tel.battery * 100)}%`);
+          text(gearTextRef.current, `${tt(`gears.${tel.gear}`)} · ${Math.round(tel.battery * 100)}%`);
         }
       }
       const stance = stanceRef.current;
       if (stance) {
         const s = tel.driving
-          ? (tel.roverFault ? t('rover.fault') : tel.charging ? t('rover.charging', { n: Math.round(tel.battery * 100) }) : '')
-          : tel.fallen ? t(isTouch ? 'stance.fallenTouch' : 'stance.fallen') : tel.stumbling ? t('stance.stumble') : tel.sliding ? t('stance.slide') : tel.crouched ? t('stance.crouch') : '';
+          ? (tel.roverFault ? tt('rover.fault') : tel.charging ? tt('rover.charging', { n: Math.round(tel.battery * 100) }) : '')
+          : tel.fallen ? tt(isTouch ? 'stance.fallenTouch' : 'stance.fallen') : tel.stumbling ? tt('stance.stumble') : tel.sliding ? tt('stance.slide') : tel.crouched ? tt('stance.crouch') : '';
         show(stance, s !== '');
         text(stance, s);
       }
       const lock = tel.airlock;
-      const lockText = !lock.near ? '' : lock.state === 'cycling' ? t('airlock.cycling', { n: Math.round(lock.cycle * 100) }) : lock.state === 'open' ? t('airlock.open') : '';
+      const lockText = !lock.near ? '' : lock.state === 'cycling' ? tt('airlock.cycling', { n: Math.round(lock.cycle * 100) }) : lock.state === 'open' ? tt('airlock.open') : '';
       show(airlockRef.current, lockText !== '');
       text(airlockRef.current, lockText);
       const poi = poiRef.current;
       if (poi) {
         const on = !!tel.poiId && !p.active;
         show(poi, on);
-        if (on) text(poi, t(`pois.${tel.poiId}`));
+        if (on) text(poi, tt(`pois.${tel.poiId}`));
       }
       const hintKey = tel.hint ? (isTouch ? `hints.${tel.hint}Touch` : `hints.${tel.hint}`) : '';
       const hint = hintRef.current;
       if (hint) {
         show(hint, !!hintKey && !p.active);
-        if (hintKey) text(hint, t(hintKey));
+        if (hintKey) text(hint, tt(hintKey));
       }
       const banner = bannerRef.current;
       if (banner) {
         const key = m.banner ? `mission.${m.banner}` : j.banner ? `jobs.${j.banner}` : '';
         show(banner, key !== '');
-        if (key) text(banner.firstElementChild as HTMLElement, t(key));
+        if (key) text(banner.firstElementChild as HTMLElement, tt(key));
       }
       const radio = radioRef.current;
       if (radio) {
-        const line = bt.radio ? t(`backrooms.radio.${bt.radio}`) : m.radio ? t(`mission.${m.radio}`) : '';
+        const line = bt.radio ? tt(`backrooms.radio.${bt.radio}`) : m.radio ? tt(`mission.${m.radio}`) : '';
         show(radio, line !== '');
         if (line) text(radio, line);
         radio.dataset.static = String(!!bt.radio);
@@ -489,12 +527,12 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
       const readout = readoutRef.current;
       if (readout) {
         show(readout, !!tel.readout);
-        if (tel.readout) text(readout, tel.readout === 'charger' ? t('readout.charger', { n: Math.round(tel.battery * 100) }) : t(`readout.${tel.readout}`));
+        if (tel.readout) text(readout, tel.readout === 'charger' ? tt('readout.charger', { n: Math.round(tel.battery * 100) }) : tt(`readout.${tel.readout}`));
       }
       const impact = impactRef.current;
       if (impact) {
         impact.hidden = tel.impactHold <= 0;
-        if (tel.impactHold > 0) text(impact, t('impact', { n: Math.round(tel.impactDist) }));
+        if (tel.impactHold > 0) text(impact, tt('impact', { n: Math.round(tel.impactDist) }));
       }
     };
     raf = requestAnimationFrame(paint);
@@ -513,10 +551,16 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
       mount.removeEventListener('pointercancel', onUp);
       mount.removeEventListener('lostpointercapture', onUp);
       mount.removeEventListener('wheel', onWheel);
+      document.removeEventListener('pointerlockchange', onLockChange);
+      if (document.pointerLockElement === mount) document.exitPointerLock();
       handle.dispose();
       handleRef.current = null;
     };
-  }, [t, glGeneration]);
+  }, [glGeneration]);
+  useEffect(() => {
+    handleRef.current?.setPaused(!!paused);
+    if (paused) unlockPointer();
+  }, [paused, glGeneration]);
 
   /** Capture the finger so a key stays down when it slides off, but never at
    *  the cost of the key itself: the press is registered first either way. */
@@ -574,8 +618,8 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
   return (
     <div ref={rootRef} className="moon-surface" data-phase="descent" data-ready="false" data-immersive={immersive}>
       <div ref={mountRef} className="moon-surface__canvas" />
-      <CosmicLoader className={gpuLost ? 'moon-surface__loader is-forced' : 'moon-surface__loader'} variant="descent"
-        label={gpuLost ? tl('gpu') : tl('moon')} detail={gpuLost ? undefined : tl('moonDetail')} tips={tips} />
+      {(gpuLost || !onProgress) && <CosmicLoader className={gpuLost ? 'moon-surface__loader is-forced' : 'moon-surface__loader'} variant="descent"
+        label={gpuLost ? tl('gpu') : tl('moon')} detail={gpuLost ? undefined : tl('moonDetail')} tips={tips} />}
       <div className="moon-hud">
         <div className="moon-hud__visor" aria-hidden />
         <div ref={blackRef} className="moon-hud__black" aria-hidden />

@@ -14,6 +14,7 @@
 
 import * as THREE from 'three';
 import type { Collider } from '@/lib/solar-system/moon-cosmonaut';
+import { getSettings } from '@/game/settings';
 
 export interface ChaseTarget {
   position: THREE.Vector3;
@@ -64,6 +65,8 @@ export interface CameraRig {
   /** Mouse, touch drag and right stick all come through here. */
   orbit: (dx: number, dy: number, firstPerson: boolean) => void;
   zoom: (steps: number) => void;
+  /** The player changed the lens in the settings. */
+  setBaseFov: (deg: number) => void;
   chase: (dt: number, target: ChaseTarget, tune: ChaseTuning) => void;
   /** Look from a point along camera yaw and look pitch (helmet, seat, mast). */
   firstPerson: (dt: number, eye: THREE.Vector3, smooth: number) => void;
@@ -89,7 +92,7 @@ export function makeCameraRig(
   camera: THREE.PerspectiveCamera,
   floorAt: (x: number, z: number) => number,
   colliders: () => Collider[],
-  baseFov: number,
+  baseFovIn: number,
 ): CameraRig {
   const focus = new THREE.Vector3();
   const focusVel = new THREE.Vector3();
@@ -100,6 +103,7 @@ export function makeCameraRig(
   let snapNext = true;
   let actualDist = 5;
   let drag = 99;
+  let baseFov = baseFovIn;
   let fov = baseFov;
   let shakeAmp = 0;
   let shakeT = 0;
@@ -143,11 +147,15 @@ export function makeCameraRig(
     swapShoulder() { rig.shoulderSide = -rig.shoulderSide; },
     orbit(dx, dy, firstPerson) {
       if (dx === 0 && dy === 0) return;
+      const s = getSettings();
+      dx *= s.sensitivity;
+      dy *= s.invertY ? -s.sensitivity : s.sensitivity;
       rig.yaw -= dx * (firstPerson ? 0.0036 : 0.0052);
       if (firstPerson) rig.lookPitch = THREE.MathUtils.clamp(rig.lookPitch - dy * 0.0032, -1.2, 1.1);
       else rig.pitch = THREE.MathUtils.clamp(rig.pitch + dy * 0.004, -0.12, 1.15);
       drag = 0;
     },
+    setBaseFov(deg) { baseFov = deg; },
     zoom(steps) {
       if (steps) rig.distance = THREE.MathUtils.clamp(rig.distance * Math.pow(1.12, steps), CAM_MIN, CAM_MAX);
     },

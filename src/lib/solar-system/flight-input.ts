@@ -8,6 +8,7 @@ import * as THREE from 'three';
 import type { FlightInput, FlightSession, SpeedMode } from '@/lib/solar-system/player-ship';
 import { stepDestination } from '@/lib/solar-system/star-routes';
 import { setSoundOn, soundOn } from '@/lib/solar-system/sound-prefs';
+import { getSettings } from '@/game/settings';
 
 const HANDLED_KEYS = new Set([
   'KeyW', 'KeyA', 'KeyS', 'KeyD', 'KeyQ', 'KeyE', 'Space',
@@ -117,8 +118,9 @@ export function attachDesktopControls(
       return;
     }
     if (!document.pointerLockElement && !(e.buttons & 1)) return;
-    input.mouseDX += e.movementX;
-    input.mouseDY += e.movementY;
+    const s = getSettings();
+    input.mouseDX += e.movementX * s.sensitivity;
+    input.mouseDY += e.movementY * (s.invertY ? -s.sensitivity : s.sensitivity);
   };
   const onMouseDown = (e: MouseEvent) => {
     if (e.button !== 2 || session.paused) return;

@@ -12,12 +12,19 @@ import { setSoundOn, soundOn } from '@/lib/solar-system/sound-prefs';
 import { deadZone } from '@/lib/solar-system/surface-input';
 import { GameStick, tapKey } from './GameStick';
 import { CosmicLoader } from './CosmicLoader';
+import { lockPointer, unlockPointer } from '@/game/console';
 import { useLoadingTips } from './useLoadingTips';
 import { useSoundPref } from './useSoundPref';
 
 interface WorldSurfaceProps {
   world: WorldId;
   onReturn: () => void;
+  /** The game shell's pause: the sim, the sound and the keys all stop. */
+  paused?: boolean;
+  /** Where the build is; the shell's loading screen follows it and this one stays hidden. */
+  onProgress?: (stage: 'build' | 'compile' | 'ready') => void;
+  /** The mouse was let go of (Esc under pointer lock): the shell should pause. */
+  onPauseRequest?: () => void;
 }
 
 const KEY_ROWS = ['r1', 'r2', 'r8', 'r3', 'r4', 'r9', 'r5', 'r6', 'r7'] as const;
@@ -31,7 +38,7 @@ const fmtRange = (m: number) => (m >= 1000 ? `${(m / 1000).toFixed(2)} km` : `${
 const PPD = 3.1;
 const TURNS = 3;
 
-export function WorldSurface({ world, onReturn }: WorldSurfaceProps) {
+export function WorldSurface({ world, onReturn, paused, onProgress, onPauseRequest }: WorldSurfaceProps) {
   const t = useTranslations('solarSystem.moon');
   const tw = useTranslations(`solarSystem.worlds.${world}`);
   const tl = useTranslations('solarSystem.loading');
@@ -97,6 +104,18 @@ export function WorldSurface({ world, onReturn }: WorldSurfaceProps) {
   const landTitleRef = useRef<HTMLSpanElement>(null);
   const onReturnRef = useRef(onReturn);
   onReturnRef.current = onReturn;
+  const onProgressRef = useRef(onProgress);
+  onProgressRef.current = onProgress;
+  const onPauseRequestRef = useRef(onPauseRequest);
+  onPauseRequestRef.current = onPauseRequest;
+  const pausedRef = useRef(false);
+  pausedRef.current = !!paused;
+  // The translator is read through a ref: a new identity (a locale switch)
+  // must not tear the scene down and rebuild it.
+  const tRef = useRef(t);
+  tRef.current = t;
+  const twRef = useRef(tw);
+  twRef.current = tw;
   const movingRef = useRef(false);
   const keyboardMoveRef = useRef({ x: 0, y: 0 });
   const runRef = useRef(false);
@@ -138,6 +157,9 @@ export function WorldSurface({ world, onReturn }: WorldSurfaceProps) {
     if (!mount || !root) return;
     if (isEarth && !earthData) return;
     let rebuildTimer = 0;
+    const tt = (key: string, values?: Record<string, string | number>) => tRef.current(key, values);
+    const ttw = (key: string, values?: Record<string, string | number>) => twRef.current(key, values);
+    onProgressRef.current?.('build');
     const handle = makeWorldSurface(mount, world, {
       earth: earthData ?? undefined,
       startOnSurface: resumeRef.current,
@@ -151,6 +173,8 @@ export function WorldSurface({ world, onReturn }: WorldSurfaceProps) {
       },
     });
     handleRef.current = handle;
+    onProgressRef.current?.('compile');
+    let readyReported = false;
     const input = handle.input;
     const pressed = new Set<string>();
     const sync = () => {
@@ -170,7 +194,7 @@ export function WorldSurface({ world, onReturn }: WorldSurfaceProps) {
       input.jump = has('Space');
     };
     const onKeyDown = (e: KeyboardEvent) => {
-      if (!HANDLED.has(e.code)) return;
+      if (!HANDLED.has(e.code) || pausedRef.current) return;
       handle.startAudio();
       if (e.repeat) { e.preventDefault(); return; }
       pressed.add(e.code);
@@ -214,13 +238,19 @@ export function WorldSurface({ world, onReturn }: WorldSurfaceProps) {
     let lastX = 0; let lastY = 0;
     const onDown = (e: PointerEvent) => {
       handle.startAudio();
-      if (e.button !== 0 || orbitId >= 0) return;
+      if (e.button !== 0 || orbitId >= 0 || pausedRef.current) return;
+      // A mouse on the desk owns the view outright while play lasts; Esc gives it back.
+      if (!touchRef.current) lockPointer(mount);
       orbitId = e.pointerId;
       lastX = e.clientX; lastY = e.clientY;
       mount.setPointerCapture(e.pointerId);
       e.preventDefault();
     };
     const onMove = (e: PointerEvent) => {
+      if (document.pointerLockElement === mount) {
+        if (!pausedRef.current) { input.orbitDX += e.movementX; input.orbitDY += e.movementY; }
+        return;
+      }
       if (e.pointerId === orbitId) {
         input.orbitDX += e.clientX - lastX;
         input.orbitDY += e.clientY - lastY;
@@ -229,6 +259,16 @@ export function WorldSurface({ world, onReturn }: WorldSurfaceProps) {
     };
     const onUp = (e: PointerEvent) => { if (e.pointerId === orbitId) orbitId = -1; };
     const onWheel = (e: WheelEvent) => { input.zoom += Math.sign(e.deltaY); e.preventDefault(); };
+    // The lock is held from the first click; losing it (Esc) is a pause.
+    let lockHeld = false;
+    const onLockChange = () => {
+      if (document.pointerLockElement === mount) { lockHeld = true; return; }
+      if (!lockHeld) return;
+      lockHeld = false;
+      input.orbitDX = input.orbitDY = 0;
+      if (!pausedRef.current) onPauseRequestRef.current?.();
+    };
+    document.addEventListener('pointerlockchange', onLockChange);
     mount.addEventListener('pointerdown', onDown);
     mount.addEventListener('pointermove', onMove);
     mount.addEventListener('pointerup', onUp);
@@ -275,13 +315,14 @@ export function WorldSurface({ world, onReturn }: WorldSurfaceProps) {
       if (now - lastPaint < 33) return;
       lastPaint = now;
       root.dataset.ready = String(tel.ready);
+      if (tel.ready && !readyReported) { readyReported = true; onProgressRef.current?.('ready'); }
       root.dataset.phase = tel.phase;
       root.dataset.view = tel.view;
 
       if (tel.ascended) { tel.ascended = false; onReturnRef.current(); return; }
       if (tel.phase !== 'surface') {
         const l = tel.landing;
-        text(landTitleRef.current, tel.entry ? tw('entry') : tel.phase === 'ascent' ? t('landing.ascent') : t('landing.title'));
+        text(landTitleRef.current, tel.entry ? ttw('entry') : tel.phase === 'ascent' ? tt('landing.ascent') : tt('landing.title'));
         text(landAltRef.current, `${l.altitude.toFixed(l.altitude < 10 ? 1 : 0)} m`);
         text(landRateRef.current, `${Math.abs(l.descent).toFixed(1)} m/s`);
         text(landOffRef.current, `${Math.round(l.offset)} m`);
@@ -291,8 +332,8 @@ export function WorldSurface({ world, onReturn }: WorldSurfaceProps) {
         show(assistRef.current, l.assist);
         show(plaqueRef.current, tel.phase === 'touchdown');
         if (tel.phase === 'touchdown') {
-          text(plaqueGradeRef.current, t(`grades.${tel.grade || 'good'}`));
-          text(plaqueSpeedRef.current, t('landing.touchdown', { n: l.touchdown.toFixed(2) }));
+          text(plaqueGradeRef.current, tt(`grades.${tel.grade || 'good'}`));
+          text(plaqueSpeedRef.current, tt('landing.touchdown', { n: l.touchdown.toFixed(2) }));
         }
         return;
       }
@@ -310,7 +351,7 @@ export function WorldSurface({ world, onReturn }: WorldSurfaceProps) {
       text(distRef.current, fmtRange(tel.distanceM));
 
       const p = tel.prompt;
-      const label = p.active ? tw(`act.${p.label}`) : '';
+      const label = p.active ? ttw(`act.${p.label}`) : '';
       const action = actionRef.current;
       if (action) {
         show(action, p.active);
@@ -323,7 +364,7 @@ export function WorldSurface({ world, onReturn }: WorldSurfaceProps) {
       }
       const stance = stanceRef.current;
       if (stance) {
-        const s = tel.stumbling ? t('stance.stumble') : tel.sliding ? t('stance.slide') : tel.crouched ? t('stance.crouch') : '';
+        const s = tel.stumbling ? tt('stance.stumble') : tel.sliding ? tt('stance.slide') : tel.crouched ? tt('stance.crouch') : '';
         show(stance, s !== '');
         text(stance, s);
       }
@@ -331,18 +372,18 @@ export function WorldSurface({ world, onReturn }: WorldSurfaceProps) {
       if (poi) {
         const on = !!tel.poiId && !p.active;
         show(poi, on);
-        if (on) text(poi, tw(`pois.${tel.poiId}`));
+        if (on) text(poi, ttw(`pois.${tel.poiId}`));
       }
       const hintKey = tel.hint ? (isTouch ? `hints.${tel.hint}Touch` : `hints.${tel.hint}`) : '';
       const hint = hintRef.current;
       if (hint) {
         show(hint, !!hintKey && !p.active);
-        if (hintKey) text(hint, tw(hintKey));
+        if (hintKey) text(hint, ttw(hintKey));
       }
       const banner = bannerRef.current;
       if (banner) {
         show(banner, tel.banner !== '');
-        if (tel.banner) text(banner.firstElementChild as HTMLElement, tw(`banner.${tel.banner}`));
+        if (tel.banner) text(banner.firstElementChild as HTMLElement, ttw(`banner.${tel.banner}`));
       }
       const ea = tel.earth;
       if (ea) {
@@ -353,9 +394,9 @@ export function WorldSurface({ world, onReturn }: WorldSurfaceProps) {
           const on = !!ex.objective;
           show(obj, on);
           if (on) {
-            text(objTextRef.current, tw(`expedition.obj.${ex.objective}`));
+            text(objTextRef.current, ttw(`expedition.obj.${ex.objective}`));
             const range = ex.stage === 'overlook'
-              ? tw('expedition.found', { n: ex.found.length })
+              ? ttw('expedition.found', { n: ex.found.length })
               : ex.distance >= 0 && ex.distance > 6 ? fmtRange(ex.distance) : '';
             text(objRangeRef.current, range);
           }
@@ -378,10 +419,10 @@ export function WorldSurface({ world, onReturn }: WorldSurfaceProps) {
           show(meter, spotting || working);
           if (spotting) {
             meter.style.setProperty('--v', ex.spotWork.toFixed(3));
-            text(meterLabelRef.current, tw('expedition.spot', { name: tw(`expedition.names.${ex.spotting}`) }));
+            text(meterLabelRef.current, ttw('expedition.spot', { name: ttw(`expedition.names.${ex.spotting}`) }));
           } else if (working) {
             meter.style.setProperty('--v', ex.work.toFixed(3));
-            text(meterLabelRef.current, label || tw(`expedition.obj.${ex.objective}`));
+            text(meterLabelRef.current, label || ttw(`expedition.obj.${ex.objective}`));
           }
         }
         if (ex.eyepiece !== eyepieceOpen) {
@@ -392,14 +433,14 @@ export function WorldSurface({ world, onReturn }: WorldSurfaceProps) {
           const bannerEl = bannerRef.current;
           if (bannerEl) {
             show(bannerEl, true);
-            text(bannerEl.firstElementChild as HTMLElement, tw(`banner.${ex.banner}`));
+            text(bannerEl.firstElementChild as HTMLElement, ttw(`banner.${ex.banner}`));
           }
         }
       }
       const readout = readoutRef.current;
       if (readout) {
         show(readout, !!tel.readout);
-        if (tel.readout) text(readout, tw(`readout.${tel.readout}`));
+        if (tel.readout) text(readout, ttw(`readout.${tel.readout}`));
       }
       const dialog = dialogRef.current;
       if (dialog) {
@@ -407,8 +448,8 @@ export function WorldSurface({ world, onReturn }: WorldSurfaceProps) {
         const on = !!al && al.phrase !== '';
         show(dialog, on);
         if (on && al) {
-          text(dialogWhoRef.current, tw('dialog.who', { n: al.speaker + 1 }));
-          text(dialogTextRef.current, tw(`dialog.${al.phrase}`));
+          text(dialogWhoRef.current, ttw('dialog.who', { n: al.speaker + 1 }));
+          text(dialogTextRef.current, ttw(`dialog.${al.phrase}`));
         }
       }
     };
@@ -428,10 +469,16 @@ export function WorldSurface({ world, onReturn }: WorldSurfaceProps) {
       mount.removeEventListener('pointercancel', onUp);
       mount.removeEventListener('lostpointercapture', onUp);
       mount.removeEventListener('wheel', onWheel);
+      document.removeEventListener('pointerlockchange', onLockChange);
+      if (document.pointerLockElement === mount) document.exitPointerLock();
       handle.dispose();
       handleRef.current = null;
     };
-  }, [t, tw, world, glGeneration, isEarth, earthData]);
+  }, [world, glGeneration, isEarth, earthData]);
+  useEffect(() => {
+    handleRef.current?.setPaused(!!paused);
+    if (paused) unlockPointer();
+  }, [paused, glGeneration]);
 
   const capture = (e: React.PointerEvent<HTMLElement>) => {
     try { e.currentTarget.setPointerCapture(e.pointerId); } catch { /* no live pointer: the key still works */ }
@@ -467,8 +514,8 @@ export function WorldSurface({ world, onReturn }: WorldSurfaceProps) {
   return (
     <div ref={rootRef} className={`moon-surface moon-surface--${world}`} data-phase="descent" data-ready="false" data-immersive={immersive}>
       <div ref={mountRef} className="moon-surface__canvas" />
-      <CosmicLoader className={gpuLost || earthError ? 'moon-surface__loader is-forced' : 'moon-surface__loader'} variant="descent"
-        label={gpuLost ? tl('gpu') : earthError ? tw('loadError') : tw('loading')} detail={gpuLost || earthError ? undefined : tw('loadingDetail')} tips={tips} />
+      {(gpuLost || earthError || !onProgress) && <CosmicLoader className={gpuLost || earthError ? 'moon-surface__loader is-forced' : 'moon-surface__loader'} variant="descent"
+        label={gpuLost ? tl('gpu') : earthError ? tw('loadError') : tw('loading')} detail={gpuLost || earthError ? undefined : tw('loadingDetail')} tips={tips} />}
       {earthError && (
         <button type="button" className="moon-hud__key earth-hud__retry" onClick={onReturn}>
           <Rocket size={18} aria-hidden /><span>{t('returnOrbit')}</span>

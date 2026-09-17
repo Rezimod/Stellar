@@ -2064,7 +2064,9 @@
         },
         "entry": "Entry interface"
       }
-    }
+    },
+    "launch": "Launch Stellar Explore",
+    "launchSub": "Land at Stellar Base on the Moon"
   },
   "missionsPage": {
     "auth": {
@@ -3958,6 +3960,72 @@
         "s7Title": "Find your frames",
         "s7Text": "Simulated frames stay in this session. Real captures from the network are filed under Captures with their provenance."
       }
+    }
+  },
+  "play": {
+    "title": "Stellar Explore",
+    "tagline": "A lunar expedition from Georgia",
+    "begin": "Begin the expedition",
+    "continue": "Continue",
+    "at": {
+      "orbit": "In orbit",
+      "moon": "Stellar Base, the Moon",
+      "mars": "Mars",
+      "proximaB": "Proxima b",
+      "earth": "Tbilisi, Earth"
+    },
+    "missions": "Missions",
+    "settings": "Settings",
+    "controls": "Controls",
+    "exit": "Exit to Stellar",
+    "paused": "Paused",
+    "resume": "Resume",
+    "restart": "Restart checkpoint",
+    "back": "Back",
+    "loading": {
+      "module": "Loading the game",
+      "build": "Building the surface",
+      "compile": "Compiling the shaders",
+      "ready": "Ready",
+      "scene": {
+        "orbit": "Charting the orbits",
+        "moon": "Descending to Stellar Base",
+        "mars": "Descending to Mars",
+        "proximaB": "Descending to Proxima b",
+        "earth": "Descending to Tbilisi"
+      }
+    },
+    "settingsPanel": {
+      "quality": "Quality",
+      "qualityAuto": "Automatic",
+      "qualityNote": "Presets arrive with the performance pass; the renderer picks its own scale for now.",
+      "sensitivity": "Look sensitivity",
+      "invertY": "Invert vertical look",
+      "fov": "Field of view",
+      "volume": "Volume",
+      "language": "Language",
+      "en": "English",
+      "ka": "ქართული",
+      "reset": "Reset to defaults"
+    },
+    "controlsPanel": {
+      "surface": "On the surface",
+      "ship": "In the ship",
+      "shell": "Esc — pause · Tab — mission panel (coming) · M — sound"
+    },
+    "missionsPanel": {
+      "moon": "Stellar Base expedition",
+      "stage": {
+        "survey": "Survey the mare",
+        "drill": "Take the core",
+        "trace": "Trace the signal",
+        "excavate": "Clear the anomaly",
+        "contact": "Make contact",
+        "done": "Complete"
+      },
+      "jobs": "{n} of {total} base jobs done",
+      "discoveries": "{n} of {total} discoveries logged",
+      "empty": "Nothing logged yet. Land at Stellar Base to begin."
     }
   }
 }

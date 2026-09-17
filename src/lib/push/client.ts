@@ -2,7 +2,7 @@
 // and sync it to the server. All functions no-op gracefully where push is
 // unsupported (older browsers, iOS Safari before a home-screen install).
 
-const SW_URL = '/sw.js';
+import { SW_URL } from '@/game/sw';
 
 export interface PushMeta {
   wallet?: string | null;

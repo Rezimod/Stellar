@@ -89,6 +89,11 @@ function save(done: Set<string>) {
   }
 }
 
+/** How many discoveries are in the log, for the mission list outside the scene. */
+export function readDiscoveryCount(): number {
+  return load().size;
+}
+
 export function makeMissionTracker(): MissionTracker {
   const done = load();
   // Only one unlock per frame, and a short lockout after it, so two

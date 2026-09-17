@@ -148,6 +148,10 @@ function save(s: Saved) {
 export function missionComplete(): boolean {
   return load().stage === 'done';
 }
+/** Where the expedition stands, for the mission list outside the scene. */
+export function readExpeditionStage(): MissionStage {
+  return load().stage;
+}
 
 const ease = (rate: number, dt: number) => 1 - Math.exp(-dt * rate);
 
