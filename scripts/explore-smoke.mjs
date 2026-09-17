@@ -1,9 +1,9 @@
 // Explore regression smoke: node scripts/explore-smoke.mjs [--url http://localhost:3000] [--out dir]
 // Headless Chromium on the real GPU. Walks the game shell end to end and the
 // deep links, and fails on any page error, console error or WebGL warning.
-//   1. /solar-system → Launch → title → Continue → Moon → Esc pause → Exit → /solar-system
-//   2. /play?orbit → Explore (flight launches)
-//   3. /play?moon and /play?land=mars load; /solar-system?moon redirects to /play
+//   1. /solar-system → Launch → title → Enter → solar system → Explore → flight near Earth → Esc pause → Exit → /solar-system
+//   2. /play?moon loads the surface
+//   3. /play?land=mars loads; /solar-system?moon redirects to /play
 import { chromium } from 'playwright';
 import { mkdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -47,20 +47,31 @@ try {
   await waitState(page, 'loading');
   await shot('03-loading');
   await waitState(page, 'playing');
-  await waitFor(page, () => window.__stellarMoon?.telemetry?.ready === true);
-  step('Continue → Moon playing (surface ready)');
-  await shot('04-moon');
+  await waitFor(page, () => !!document.querySelector('.flight-hud__explore') && !!document.querySelector('canvas'));
+  step('Enter → solar system (orrery drawn, Explore present)');
+  await shot('04-system');
+  await page.click('.flight-hud__explore');
+  await waitFor(page, () => !!window.__stellarFlight);
+  await page.waitForTimeout(3000);
+  const where = await page.evaluate(() => {
+    const f = window.__stellarFlight;
+    const p = f.ship.group.position;
+    return f.world.bodies.map((b) => ({ id: b.id, d: b.position.distanceTo(p) / b.radius })).sort((x, y) => x.d - y.d)[0]?.id;
+  });
+  if (where !== 'earth') throw new Error(`flight started near ${where}, not Earth`);
+  step('Explore → flight near Earth');
+  await shot('05-flight');
   await page.keyboard.press('Escape');
   await waitState(page, 'paused');
   const frozen = await page.evaluate(async () => {
-    const f0 = window.__stellarMoon.perf().frame ?? null;
-    const t0 = window.__stellarMoon.telemetry.evaSeconds;
+    const f = window.__stellarFlight;
+    const f0 = f.session.telemetry.frame;
     await new Promise((r) => setTimeout(r, 800));
-    return { framesStill: f0 === null || f0 === (window.__stellarMoon.perf().frame ?? null), evaStill: t0 === window.__stellarMoon.telemetry.evaSeconds };
+    return { paused: f.session.paused, framesStill: f0 === f.session.telemetry.frame };
   });
-  if (!frozen.evaStill) throw new Error('paused, but the surface clock kept running');
-  step('Esc → paused, sim frozen');
-  await shot('05-paused');
+  if (!frozen.paused || !frozen.framesStill) throw new Error(`paused, but the deck kept flying: ${JSON.stringify(frozen)}`);
+  step('Esc → paused, deck frozen');
+  await shot('06-paused');
   await page.keyboard.press('Escape');
   await waitState(page, 'playing');
   step('Esc again → resumed');
@@ -70,22 +81,19 @@ try {
   await page.waitForURL(/\/solar-system$/, { timeout: 60_000, waitUntil: 'commit' });
   step('Exit → /solar-system');
 
-  // 2. Flight through the orbit deep link.
-  await page.goto(`${BASE}/play?orbit=1`, { waitUntil: 'commit', timeout: 300_000 });
+  // 2. The Moon through its deep link.
+  await page.goto(`${BASE}/play?moon=1`, { waitUntil: 'commit', timeout: 300_000 });
   await waitState(page, 'playing');
-  await waitFor(page, () => !!document.querySelector('.flight-hud__explore'));
-  await page.click('.flight-hud__explore');
-  await waitFor(page, () => !!window.__stellarFlight);
-  await page.waitForTimeout(3000);
-  step('orbit deep link → flight launches');
-  await shot('06-flight');
+  await waitFor(page, () => window.__stellarMoon?.telemetry?.ready === true);
+  step('?moon=1 → surface ready');
+  await shot('07-moon');
 
   // 3. Mars, and the redirect from the old deep link.
   await page.goto(`${BASE}/play?land=mars`, { waitUntil: 'commit', timeout: 300_000 });
   await waitState(page, 'playing');
   await waitFor(page, () => window.__stellarWorld?.telemetry?.ready === true);
   step('?land=mars loads');
-  await shot('07-mars');
+  await shot('08-mars');
   await page.goto(`${BASE}/solar-system?moon=1`, { waitUntil: 'commit', timeout: 300_000 });
   await page.waitForURL(/\/play\?moon=1$/, { timeout: 60_000, waitUntil: 'commit' });
   step('/solar-system?moon=1 → /play?moon=1');

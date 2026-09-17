@@ -967,7 +967,7 @@ Later phases pull their work from here. A finding that spans phases appears unde
 ### Phase 0.5 — game shell + asset pipeline
 - [x] A15 (P2): `/solar-system` is the orrery guide only; flight and the surfaces load in the `/play` chunk (`src/components/play/PlayClient.tsx`). `/solar-system` First Load JS stayed at 120 kB.
 - [x] A16 (P2): `src/game/state.ts` (`boot → title → loading → playing ⇄ paused → exiting`). `/play?moon`, `?land=`, `?orbit` work in production; `/solar-system?moon|land` redirect there (`src/middleware.ts`). Exit returns to `/solar-system`.
-- [x] B02 (P1): title → Continue → Moon (`GameShell` → `GameWorld`). The approach cinematic is Phase 9.
+- [x] B02 (P1): a production path exists: title → Enter → the solar system → Explore → flight near Earth → land on the Moon (`GameShell` → `GameWorld`). Rezi's decision (2026-09-17): the game always opens on the 3D solar system and flight comes first; the Moon is never reached straight from the title. The approach cinematic is Phase 9.
 - [ ] A10 (P2): the orbit canvas is not built at all until the player first goes to orbit (`GameWorld.orbitVisited`), so the Moon slice never pays for it. The galactic layers themselves still build eagerly when it is → Phase 1.
 - [x] A14 (P2): the tip shuffle runs after mount.
 - [x] A21 (P3): `src/game/settle.ts` owns the frame-wait; the launch loader and the orbit return both use it.

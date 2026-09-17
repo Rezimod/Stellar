@@ -1,6 +1,6 @@
-// The checkpoint: where the expedition is, so the title screen can continue
-// it. Mission progress keeps its own keys (moon-mission, moon-jobs,
-// flight-missions); this only records the place.
+// The checkpoint: where the expedition is, for "restart checkpoint" and for
+// a later account-synced resume. Mission progress keeps its own keys
+// (moon-mission, moon-jobs, flight-missions); this only records the place.
 
 import { isWorldId, type WorldId } from '@/lib/solar-system/world-profiles';
 

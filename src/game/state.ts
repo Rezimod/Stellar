@@ -42,7 +42,7 @@ export const game = {
     if (scene) { set({ state: 'loading', scene, stage: 'module', overlay: 'none' }); return; }
     set({ state: 'title', overlay: 'none' });
   },
-  /** Continue from the title into a scene. */
+  /** Enter from the title into a scene. */
   start(scene: GameScene) {
     if (snap.state !== 'title') return;
     set({ state: 'loading', scene, stage: 'module', overlay: 'none' });

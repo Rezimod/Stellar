@@ -3965,15 +3965,8 @@
   "play": {
     "title": "Stellar Explore",
     "tagline": "A lunar expedition from Georgia",
-    "begin": "Begin the expedition",
-    "continue": "Continue",
-    "at": {
-      "orbit": "In orbit",
-      "moon": "Stellar Base, the Moon",
-      "mars": "Mars",
-      "proximaB": "Proxima b",
-      "earth": "Tbilisi, Earth"
-    },
+    "enter": "Enter the solar system",
+    "enterSub": "Look around, then Explore to fly",
     "missions": "Missions",
     "settings": "Settings",
     "controls": "Controls",
