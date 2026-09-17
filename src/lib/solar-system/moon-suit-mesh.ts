@@ -175,12 +175,15 @@ export function buildSuit(lite: boolean, bareHead = false): SuitRig {
   const materials: THREE.Material[] = [cloth, bellows, dusty, hard, blue, fitting, grey, boot, bearing, dark, glove, sole, red, hose, screen, lamp, visor, inner, bubble, tapeMat, flagMat, packMat, helmetMat, patchMat];
   const textures = [weave, tapeTex, flagTex, packTex, helmetTex, patchTex];
   const geometries: THREE.BufferGeometry[] = [];
+  // The shadow of a suit is its outline. The big pieces cast it; the straps,
+  // rings, hoses and panels would only add a draw each to the shadow pass.
+  const casters = new Set<THREE.Material>([cloth, bellows, dusty, hard, boot, glove, helmetMat, packMat]);
 
   const mesh = (parent: THREE.Object3D, g: THREE.BufferGeometry, mat: THREE.Material, x = 0, y = 0, z = 0) => {
     geometries.push(g);
     const o = new THREE.Mesh(g, mat);
     o.position.set(x, y, z);
-    o.castShadow = true;
+    o.castShadow = casters.has(mat);
     o.receiveShadow = true;
     parent.add(o);
     return o;

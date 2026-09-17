@@ -16,7 +16,7 @@ import { makePeople, type Mover } from '@/lib/solar-system/world-earth-people';
 
 const flat = () => 0;
 const DT = 1 / 120;
-const dust: DustHandle = { points: new THREE.Points(), burst: vi.fn(), update: vi.fn(), dispose: vi.fn() };
+const dust: DustHandle = { points: new THREE.Points(), burst: vi.fn(), setCap: vi.fn(), update: vi.fn(), dispose: vi.fn() };
 const open: CarWorld = { floorAt: flat, pushOut: () => false, isWater: () => false, colliders: () => [] };
 const run = (seconds: number, step: () => void) => { for (let i = 0; i < seconds / DT; i++) step(); };
 
@@ -102,6 +102,30 @@ describe('the city in motion', () => {
     });
     expect(closest).toBeGreaterThan(0.4);
     traffic.dispose();
+  });
+
+  it('hands back the same circles every query, so nothing is allocated a frame', () => {
+    const heightAt = makeHeightAt(data.grids);
+    const traffic = makeTraffic(data, true);
+    run(10, () => traffic.update(DT, 0, 0, [], 0, heightAt));
+    const out: Mover[] = [];
+    const first = [...traffic.movers(0, 0, 700, out)];
+    expect(first.length).toBeGreaterThan(0);
+    traffic.update(DT, 0, 0, [], 0, heightAt);
+    const second = traffic.movers(0, 0, 700, out);
+    expect(second).toBe(out);
+    for (const m of second) expect(first).toContain(m);
+    traffic.dispose();
+    const people = makePeople(data, { floorAt: heightAt, blocked: () => false }, true);
+    const pad = data.manifest.pad;
+    people.welcome(pad.x, pad.z, pad.x + 10, pad.z);
+    run(5, () => people.update(DT, pad.x + 10, pad.z, []));
+    const a = [...people.colliders(pad.x, pad.z, 60, out)];
+    people.update(DT, pad.x + 10, pad.z, []);
+    const b = people.colliders(pad.x, pad.z, 60, out);
+    expect(a.length).toBeGreaterThan(0);
+    for (const m of b) expect(a).toContain(m);
+    people.dispose();
   });
 
   it('a crowd gathers round the lander and cheers, then goes about its day', () => {

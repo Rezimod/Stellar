@@ -2,7 +2,8 @@
 
 import { useSyncExternalStore } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { FOV_RANGE, getSettings, onSettingsChange, resetSettings, SENSITIVITY_RANGE, updateSettings } from '@/game/settings';
+import { FOV_RANGE, getSettings, onSettingsChange, resetSettings, SENSITIVITY_RANGE, updateSettings, type QualityPreset } from '@/game/settings';
+import { QUALITY_LEVELS, type QualityLevel } from '@/game/quality';
 import { GamePanel } from './GamePanel';
 
 interface SettingsPanelProps {
@@ -10,6 +11,7 @@ interface SettingsPanelProps {
 }
 
 const LOCALES = ['en', 'ka'] as const;
+const QUALITY_LABEL: Record<QualityLevel, string> = { performance: 'qualityPerformance', balanced: 'qualityBalanced', high: 'qualityHigh' };
 
 export function SettingsPanel({ onClose }: SettingsPanelProps) {
   const t = useTranslations('play');
@@ -24,8 +26,9 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
     <GamePanel title={t('settings')} onClose={onClose}>
       <div className="game-setting">
         <label htmlFor="gs-quality">{t('settingsPanel.quality')}</label>
-        <select id="gs-quality" value={s.quality} disabled>
+        <select id="gs-quality" value={s.quality} onChange={(e) => updateSettings({ quality: e.target.value as QualityPreset })}>
           <option value="auto">{t('settingsPanel.qualityAuto')}</option>
+          {QUALITY_LEVELS.map((q) => <option key={q} value={q}>{t(`settingsPanel.${QUALITY_LABEL[q]}`)}</option>)}
         </select>
         <p className="game-setting__note">{t('settingsPanel.qualityNote')}</p>
       </div>

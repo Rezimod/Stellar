@@ -23,6 +23,7 @@ import { MOON_G, type DustHandle } from '@/lib/solar-system/moon-fx';
 import type { Collider } from '@/lib/solar-system/moon-cosmonaut';
 import type { PrintsHandle } from '@/lib/solar-system/moon-prints';
 import type { TerrainHandle } from '@/lib/solar-system/moon-terrain';
+import type { LightPool } from '@/lib/solar-system/moon-lights';
 import { makeRoverDress, type DressState } from '@/lib/solar-system/moon-rover-dress';
 
 /** The parts of the rover the drive articulates, built by moon-rover-mesh. */
@@ -37,7 +38,8 @@ export interface RoverParts {
   mast: THREE.Object3D;
   /** The driver's eye, for the cockpit view. */
   seat: THREE.Object3D;
-  headlight: THREE.SpotLight;
+  /** Where the headlight is; the light itself is asked of the pool each frame. */
+  headlight: THREE.Object3D;
   /** The arm's shoulder and elbow: stowed on the move, unfolded at rest. */
   arm: THREE.Object3D[];
   brakeLight: THREE.MeshStandardMaterial;
@@ -90,6 +92,8 @@ export interface RoverHandle {
   position: THREE.Vector3;
   update: (dt: number, throttle: number, steer: number, colliders: Collider[], walkRadius: number, handbrake?: boolean) => void;
   present: (alpha: number) => void;
+  /** Once a frame: the headlight, while it is on. */
+  light: (pool: LightPool) => void;
 }
 
 const EARTH_G = 9.81;
@@ -113,6 +117,8 @@ export function makeRover(group: THREE.Group, collider: Collider, parts: RoverPa
   let heave = group.position.y; let heaveVel = 0;
   let lastSpeed = 0;
   let spin = 0;
+  let lamp = 0;
+  const lampAt = new THREE.Vector3();
   const prevPos = new THREE.Vector3().copy(group.position);
   const curPos = new THREE.Vector3().copy(group.position);
   const prevQ = new THREE.Quaternion().copy(group.quaternion);
@@ -136,6 +142,15 @@ export function makeRover(group: THREE.Group, collider: Collider, parts: RoverPa
     update(dt, throttleIn, steerIn, colliders, walkRadius, handbrake = false) {
       prevPos.copy(curPos);
       prevQ.copy(curQ);
+      lamp += ((handle.driving ? 1 : 0) - lamp) * (1 - Math.exp(-dt * 4));
+      // Parked, and nothing moving: no ground to sample, nothing to push off.
+      if (!handle.driving && !handle.airborne && Math.abs(handle.speed) < 0.01 && Math.abs(heaveVel) < 0.01 && handle.bump < 0.001 && Math.abs(vx) + Math.abs(vz) < 0.01) {
+        handle.speed = 0; handle.slip = 0; handle.yawRate = 0; vx = 0; vz = 0; lastSpeed = 0;
+        ds.speed = 0; ds.slip = 0; ds.spin = 0; ds.driving = false; ds.steer = 0; ds.braking = false; ds.airborne = false; ds.vx = 0; ds.vz = 0;
+        ds.gearIon = handle.gear === 'ion'; ds.ionOwned = handle.gears.includes('ion');
+        dress(dt, ds);
+        return;
+      }
       const spec = SPEC[handle.gear];
       const top = handle.battery < 0.04 ? Math.min(spec.top, 3) : spec.top;
       handle.top = spec.top;
@@ -266,6 +281,12 @@ export function makeRover(group: THREE.Group, collider: Collider, parts: RoverPa
     present(alpha) {
       group.position.lerpVectors(prevPos, curPos, alpha);
       group.quaternion.slerpQuaternions(prevQ, curQ, alpha);
+    },
+    light(pool) {
+      if (lamp < 0.02) return;
+      parts.headlight.getWorldPosition(lampAt);
+      // A little ahead and down, so the beam reads on the ground.
+      pool.request(lampAt.x + Math.sin(handle.yaw) * 3, lampAt.y - 0.5, lampAt.z + Math.cos(handle.yaw) * 3, 0xfff4dc, lamp * 9, 24, 1.6);
     },
   };
   curPos.y = heave = terrain.heightAt(curPos.x, curPos.z);

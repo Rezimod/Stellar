@@ -24,7 +24,7 @@ export function buildRover(kit: Kit, lite: boolean): { group: THREE.Group; parts
   const parts: RoverParts = {
     spin: [], steer: [], rockers: [], bogies: [], wheelXZ: [],
     mast: new THREE.Group(), seat: new THREE.Object3D(),
-    headlight: new THREE.SpotLight(0xfff4dc, 0, 26, 0.6, 0.55, 1.2),
+    headlight: new THREE.Object3D(),
     arm: [], brakeLight, ionMat,
   };
   const noShadow = (o: THREE.Mesh) => { o.castShadow = false; return o; };
@@ -53,8 +53,7 @@ export function buildRover(kit: Kit, lite: boolean): { group: THREE.Group; parts
   kit.box(group, 0.4, 0.06, 0.1, m.anodised, 0, 1.64, 1.84);
   noShadow(kit.box(group, 0.05, 0.05, 0.02, m.cool, 0, 1.6, 1.905));
   parts.headlight.position.set(0, 1.65, 1.9);
-  parts.headlight.target.position.set(0, 0.3, 10);
-  group.add(parts.headlight, parts.headlight.target);
+  group.add(parts.headlight);
 
   // ── The crew station: two seats, the driver's hand controller and display,
   // footrests, a roll cage and the PV sunshade over it. ──

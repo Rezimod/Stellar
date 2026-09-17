@@ -37,8 +37,14 @@ export function doorSpot(r: RoverFrame, side: number, groundY: number): Spot {
 }
 
 export function seatSpot(r: RoverFrame): Spot {
-  const p = roverPoint(r, SEAT.x, SEAT.y, SEAT.z);
-  return { x: p.x, y: p.y, z: p.z, yaw: r.yaw };
+  return seatSpotInto(r, { x: 0, y: 0, z: 0, yaw: 0 });
+}
+
+/** The same, written into `out` (the sim asks every step). */
+export function seatSpotInto(r: RoverFrame, out: Spot): Spot {
+  const c = Math.cos(r.yaw); const s = Math.sin(r.yaw);
+  out.x = r.x + SEAT.x * c + SEAT.z * s; out.y = r.y + SEAT.y; out.z = r.z - SEAT.x * s + SEAT.z * c; out.yaw = r.yaw;
+  return out;
 }
 
 /** The climb in from a door spot, or down to one. */

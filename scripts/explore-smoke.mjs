@@ -36,7 +36,7 @@ const shot = (name) => page.screenshot({ path: `${OUT}${name}.png` });
 try {
   // 1. The whole shell loop from the website.
   await page.goto(`${BASE}/solar-system`, { waitUntil: 'commit', timeout: 300_000 });
-  await waitFor(page, () => !!document.querySelector('.solar-system__launch') && !!document.querySelector('.solar-system__loader.is-done'));
+  await waitFor(page, () => !!document.querySelector('.solar-system__launch') && (!document.querySelector('.solar-system__loader') || !!document.querySelector('.solar-system__loader.is-done')));
   step('guide page: orrery drawn, Launch present');
   await shot('01-guide');
   await page.click('.solar-system__launch');

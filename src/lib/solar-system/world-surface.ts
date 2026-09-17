@@ -11,15 +11,15 @@
 // camera, the effects and the glass run once per drawn frame.
 
 import * as THREE from 'three';
-import { makeMoonPost } from '@/lib/solar-system/moon-post';
 import { makeMoonDust } from '@/lib/solar-system/moon-fx';
 import { makeCosmonaut, type WalkInput } from '@/lib/solar-system/moon-cosmonaut';
 import { makeSprintLatch, sprintFrom, walkFromStick } from '@/lib/solar-system/surface-input';
 import { makePrints } from '@/lib/solar-system/moon-prints';
 import { makeSuitAudio } from '@/lib/solar-system/moon-audio';
 import { makeLander, type LanderTelemetry } from '@/lib/solar-system/moon-lander';
-import { makeMoonPerf, type PerfSample } from '@/lib/solar-system/moon-perf';
-import { makeLightPool } from '@/lib/solar-system/moon-lights';
+import type { PerfSample } from '@/lib/solar-system/moon-perf';
+import { makeSurfaceHost } from '@/lib/solar-system/surface-host';
+import { onQualityChange } from '@/game/quality';
 import { makeKit } from '@/lib/solar-system/moon-kit';
 import { makeCameraRig } from '@/lib/solar-system/moon-camera';
 import { makeInteractions, type InteractionPrompt } from '@/lib/solar-system/moon-interactions';
@@ -116,6 +116,7 @@ export interface WorldSurfaceHandle {
   where: () => { x: number; z: number; y: number };
   skipDescent: () => void;
   perf: () => PerfSample;
+  probe: (within?: string) => Record<string, number>;
   /** The game shell's pause: no frames, no sim, no sound until resumed. */
   setPaused: (on: boolean) => void;
   /** Earth: move the clock (any ISO date), finish an expedition act, point the camera (degrees from north, pitch rad). */
@@ -143,49 +144,23 @@ export const CONTACT_KEY = 'stellar_proxima_contact';
 
 export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: WorldOptions = {}): WorldSurfaceHandle {
   const profile = WORLDS[world];
-  const buildStart = performance.now();
   const isMobile = window.matchMedia('(max-width: 768px)').matches;
-  const lite = isMobile;
-  const renderer = new THREE.WebGLRenderer({ antialias: !lite, alpha: false, powerPreference: 'high-performance' });
-  const maxRatio = Math.min(window.devicePixelRatio, lite ? 1.5 : 2);
-  renderer.setPixelRatio(maxRatio);
-  renderer.setSize(mount.clientWidth, mount.clientHeight);
-  renderer.outputColorSpace = THREE.SRGBColorSpace;
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.05;
-  renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFShadowMap;
-  renderer.setClearColor(profile.sky.fog, 1);
-  const earth = world === 'earth' && opts.earth ? makeEarthWorld(renderer, opts.earth, lite) : null;
-  mount.appendChild(renderer.domElement);
-  renderer.domElement.style.cssText = 'display:block;width:100%;height:100%;touch-action:none;';
-
-  const scene = new THREE.Scene();
+  const isEarth = world === 'earth' && !!opts.earth;
+  // The star; the host owns it, its shadow box and the light pool.
+  const host = makeSurfaceHost(mount, {
+    clearColor: profile.sky.fog, exposure: 1.05, sun: { color: profile.sun.color, intensity: profile.sun.intensity },
+    near: isEarth ? 0.1 : 0.05, far: isEarth ? 30000 : 4000, onContextLost: opts.onContextLost,
+  });
+  const { renderer, scene, camera, sun, lightPool, post, perf, lite, quality } = host;
+  const earth = isEarth && opts.earth ? makeEarthWorld(renderer, opts.earth, lite) : null;
   // Earth's air is in its own materials (world-earth-haze), out to the Caucasus.
   if (!earth) scene.fog = new THREE.Fog(profile.sky.fog, profile.sky.fogNear, profile.sky.fogFar);
   let baseFov = getSettings().fov;
-  const camera = new THREE.PerspectiveCamera(baseFov, mount.clientWidth / mount.clientHeight, earth ? 0.1 : 0.05, earth ? 30000 : 4000);
   const SUN_DIR = earth ? earth.sky.state.keyDir.clone() : profile.sunDir;
 
-  // ── Light: the star, the sky's fill, and the pool for whatever glows. ──
-  const sun = new THREE.DirectionalLight(profile.sun.color, profile.sun.intensity);
-  sun.castShadow = true;
-  sun.shadow.mapSize.set(lite ? 1024 : 2048, lite ? 1024 : 2048);
-  sun.shadow.camera.near = 1;
-  sun.shadow.camera.far = 420;
-  const sr = lite ? 42 : 60;
-  sun.shadow.camera.left = -sr; sun.shadow.camera.right = sr; sun.shadow.camera.top = sr; sun.shadow.camera.bottom = -sr;
-  sun.shadow.bias = -0.0004;
-  sun.shadow.normalBias = 0.22;
-  scene.add(sun);
-  scene.add(sun.target);
+  // ── The sky's fill. ──
   const hemi = new THREE.HemisphereLight(profile.sky.fillSky, profile.sky.fillGround, profile.sky.fill);
   scene.add(hemi);
-  const lightPool = makeLightPool(2);
-  for (const l of lightPool.lights) scene.add(l);
-  const shadowU = new THREE.Vector3().crossVectors(new THREE.Vector3(0, 1, 0), SUN_DIR).normalize();
-  const shadowV = new THREE.Vector3().crossVectors(SUN_DIR, shadowU);
-  const shadowTexel = (sr * 2) / sun.shadow.mapSize.x;
 
   const sky = earth ? null : makeWorldSky(renderer, profile, lite);
   if (sky) {
@@ -194,15 +169,18 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
   }
   scene.environmentIntensity = 0.5;
 
-  const terrain = earth ? null : makeWorldTerrain(profile, lite);
+  const terrain = earth ? null : makeWorldTerrain(profile, lite, quality.propDensity);
   if (terrain) scene.add(terrain.mesh, terrain.rocks, terrain.horizon);
-  if (earth) scene.add(earth.group, earth.sky.group);
+  // Earth's environment must be in place before the compile, or every
+  // material takes a second program on the first frame.
+  if (earth) { scene.add(earth.group, earth.sky.group); scene.environment = earth.sky.environment; }
   const heightAt = earth ? earth.heightAt : terrain!.heightAt;
   const floorAt = earth ? earth.floorAt : terrain!.floorAt;
-  const dust = makeMoonDust(lite ? 700 : 1300, profile.gravity, profile.ground.dust);
+  const dust = makeMoonDust(1300, Math.min(1300, quality.dustMax), profile.gravity, profile.ground.dust);
   scene.add(dust.points);
-  const prints = makePrints(lite ? 400 : 900);
+  const prints = makePrints(900, quality.printsMax);
   scene.add(prints.mesh);
+  const unsubQuality = onQualityChange((q) => { dust.setCap(Math.min(1300, q.dustMax)); prints.setCap(q.printsMax); });
   const kit = makeKit(lite);
 
   const colliders: Collider[] = [];
@@ -259,15 +237,18 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
   const flightAudio = entry ? makeFlightAudio() : null;
   const walkRadius = earth ? EARTH_WALK_RADIUS : profile.walkRadius;
 
-  const post = makeMoonPost(renderer, scene, camera, lite);
-  const pinned = process.env.NODE_ENV !== 'production' && new URLSearchParams(window.location.search).has('fixedpx');
-  const perf = makeMoonPerf(renderer, mount, {
-    minRatio: pinned ? maxRatio : Math.min(1, maxRatio),
-    maxRatio,
-    onPixelRatio: (r) => { renderer.setPixelRatio(r); post.setSize(mount.clientWidth, mount.clientHeight); },
-  });
-  const cameraColliders = () => (aliens ? colliders.concat(aliens.colliders)
-    : earth ? colliders.concat(earth.cameraColliders(cosmonaut.position.x, cosmonaut.position.z)) : colliders);
+  // The collider lists are rebuilt into the same arrays: the camera asks
+  // every frame and the walk asks every sim step.
+  const camList: Collider[] = [];
+  const walkList: Collider[] = [];
+  const gather = (out: Collider[], extra: readonly Collider[]) => {
+    out.length = 0;
+    for (const c of colliders) out.push(c);
+    for (const c of extra) out.push(c);
+    return out;
+  };
+  const cameraColliders = () => (aliens ? gather(camList, aliens.colliders)
+    : earth ? gather(camList, earth.cameraColliders(cosmonaut.position.x, cosmonaut.position.z)) : colliders);
   const cam = makeCameraRig(camera, floorAt, cameraColliders, baseFov);
   const unsubSettings = onSettingsChange((s) => { baseFov = s.fov; cam.setBaseFov(s.fov); });
   cam.distance = earth ? EARTH_CHASE.distance : isMobile ? 5.6 : 5.2;
@@ -341,7 +322,7 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
   const descentFocus = new THREE.Vector3();
   const descentPos = new THREE.Vector3();
   const wrap = (a: number) => { while (a > Math.PI) a -= Math.PI * 2; while (a < -Math.PI) a += Math.PI * 2; return a; };
-  const walkColliders = () => (earth ? colliders.concat(earth.walkers(cosmonaut.position.x, cosmonaut.position.z)) : cameraColliders());
+  const walkColliders = () => (earth ? gather(walkList, earth.walkers(cosmonaut.position.x, cosmonaut.position.z)) : cameraColliders());
   const carVel = new THREE.Vector3();
   let welcomed = false;
   if (earth) {
@@ -385,32 +366,7 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
     if (cosmonaut.state.landing === 'hard' || cosmonaut.state.landing === 'fall') cam.shake(0.5);
   };
 
-  let raf = 0;
-  let last = performance.now();
-  let docVisible = !document.hidden;
-  let contextLost = false;
-  let paused = false;
-  const onVis = () => {
-    docVisible = !document.hidden;
-    last = performance.now();
-    if (docVisible && !paused && !raf && telemetry.ready && !contextLost) raf = requestAnimationFrame(loop);
-  };
-  const onContextLost = (e: Event) => {
-    e.preventDefault();
-    contextLost = true;
-    if (raf) cancelAnimationFrame(raf);
-    raf = 0;
-    opts.onContextLost?.();
-  };
-  renderer.domElement.addEventListener('webglcontextlost', onContextLost);
-  const loop = () => {
-    raf = 0;
-    if (!docVisible || paused) return;
-    raf = requestAnimationFrame(loop);
-    const now = performance.now();
-    const dt = Math.min(0.1, (now - last) / 1000);
-    last = now;
-    perf.begin(now);
+  const frame = (dt: number) => {
     t += dt;
     cam.update(dt);
     cam.orbit(input.orbitDX, input.orbitDY, view === 'helmet');
@@ -602,8 +558,6 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
       SUN_DIR.copy(st.keyDir);
       if (SUN_DIR.y < 0.02) SUN_DIR.y = 0.02;
       SUN_DIR.normalize();
-      shadowU.crossVectors(THREE.Object3D.DEFAULT_UP, SUN_DIR).normalize();
-      shadowV.crossVectors(SUN_DIR, shadowU);
       sun.color.copy(st.keyColor);
       sun.intensity = st.keyIntensity;
       hemi.color.copy(st.hemiSky);
@@ -615,39 +569,11 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
     base?.update(dt, t, crew.x, crew.z, lightPool);
     flora?.update(dt, t);
     if (aliens && telemetry.phase === 'surface') aliens.update(dt, t, crew.x, crew.z, lightPool);
-    const su = Math.round(crew.dot(shadowU) / shadowTexel) * shadowTexel;
-    const sv = Math.round(crew.dot(shadowV) / shadowTexel) * shadowTexel;
-    sun.target.position.copy(shadowU).multiplyScalar(su).addScaledVector(shadowV, sv).addScaledVector(SUN_DIR, crew.dot(SUN_DIR));
-    sun.position.copy(sun.target.position).addScaledVector(SUN_DIR, 220);
+    host.followShadow(crew, SUN_DIR);
     lightPool.flush(crew.x, crew.y, crew.z);
-    perf.mark();
-    post.render(dt);
-    perf.end();
+    host.render(dt);
   };
-
-  const onResize = () => {
-    const w = mount.clientWidth; const h = mount.clientHeight;
-    if (!w || !h) return;
-    renderer.setSize(w, h);
-    camera.aspect = w / h;
-    camera.updateProjectionMatrix();
-    post.setSize(w, h);
-  };
-  window.addEventListener('resize', onResize);
-  document.addEventListener('visibilitychange', onVis);
-  perf.setBuildMs(performance.now() - buildStart);
-  let disposed = false;
-  const hiddenForCompile: THREE.Object3D[] = [];
-  scene.traverse((o) => { if (!o.visible) { hiddenForCompile.push(o); o.visible = true; } });
-  const begin = () => {
-    for (const o of hiddenForCompile) o.visible = false;
-    if (disposed || raf || contextLost) return;
-    telemetry.ready = true;
-    last = performance.now();
-    raf = requestAnimationFrame(loop);
-  };
-  const compiling = renderer.compileAsync(scene, camera);
-  compiling.then(begin, begin);
+  host.start(frame, () => { telemetry.ready = true; });
 
   const release = () => {
     lander.dispose();
@@ -663,8 +589,6 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
     dust.dispose();
     terrain?.dispose();
     sky?.dispose();
-    post.dispose();
-    renderer.dispose();
   };
 
   const handle: WorldSurfaceHandle = {
@@ -696,13 +620,8 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
       egressHold = 0.2;
     },
     perf: perf.sample,
-    setPaused(on) {
-      if (paused === on) return;
-      paused = on;
-      last = performance.now();
-      if (on && raf) { cancelAnimationFrame(raf); raf = 0; }
-      if (!on && !raf && docVisible && telemetry.ready && !contextLost) raf = requestAnimationFrame(loop);
-    },
+    probe: host.probe,
+    setPaused: host.setPaused,
     setTime: (iso) => earth?.setTime(iso),
     advance: () => earth?.advance(),
     layer(name, on) {
@@ -725,17 +644,11 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
       cam.snap();
     },
     dispose() {
-      disposed = true;
-      if (raf) cancelAnimationFrame(raf);
-      perf.dispose();
       if (window.__stellarWorld === handle) delete window.__stellarWorld;
-      window.removeEventListener('resize', onResize);
-      document.removeEventListener('visibilitychange', onVis);
-      renderer.domElement.removeEventListener('webglcontextlost', onContextLost);
       unsubSettings();
+      unsubQuality();
       audio.dispose();
-      if (renderer.domElement.parentNode === mount) mount.removeChild(renderer.domElement);
-      compiling.then(release, release);
+      host.dispose(release);
     },
   };
   if (opts.startOnSurface) handle.skipDescent();

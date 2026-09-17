@@ -3991,7 +3991,10 @@
     "settingsPanel": {
       "quality": "Quality",
       "qualityAuto": "Automatic",
-      "qualityNote": "Presets arrive with the performance pass; the renderer picks its own scale for now.",
+      "qualityPerformance": "Performance",
+      "qualityBalanced": "Balanced",
+      "qualityHigh": "High",
+      "qualityNote": "Automatic picks a preset from your device. Star and rock counts take effect on the next landing.",
       "sensitivity": "Look sensitivity",
       "invertY": "Invert vertical look",
       "fov": "Field of view",

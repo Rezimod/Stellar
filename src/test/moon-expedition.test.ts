@@ -18,7 +18,7 @@ import type { Anchor, AnchorId } from '@/lib/solar-system/moon-base-zones';
 
 const flat = () => 0;
 const stamp = vi.fn();
-const dust: DustHandle = { points: new THREE.Points(), burst: vi.fn(), update: vi.fn(), dispose: vi.fn() };
+const dust: DustHandle = { points: new THREE.Points(), burst: vi.fn(), setCap: vi.fn(), update: vi.fn(), dispose: vi.fn() };
 
 beforeEach(() => { localStorage.clear(); });
 afterEach(() => { localStorage.clear(); });

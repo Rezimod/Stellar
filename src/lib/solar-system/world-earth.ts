@@ -23,7 +23,7 @@ import { makeCableCar } from '@/lib/solar-system/world-earth-cablecar';
 import { makeCityAmbience } from '@/lib/solar-system/world-earth-audio';
 import { duskFor, pickTarget, tbilisiClock, type SkyTarget } from '@/lib/solar-system/world-earth-tonight';
 import { makeTbilisiExpedition, type ExpeditionEvent, type ExpeditionTelemetry } from '@/lib/solar-system/world-earth-expedition';
-import { makeCar, type CarHandle, type CarInput } from '@/lib/solar-system/world-earth-car';
+import { makeCar, type CarHandle, type CarInput, type CarWorld } from '@/lib/solar-system/world-earth-car';
 import { makePeople, type Mover } from '@/lib/solar-system/world-earth-people';
 import { makeTraffic } from '@/lib/solar-system/world-earth-traffic';
 
@@ -130,6 +130,16 @@ export function makeEarthWorld(renderer: THREE.WebGLRenderer, data: EarthData, l
   const nearPeople: Mover[] = [];
   const walkerList: Collider[] = [];
   const doorAt = new THREE.Vector3();
+  const crewMover: Mover = { x: 0, z: 0, vx: 0, vz: 0, r: 0.5 };
+  const parkedCar: Mover = { x: 0, z: 0, vx: 0, vz: 0, r: 1.9 };
+  // What the car runs into this step: the scene's colliders plus the traffic, in one reused list.
+  const hits: Collider[] = [];
+  const carWorld: CarWorld = {
+    floorAt: (x, z) => { const d = streets.deckAt(x, z); return Number.isNaN(d) ? heightAt(x, z) : Math.max(heightAt(x, z) - 0.5, d); },
+    pushOut: (pos, r) => city.pushOut(pos, r, false),
+    isWater: streets.isWater,
+    colliders: () => hits,
+  };
 
   const roof = city.rooftop;
   const site = (id: string) => landmarks.sites[id] ?? { x: 0, z: 0 };
@@ -153,12 +163,13 @@ export function makeEarthWorld(renderer: THREE.WebGLRenderer, data: EarthData, l
     door: roof ? { x: roof.door[0], z: roof.door[1] } : null, telescope,
   };
   let rideS = -1;
+  let clockMinute = Math.floor(sky.state.dateMs / 60_000);
   type Hour = { time: string; cloudCover: number; visibility: number; temp: number };
   let forecast: Hour[] = [];
   let weatherFor = -Infinity;
   /** The forecast hour nearest the scene's clock, within three hours; the clock can be moved. */
   const applyWeather = () => {
-    const at = sky.state.date.getTime();
+    const at = sky.state.dateMs;
     weatherFor = at;
     let best: Hour | null = null; let bd = Infinity;
     for (const h of forecast) {
@@ -227,13 +238,10 @@ export function makeEarthWorld(renderer: THREE.WebGLRenderer, data: EarthData, l
     driving: () => driving,
     drive(dt, input, colliders) {
       traffic.movers(car.position.x, car.position.z, 30, carMovers);
-      const hits: Collider[] = colliders.concat(carMovers);
-      car.update(dt, input, {
-        floorAt: (x, z) => { const d = streets.deckAt(x, z); return Number.isNaN(d) ? heightAt(x, z) : Math.max(heightAt(x, z) - 0.5, d); },
-        pushOut: (pos, r) => city.pushOut(pos, r, false),
-        isWater: streets.isWater,
-        colliders: () => hits,
-      }, sky.state.night);
+      hits.length = 0;
+      for (const c of colliders) hits.push(c);
+      for (const m of carMovers) hits.push(m);
+      car.update(dt, input, carWorld, sky.state.night);
     },
     welcome: (x, z, faceX, faceZ) => people.welcome(x, z, faceX, faceZ),
     cheering: () => people.cheering(),
@@ -253,8 +261,10 @@ export function makeEarthWorld(renderer: THREE.WebGLRenderer, data: EarthData, l
     },
     update(dt, crew, heading, use, cameraPos, place) {
       sky.update(dt, cameraPos);
-      state.clock = tbilisiClock(sky.state.date);
-      if (forecast.length && Math.abs(sky.state.date.getTime() - weatherFor) > 20 * 60_000) applyWeather();
+      // The clock reads to the minute: the string is rebuilt when that changes, not every frame.
+      const minute = Math.floor(sky.state.dateMs / 60_000);
+      if (minute !== clockMinute) { clockMinute = minute; state.clock = tbilisiClock(sky.state.date); }
+      if (forecast.length && Math.abs(sky.state.dateMs - weatherFor) > 20 * 60_000) applyWeather();
       state.date = sky.state.date;
       state.sunAlt = sky.state.sunAlt;
       state.night = sky.state.night;
@@ -291,14 +301,15 @@ export function makeEarthWorld(renderer: THREE.WebGLRenderer, data: EarthData, l
 
       // ── The street: people make way for the pilot and the cars; the cars stop for both. ──
       movers.length = 0;
-      if (driving) movers.push({ x: car.position.x, z: car.position.z, vx: Math.sin(car.yaw) * car.speed, vz: Math.cos(car.yaw) * car.speed, r: 1.9 });
-      else movers.push({ x: crew.x, z: crew.z, vx: 0, vz: 0, r: 0.5 });
+      if (driving) { crewMover.x = car.position.x; crewMover.z = car.position.z; crewMover.vx = Math.sin(car.yaw) * car.speed; crewMover.vz = Math.cos(car.yaw) * car.speed; crewMover.r = 1.9; }
+      else { crewMover.x = crew.x; crewMover.z = crew.z; crewMover.vx = 0; crewMover.vz = 0; crewMover.r = 0.5; }
+      movers.push(crewMover);
       traffic.movers(crew.x, crew.z, 60, carMovers);
       for (const m of carMovers) movers.push(m);
       people.update(dt, crew.x, crew.z, movers);
       people.colliders(crew.x, crew.z, 120, nearPeople);
-      nearPeople.push(movers[0]);
-      if (!driving) nearPeople.push({ x: car.position.x, z: car.position.z, vx: 0, vz: 0, r: 1.9 });
+      nearPeople.push(crewMover);
+      if (!driving) { parkedCar.x = car.position.x; parkedCar.z = car.position.z; nearPeople.push(parkedCar); }
       traffic.update(dt, crew.x, crew.z, nearPeople, sky.state.night, floorAt);
       ambience.engine(driving ? Math.abs(car.speed) : -1);
       ambience.cheer(people.cheering());

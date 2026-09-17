@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Pause, Play, RotateCcw, X } from 'lucide-react';
 import { useFormatter, useTranslations } from 'next-intl';
-import { SolarSystemCanvas } from '@/components/solar-system/SolarSystemCanvas';
+import { SolarSystemCanvas, type EpochRef } from '@/components/solar-system/SolarSystemCanvas';
 import { PlayerShip } from '@/components/solar-system/PlayerShip';
 import { MoonSurface } from '@/components/solar-system/MoonSurface';
 import { WorldSurface } from '@/components/solar-system/WorldSurface';
@@ -39,7 +39,11 @@ export function GameWorld({ scene, state }: GameWorldProps) {
   const flightRef = useRef<FlightSession | null>(null);
   if (!flightRef.current) flightRef.current = createFlightSession({ combat: false });
   const session = flightRef.current;
-  const [epochMs, setEpochMs] = useState(() => Date.now());
+  // The clock the canvas reads is a mutable cell; React only sees it once a
+  // second, for the mini-clock, so ticking it never re-renders the deck.
+  const epochRef = useRef<EpochRef>({ current: Date.now() });
+  const epoch = epochRef.current;
+  const [clockMs, setClockMs] = useState(epoch.current);
   const [selectedId, setSelectedId] = useState<SolarBodyId | null>(null);
   const [playing, setPlaying] = useState(true);
   const [speedIdx, setSpeedIdx] = useState(2);
@@ -52,6 +56,10 @@ export function GameWorld({ scene, state }: GameWorldProps) {
   const zoomToSun = useCallback(() => { setSelectedId(null); setZoomTo(26); }, []);
   const consumeZoom = useCallback(() => setZoomTo(null), []);
   useEffect(() => { if (scene === 'orbit') setOrbitVisited(true); }, [scene]);
+  // The orbit canvas is torn down while a surface has the screen (its
+  // context, maps and galaxy layers would sit under the Moon's renderer) and
+  // rebuilt on the way back, so the loader waits for its first frame again.
+  useEffect(() => { if (landed !== null) setOrbitReady(false); }, [landed]);
   // Orbit: the canvas builds on mount and reports its first frame; the
   // screen then waits for the deck to have flown a little, or to be idle.
   useEffect(() => {
@@ -72,16 +80,18 @@ export function GameWorld({ scene, state }: GameWorldProps) {
   useEffect(() => {
     if (!playing || flightActive || landed !== null || paused) return;
     let last = performance.now();
+    let shown = last;
     let raf = 0;
     const tick = (now: number) => {
       const dt = Math.min(0.1, (now - last) / 1000);
       last = now;
-      setEpochMs((e) => e + SPEED_STEPS[speedIdx].rate * dt * 1000);
+      epoch.current += SPEED_STEPS[speedIdx].rate * dt * 1000;
+      if (now - shown >= 1000) { shown = now; setClockMs(epoch.current); }
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [playing, speedIdx, flightActive, landed, paused]);
+  }, [playing, speedIdx, flightActive, landed, paused, epoch]);
   const returnToOrbit = useCallback(() => game.travel('orbit'), []);
   const showChrome = !flightActive && landed === null;
 
@@ -92,14 +102,14 @@ export function GameWorld({ scene, state }: GameWorldProps) {
           <X size={20} aria-hidden />
         </button>
         <span className="solar-system__mini-clock">
-          {selectedId ? t(`bodies.${selectedId}.name`) : format.dateTime(new Date(epochMs), { month: 'short', day: 'numeric' })}
+          {selectedId ? t(`bodies.${selectedId}.name`) : format.dateTime(new Date(clockMs), { month: 'short', day: 'numeric' })}
         </span>
       </div>}
       <div className="solar-system__viewport solar-system__viewport--fill" data-rotate={landscape && flightActive ? 'cw' : undefined}>
         {orbitVisited && <>
-          <SolarSystemCanvas epochMs={epochMs} scaleMode="orrery" includePluto selectedId={selectedId} focusBodyId={selectedId}
-            onSelect={setSelectedId} onZoomToSun={zoomToSun} zoomTo={zoomTo} onZoomToConsumed={consumeZoom} flight={session} suspended={landed !== null}
-            onReady={onSceneReady} />
+          {landed === null && <SolarSystemCanvas epoch={epoch} scaleMode="orrery" includePluto selectedId={selectedId} focusBodyId={selectedId}
+            onSelect={setSelectedId} onZoomToSun={zoomToSun} zoomTo={zoomTo} onZoomToConsumed={consumeZoom} flight={session}
+            onReady={onSceneReady} />}
           <PlayerShip session={session} onActiveChange={setFlightActive} onLand={(site) => { setLandscape(false); game.travel(site); }} landed={landed !== null}
             landscape={landscape} onLandscape={setLandscape} shellPaused={paused} onPauseRequest={game.pause} />
         </>}
@@ -113,7 +123,7 @@ export function GameWorld({ scene, state }: GameWorldProps) {
         <button type="button" className="solar-system__chip solar-system__ratebtn" onClick={() => setSpeedIdx((i) => (i + 1) % SPEED_STEPS.length)} aria-label={t('time.speedAria')}>
           {t(`time.speed.${SPEED_STEPS[speedIdx].id}`)}
         </button>
-        <button type="button" className="solar-system__dockbtn" onClick={() => { setEpochMs(Date.now()); zoomToSun(); }} aria-label={t('time.now')}>
+        <button type="button" className="solar-system__dockbtn" onClick={() => { epoch.current = Date.now(); setClockMs(epoch.current); zoomToSun(); }} aria-label={t('time.now')}>
           <RotateCcw size={16} aria-hidden />
         </button>
       </div>}

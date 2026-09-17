@@ -10,7 +10,22 @@ export interface PrintsHandle {
   stamp: (x: number, y: number, z: number, yaw: number, side: number) => void;
   /** A wheel track segment: wider, shallower. */
   track: (x: number, y: number, z: number, yaw: number, width: number) => void;
+  /** How many prints stay before the oldest is recycled (the preset's cap, live). */
+  setCap: (n: number) => void;
   dispose: () => void;
+}
+
+// One boot drawing for every ring buffer on the surface, gone when the last one goes.
+let sharedBoot: THREE.CanvasTexture | null = null;
+let bootUsers = 0;
+function acquireBoot(): THREE.CanvasTexture {
+  bootUsers += 1;
+  if (!sharedBoot) sharedBoot = bootTexture();
+  return sharedBoot;
+}
+function releaseBoot() {
+  bootUsers -= 1;
+  if (bootUsers <= 0 && sharedBoot) { sharedBoot.dispose(); sharedBoot = null; bootUsers = 0; }
 }
 
 function bootTexture(): THREE.CanvasTexture {
@@ -40,31 +55,39 @@ function bootTexture(): THREE.CanvasTexture {
   return t;
 }
 
-export function makePrints(max: number): PrintsHandle {
+/** `max` decals are allocated and `cap` of them used. */
+export function makePrints(max: number, cap = max): PrintsHandle {
   const geom = new THREE.PlaneGeometry(0.19, 0.4);
   geom.rotateX(-Math.PI / 2);
-  const tex = bootTexture();
+  const tex = acquireBoot();
   const mat = new THREE.MeshStandardMaterial({
     map: tex, transparent: true, depthWrite: false, roughness: 1, metalness: 0,
     color: 0x111111, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2,
   });
   const mesh = new THREE.InstancedMesh(geom, mat, max);
   mesh.count = 0;
-  mesh.frustumCulled = false;
   mesh.receiveShadow = true;
   mesh.name = 'boot-prints';
+  // The prints are wherever the crew has been: a sphere that grows to hold them all.
+  mesh.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 1);
+  const bounds = new THREE.Box3();
   const m = new THREE.Matrix4(); const p = new THREE.Vector3(); const q = new THREE.Quaternion(); const s = new THREE.Vector3();
   const up = new THREE.Vector3(0, 1, 0);
   let head = 0;
+  let limit = Math.max(1, Math.min(max, cap));
   const put = (x: number, y: number, z: number, yaw: number, sx: number, sz: number) => {
     p.set(x, y + 0.012, z);
     q.setFromAxisAngle(up, yaw);
     s.set(sx, 1, sz);
     m.compose(p, q, s);
     mesh.setMatrixAt(head, m);
-    head = (head + 1) % max;
-    if (mesh.count < max) mesh.count += 1;
+    // Only the one decal goes up to the GPU, not the whole buffer.
+    mesh.instanceMatrix.addUpdateRange(head * 16, 16);
     mesh.instanceMatrix.needsUpdate = true;
+    head = (head + 1) % limit;
+    if (mesh.count < limit) mesh.count += 1;
+    bounds.expandByPoint(p);
+    bounds.getBoundingSphere(mesh.boundingSphere!).radius += Math.max(sx, sz) * 0.5;
   };
   return {
     mesh,
@@ -75,8 +98,13 @@ export function makePrints(max: number): PrintsHandle {
     track(x, y, z, yaw, width) {
       put(x, y, z, yaw, width / 0.16, 1.4);
     },
+    setCap(n) {
+      limit = Math.max(1, Math.min(max, Math.round(n)));
+      if (head >= limit) head = 0;
+      if (mesh.count > limit) mesh.count = limit;
+    },
     dispose() {
-      geom.dispose(); mat.dispose(); tex.dispose(); mesh.dispose();
+      geom.dispose(); mat.dispose(); releaseBoot(); mesh.dispose();
     },
   };
 }

@@ -4,6 +4,10 @@
 // Backrooms it becomes a cheap camcorder: heavier bloom off the panels, colour
 // fringing across the frame, lines that do not quite hold still, a tracking
 // smear at the bottom, a sick yellow-green cast. It can also fade to black.
+//
+// The scene is drawn into the composer's own target, so that is where the
+// anti-aliasing has to live: MSAA samples on the target, by preset. Bloom is
+// a blur, so it runs at half resolution and can be dropped altogether.
 
 import * as THREE from 'three';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
@@ -12,6 +16,14 @@ import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPa
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 
+/** What the post chain takes from a quality preset. */
+export interface PostQuality {
+  bloom: boolean;
+  bloomScale: number;
+  msaa: number;
+  lite: boolean;
+}
+
 export interface MoonPostHandle {
   render: (dt: number) => void;
   setSize: (w: number, h: number) => void;
@@ -19,10 +31,14 @@ export interface MoonPostHandle {
   setHelmet: (k: number) => void;
   /** Draw a different scene through the same passes. */
   setScene: (scene: THREE.Scene) => void;
+  /** The scene being drawn. */
+  scene: () => THREE.Scene;
   /** 0 the Moon, 1 the Backrooms' camcorder look. */
   setBackrooms: (k: number) => void;
   /** 0…1 fade to black. */
   setBlack: (k: number) => void;
+  /** A new preset: bloom on or off, and the samples on the target. */
+  setQuality: (q: PostQuality) => void;
   dispose: () => void;
 }
 
@@ -76,13 +92,15 @@ const FilmShader = {
     }`,
 };
 
-export function makeMoonPost(renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE.Camera, lite: boolean): MoonPostHandle {
-  const composer = new EffectComposer(renderer);
+export function makeMoonPost(renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE.Camera, quality: PostQuality): MoonPostHandle {
   const size = renderer.getSize(new THREE.Vector2());
-  // Bloom is a blur: at half resolution it looks the same and costs a quarter.
-  const bloomScale = 0.5;
+  const pr = renderer.getPixelRatio();
+  const target = new THREE.WebGLRenderTarget(size.x * pr, size.y * pr, { type: THREE.HalfFloatType, samples: quality.msaa });
+  const composer = new EffectComposer(renderer, target);
+  let q = quality;
   const renderPass = new RenderPass(scene, camera);
-  const bloom = new UnrealBloomPass(new THREE.Vector2(size.x * bloomScale, size.y * bloomScale), 0.35, 0.6, 0.9);
+  const bloom = new UnrealBloomPass(new THREE.Vector2(size.x * q.bloomScale, size.y * q.bloomScale), 0.35, 0.6, 0.9);
+  bloom.enabled = q.bloom;
   const film = new ShaderPass(FilmShader);
   const output = new OutputPass();
   composer.addPass(renderPass);
@@ -94,10 +112,10 @@ export function makeMoonPost(renderer: THREE.WebGLRenderer, scene: THREE.Scene, 
   let helmetTarget = 0;
   let back = 0;
   const setSize = (w: number, h: number) => {
-    const pr = renderer.getPixelRatio();
-    composer.setPixelRatio(pr);
+    const ratio = renderer.getPixelRatio();
+    composer.setPixelRatio(ratio);
     composer.setSize(w, h);
-    bloom.setSize(w * pr * bloomScale, h * pr * bloomScale);
+    bloom.setSize(w * ratio * q.bloomScale, h * ratio * q.bloomScale);
   };
   setSize(size.x, size.y);
   return {
@@ -106,7 +124,7 @@ export function makeMoonPost(renderer: THREE.WebGLRenderer, scene: THREE.Scene, 
       helmet += (helmetTarget - helmet) * (1 - Math.exp(-dt * 6));
       film.uniforms.uTime.value = time % 100;
       film.uniforms.uHelmet.value = helmet;
-      film.uniforms.uGrain.value = lite ? 0.03 : 0.045;
+      film.uniforms.uGrain.value = q.lite ? 0.03 : 0.045;
       film.uniforms.uBack.value = back;
       bloom.strength = 0.35 + back * 0.3;
       bloom.threshold = 0.9 - back * 0.05;
@@ -115,8 +133,19 @@ export function makeMoonPost(renderer: THREE.WebGLRenderer, scene: THREE.Scene, 
     setSize,
     setHelmet(k) { helmetTarget = k; },
     setScene(next) { renderPass.scene = next; },
+    scene: () => renderPass.scene as THREE.Scene,
     setBackrooms(k) { back = k; },
     setBlack(k) { film.uniforms.uBlack.value = k; },
+    setQuality(next) {
+      q = next;
+      bloom.enabled = q.bloom;
+      // The targets keep their sample count from creation: drop them and
+      // they come back at the new one on the next frame.
+      for (const rt of [composer.renderTarget1, composer.renderTarget2]) {
+        rt.samples = q.msaa;
+        rt.dispose();
+      }
+    },
     dispose() {
       renderPass.dispose(); bloom.dispose(); film.dispose(); output.dispose(); composer.dispose();
     },

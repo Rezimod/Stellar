@@ -29,7 +29,8 @@ function useDrivePaint(session: FlightSession, paint: (tel: FlightSession['telem
     let last = 0;
     const tick = (now: number) => {
       raf = requestAnimationFrame(tick);
-      if (now - last < 100) return;
+      // Nothing moves while the deck is idle, paused, landed or in a hidden tab.
+      if (now - last < 100 || !session.active || session.paused || document.hidden) return;
       last = now;
       ref.current(session.telemetry);
     };

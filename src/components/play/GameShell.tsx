@@ -25,6 +25,13 @@ function sceneFromQuery(): GameScene | undefined {
   return isGameScene(site) ? site : undefined;
 }
 
+declare global {
+  interface Window {
+    /** Development only: lets a headless run drive the game's states. */
+    __stellarGame?: typeof game;
+  }
+}
+
 export default function GameShell() {
   const snap = useSyncExternalStore(game.subscribe, game.get, game.get);
   const t = useTranslations('play');
@@ -35,6 +42,7 @@ export default function GameShell() {
   useEffect(() => {
     document.body.setAttribute('data-solar-immersive', '1');
     game.boot(sceneFromQuery());
+    if (process.env.NODE_ENV !== 'production') window.__stellarGame = game;
     void registerServiceWorker();
     const root = rootRef.current;
     const detach = root ? attachConsoleGuards(root) : undefined;

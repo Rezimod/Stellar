@@ -978,53 +978,37 @@ Later phases pull their work from here. A finding that spans phases appears unde
 
 ### Phase 1 — performance foundation
 Measurement and lifecycle first, because later numbers depend on them:
-- [ ] C01 / E12 (P1): the surface `release()` must dispose the sun shadow map, call `forceContextLoss()` and dispose the World PMREM target (E13).
-- [ ] A04 (P1): free the orrery context while landed, or at least release its 4K maps (A03).
-- [ ] C11 (P2): reset perf `lastNow` on tab return, and include `compileAsync` in `buildMs`.
-- [ ] E20 (P2): extract a shared surface host (renderer, loop, visibility, context loss, compile, release) so these fixes land once, not twice.
-- [ ] C15 (P3): account for the module-level canvas caches. Take the memory baseline after the first enter.
+- [x] C01 / E12 (P1): `surface-host.ts` owns `release()`: the sun's shadow map, the pool lights, the post chain, the environment and the renderer go, then `forceContextLoss()`. The Moon's and the worlds' PMREM render targets are kept and disposed (E13).
+- [x] A04 (P1): `GameWorld` unmounts the orbit canvas while a surface is open (its cleanup disposes every map, 4K included, and drops the context); it is rebuilt on the way back and the loader waits for its first frame.
+- [x] C11 (P2): `perf.resume()` clears `lastNow` on tab return and unpause; `buildMs` is set after `compileAsync` settles.
+- [x] E20 (P2): `src/lib/solar-system/surface-host.ts` — renderer, camera, sun + shadow box, light pool, post, perf + governor, live preset, loop, visibility, pause, context loss, compile, release. Both surfaces run on it.
+- [x] C15 (P3): `scripts/explore-memtest.mjs` judges the trend from the second exit on.
 
 React and allocations:
-- [ ] A01 (P1): move the orrery epoch clock into a ref or store, and update the UI clock at about 1 Hz.
-- [ ] B06 (P2): the FlightDrive paint loops need a landed/paused guard.
-- [ ] Remove per-frame allocations:
-  - Moon: C04, C05, C18, D22, D23.
+- [x] A01 (P1): the epoch is a mutable `EpochRef` the canvas reads; the mini-clock re-renders at 1 Hz.
+- [x] B06 (P2): `useDrivePaint` skips while the session is inactive, paused or the tab hidden.
+- [x] Per-frame allocations removed:
+  - Moon: C04 (hoisted lander input, interaction / mission / airlock contexts, chase target + tunings), C05 (`seatSpotInto`, one `FootStick`), C18 (one `grain` per lander), D22 (`slopeAt` scratch), D23 (`nearHab` loop).
   - Orrery and flight: A13, A17, B07, B08.
-  - World: E04, E05, E06.
-  - Earth city and street hashes: E01 (P1), E02 (P1).
-- [ ] A02 (P1): stop the belts' full CPU recompute and upload each frame. Skip it when the epoch is unchanged, or move it to the GPU.
-- [ ] E14 / E15: spores and the Mars flag update every frame at any distance.
+  - World: E04 (scratch collider arrays), E05, E06.
+  - Earth city and street hashes: E01, E02 (numeric `cellKey`, pooled camera colliders).
+- [x] A02 (P1): belts, small bodies, moons, comet, rings and probes update only when the epoch moved.
+- [x] E14 / E15: spores drift in the vertex shader; the Mars flag and greenhouse light work within 60 m.
 
 Draw calls, lights, textures:
-- [ ] C10 (P2): update the shadow map only when the snap target moves a texel, or throttle it by preset.
-- [ ] Shared lights:
-  - B03 (P2): the ship's PointLight.
-  - A12 (P2): Alpha Centauri and Gargantua lights while in Sol.
-  - D09 (P2): the rover SpotLight should come from the pool.
-  - D19 (P3): the pool keeps the first 12 requests, not the strongest.
-- [ ] Draws that cost for nothing:
-  - A08 (P2): invisible pick spheres.
-  - B11 (P3): RCS sprites at opacity 0.
-  - A23 (P3): near-zero directional lights.
-  - B21 (P3): alien meshes unmerged.
-  - C19 (P3): `frustumCulled=false` on prints and dust.
-  - E10 (P2): traffic and people instanced meshes never culled.
-  - E11 (P2): villagers with a material each.
-- [ ] C02 / A11 (P1/P2): the composer renders into a non-MSAA target. Pick MSAA samples or FXAA per preset, and drop the wasted `antialias`.
-- [ ] Oversized textures:
-  - C09: the Moon's Earth maps are 2048².
-  - E24: the Earth-sky `moon.jpg` is 2048².
-  - A03: the orrery's 4K maps are never released.
-- [ ] Main-thread hitches:
-  - A09: Milky Way disk painting.
-  - E08: the Earth PMREM refresh.
-  - E09: lazy terrain and city LOD builds.
-  - E03 (P1): Earth compiles before its environment is set.
-- [ ] D08 / C20: a parked rover should sleep.
-- [ ] C16: prints duplicate their texture, and the fixed-step loop is copy-pasted.
-- [ ] A18: star drift is frame-rate dependent.
-- [ ] A24: the hidden loader is never unmounted.
-- [ ] C08 / E19 (P2): **quality presets** module (`performance | balanced | high`), replacing the `max-width: 768px` `lite` flag in both surfaces. The governor stays as the safety net.
+- [ ] C10 (P2): shadow map size and box follow the preset; the map still redraws every frame. `TODO(explore-slice)`: a static/dynamic split arrives with the Phase 4 cascades.
+- [x] Shared lights: B03 (one `shipFill` light in the canvas, reparented while flying), A12 (Alpha Cen / Gargantua only in their system or during the jump), D09 (the rover's headlight is a pool request), D19 (the pool keeps the strongest twelve).
+- [x] Draws that cost for nothing: A08 (hit spheres on layer 1), B11, A23, B21, C19 (dust and prints carry bounding spheres and cull; prints upload one decal at a time), E10, E11 (one skin material; the pivot count stays — a Phase 5/8 item).
+- [x] C02 / A11: both composers draw into a HalfFloat target with MSAA samples from the preset (`high` = 4); `antialias` is off on the renderers.
+- [x] Oversized textures: C09 (`earth-1k.jpg`, `earth-clouds-1k.jpg`, 32×20 spheres), E24 (`moon-512.jpg`), A03 (the maps go with the canvas while landed).
+- [ ] Main-thread hitches: E03 fixed (Earth's environment is set before the compile). A09, E08, E09 remain → Phase 4 (A09 with the sky pass) and Phase 11 (E08/E09 with the mobile budget).
+- [x] D08 / C20: a parked rover skips its ground samples, collider scan and spring; the camera's collider list is unchanged.
+- [ ] C16: prints share one boot texture (ref-counted). The fixed-step loop is still written twice (surface and underground) → Phase 9 when the underground path is revisited.
+- [x] A18: star drift scales with `dt`.
+- [x] A24: the guide unmounts its loader once the scene is up.
+- [x] C08 / E19 (P2): `src/game/quality.ts` — `performance | balanced | high`, auto-detected from GPU string, cores, touch, width and memory; drives pixel ratio, shadow map + box, bloom, MSAA, dust / print caps (live), star counts, rock density (next build). Both surfaces read it through the host; `lite` = `performance`. The governor stays underneath.
+
+Draw calls after this phase (probe, DPR 1, 1280×800): orrery 195 → 153, flight 189 → 90, Moon lander 569 → 387, Moon base 535 → 368, Mars 305 → 207. The cosmonaut is still ~114 of every surface frame (D11 → Phase 3); the base ~200 (rover 59 → Phase 8; kit pieces → Phase 5).
 
 ### Phase 2 — movement feel + camera
 - [ ] C06 (P2): the camera springs (explicit Euler on frame dt) overshoot on a hitch. Use sub-steps or an analytic spring.

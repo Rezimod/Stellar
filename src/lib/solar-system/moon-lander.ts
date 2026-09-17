@@ -14,7 +14,7 @@
 // pilot is playing for is the touchdown speed on the plaque afterwards.
 
 import * as THREE from 'three';
-import { MOON_G, type DustHandle } from '@/lib/solar-system/moon-fx';
+import { MOON_G, type DustBurst, type DustHandle } from '@/lib/solar-system/moon-fx';
 import { keep, mergeStatic } from '@/lib/solar-system/moon-batch';
 import type { LightPool } from '@/lib/solar-system/moon-lights';
 
@@ -169,6 +169,7 @@ export function makeLander(
   };
   let flicker = 0;
   let dustAcc = 0;
+  const grain: DustBurst = { x: 0, y: 0, z: 0, count: 1, speedMin: 2, speedMax: 4, cone: 1.5, size: 0.15, dirX: 0, dirZ: 0, bias: 2.4 };
 
   const handle: LanderHandle = {
     group, telemetry, position, yaw: 0,
@@ -194,11 +195,10 @@ export function makeLander(
           dustAcc -= 1;
           const a = Math.random() * Math.PI * 2;
           const r = 1.5 + Math.random() * (3 + blast * 10);
-          dust.burst({
-            x: position.x + Math.cos(a) * r, y: g2, z: position.z + Math.sin(a) * r,
-            count: 1, speedMin: 2, speedMax: 4 + blast * 9, cone: 1.5, size: 0.15,
-            dirX: Math.cos(a), dirZ: Math.sin(a), bias: 2.4 + blast * 2,
-          });
+          grain.x = position.x + Math.cos(a) * r; grain.y = g2; grain.z = position.z + Math.sin(a) * r;
+          grain.count = 1; grain.speedMin = 2; grain.speedMax = 4 + blast * 9; grain.cone = 1.5; grain.size = 0.15;
+          grain.dirX = Math.cos(a); grain.dirZ = Math.sin(a); grain.bias = 2.4 + blast * 2;
+          dust.burst(grain);
         }
         telemetry.altitude = Math.max(0, alt - TOUCH);
         telemetry.descent = -vel.y;
@@ -263,11 +263,10 @@ export function makeLander(
         // The pads throw a ring of dust out from under the vehicle.
         for (let i = 0; i < 26; i++) {
           const a = Math.random() * Math.PI * 2;
-          dust.burst({
-            x: position.x + Math.cos(a) * 2.6, y: g2, z: position.z + Math.sin(a) * 2.6,
-            count: 3, speedMin: 1.4, speedMax: 5.5, cone: 1.45, size: 0.17,
-            dirX: Math.cos(a), dirZ: Math.sin(a), bias: 2.6,
-          });
+          grain.x = position.x + Math.cos(a) * 2.6; grain.y = g2; grain.z = position.z + Math.sin(a) * 2.6;
+          grain.count = 3; grain.speedMin = 1.4; grain.speedMax = 5.5; grain.cone = 1.45; grain.size = 0.17;
+          grain.dirX = Math.cos(a); grain.dirZ = Math.sin(a); grain.bias = 2.6;
+          dust.burst(grain);
         }
         telemetry.egressX = position.x;
         telemetry.egressZ = position.z + 6.5;
@@ -287,11 +286,10 @@ export function makeLander(
         dustAcc -= 1;
         const a = Math.random() * Math.PI * 2;
         const r = 1.5 + Math.random() * (3 + blast * 9);
-        dust.burst({
-          x: position.x + Math.cos(a) * r, y: g2, z: position.z + Math.sin(a) * r,
-          count: 1, speedMin: 1.5, speedMax: 3 + blast * 9, cone: 1.5, size: 0.14,
-          dirX: Math.cos(a), dirZ: Math.sin(a), bias: 2.2 + blast * 2,
-        });
+        grain.x = position.x + Math.cos(a) * r; grain.y = g2; grain.z = position.z + Math.sin(a) * r;
+        grain.count = 1; grain.speedMin = 1.5; grain.speedMax = 3 + blast * 9; grain.cone = 1.5; grain.size = 0.14;
+        grain.dirX = Math.cos(a); grain.dirZ = Math.sin(a); grain.bias = 2.2 + blast * 2;
+        dust.burst(grain);
       }
       // The vehicle leans a touch into the translation it is asking for.
       group.rotation.z += (-tx * 0.06 - group.rotation.z) * (1 - Math.exp(-dt * 3));

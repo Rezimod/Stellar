@@ -450,7 +450,7 @@ export function makeMoonBase(
   // Fold the outpost into a few draw calls per material. The rover's
   // articulated parts, the array heads, the dish and the airlock doors keep moving.
   rover.traverse((o) => { if ((o as THREE.Group).isGroup) pivot(o); });
-  const merged = mergeStatic(group, { cell: 24, minCaster: 0.15 });
+  const merged = mergeStatic(group, { cell: 48, minCaster: 0.3 });
 
   const spawn = new THREE.Vector3(px, heightAt(px, pz + 4), pz + 4);
   const roverPoi = pois.find((p) => p.id === 'rover')!;

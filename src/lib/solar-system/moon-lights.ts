@@ -26,18 +26,33 @@ export function makeLightPool(count: number): LightPool {
   }
   const reqs = Array.from({ length: MAX_REQUESTS }, () => ({ x: 0, y: 0, z: 0, color: 0, intensity: 0, distance: 0, decay: 1.6, score: 0 }));
   let n = 0;
+  // Where the crew was at the last flush: a request is scored on arrival, so
+  // when the slots are full the weakest one goes, not the newest.
+  let lx = 0; let ly = 0; let lz = 0;
+  const score = (x: number, y: number, z: number, intensity: number, distance: number) =>
+    intensity / (1 + ((x - lx) ** 2 + (y - ly) ** 2 + (z - lz) ** 2) / (distance * distance));
   return {
     lights,
     request(x, y, z, color, intensity, distance, decay = 1.6) {
-      if (intensity <= 0.001 || n >= MAX_REQUESTS) return;
-      const r = reqs[n++];
-      r.x = x; r.y = y; r.z = z; r.color = color; r.intensity = intensity; r.distance = distance; r.decay = decay;
+      if (intensity <= 0.001) return;
+      const sc = score(x, y, z, intensity, distance);
+      let slot = n;
+      if (n >= MAX_REQUESTS) {
+        let weakest = 0;
+        for (let i = 1; i < n; i++) if (reqs[i].score < reqs[weakest].score) weakest = i;
+        if (reqs[weakest].score >= sc) return;
+        slot = weakest;
+      } else {
+        n += 1;
+      }
+      const r = reqs[slot];
+      r.x = x; r.y = y; r.z = z; r.color = color; r.intensity = intensity; r.distance = distance; r.decay = decay; r.score = sc;
     },
     flush(cx, cy, cz) {
+      lx = cx; ly = cy; lz = cz;
       for (let i = 0; i < n; i++) {
         const r = reqs[i];
-        const d2 = (r.x - cx) ** 2 + (r.y - cy) ** 2 + (r.z - cz) ** 2;
-        r.score = r.intensity / (1 + d2 / (r.distance * r.distance));
+        r.score = score(r.x, r.y, r.z, r.intensity, r.distance);
       }
       for (let k = 0; k < lights.length; k++) {
         let best = -1;

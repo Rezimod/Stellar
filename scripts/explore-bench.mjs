@@ -121,7 +121,7 @@ const hookPerf = (page, h) => page.evaluate((h) => {
 const SCENARIOS = {
   async a(page) {
     await page.goto(`${BASE}/solar-system`, { waitUntil: 'commit', timeout: 300_000 });
-    await waitFor(page, () => !!document.querySelector('.solar-system__loader.is-done') && !!document.querySelector('canvas'));
+    await waitFor(page, () => (!document.querySelector('.solar-system__loader') || !!document.querySelector('.solar-system__loader.is-done')) && !!document.querySelector('canvas'));
     await page.waitForTimeout(4000);
     return measure(page, 'a-orrery');
   },

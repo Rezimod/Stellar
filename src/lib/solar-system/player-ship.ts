@@ -790,6 +790,10 @@ function makeCrashFx(): CrashFx {
 
 export interface PlayerShipHandle {
   group: THREE.Group;
+  /** Where the scene's fill light rides: above and behind the hull, where the
+   *  chase camera sits, so the airframe reads as a machine against black. */
+  fillAnchor: THREE.Object3D;
+  fillDistance: number;
   /** Bolts fly in world space — add this to the scene beside `group`. */
   boltGroup: THREE.Group;
   /** World-space effects: speed streaks, the hyperspace glow, crash debris, the suit. */
@@ -846,6 +850,10 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
   tel.discoveryTotal = missions.total;
   tel.discoveryCount = missions.count();
   audio.launch();
+
+  const fillAnchor = new THREE.Object3D();
+  fillAnchor.position.set(0, 7 * H, -9 * H);
+  group.add(fillAnchor);
 
   const fxGroup = new THREE.Group();
   fxGroup.name = 'playerFx';
@@ -1505,6 +1513,8 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
 
   return {
     group,
+    fillAnchor,
+    fillDistance: 80 * H,
     boltGroup,
     fxGroup,
     spawn,
@@ -2086,6 +2096,8 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
         const k = Math.max(0, j.yaw * rcsYaw + j.pitch * rcsPitch + j.roll * rcsRoll + j.brake * rcsBrake);
         const target = Math.min(1, k) * (pilot === 'ship' && jumpPhase === 'none' ? 0.9 : 0);
         j.mat.opacity += (target - j.mat.opacity) * (1 - Math.exp(-dt * (target > j.mat.opacity ? 30 : 12)));
+        // An invisible puff is still a transparent draw unless it is hidden.
+        j.sprite.visible = j.mat.opacity > 0.01;
       }
       vibe = tel.boost ? 1 : thrusting ? 0.35 : 0;
       const shiver = vibe * 0.05 * H;

@@ -32,7 +32,9 @@ const MAX_ADAPT = 2.2e4;
 const DOME = 1800;
 
 export interface SkyState {
+  /** The scene's clock, refreshed about once a second of scene time; `dateMs` is exact every frame. */
   date: Date;
+  dateMs: number;
   sunDir: THREE.Vector3;
   sunAlt: number;
   moonDir: THREE.Vector3;
@@ -196,7 +198,7 @@ export function makeEarthSky(renderer: THREE.WebGLRenderer, lite: boolean, start
   moon.frustumCulled = false;
   group.add(moon);
   let cancelled = false;
-  new THREE.TextureLoader().load('/solar-system/planets/moon.jpg', (tex) => {
+  new THREE.TextureLoader().load('/solar-system/planets/moon-512.jpg', (tex) => {
     if (cancelled) { tex.dispose(); return; }
     tex.colorSpace = THREE.SRGBColorSpace;
     moonUniforms.uMap.value = tex; moonUniforms.uHasMap.value = 1;
@@ -215,7 +217,7 @@ export function makeEarthSky(renderer: THREE.WebGLRenderer, lite: boolean, start
   let envTarget: THREE.WebGLRenderTarget | null = null;
 
   const state: SkyState = {
-    date: new Date(start), sunDir: new THREE.Vector3(), sunAlt: 0, moonDir: new THREE.Vector3(), moonAlt: 0, moonFraction: 0,
+    date: new Date(start), dateMs: start.getTime(), sunDir: new THREE.Vector3(), sunAlt: 0, moonDir: new THREE.Vector3(), moonAlt: 0, moonFraction: 0,
     keyDir: new THREE.Vector3(0, 1, 0), keyColor: new THREE.Color(), keyIntensity: 0,
     hemiSky: new THREE.Color(), hemiGround: new THREE.Color(), hemiIntensity: 0, night: 0, adapt: 1, limitMag: 0, cloud: 0, visibility: 30000,
   };
@@ -231,6 +233,8 @@ export function makeEarthSky(renderer: THREE.WebGLRenderer, lite: boolean, start
   let bakeRow = LUT_EL; let bakeTarget: 'sun' | 'moon' = 'sun'; let bakeAlt = 0; let bakeMs = 0;
   let starsAt = -1e12; let envAt = -1e12; let envAdapt = 0;
   let clock = 0;
+  /** When the Date object and the Sun/Moon altitude checks last ran, scene ms. */
+  let tickedAt = -1e12;
 
   const upload = (which: 'sun' | 'moon') => {
     const tex = which === 'sun' ? sunLut : moonLut;
@@ -396,6 +400,8 @@ export function makeEarthSky(renderer: THREE.WebGLRenderer, lite: boolean, start
 
   handle.setDate = (date) => {
     state.date = new Date(date);
+    state.dateMs = state.date.getTime();
+    tickedAt = state.dateMs;
     const s = bodyAzAlt(Body.Sun, state.date).alt;
     const m = bodyAzAlt(Body.Moon, state.date).alt;
     bakeNow('sun', s);
@@ -417,14 +423,18 @@ export function makeEarthSky(renderer: THREE.WebGLRenderer, lite: boolean, start
   handle.update = (dt, cameraPos) => {
     clock += dt;
     uniforms.uTime.value = clock;
-    state.date = new Date(state.date.getTime() + dt * 1000);
+    state.dateMs += dt * 1000;
     group.position.copy(cameraPos);
-    // A light that has moved re-bakes its table a few rows a frame.
-    if (bakeRow >= LUT_EL) {
-      const s = bodyAzAlt(Body.Sun, state.date).alt;
-      const m = bodyAzAlt(Body.Moon, state.date).alt;
-      if (Math.abs(s - bakedSunAlt) > 0.12) { bakeTarget = 'sun'; bakeAlt = s; bakeRow = 0; bakeMs = multipleScattering((s * Math.PI) / 180, air); }
-      else if (Math.abs(m - bakedMoonAlt) > 0.5) { bakeTarget = 'moon'; bakeAlt = m; bakeRow = 0; bakeMs = multipleScattering((m * Math.PI) / 180, air); }
+    // Once a second: the Date the rest of the scene reads, and whether a light has moved enough to re-bake its table (a few rows a frame).
+    if (state.dateMs - tickedAt >= 1000) {
+      tickedAt = state.dateMs;
+      state.date = new Date(state.dateMs);
+      if (bakeRow >= LUT_EL) {
+        const s = bodyAzAlt(Body.Sun, state.date).alt;
+        const m = bodyAzAlt(Body.Moon, state.date).alt;
+        if (Math.abs(s - bakedSunAlt) > 0.12) { bakeTarget = 'sun'; bakeAlt = s; bakeRow = 0; bakeMs = multipleScattering((s * Math.PI) / 180, air); }
+        else if (Math.abs(m - bakedMoonAlt) > 0.5) { bakeTarget = 'moon'; bakeAlt = m; bakeRow = 0; bakeMs = multipleScattering((m * Math.PI) / 180, air); }
+      }
     }
     if (bakeRow < LUT_EL) {
       const to = Math.min(LUT_EL, bakeRow + 3);
@@ -436,7 +446,7 @@ export function makeEarthSky(renderer: THREE.WebGLRenderer, lite: boolean, start
         derive();
       }
     }
-    const now = state.date.getTime();
+    const now = state.dateMs;
     if (now - starsAt > 4000) { starsAt = now; derive(); refreshStars(); }
     if (now - envAt > 120000 || Math.abs(Math.log(state.adapt / Math.max(envAdapt, 1e-6))) > 0.4) { envAt = now; refreshEnv(); }
   };

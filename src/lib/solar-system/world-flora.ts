@@ -254,10 +254,23 @@ export function makeFlora(profile: WorldProfile, terrain: WorldTerrain, lite: bo
   sporeGeom.setAttribute('position', new THREE.BufferAttribute(sporePos, 3));
   sporeGeom.setAttribute('color', new THREE.BufferAttribute(sporeCol, 3));
   geoms.push(sporeGeom);
+  sporeGeom.setAttribute('aSeed', new THREE.BufferAttribute(sporeSeed, 1));
+  // The drift is a pure function of time and each spore's seed, so the GPU integrates it: nothing is uploaded after the build.
   const sporeMat = new THREE.PointsMaterial({ map: softSpriteTexture(), size: 0.22, vertexColors: true, transparent: true, opacity: 0.9, depthWrite: false, blending: THREE.AdditiveBlending });
+  sporeMat.onBeforeCompile = (shader) => {
+    shader.uniforms.uTime = clock;
+    shader.vertexShader = shader.vertexShader
+      .replace('#include <common>', '#include <common>\nuniform float uTime; attribute float aSeed;')
+      .replace('#include <begin_vertex>', `#include <begin_vertex>
+        transformed.x += sin(uTime * 0.3 + aSeed) * 1.3;
+        transformed.y += sin(uTime * 0.5 + aSeed * 1.3) * 0.5;
+        transformed.z += sin(uTime * 0.27 + aSeed * 0.7) * 1.5;`);
+  };
+  sporeMat.customProgramCacheKey = () => 'proxima-spores';
   mats.push(sporeMat);
   const spores = new THREE.Points(sporeGeom, sporeMat);
-  spores.frustumCulled = false;
+  sporeGeom.computeBoundingSphere();
+  sporeGeom.boundingSphere!.radius += 2;
   group.add(spores);
 
   // ── The settlement: grown pods with lit doors round the council stone. ──
@@ -317,18 +330,10 @@ export function makeFlora(profile: WorldProfile, terrain: WorldTerrain, lite: bo
     pois.push({ id: 'stone', x: village.stone.x, z: village.stone.z, r: 5 });
   }
 
-  const sporeAttr = sporeGeom.attributes.position as THREE.BufferAttribute;
   return {
     group, colliders, pois, village,
-    update(dt, t) {
+    update(_dt, t) {
       clock.value = t;
-      for (let i = 0; i < sporeCount; i++) {
-        const sd = sporeSeed[i];
-        sporePos[i * 3] += Math.sin(t * 0.3 + sd) * dt * 0.4;
-        sporePos[i * 3 + 1] += Math.cos(t * 0.5 + sd * 1.3) * dt * 0.25;
-        sporePos[i * 3 + 2] += Math.cos(t * 0.27 + sd * 0.7) * dt * 0.4;
-      }
-      sporeAttr.needsUpdate = true;
     },
     dispose() {
       for (const g of geoms) g.dispose();

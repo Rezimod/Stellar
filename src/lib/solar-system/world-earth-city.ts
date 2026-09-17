@@ -36,6 +36,9 @@ const NEAR = 900;
 const FAR = 2600;
 const SEG_CELL = 24;
 
+/** One integer for a grid cell: the spatial hashes below never build a string per lookup. */
+export const cellKey = (i: number, j: number) => (i + 4096) * 8192 + (j + 4096);
+
 const hash1 = (n: number) => {
   let v = Math.imul(n ^ 0x9e3779b9, 0x85ebca6b);
   v = Math.imul(v ^ (v >>> 13), 0xc2b2ae35);
@@ -361,34 +364,37 @@ export function makeCity(
   }
 
   // ── Walls for walking into: segments hashed on a grid. ──
-  const segs = new Map<string, { ax: number; az: number; bx: number; bz: number; rooftop: boolean }[]>();
+  interface Seg { ax: number; az: number; bx: number; bz: number; rooftop: boolean; /** Last camera query that took it: a Set-free "seen". */ stamp: number }
+  const segs = new Map<number, Seg[]>();
   const addSeg = (ax: number, az: number, bx: number, bz: number, rooftop: boolean) => {
-    const s = { ax, az, bx, bz, rooftop };
+    const s: Seg = { ax, az, bx, bz, rooftop, stamp: 0 };
     const i0 = Math.floor(Math.min(ax, bx) / SEG_CELL); const i1 = Math.floor(Math.max(ax, bx) / SEG_CELL);
     const j0 = Math.floor(Math.min(az, bz) / SEG_CELL); const j1 = Math.floor(Math.max(az, bz) / SEG_CELL);
     for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) {
-      const k = `${i},${j}`;
-      if (!segs.has(k)) segs.set(k, []);
-      segs.get(k)!.push(s);
+      const k = cellKey(i, j);
+      let list = segs.get(k);
+      if (!list) { list = []; segs.set(k, list); }
+      list.push(s);
     }
   };
-  const footprints = new Map<string, Prepared[]>();
+  const footprints = new Map<number, Prepared[]>();
   for (const p of prepared) {
     if (Math.hypot(p.c[0], p.c[1]) > 2300) continue;
     for (const ring of [p.outer, ...p.holes]) for (let k = 0; k < ring.length; k++) {
       const [ax, az] = ring[k]; const [bx, bz] = ring[(k + 1) % ring.length];
       addSeg(ax, az, bx, bz, p.b.rooftop);
     }
-    const key = `${Math.floor(p.c[0] / 60)},${Math.floor(p.c[1] / 60)}`;
-    if (!footprints.has(key)) footprints.set(key, []);
-    footprints.get(key)!.push(p);
+    const key = cellKey(Math.floor(p.c[0] / 60), Math.floor(p.c[1] / 60));
+    let list = footprints.get(key);
+    if (!list) { list = []; footprints.set(key, list); }
+    list.push(p);
   }
   const nearFootprints = (x: number, z: number, out: Prepared[]) => {
     out.length = 0;
     const i = Math.floor(x / 60); const j = Math.floor(z / 60);
     for (let dj = -2; dj <= 2; dj++) for (let di = -2; di <= 2; di++) {
-      const l = footprints.get(`${i + di},${j + dj}`);
-      if (l) out.push(...l);
+      const l = footprints.get(cellKey(i + di, j + dj));
+      if (l) for (const p of l) out.push(p);
     }
     return out;
   };
@@ -417,6 +423,10 @@ export function makeCity(
   }
 
   let t = 0;
+  const camPool: { x: number; z: number; r: number }[] = [];
+  const camOut: { x: number; z: number; r: number }[] = [];
+  let camCell = NaN;
+  let camStamp = 0;
   return {
     group,
     rooftop,
@@ -424,7 +434,7 @@ export function makeCity(
       const i = Math.floor(pos.x / SEG_CELL); const j = Math.floor(pos.z / SEG_CELL);
       let moved = false;
       for (let dj = -1; dj <= 1; dj++) for (let di = -1; di <= 1; di++) {
-        const list = segs.get(`${i + di},${j + dj}`);
+        const list = segs.get(cellKey(i + di, j + dj));
         if (!list) continue;
         for (const s of list) {
           if (onRoof && s.rooftop) continue;
@@ -457,18 +467,32 @@ export function makeCity(
       return moved;
     },
     cameraColliders(x, z) {
-      const out: { x: number; z: number; r: number }[] = [];
       const i = Math.floor(x / SEG_CELL); const j = Math.floor(z / SEG_CELL);
-      const seen = new Set<object>();
+      const cell = cellKey(i, j);
+      // The walls round a cell do not move: the circles are rebuilt only when the query crosses into another one.
+      if (cell === camCell) return camOut;
+      camCell = cell;
+      camStamp += 1;
+      let n = 0;
       for (let dj = -1; dj <= 1; dj++) for (let di = -1; di <= 1; di++) {
-        for (const s of segs.get(`${i + di},${j + dj}`) ?? []) {
-          if (seen.has(s)) continue;
-          seen.add(s);
+        const list = segs.get(cellKey(i + di, j + dj));
+        if (!list) continue;
+        for (const s of list) {
+          if (s.stamp === camStamp) continue;
+          s.stamp = camStamp;
           const len = Math.hypot(s.bx - s.ax, s.bz - s.az);
-          for (let d = 0; d <= len; d += 1.4) out.push({ x: s.ax + ((s.bx - s.ax) * d) / (len || 1), z: s.az + ((s.bz - s.az) * d) / (len || 1), r: 0.7 });
+          for (let d = 0; d <= len; d += 1.4) {
+            let c = camPool[n];
+            if (!c) { c = { x: 0, z: 0, r: 0.7 }; camPool[n] = c; }
+            c.x = s.ax + ((s.bx - s.ax) * d) / (len || 1);
+            c.z = s.az + ((s.bz - s.az) * d) / (len || 1);
+            n += 1;
+          }
         }
       }
-      return out;
+      camOut.length = 0;
+      for (let k = 0; k < n; k++) camOut.push(camPool[k]);
+      return camOut;
     },
     roofAt(x, z) {
       for (const p of nearFootprints(x, z, found)) if (insideRing(x, z, p.outer)) return p.top;

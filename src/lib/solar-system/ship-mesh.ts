@@ -217,12 +217,6 @@ function builder(H: number, pal: Palette): Builder {
   group.name = 'playerShip';
   const hull = new THREE.Group();
   group.add(hull);
-  // A soft fill riding above and behind the hull — where the chase camera
-  // sits — so the airframe reads as a machine against black instead of a
-  // silhouette whenever the Sun is on the far side.
-  const fill = new THREE.PointLight(0xdfe9ff, 0.05, 80 * H, 1.4);
-  fill.position.set(0, 7 * H, -9 * H);
-  group.add(fill);
   return {
     hull, pal, H, glowTex: softSpriteTexture(),
     glowMats: [], glowSprites: [], plumes: [], rcs: [], navMats: [], owned: [...pal.owned],

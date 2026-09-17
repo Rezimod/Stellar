@@ -61,7 +61,6 @@ export function makeRoverDress(parts: RoverParts, terrain: { heightAt: (x: numbe
     const mastTarget = s.driving ? steerAngle * 1.6 : Math.sin(idle * 0.4) * 0.8;
     mastYaw += (mastTarget - mastYaw) * (1 - Math.exp(-dt * 2.5));
     parts.mast.rotation.y = mastYaw;
-    parts.headlight.intensity += ((s.driving ? 7 : 0) - parts.headlight.intensity) * (1 - Math.exp(-dt * 4));
     parts.brakeLight.emissiveIntensity += ((s.braking ? 2.6 : 0.15) - parts.brakeLight.emissiveIntensity) * (1 - Math.exp(-dt * 8));
     parts.ionMat.emissiveIntensity = s.gearIon ? 1.3 + 0.4 * Math.sin(idle + wheelSpin * 0.2) : s.ionOwned ? 0.35 : 0;
     armOut += ((idle > 2.5 ? 1 : 0) - armOut) * (1 - Math.exp(-dt * 1.4));

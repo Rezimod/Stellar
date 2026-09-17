@@ -377,7 +377,7 @@ describe('Earth gravity, helmet off', () => {
 
 describe('the suit on the mesh', () => {
   const ctx = new Proxy({}, { get: (_t, k) => (k === 'createImageData' ? (w: number, h: number) => ({ data: new Uint8ClampedArray(w * h * 4) }) : () => {}) });
-  const dust: DustHandle = { points: new THREE.Points(), burst: vi.fn(), update: vi.fn(), dispose: vi.fn() };
+  const dust: DustHandle = { points: new THREE.Points(), burst: vi.fn(), setCap: vi.fn(), update: vi.fn(), dispose: vi.fn() };
 
   it('puts the boot soles on the planted feet: no skating', async () => {
     const getContext = HTMLCanvasElement.prototype.getContext;

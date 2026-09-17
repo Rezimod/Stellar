@@ -241,7 +241,8 @@ export function makeMoonHorizon(terrain: TerrainHandle, lite: boolean): THREE.Me
   return mesh;
 }
 
-export function makeMoonTerrain(lite: boolean): TerrainHandle {
+/** `density` scales the rock count (the preset's prop density). */
+export function makeMoonTerrain(lite: boolean, density = 1): TerrainHandle {
   const N = lite ? 160 : 320;
   const size = TERRAIN_SIZE;
   const half = size / 2;
@@ -414,7 +415,7 @@ export function makeMoonTerrain(lite: boolean): TerrainHandle {
   // only out on the plain and up the ridge.
   const rockGeoms = [rockGeometry(1, 1), rockGeometry(2, lite ? 1 : 2), rockGeometry(3, lite ? 1 : 2)];
   const rockMat = new THREE.MeshStandardMaterial({ color: 0xa8a5a0, roughness: 0.92, metalness: 0.02, normalMap: maps.normal, normalScale: new THREE.Vector2(0.5, 0.5) });
-  const perCut = lite ? 90 : 180;
+  const perCut = Math.round((lite ? 90 : 180) * density);
   const rocks = new THREE.Group();
   rocks.name = 'moon-rocks';
   const instanced: THREE.InstancedMesh[] = [];
@@ -424,7 +425,7 @@ export function makeMoonTerrain(lite: boolean): TerrainHandle {
   // Rocks are filed into a grid of chunks, each its own instanced mesh with
   // a tight bounding sphere: the view and the shadow camera then only draw
   // the chunks they can see, instead of every rock on the map every pass.
-  const CHUNKS = 4;
+  const CHUNKS = 3;
   const chunkOf = (v: number) => THREE.MathUtils.clamp(Math.floor((v + half) / size * CHUNKS), 0, CHUNKS - 1);
   rockGeoms.forEach((rg, cut) => {
     const buckets: THREE.Matrix4[][] = Array.from({ length: CHUNKS * CHUNKS }, () => []);
