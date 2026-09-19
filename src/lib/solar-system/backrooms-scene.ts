@@ -443,7 +443,7 @@ export function makeBackrooms(deps: BackroomsDeps): BackroomsHandle {
         // The door.
         if (phase === 'explore') {
           door = null;
-          for (const d of doors) if (d && Math.hypot(d.x - px, d.z - pz) < 1.5) door = d;
+          for (const d of doors) if (d && Math.hypot(d.x - px, d.z - pz) < 3 / SCALE) door = d;
           if (door && !telemetry.helmet) {
             telemetry.prompt = { active: true, label: 'openDoor', kind: 'tap', progress: -1 };
             if (press) { telemetry.phase = 'door'; doorT = 0; audio.flick(); }
@@ -524,7 +524,7 @@ export function makeBackrooms(deps: BackroomsDeps): BackroomsHandle {
       if (telemetry.phase !== 'climb') telemetry.gravity = cosmonaut.state.gravity;
 
       // Over the crew, well under a ceiling this far up, and not so close it burns the helmet out.
-      crewLamp.position.set(cosmonaut.position.x, 3.8, cosmonaut.position.z);
+      crewLamp.position.set(cosmonaut.position.x, 4.2, cosmonaut.position.z);
 
       // ── The camera. ──
       if (telemetry.phase === 'explore' || telemetry.phase === 'stairs' || telemetry.phase === 'door') {
@@ -532,7 +532,7 @@ export function makeBackrooms(deps: BackroomsDeps): BackroomsHandle {
         // end of the corridor is worth having something between you and it.
         cam.chase(dt, {
           position: cosmonaut.position, velocity: cosmonaut.velocity, yaw: cosmonaut.yaw,
-          height: 1.8, distance: Math.min(cam.distance, 4.6),
+          height: 2.2, distance: Math.max(cam.distance, 6.5),
           speedFrac: Math.min(1, cosmonaut.state.speed / cosmonaut.profile.run),
         }, { follow: 2.4, lead: 0.22, leadMax: 0.5, fovKick: 3, horizontal: 10, vertical: 5, blocked: walled, shoulder: 0.38 });
       } else if (telemetry.phase === 'climb' || telemetry.phase === 'out') {
