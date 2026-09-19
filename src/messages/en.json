@@ -2064,6 +2064,48 @@
         },
         "entry": "Entry interface"
       }
+    },
+    "room": {
+      "title": "Explore together",
+      "open": "Play together",
+      "close": "Close",
+      "unconfigured": "Multiplayer is not switched on for this site yet.",
+      "signInPrompt": "Sign in to open a room or join friends. Everyone in a room sees each other in flight and on the same world.",
+      "signIn": "Sign in",
+      "create": "Create a room",
+      "joinLabel": "Join with a code",
+      "codePlaceholder": "e.g. K7M2Q",
+      "join": "Join",
+      "badCode": "A room code is {n} letters and digits.",
+      "full": "That room is full — {max} explorers at most.",
+      "openRooms": "Open rooms",
+      "noRooms": "No open rooms right now. Create one and send the code to a friend.",
+      "hostedBy": "{name}'s room",
+      "joining": "Joining room {code}…",
+      "roomCode": "Room code",
+      "copyInvite": "Copy invite link",
+      "copied": "Link copied",
+      "howItWorks": "Launch or land anywhere — the others see your ship in flight and your suit on the same world. Friends sign in and open the link, or type the code.",
+      "explorers": "Explorers {n}/{max}",
+      "you": "{name} (you)",
+      "leave": "Leave room",
+      "defaultName": "Explorer {tag}",
+      "badgeAria": "Room {code}, {n} explorers — open room",
+      "places": {
+        "orbit": "System view",
+        "flight": "Flying",
+        "surface": "On a surface",
+        "moon": "On the Moon",
+        "mars": "On Mars",
+        "proximaB": "On Proxima b",
+        "earth": "In Tbilisi"
+      },
+      "toast": {
+        "joined": "{name} joined the room",
+        "left": "{name} left the room",
+        "landed": "{name}: {place}",
+        "launched": "{name} lifted off"
+      }
     }
   },
   "missionsPage": {

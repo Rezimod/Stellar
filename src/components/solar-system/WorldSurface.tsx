@@ -14,10 +14,12 @@ import { GameStick, tapKey } from './GameStick';
 import { CosmicLoader } from './CosmicLoader';
 import { useLoadingTips } from './useLoadingTips';
 import { useSoundPref } from './useSoundPref';
+import type { RoomLink } from '@/lib/multiplayer/room-link';
 
 interface WorldSurfaceProps {
   world: WorldId;
   onReturn: () => void;
+  room: RoomLink;
 }
 
 const KEY_ROWS = ['r1', 'r2', 'r8', 'r3', 'r4', 'r9', 'r5', 'r6', 'r7'] as const;
@@ -31,7 +33,7 @@ const fmtRange = (m: number) => (m >= 1000 ? `${(m / 1000).toFixed(2)} km` : `${
 const PPD = 3.1;
 const TURNS = 3;
 
-export function WorldSurface({ world, onReturn }: WorldSurfaceProps) {
+export function WorldSurface({ world, onReturn, room }: WorldSurfaceProps) {
   const t = useTranslations('solarSystem.moon');
   const tw = useTranslations(`solarSystem.worlds.${world}`);
   const tl = useTranslations('solarSystem.loading');
@@ -139,6 +141,7 @@ export function WorldSurface({ world, onReturn }: WorldSurfaceProps) {
     if (isEarth && !earthData) return;
     let rebuildTimer = 0;
     const handle = makeWorldSurface(mount, world, {
+      room,
       earth: earthData ?? undefined,
       startOnSurface: resumeRef.current,
       onContextLost: () => {
@@ -431,7 +434,7 @@ export function WorldSurface({ world, onReturn }: WorldSurfaceProps) {
       handle.dispose();
       handleRef.current = null;
     };
-  }, [t, tw, world, glGeneration, isEarth, earthData]);
+  }, [t, tw, world, glGeneration, isEarth, earthData, room]);
 
   const capture = (e: React.PointerEvent<HTMLElement>) => {
     try { e.currentTarget.setPointerCapture(e.pointerId); } catch { /* no live pointer: the key still works */ }

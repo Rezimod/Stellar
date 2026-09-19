@@ -13,9 +13,11 @@ import { GameStick, tapKey } from './GameStick';
 import { CosmicLoader } from './CosmicLoader';
 import { useLoadingTips } from './useLoadingTips';
 import { useSoundPref } from './useSoundPref';
+import type { RoomLink } from '@/lib/multiplayer/room-link';
 
 interface MoonSurfaceProps {
   onReturn: () => void;
+  room: RoomLink;
 }
 
 const KEY_ROWS = ['r1', 'r2', 'r15', 'r9', 'r3', 'r4', 'r16', 'r5', 'r10', 'r6', 'r11', 'r12', 'r8', 'r13', 'r14', 'r7'] as const;
@@ -33,7 +35,7 @@ const fmtApprox = (m: number) => `~${fmtRange(Math.round(m / 10) * 10)}`;
 const PPD = 3.1;
 const TURNS = 3;
 
-export function MoonSurface({ onReturn }: MoonSurfaceProps) {
+export function MoonSurface({ onReturn, room }: MoonSurfaceProps) {
   const t = useTranslations('solarSystem.moon');
   const tl = useTranslations('solarSystem.loading');
   const tips = useLoadingTips();
@@ -146,6 +148,7 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
     if (!mount || !root) return;
     let rebuildTimer = 0;
     const handle = makeMoonSurface(mount, {
+      room,
       startOnSurface: resumeRef.current,
       onContextLost: () => {
         setGpuLost(true);
@@ -516,7 +519,7 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
       handle.dispose();
       handleRef.current = null;
     };
-  }, [t, glGeneration]);
+  }, [t, glGeneration, room]);
 
   /** Capture the finger so a key stays down when it slides off, but never at
    *  the cost of the key itself: the press is registered first either way. */

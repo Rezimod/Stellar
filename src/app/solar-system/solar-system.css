@@ -2924,3 +2924,112 @@
   .earth-eyepiece { flex-direction: column; gap: 12px; }
   .earth-eyepiece__card { max-width: none; width: min(520px, 100%); }
 }
+
+/* ── Multiplayer rooms: the panel, and the badge that follows the explorer
+   into flight and onto the surfaces. Both sit outside the viewport, above
+   the deck and the surface HUDs and below the loaders. ── */
+.room-panel {
+  position: absolute;
+  z-index: 45;
+  left: max(16px, env(safe-area-inset-left));
+  right: max(16px, env(safe-area-inset-right));
+  bottom: max(16px, env(safe-area-inset-bottom));
+  max-height: min(78dvh, 640px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  padding: 16px;
+  border-radius: 18px;
+  background: rgba(6, 9, 14, 0.92);
+  border: 0.5px solid rgba(248, 244, 236, 0.14);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  color: rgba(240, 244, 252, 0.94);
+  font-family: var(--font-body, "Geist"), system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.45;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+@media (min-width: 680px) {
+  .room-panel {
+    left: auto;
+    bottom: auto;
+    top: max(66px, calc(env(safe-area-inset-top) + 56px));
+    width: 360px;
+  }
+}
+.room-panel__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.room-panel__title { display: inline-flex; align-items: center; gap: 8px; margin: 0; font-size: 16px; font-weight: 500; }
+.room-panel__sub { margin: 4px 0 0; font-size: 12px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: rgba(255, 214, 156, 0.85); }
+.room-panel__note { margin: 0; font-size: 13px; color: rgba(220, 228, 240, 0.72); }
+.room-panel__error { margin: 0; font-size: 13px; color: var(--error); }
+.room-panel__label { font-size: 12px; color: rgba(220, 228, 240, 0.72); }
+.room-panel__icon {
+  width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 50%; border: 0; background: transparent; color: inherit; cursor: pointer;
+}
+.room-panel__primary, .room-panel__secondary, .room-panel__leave {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 44px; padding: 0 16px; border-radius: 12px; cursor: pointer;
+  font: inherit; font-weight: 500;
+}
+.room-panel__primary { border: 0; background: var(--terracotta, #FFB347); color: #1a1206; }
+.room-panel__secondary { border: 0.5px solid rgba(248, 244, 236, 0.22); background: rgba(255, 255, 255, 0.05); color: inherit; white-space: nowrap; }
+.room-panel__secondary:disabled { opacity: 0.45; cursor: default; }
+.room-panel__leave { border: 0.5px solid var(--error); background: transparent; color: var(--error); }
+.room-panel__join { display: flex; flex-direction: column; gap: 6px; }
+.room-panel__row { display: flex; gap: 8px; }
+.room-panel__input {
+  flex: 1; min-width: 0; min-height: 44px; padding: 0 12px; border-radius: 12px;
+  border: 0.5px solid rgba(248, 244, 236, 0.22); background: rgba(0, 0, 0, 0.35); color: inherit;
+  font-family: var(--font-mono, 'JetBrains Mono'), monospace; font-size: 16px; letter-spacing: 0.18em; text-transform: uppercase;
+}
+.room-panel__input[aria-invalid='true'] { border-color: var(--error); }
+.room-panel__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.room-panel__item {
+  display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 4px 4px 4px 12px;
+  border-radius: 12px; background: rgba(255, 255, 255, 0.04);
+}
+.room-panel__code, .room-panel__count, .room-panel__bigcode { font-family: var(--font-mono, 'JetBrains Mono'), monospace; }
+.room-panel__code { letter-spacing: 0.12em; color: var(--seafoam, #5EEAD4); }
+.room-panel__who, .room-panel__name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.room-panel__count { font-size: 12px; color: rgba(220, 228, 240, 0.72); }
+.room-panel__where { padding-right: 8px; font-size: 12px; color: rgba(220, 228, 240, 0.72); white-space: nowrap; }
+.room-panel__invite { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 2px 12px; }
+.room-panel__invite .room-panel__label { grid-column: 1; }
+.room-panel__bigcode { grid-column: 1; font-size: 28px; letter-spacing: 0.2em; color: var(--seafoam, #5EEAD4); }
+.room-panel__invite .room-panel__secondary { grid-column: 2; grid-row: 1 / span 2; }
+
+.room-badge {
+  position: absolute;
+  z-index: 40;
+  top: max(10px, env(safe-area-inset-top));
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  pointer-events: none;
+}
+.room-badge__chip {
+  pointer-events: auto;
+  display: inline-flex; align-items: center; gap: 8px;
+  min-height: 36px; padding: 0 14px; border-radius: 999px; cursor: pointer;
+  border: 0.5px solid rgba(94, 234, 212, 0.35);
+  background: rgba(6, 9, 14, 0.82);
+  color: var(--seafoam, #5EEAD4);
+  font-family: var(--font-mono, 'JetBrains Mono'), monospace; font-size: 12px; letter-spacing: 0.1em;
+}
+.room-badge__count { color: rgba(240, 244, 252, 0.9); }
+.room-badge__toasts { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.room-badge__toast {
+  padding: 6px 12px; border-radius: 10px; max-width: calc(100vw - 32px);
+  background: rgba(6, 9, 14, 0.82); color: rgba(240, 244, 252, 0.94);
+  font-family: var(--font-body, "Geist"), system-ui, sans-serif; font-size: 13px;
+  animation: room-toast-in 240ms ease-out;
+}
+@keyframes room-toast-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .room-badge__toast { animation: none; } }

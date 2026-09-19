@@ -72,6 +72,8 @@ import { lightYearsBetween, resolveDestination } from '@/lib/solar-system/star-r
 import { makeSmallBodies } from '@/lib/solar-system/small-bodies';
 import { makeAlienEncounters, type AlienHandle } from '@/lib/solar-system/aliens';
 import { makeDeepSpaceProbes } from '@/lib/solar-system/probes';
+import { makeRemoteFleet, writeFlightPose } from '@/lib/multiplayer/remote-fleet';
+import { writeOrbitPose, type RoomLink } from '@/lib/multiplayer/room-link';
 import {
   makeNearbyStars,
   makeMilkyWayDisk,
@@ -132,6 +134,8 @@ export interface SolarSystemCanvasProps {
   flight?: FlightSession;
   /** Moon Mode has the screen: keep the scene but skip the frames. */
   suspended?: boolean;
+  /** A multiplayer room: the ship's pose goes out through it, the others' come in. */
+  room?: RoomLink;
   /** Called once, after the first frame has been drawn. */
   onReady?: () => void;
 }
@@ -224,6 +228,7 @@ export function SolarSystemCanvas({
   onZoomToConsumed,
   flight,
   suspended = false,
+  room,
   onReady,
 }: SolarSystemCanvasProps) {
   const mountRef = useRef<HTMLDivElement>(null);
@@ -252,6 +257,8 @@ export function SolarSystemCanvas({
   flightRef.current = flight;
   const suspendedRef = useRef(suspended);
   suspendedRef.current = suspended;
+  const roomRef = useRef(room);
+  roomRef.current = room;
   const onReadyRef = useRef(onReady);
   onReadyRef.current = onReady;
   /** Bumped when the GPU drops the context: the whole scene is rebuilt on a fresh one. */
@@ -1070,6 +1077,10 @@ export function SolarSystemCanvas({
     // created lazily inside the loop and torn down the frame the session
     // goes inactive (or on unmount), so repeated enter/exit never leaks.
     let ship: PlayerShipHandle | null = null;
+    // The other explorers in the room — drawn only while this one is flying.
+    const fleet = makeRemoteFleet();
+    fleet.group.visible = false;
+    scene.add(fleet.group);
     const teardownShip = () => {
       if (!ship) return;
       aliens.setHostile(null);
@@ -1331,6 +1342,10 @@ export function SolarSystemCanvas({
       } else if (ship) {
         teardownShip();
       }
+      if (!ship) {
+        fleet.group.visible = false;
+        if (roomRef.current) writeOrbitPose(roomRef.current.self);
+      }
 
       const focus = focusRef.current;
       if (ship) {
@@ -1339,6 +1354,12 @@ export function SolarSystemCanvas({
         alphaCen.update(session?.paused ? 0 : dtSec, camera.position, camera);
         gargantua.update(session?.paused ? 0 : dtSec, camera.position, camera);
         markTargets(session!.telemetry, world, camera);
+        const link = roomRef.current;
+        fleet.group.visible = !!link;
+        if (link) {
+          writeFlightPose(link.self, ship.group, session!.telemetry.pilot === 'eva' ? ship.eva : null, session!.shipKind, world.bodies);
+          fleet.update(link, world.bodies, camera, now);
+        }
         // Exposure adapts against the Sun: the closer and the more the nose
         // is on it, the further the iris closes, so the disc keeps a
         // surface and the rest of the frame goes dark and dangerous.
@@ -1504,6 +1525,7 @@ export function SolarSystemCanvas({
       el.removeEventListener('touchend', onTouchEnd);
 
       teardownShip();
+      fleet.dispose();
       textureLoadsCancelled = true;
       textureById.forEach((tex) => tex.dispose());
       textureById.clear();

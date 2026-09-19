@@ -791,6 +791,8 @@ export interface PlayerShipHandle {
   boltGroup: THREE.Group;
   /** World-space effects: speed streaks, the hyperspace glow, crash debris, the suit. */
   fxGroup: THREE.Group;
+  /** The pilot's suit, placed in world space while out on EVA. */
+  eva: THREE.Group;
   spawn: (anchor: FlightAnchor) => void;
   takeDamage: (amount: number) => void;
   update: (
@@ -827,9 +829,13 @@ const BUILDERS: Record<ShipKind, (h: number) => ShipParts> = {
   endurance: (h) => buildEndurance(h * 0.6),
 };
 
+/** A hull at the size the player flies it — for the other explorers in a room. */
+export const buildShip = (kind: ShipKind): ShipParts => (BUILDERS[kind] ?? BUILDERS.kestrel)(H);
+export const buildSuitForFlight = (): ShipParts => buildCosmonaut(E);
+
 export function createPlayerShip(session: FlightSession): PlayerShipHandle {
-  const shipParts = (BUILDERS[session.shipKind] ?? BUILDERS.kestrel)(H);
-  const evaParts = buildCosmonaut(E);
+  const shipParts = buildShip(session.shipKind);
+  const evaParts = buildSuitForFlight();
   const { group, cannonTips } = shipParts;
   const evaG = evaParts.group;
   evaG.visible = false;
@@ -1504,6 +1510,7 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
     group,
     boltGroup,
     fxGroup,
+    eva: evaG,
     spawn,
     takeDamage(amount) {
       damage(amount, false);

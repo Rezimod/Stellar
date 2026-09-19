@@ -21,6 +21,8 @@ import { softSpriteTexture } from '@/lib/solar-system/soft-sprite';
 import { makeMoonTerrain, makeMoonHorizon, TERRAIN_WALK_RADIUS, PAD_CENTER } from '@/lib/solar-system/moon-terrain';
 import { makeMoonDust } from '@/lib/solar-system/moon-fx';
 import { makeCosmonaut, type SuitAnim, type WalkInput } from '@/lib/solar-system/moon-cosmonaut';
+import { makeRemoteCrew, writeSurfacePose } from '@/lib/multiplayer/remote-crew';
+import type { RoomLink } from '@/lib/multiplayer/room-link';
 import type { Gait, Mode, Track } from '@/lib/solar-system/suit-locomotion';
 import { walkTrack } from '@/lib/solar-system/suit-scripted';
 import { makeSprintLatch, sprintFrom, walkFromStick } from '@/lib/solar-system/surface-input';
@@ -90,6 +92,8 @@ export interface SurfaceOptions {
   startOnSurface?: boolean;
   /** The GPU took the context away; the owner should rebuild the scene. */
   onContextLost?: () => void;
+  /** A multiplayer room: this explorer's steps go out, the others walk in. */
+  room?: RoomLink;
 }
 
 export interface SurfaceTelemetry {
@@ -434,6 +438,7 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
   cosmonaut.yaw = Math.PI;
   cosmonaut.settle();
   scene.add(cosmonaut.group);
+  const crowd = opts.room ? makeRemoteCrew(scene, 'moon', lite, false) : null;
   base.pois.push(...sinkhole.pois);
   base.colliders.push(...sinkhole.roverColliders, ...sinkhole.walkColliders);
   base.walkColliders.push(...sinkhole.walkColliders);
@@ -887,6 +892,11 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
     cam.zoom(input.zoom);
     input.zoom = 0;
     const crew = cosmonaut.position;
+    if (opts.room) {
+      const out = telemetry.phase === 'surface' && !fall.active && !br && cosmonaut.group.visible;
+      writeSurfacePose(opts.room.self, 'moon', out, crew, cosmonaut.yaw, cosmonaut.state.speed);
+      crowd?.update(dt, opts.room, now);
+    }
 
     if (telemetry.phase === 'surface' && (fall.active || br)) {
       underground(dt);
@@ -1213,6 +1223,7 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
     mission.dispose();
     jobs.dispose();
     meteors.dispose();
+    crowd?.dispose();
     cosmonaut.dispose();
     base.dispose();
     kit.dispose();

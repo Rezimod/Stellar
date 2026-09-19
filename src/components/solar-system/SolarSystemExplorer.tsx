@@ -2,8 +2,9 @@
 
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Pause, Play, RotateCcw, X } from 'lucide-react';
+import { Pause, Play, RotateCcw, Users, X } from 'lucide-react';
 import { useFormatter, useTranslations } from 'next-intl';
+import { useLogin, usePrivy } from '@privy-io/react-auth';
 import { SolarSystemCanvas } from '@/components/solar-system/SolarSystemCanvas';
 import { PlayerShip, type LandingSite } from '@/components/solar-system/PlayerShip';
 import { MoonSurface } from '@/components/solar-system/MoonSurface';
@@ -13,6 +14,11 @@ import { CosmicLoader } from '@/components/solar-system/CosmicLoader';
 import { useLoadingTips } from '@/components/solar-system/useLoadingTips';
 import { createFlightSession, type FlightSession } from '@/lib/solar-system/player-ship';
 import type { SolarBodyId } from '@/lib/solar-system/ephemeris';
+import { createRoomLink, normalizeRoomCode, type RoomLink } from '@/lib/multiplayer/room-link';
+import { useExploreRoom } from '@/lib/multiplayer/useExploreRoom';
+import { useProfile } from '@/hooks/useProfile';
+import { ExploreRoomPanel } from '@/components/solar-system/ExploreRoomPanel';
+import { ExploreRoomBadge } from '@/components/solar-system/ExploreRoomBadge';
 
 /** The climb back to orbit stays up at least this long, and until the deck has flown a few frames. */
 const ASCENT_MIN_MS = 1600;
@@ -51,6 +57,37 @@ export default function SolarSystemExplorer() {
   const [zoomTo, setZoomTo] = useState<number | null>(null);
   const flightRef = useRef<FlightSession | null>(null);
   if (!flightRef.current) flightRef.current = createFlightSession();
+  const roomLinkRef = useRef<RoomLink | null>(null);
+  if (!roomLinkRef.current) roomLinkRef.current = createRoomLink(crypto.randomUUID());
+  // Development only: the capture harness puts pretend explorers into the room.
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'production') return;
+    window.__stellarRoom = roomLinkRef.current!;
+    return () => { delete window.__stellarRoom; };
+  }, []);
+  const { user } = usePrivy();
+  const { login } = useLogin();
+  const { profile } = useProfile();
+  const [roomOpen, setRoomOpen] = useState(false);
+  // An invite link carries the room; it is joined once the explorer is signed in.
+  const [pendingRoom, setPendingRoom] = useState(() => normalizeRoomCode(new URLSearchParams(window.location.search).get('room') ?? ''));
+  const room = useExploreRoom(roomLinkRef.current, {
+    name: profile?.username || t('room.defaultName', { tag: (user?.id ?? '').slice(-4).toUpperCase() }),
+    epochMs,
+    watchLobby: roomOpen,
+    onEpoch: setEpochMs,
+  });
+  useEffect(() => {
+    if (!pendingRoom) return;
+    if (room.status === 'signedOut') setRoomOpen(true);
+    if (room.status === 'idle') {
+      room.join(pendingRoom);
+      setPendingRoom(null);
+    }
+  }, [pendingRoom, room]);
+  useEffect(() => {
+    if (room.error) setRoomOpen(true);
+  }, [room.error]);
   const zoomToSun = useCallback(() => { setSelectedId(null); setZoomTo(26); }, []);
   const consumeZoom = useCallback(() => setZoomTo(null), []);
 
@@ -112,6 +149,9 @@ export default function SolarSystemExplorer() {
         <button type="button" className="solar-system__fab solar-system__fab--close" onClick={() => router.push('/sky')} aria-label={t('immersive.exit')}>
           <X size={20} aria-hidden />
         </button>
+        {landed === null && <button type="button" className="solar-system__fab" onClick={() => setRoomOpen((o) => !o)} aria-label={t('room.open')} aria-expanded={roomOpen}>
+          <Users size={20} aria-hidden />
+        </button>}
         <span className="solar-system__mini-clock">
           {selectedId ? t(`bodies.${selectedId}.name`) : format.dateTime(new Date(epochMs), { month: 'short', day: 'numeric' })}
         </span>
@@ -119,12 +159,17 @@ export default function SolarSystemExplorer() {
       <div className="solar-system__viewport solar-system__viewport--fill" data-rotate={landscape && flightActive ? 'cw' : undefined}>
         <SolarSystemCanvas epochMs={epochMs} scaleMode="orrery" includePluto selectedId={selectedId} focusBodyId={selectedId}
           onSelect={setSelectedId} onZoomToSun={zoomToSun} zoomTo={zoomTo} onZoomToConsumed={consumeZoom} flight={flightRef.current} suspended={landed !== null}
-          onReady={onSceneReady} />
+          room={roomLinkRef.current} onReady={onSceneReady} />
         <PlayerShip session={flightRef.current} onActiveChange={setFlightActive} onLand={(site) => { setLandscape(false); setLanded(site); }} landed={landed !== null}
           landscape={landscape} onLandscape={setLandscape} />
-        {landed === 'moon' && <MoonSurface onReturn={returnToOrbit} />}
-        {landed !== null && landed !== 'moon' && <WorldSurface world={landed} onReturn={returnToOrbit} />}
+        {landed === 'moon' && <MoonSurface onReturn={returnToOrbit} room={roomLinkRef.current} />}
+        {landed !== null && landed !== 'moon' && <WorldSurface world={landed} onReturn={returnToOrbit} room={roomLinkRef.current} />}
       </div>
+      {room.code && !roomOpen && <ExploreRoomBadge code={room.code} roster={room.roster} onOpen={() => setRoomOpen(true)} />}
+      {roomOpen && (
+        <ExploreRoomPanel room={room} onClose={() => setRoomOpen(false)}
+          onSignIn={() => login({ loginMethods: ['email', 'google', 'wallet'], walletChainType: 'solana-only' })} />
+      )}
       {/* Straight onto a surface, the orbit scene never draws: the surface has its own screen. */}
       <CosmicLoader className={sceneReady || landed !== null ? 'solar-system__loader is-done' : 'solar-system__loader'}
         label={t('loading.title')} detail={t('loading.detail')} tips={tips} />

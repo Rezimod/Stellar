@@ -37,6 +37,8 @@ import { makeEarthEntry } from '@/lib/solar-system/world-earth-entry';
 import { haze } from '@/lib/solar-system/world-earth-haze';
 import { makeFlightAudio } from '@/lib/solar-system/flight-audio';
 import { EARTH_CHASE, earthGait } from '@/lib/solar-system/world-earth-gait';
+import { makeRemoteCrew, writeSurfacePose } from '@/lib/multiplayer/remote-crew';
+import type { RoomLink } from '@/lib/multiplayer/room-link';
 
 export type WorldView = 'chase' | 'helmet' | 'wide';
 const VIEWS: WorldView[] = ['chase', 'helmet', 'wide'];
@@ -64,6 +66,8 @@ export interface WorldOptions {
   onContextLost?: () => void;
   /** Earth only: the baked Tbilisi data, loaded before the scene is built. */
   earth?: EarthData;
+  /** A multiplayer room: this explorer's steps go out, the others walk in. */
+  room?: RoomLink;
 }
 
 export interface WorldTelemetry {
@@ -247,6 +251,7 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
   // On Earth, a game character's run: jog on the stick, sprint on Shift.
   if (earth) cosmonaut.setProfile(earthGait());
   scene.add(cosmonaut.group);
+  const crowd = opts.room ? makeRemoteCrew(scene, world, lite, !!profile.breathable) : null;
   const padX = profile.pad.x; const padZ = profile.pad.z + 26;
   const lander = makeLander(padX, padZ, heightAt, dust, lite, lightPool, profile.gravity, earth ? EARTH_DESCENT : undefined);
   scene.add(lander.group);
@@ -413,6 +418,10 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
     cam.zoom(input.zoom);
     input.zoom = 0;
     const crew = cosmonaut.position;
+    if (opts.room) {
+      writeSurfacePose(opts.room.self, world, telemetry.phase === 'surface' && cosmonaut.group.visible, crew, cosmonaut.yaw, cosmonaut.state.speed);
+      crowd?.update(dt, opts.room, now);
+    }
 
     if (entry && !entry.done) {
       entry.update(dt);
@@ -649,6 +658,7 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
     entry?.dispose();
     flightAudio?.dispose();
     earth?.dispose();
+    crowd?.dispose();
     cosmonaut.dispose();
     base?.dispose();
     flora?.dispose();
