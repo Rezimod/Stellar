@@ -62,6 +62,61 @@ export interface ZonesHandle {
 
 const STATUS = { ok: 0x4dff88, warn: 0xffb347, fault: 0xff3b2e } as const;
 
+/** The laid landing pad, as the reference sheets draw it: radius in metres. */
+const PAD_R = 11.5;
+
+/** The pad's face: sintered regolith, its painted rings, bearing ticks and touchdown mark. */
+function padMarkings(): THREE.CanvasTexture {
+  const n = 512;
+  const c = document.createElement('canvas');
+  c.width = n; c.height = n;
+  const ctx = c.getContext('2d')!;
+  const mid = n / 2;
+  ctx.fillStyle = '#3c3a36';
+  ctx.fillRect(0, 0, n, n);
+  // Sintered plates, laid in rings.
+  ctx.strokeStyle = 'rgba(20,20,20,0.5)';
+  ctx.lineWidth = 2;
+  for (let r = 0.18; r < 1; r += 0.2) {
+    ctx.beginPath();
+    ctx.arc(mid, mid, mid * r, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+  for (let k = 0; k < 16; k++) {
+    const a = (k / 16) * Math.PI * 2;
+    ctx.beginPath();
+    ctx.moveTo(mid + Math.cos(a) * mid * 0.18, mid + Math.sin(a) * mid * 0.18);
+    ctx.lineTo(mid + Math.cos(a) * mid, mid + Math.sin(a) * mid);
+    ctx.stroke();
+  }
+  // The painted rings and the bearing ticks between them.
+  ctx.strokeStyle = '#d9821a';
+  ctx.lineWidth = 7;
+  for (const r of [0.94, 0.62]) {
+    ctx.beginPath();
+    ctx.arc(mid, mid, mid * r, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+  ctx.lineWidth = 5;
+  for (let k = 0; k < 12; k++) {
+    const a = (k / 12) * Math.PI * 2;
+    ctx.beginPath();
+    ctx.moveTo(mid + Math.cos(a) * mid * 0.74, mid + Math.sin(a) * mid * 0.74);
+    ctx.lineTo(mid + Math.cos(a) * mid * 0.88, mid + Math.sin(a) * mid * 0.88);
+    ctx.stroke();
+  }
+  // The touchdown mark.
+  ctx.fillStyle = '#e8e4da';
+  const bar = mid * 0.07; const tall = mid * 0.36;
+  ctx.fillRect(mid - mid * 0.22, mid - tall / 2, bar, tall);
+  ctx.fillRect(mid + mid * 0.22 - bar, mid - tall / 2, bar, tall);
+  ctx.fillRect(mid - mid * 0.22, mid - bar / 2, mid * 0.44, bar);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = 4;
+  return t;
+}
+
 export function buildZones(
   kit: Kit,
   group: THREE.Group,
@@ -78,6 +133,7 @@ export function buildZones(
   const blinkRed = own(new THREE.MeshStandardMaterial({ color: 0x1a0404, emissive: new THREE.Color(0xff3b2e), emissiveIntensity: 2, roughness: 0.4 }));
   const reflector = own(new THREE.MeshStandardMaterial({ color: 0x2a1a06, emissive: new THREE.Color(0xffa23a), emissiveIntensity: 0.7, roughness: 0.5 }));
   const hopperMat = own(new THREE.MeshStandardMaterial({ color: 0x70757c, roughness: 0.5, metalness: 0.75, side: THREE.DoubleSide }));
+  let padTexture: THREE.Texture | null = null;
 
   const place = (x: number, z: number, yaw = 0): THREE.Group => {
     const g = new THREE.Group();
@@ -365,10 +421,25 @@ export function buildZones(
   kit.cylX(spare, 0.22, 0.44, m.carbon, 0, 0, 0, 12);
   pois.push({ id: 'logistics', x: 22, z: 10, r: 7 });
 
-  // ── The landing zone: compacted and marked regolith rather than a pad —
-  // reflector stakes on a ring, four nav lamps, a warning board, and the
-  // cargo earlier landings left behind. ──
+  // ── The landing zone: the laid pad the reference sheets draw — a shallow
+  // sintered disc with its painted rings and touchdown mark — inside a ring
+  // of reflector stakes, four nav lamps, a warning board, and the cargo
+  // earlier landings left behind. ──
   const lz = { x: 0, z: 20 };
+  {
+    const g = place(lz.x, lz.z);
+    kit.cyl(g, PAD_R, PAD_R + 0.25, 0.16, m.carbon, 0, -0.03, 0, 48).castShadow = false;
+    const marks = padMarkings();
+    padTexture = marks;
+    const face = noShadow(kit.mesh(g, new THREE.CircleGeometry(PAD_R - 0.1, 48), own(new THREE.MeshStandardMaterial({ map: marks, roughness: 0.92, metalness: 0.05 })), 0, 0.055, 0));
+    face.rotation.x = -Math.PI / 2;
+    // The rim the dust is swept off, and the tie-down rings round it.
+    noShadow(kit.mesh(g, new THREE.TorusGeometry(PAD_R - 0.05, 0.07, 4, 48), m.hazard, 0, 0.06, 0)).rotation.x = Math.PI / 2;
+    for (let k = 0; k < 8; k++) {
+      const a = (k / 8) * Math.PI * 2 + Math.PI / 8;
+      noShadow(kit.mesh(g, new THREE.TorusGeometry(0.22, 0.04, 4, 10), m.steel, Math.cos(a) * (PAD_R - 1.1), 0.07, Math.sin(a) * (PAD_R - 1.1))).rotation.x = Math.PI / 2;
+    }
+  }
   for (let k = 0; k < 10; k++) {
     const a = (k / 10) * Math.PI * 2;
     const x = lz.x + Math.cos(a) * 12.5; const z = lz.z + Math.sin(a) * 12.5;
@@ -574,6 +645,7 @@ export function buildZones(
     dispose() {
       disposed = true;
       for (const o of owned) o.dispose();
+      padTexture?.dispose();
       crates?.removeFromParent();
       crates?.dispose();
       releaseCrate?.();
