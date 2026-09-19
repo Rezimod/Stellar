@@ -1,12 +1,11 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useLocale } from 'next-intl';
 import { ChevronLeft } from 'lucide-react';
 
 export default function BackButton() {
   const router = useRouter();
-  const label = useLocale() === 'ka' ? 'უკან' : 'Back';
+  const label = 'Back';
 
   return (
     <button

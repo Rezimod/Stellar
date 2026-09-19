@@ -1,10 +1,8 @@
 // Pure helpers that turn raw alt/az into the natural-language direction
 // the horizon finder uses. The i18n message files own the actual strings —
-// these helpers map the inputs onto the i18n key shape used in en.json/ka.json.
+// these helpers map the inputs onto the i18n key shape used in en.json.
 
 export type CompassDir = 'N' | 'NE' | 'E' | 'SE' | 'S' | 'SW' | 'W' | 'NW';
-
-export type Locale = 'en' | 'ka';
 
 const COMPASS_KEYS: CompassDir[] = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
 
@@ -64,11 +62,6 @@ export function moonPhaseKey(phase: number): string {
   if (p < 0.72) return 'waningGibbous';
   if (p < 0.78) return 'lastQuarter';
   return 'thinWaning';
-}
-
-/** Re-export for callers who want a one-liner — locale is unused but accepted to satisfy the API in the prompt. */
-export function describeDirection(_compass: CompassDir, _locale: Locale = 'en'): CompassDir {
-  return _compass;
 }
 
 export const __compassKeys = COMPASS_KEYS;

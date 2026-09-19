@@ -9,7 +9,7 @@
 
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { X } from 'lucide-react';
 import './SkyEvents2026.css';
 
@@ -49,7 +49,7 @@ const EVENTS: SkyEvent[] = ([
 
 export function SkyEvents2026() {
   const t = useTranslations('sky.events');
-  const dateLocale = useLocale() === 'ka' ? 'ka-GE' : 'en-US';
+  const dateLocale = 'en-US';
   const [openId, setOpenId] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
 

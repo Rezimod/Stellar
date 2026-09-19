@@ -1,6 +1,5 @@
 import { ExternalLink, Mail } from 'lucide-react';
 import type { Metadata } from 'next';
-import { getLocale } from 'next-intl/server';
 
 export const metadata: Metadata = {
   title: 'Contact — Stellar Astronomy Team',
@@ -41,33 +40,10 @@ const channels = [
   },
 ];
 
-export default async function ContactPage() {
-  const locale = await getLocale();
-  const isKa = locale === 'ka';
-  const intro = isKa
-    ? 'Stellar-ს თბილისში ქმნის Rezi — Astroman-ის დამფუძნებელი. ჩვენთან დასაკავშირებლად ყველაზე სწრაფი გზა ელფოსტაა. ყველაფერს ვკითხულობთ, თუნდაც პასუხს ერთი-ორი დღე დასჭირდეს.'
-    : 'Stellar is built in Tbilisi by Rezi, the founder of Astroman. The fastest way to reach us is email. We read everything, even if a reply takes a day or two.';
-  const eyebrow = isKa ? 'მოგვწერე' : 'Talk to us';
-  const title = isKa ? 'კონტაქტი' : 'Contact';
-  const localizedChannels = channels.map((channel) => ({
-    ...channel,
-    label: isKa
-      ? ({
-          Email: 'ელფოსტა',
-          X: 'X',
-          GitHub: 'GitHub',
-          'Astroman store': 'Astroman მაღაზია',
-        } as Record<string, string>)[channel.label] ?? channel.label
-      : channel.label,
-    note: isKa
-      ? ({
-          'General questions, partnerships, press.': 'ზოგადი კითხვები, პარტნიორობა, პრესა.',
-          'Updates, sky alerts, behind-the-scenes.': 'განახლებები, ცის გაფრთხილებები, კულისებს მიღმა.',
-          'Bugs and feature requests welcome.': 'შეცდომები და ახალი ფუნქციების იდეები მისაღებია.',
-          'Physical store in Tbilisi, Georgia.': 'ფიზიკური მაღაზია თბილისში, საქართველოში.',
-        } as Record<string, string>)[channel.note] ?? channel.note
-      : channel.note,
-  }));
+export default function ContactPage() {
+  const intro = 'Stellar is built in Tbilisi by Rezi, the founder of Astroman. The fastest way to reach us is email. We read everything, even if a reply takes a day or two.';
+  const eyebrow = 'Talk to us';
+  const title = 'Contact';
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-12 sm:py-20 text-text-primary">
@@ -78,7 +54,7 @@ export default async function ContactPage() {
       </p>
 
       <ul className="flex flex-col gap-3">
-        {localizedChannels.map((c) => {
+        {channels.map((c) => {
           const Icon = c.icon;
           return (
             <li key={c.label}>

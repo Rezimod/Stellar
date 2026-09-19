@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { getLocale } from 'next-intl/server';
 
 export const metadata: Metadata = {
   title: 'Privacy Policy — Stellar Astronomy App',
@@ -9,88 +8,59 @@ export const metadata: Metadata = {
   alternates: { canonical: '/privacy' },
 };
 
-export default async function PrivacyPage() {
-  const locale = await getLocale();
-  const isKa = locale === 'ka';
+export default function PrivacyPage() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-12 sm:py-20 text-text-primary">
-      <p className="text-xs uppercase tracking-[0.2em] text-text-muted mb-3">{isKa ? 'იურიდიული' : 'Legal'}</p>
-      <h1 className="font-display text-3xl sm:text-4xl mb-2">{isKa ? 'კონფიდენციალურობა' : 'Privacy'}</h1>
-      <p className="text-text-muted text-sm mb-10">{isKa ? 'ბოლოს განახლდა: 22 ივლისი, 2026' : 'Last updated July 22, 2026'}</p>
+      <p className="text-xs uppercase tracking-[0.2em] text-text-muted mb-3">Legal</p>
+      <h1 className="font-display text-3xl sm:text-4xl mb-2">Privacy</h1>
+      <p className="text-text-muted text-sm mb-10">Last updated July 22, 2026</p>
 
       <div className="flex flex-col gap-6 text-[15px] leading-relaxed text-text-primary/80">
         <p>
-          {isKa
-            ? 'Stellar-ს თბილისში Astroman-ის გუნდი აშენებს. ვცდილობთ რაც შეიძლება ნაკლები მონაცემი შევინახოთ. ეს გვერდი ხსნის, რას ვინახავთ, რატომ გვჭირდება და როგორ შეიძლება მისი წაშლა.'
-            : 'Stellar is built by the Astroman team in Tbilisi. We try to collect as little data as possible. This page explains what we keep, why, and how to remove it.'}
+          Stellar is built by the Astroman team in Tbilisi. We try to collect as little data as possible. This page explains what we keep, why, and how to remove it.
         </p>
 
         <section className="flex flex-col gap-2">
-          <h2 className="font-display text-xl text-text-primary">{isKa ? 'რას ვინახავთ' : 'What we store'}</h2>
+          <h2 className="font-display text-xl text-text-primary">What we store</h2>
           <ul className="list-disc pl-5 flex flex-col gap-1.5">
-            {isKa ? (
-              <>
-                <li>ელფოსტას ან სოციალურ ავტორიზაციას, რომლითაც შედიხარ სისტემაში (ამას Privy ამუშავებს).</li>
-                <li>საფულის მისამართს, რომელიც შენს ანგარიშს ავტომატურად ებმება.</li>
-                <li>შენს დაკვირვებებს: სამიზნეს, დროს, სავარაუდო მდებარეობას და შენ მიერ ატვირთულ მტკიცებულების ფოტოს.</li>
-                <li>პროფილის დამატებით მონაცემებს, რომელსაც თავად ავსებ (ტელესკოპი, იუზერნეიმი, ავატარი).</li>
-              </>
-            ) : (
-              <>
-                <li>The email or social login you sign in with (handled by Privy).</li>
-                <li>The wallet address auto-created for your account.</li>
-                <li>Your observations: target, timestamp, approximate location, and the proof image you uploaded.</li>
-                <li>Optional profile data you enter yourself (telescope, username, avatar).</li>
-              </>
-            )}
+            <li>The email or social login you sign in with (handled by Privy).</li>
+            <li>The wallet address auto-created for your account.</li>
+            <li>Your observations: target, timestamp, approximate location, and the proof image you uploaded.</li>
+            <li>Optional profile data you enter yourself (telescope, username, avatar).</li>
           </ul>
         </section>
 
         <section className="flex flex-col gap-2">
-          <h2 className="font-display text-xl text-text-primary">{isKa ? 'რას არ ვინახავთ' : 'What we don’t store'}</h2>
+          <h2 className="font-display text-xl text-text-primary">What we don’t store</h2>
           <ul className="list-disc pl-5 flex flex-col gap-1.5">
-            {isKa ? (
-              <>
-                <li>საფულის აღდგენის ფრაზას ან პირად გასაღებს — ეს მხოლოდ Privy-სთან რჩება, ჩვენთან არასდროს.</li>
-                <li>ბარათის მონაცემებს — ისინი პირდაპირ გადახდის პროვაიდერთან მიდის.</li>
-                <li>მუდმივ მდებარეობის ისტორიას — GPS-ს მხოლოდ შენი მოთხოვნით ვკითხულობთ.</li>
-              </>
-            ) : (
-              <>
-                <li>Wallet recovery phrases or private keys — these stay with Privy, never with us.</li>
-                <li>Payment card details — these go directly to our payment processor.</li>
-                <li>Continuous location data — we only read GPS when you ask us to.</li>
-              </>
-            )}
+            <li>Wallet recovery phrases or private keys — these stay with Privy, never with us.</li>
+            <li>Payment card details — these go directly to our payment processor.</li>
+            <li>Continuous location data — we only read GPS when you ask us to.</li>
           </ul>
         </section>
 
         <section className="flex flex-col gap-2">
-          <h2 className="font-display text-xl text-text-primary">{isKa ? 'მესამე მხარის სერვისები' : 'Third-party services'}</h2>
+          <h2 className="font-display text-xl text-text-primary">Third-party services</h2>
           <p>
-            {isKa
-              ? 'ავთენტიკაციისა და ჩაშენებული საფულეებისთვის ვიყენებთ Privy-ს, შენახვისთვის Neon-სა და Supabase-ს, ჰოსტინგისთვის Vercel-ს, ASTRA ასისტენტისთვის Anthropic-ს (Claude), დაკვირვების ფოტოების შესამოწმებლად Google-ს (Gemini), ამინდისთვის Open-Meteo-ს, ხოლო Solana RPC-სთვის Helius-ს. თითოეული სერვისი იღებს მხოლოდ იმ მინიმალურ მონაცემს, რაც თავის საქმეს სჭირდება.'
-              : 'We use Privy for authentication and embedded wallets, Neon and Supabase for storage, Vercel for hosting, Anthropic (Claude) for the ASTRA assistant, Google (Gemini) to check observation photos, Open-Meteo for weather, and Helius for Solana RPC. Each only receives the minimum it needs to do its job.'}
+            We use Privy for authentication and embedded wallets, Neon and Supabase for storage, Vercel for hosting, Anthropic (Claude) for the ASTRA assistant, Google (Gemini) to check observation photos, Open-Meteo for weather, and Helius for Solana RPC. Each only receives the minimum it needs to do its job.
           </p>
         </section>
 
         <section className="flex flex-col gap-2">
-          <h2 className="font-display text-xl text-text-primary">{isKa ? 'შენი მონაცემები, შენი გადაწყვეტილება' : 'Your data, your call'}</h2>
+          <h2 className="font-display text-xl text-text-primary">Your data, your call</h2>
           <p>
-            {isKa ? 'ანგარიშისა და მასთან დაკავშირებული მონაცემების წაშლა შეგიძლია ელფოსტით მოგვწერო ' : 'You can delete your account and everything tied to it by emailing '}
+            {'You can delete your account and everything tied to it by emailing '}
             <a href="mailto:info@astroman.ge" className="underline underline-offset-4">
               info@astroman.ge
             </a>
-            {isKa
-              ? '. ზოგიერთი ჩანაწერი — შენი დამოწმებული დაკვირვებები და მასთან დაკავშირებული ტრანზაქციები — საჯარო, მუდმივ რეესტრში ინახება და ჩვენ ვერ წავშლით, თუმცა ყველა სხვა ასლს, რასაც ვმართავთ, მოვაშორებთ.'
-              : '. Some records — your certified observations and related transactions — live on a public, permanent ledger and can’t be deleted by us, but we will remove every other copy we control.'}
+            . Some records — your certified observations and related transactions — live on a public, permanent ledger and can’t be deleted by us, but we will remove every other copy we control.
           </p>
         </section>
 
         <p className="pt-6 text-text-muted text-sm">
-          {isKa ? 'კითხვა გაქვს? იხილე ' : 'Questions? See '}
-          <Link href="/contact" className="underline underline-offset-4">{isKa ? 'კონტაქტი' : 'Contact'}</Link>.
+          {'Questions? See '}
+          <Link href="/contact" className="underline underline-offset-4">Contact</Link>.
         </p>
       </div>
     </div>

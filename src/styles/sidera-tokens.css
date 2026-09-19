@@ -1,0 +1,167 @@
+/* SIDERA DESIGN TOKENS
+   Dark-only. Everything below is scoped to `.sidera`, the class SideraShell
+   puts on its root, so the legacy Stellar pages keep their own tokens and the
+   light/field theme overrides on <html> never reach a Sidera page.
+   Brief: docs/sidera/design-system.md. */
+
+:root {
+  /* The one warm accent. Rarity only — never a link, a button, a hover, a focus ring. */
+  --brass: #c9a84c;
+}
+
+.sidera {
+  color-scheme: dark;
+
+  /* Ground — a considered near-black, faintly cool, never #000 */
+  --sd-ground: #0b0c0e;
+  --sd-plate: #131417;          /* a card plate or a raised panel */
+  --sd-plate-hover: #181a1d;
+
+  /* Text — bone-white ramp. ink, ink-2 and ink-3 pass 4.5:1 on ground and plate; ink-4 does not. */
+  --sd-ink: #ece7da;            /* object names, headings, body */
+  --sd-ink-2: #b3aea1;          /* secondary copy */
+  --sd-ink-3: #8a867c;          /* captions, metadata labels (min for text) */
+  --sd-ink-4: #5f5c55;          /* disabled, placeholder outlines — not for text */
+
+  /* Rules — hairlines, never shadows */
+  --sd-rule: rgba(236, 231, 218, 0.12);
+  --sd-rule-strong: rgba(236, 231, 218, 0.24);
+  --sd-hairline: 1px;
+
+  /* Rarity — a ramp from neutral into brass. Mirrors RARITY_MAP in src/lib/rarity.ts. */
+  --brass: #c9a84c;
+  --sd-rarity-common: #978d72;
+  --sd-rarity-rare: #b09a5f;
+  --sd-rarity-epic: var(--brass);
+  --sd-rarity-legendary: #e2c77a;
+
+  /* Observation status — monochrome, circle glyphs, never brass */
+  --sd-status-dedicated: var(--sd-ink);
+  --sd-status-eligible: var(--sd-ink-2);
+  --sd-status-not-available: var(--sd-ink-3);
+
+  /* Focus — ink, not brass */
+  --sd-focus: var(--sd-ink);
+
+  /* Type */
+  --sd-serif: var(--font-sidera-serif), 'Baskerville', 'Times New Roman', serif;
+  --sd-mono: var(--font-sidera-mono), ui-monospace, 'SFMono-Regular', monospace;
+
+  /* Layout */
+  --sd-gutter: 16px;
+  --sd-max: 1040px;
+  --sd-bar-h: 56px;
+
+  /* Legacy font tokens re-pointed so Tailwind/global rules inside a Sidera
+     page land on the two Sidera faces. */
+  --font-display: var(--sd-serif);
+  --font-body: var(--sd-serif);
+  --font-cta: var(--sd-serif);
+  --font-mono: var(--sd-mono);
+
+  background: var(--sd-ground);
+  color: var(--sd-ink);
+  font-family: var(--sd-serif);
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1.55;
+  min-height: 100dvh;
+}
+
+.sidera :is(h1, h2, h3, h4, h5, h6, p):not([class*="font-"]) { font-weight: 400; }
+.sidera :focus-visible { outline: 1px solid var(--sd-focus); outline-offset: 3px; }
+.sidera ::selection { background: rgba(236, 231, 218, 0.22); color: var(--sd-ink); }
+
+/* Utilities and primitives are unlayered, like globals.css, so they beat the
+   global element rules (p, h1–h6) there. They also beat Tailwind utilities:
+   do not put a Tailwind font/tracking class on an element that has an sd-* class. */
+/* ── Type utilities ───────────────────────────────────────────── */
+.sd-serif { font-family: var(--sd-serif); }
+.sd-mono {
+  font-family: var(--sd-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+}
+/* Object name on a plate or a page title */
+.sd-name { font-family: var(--sd-serif); font-weight: 400; font-size: clamp(22px, 5vw, 30px); line-height: 1.12; }
+.sd-display { font-family: var(--sd-serif); font-weight: 400; font-size: clamp(34px, 9vw, 64px); line-height: 1.02; letter-spacing: -0.01em; }
+/* Mono data at caption size — 12px is the floor */
+.sd-data { font-family: var(--sd-mono); font-size: 12px; line-height: 1.5; font-variant-numeric: tabular-nums; color: var(--sd-ink-2); }
+.sd-label { font-family: var(--sd-mono); font-size: 12px; line-height: 1.4; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sd-ink-3); }
+
+/* ── Layout utilities ─────────────────────────────────────────── */
+.sd-container { width: 100%; max-width: var(--sd-max); margin-inline: auto; padding-inline: var(--sd-gutter); }
+.sd-rule { border: 0; border-top: var(--sd-hairline) solid var(--sd-rule); margin: 0; }
+.sd-rule--strong { border-top-color: var(--sd-rule-strong); }
+
+/* ── Primitives (src/components/sidera/ui) ────────────────────── */
+.sd-wordmark {
+  font-family: var(--sd-serif);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.3em;
+  margin-right: -0.3em; /* trailing tracking would push the mark off-centre */
+  line-height: 1;
+  color: var(--sd-ink);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.sd-wordmark--sm { font-size: 15px; }
+.sd-wordmark--md { font-size: 22px; }
+.sd-wordmark--lg { font-size: clamp(36px, 10vw, 72px); }
+
+.sd-caption { font-family: var(--sd-mono); font-size: 12px; line-height: 1.55; color: var(--sd-ink-2); font-variant-numeric: tabular-nums; margin: 0; padding-top: 8px; }
+.sd-caption__source { color: var(--sd-ink-3); }
+
+.sd-datarow { display: flex; flex-wrap: wrap; column-gap: 20px; row-gap: 6px; margin: 0; font-family: var(--sd-mono); font-size: 12px; line-height: 1.4; font-variant-numeric: tabular-nums; }
+.sd-datarow > div { display: flex; gap: 6px; min-width: 0; }
+.sd-datarow dt { color: var(--sd-ink-3); text-transform: uppercase; letter-spacing: 0.08em; }
+.sd-datarow dd { margin: 0; color: var(--sd-ink); overflow-wrap: anywhere; }
+.sd-datarow--stacked { flex-direction: column; }
+.sd-datarow--stacked > div { justify-content: space-between; border-top: 1px solid var(--sd-rule); padding-top: 6px; }
+
+.sd-rarity { display: inline-flex; align-items: center; gap: 6px; font-family: var(--sd-mono); font-size: 12px; line-height: 1; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; }
+.sd-rarity--common { color: var(--sd-rarity-common); }
+.sd-rarity--rare { color: var(--sd-rarity-rare); }
+.sd-rarity--epic { color: var(--sd-rarity-epic); }
+.sd-rarity--legendary { color: var(--sd-rarity-legendary); }
+
+.sd-status { display: inline-flex; align-items: center; gap: 6px; padding: 3px 6px; border: 1px solid var(--sd-rule-strong); font-family: var(--sd-mono); font-size: 12px; line-height: 1; letter-spacing: 0.04em; white-space: nowrap; }
+.sd-status--dedicated { color: var(--sd-status-dedicated); }
+.sd-status--eligible { color: var(--sd-status-eligible); }
+.sd-status--not_available { color: var(--sd-status-not-available); border-style: dashed; }
+
+/* ── SideraShell ──────────────────────────────────────────────── */
+.sd-bar { position: sticky; top: 0; z-index: 40; background: var(--sd-ground); border-bottom: 1px solid var(--sd-rule); }
+.sd-bar__inner { display: grid; grid-template-columns: auto 1fr auto; grid-template-areas: "mark links account"; align-items: center; column-gap: 24px; min-height: var(--sd-bar-h); }
+.sd-bar__mark { grid-area: mark; }
+.sd-bar__account { grid-area: account; justify-self: end; }
+.sd-bar__links { grid-area: links; display: flex; gap: 20px; margin: 0; padding: 0; list-style: none; }
+.sd-navlink { font-family: var(--sd-mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sd-ink-3); text-decoration: none; padding-block: 10px; white-space: nowrap; }
+.sd-navlink:hover, .sd-navlink[aria-current="page"] { color: var(--sd-ink); }
+.sd-navlink[aria-current="page"] { text-decoration: underline; text-underline-offset: 6px; text-decoration-thickness: 1px; }
+@media (max-width: 639px) {
+  .sd-bar__inner { grid-template-columns: 1fr auto; grid-template-areas: "mark account" "links links"; row-gap: 0; padding-top: 12px; }
+  .sd-bar__links { gap: 18px; border-top: 1px solid var(--sd-rule); margin-top: 12px; }
+}
+.sd-account-btn { font-family: var(--sd-mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sd-ink); background: transparent; border: 1px solid var(--sd-rule-strong); padding: 8px 12px; min-height: 36px; cursor: pointer; }
+.sd-account-btn:hover { border-color: var(--sd-ink-3); }
+.sd-account-menu { position: absolute; right: 0; top: calc(100% + 8px); z-index: 50; min-width: 200px; background: var(--sd-plate); border: 1px solid var(--sd-rule-strong); padding: 6px 0; }
+.sd-account-menu a, .sd-account-menu button { display: block; width: 100%; text-align: left; padding: 10px 14px; font-family: var(--sd-mono); font-size: 12px; letter-spacing: 0.04em; color: var(--sd-ink); background: none; border: 0; text-decoration: none; cursor: pointer; }
+.sd-account-menu a:hover, .sd-account-menu button:hover { background: var(--sd-plate-hover); }
+.sd-foot { border-top: 1px solid var(--sd-rule); margin-top: 64px; padding-block: 24px 32px; }
+.sd-foot__inner { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px 24px; }
+.sd-foot__links { display: flex; flex-wrap: wrap; gap: 20px; }
+.sd-foot a { color: var(--sd-ink-3); text-decoration: none; }
+.sd-foot a:hover { color: var(--sd-ink); }
+
+/* ── Opting out of the legacy chrome ──────────────────────────
+   A Sidera page renders SideraShell; while it is on screen the global Stellar
+   nav, footer, bottom tabs and starfield are hidden, and the light theme's
+   body colours are overridden. Field mode (red night-vision) still applies. */
+html:has(.sidera) [data-stellar-chrome] { display: none !important; }
+html:has(.sidera):not([data-field="on"]),
+html:has(.sidera):not([data-field="on"]) body { background: #0b0c0e; }
+html:has(.sidera) body::before,
+html:has(.sidera) body::after { display: none; }
+html:has(.sidera) #stellar-main { padding-top: 0; padding-bottom: 0; }

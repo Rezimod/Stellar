@@ -12,7 +12,7 @@ import { track } from '@/lib/track';
 import { Compass, Crosshair, Telescope, Hand, Lightbulb, MapPin, ChevronRight, Eye, Sparkles, Sunrise, Sunset } from 'lucide-react';
 import { TelescopeIcon } from '@/components/sky/CosmicIcons';
 import { useTheme } from '@/components/providers/ThemeProvider';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { useLocation } from '@/lib/location';
 import { DEFAULT_OBSERVER } from '@/lib/observer-location';
 import { LOCATIONS } from '@/lib/darksky-locations';
@@ -111,7 +111,7 @@ export default function SkyPage() {
   const tErrors = useTranslations('sky.errors');
   const tDir = useTranslations('sky.directions.compass');
   const tUi = useTranslations('skyUi');
-  const dateLocale = useLocale() === 'ka' ? 'ka-GE' : 'en-US';
+  const dateLocale = 'en-US';
 
   const { address } = useStellarUser();
   const [authOpen, setAuthOpen] = useState(false);

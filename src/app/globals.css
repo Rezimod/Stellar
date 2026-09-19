@@ -142,7 +142,7 @@
   --radius-full: 9999px;
 
   /* Typography — values come from next/font on <html> in layout.tsx
-     (Orbitron / Geist / JetBrains Mono / Noto Sans Georgian).
+     (Orbitron / Geist / JetBrains Mono; Sidera: Baskervville / IBM Plex Mono).
      Fallbacks live in the @theme block below. */
 
   /* Motion */
@@ -447,12 +447,11 @@
   --color-no: var(--no);
 
   /* Fonts — Orbitron for hero titles + headings, Geist for body / paragraphs,
-     JetBrains Mono for numbers, Noto Sans Georgian for KA. */
-  --font-display:  var(--font-orbitron), var(--font-georgian, 'Noto Sans Georgian'), system-ui, -apple-system, sans-serif;
-  --font-body:     var(--font-geist), var(--font-georgian, 'Noto Sans Georgian'), system-ui, -apple-system, sans-serif;
-  --font-cta:      var(--font-geist), var(--font-georgian, 'Noto Sans Georgian'), system-ui, -apple-system, sans-serif;
+     JetBrains Mono for numbers. */
+  --font-display:  var(--font-orbitron), system-ui, -apple-system, sans-serif;
+  --font-body:     var(--font-geist), system-ui, -apple-system, sans-serif;
+  --font-cta:      var(--font-geist), system-ui, -apple-system, sans-serif;
   --font-mono:     var(--font-mono, 'JetBrains Mono', ui-monospace, monospace);
-  --font-georgian: var(--font-georgian, 'Noto Sans Georgian', system-ui, sans-serif);
 }
 
 * { box-sizing: border-box; }
@@ -556,7 +555,6 @@ code, pre, .mono, [class*="font-mono"] {
 /* Typography utilities — Orbitron for display, Geist for body */
 .font-display  { font-family: var(--font-display); }
 .font-body     { font-family: var(--font-body); }
-.font-georgian { font-family: var(--font-georgian); }
 
 /* Card base */
 .card-base {

@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useLocale } from 'next-intl';
 
 /**
  * The site's own date and time, top-right, the way a control room shows it.
@@ -17,11 +16,10 @@ export default function CornerClock({
   zoneLabel: string;
   children?: React.ReactNode;
 }) {
-  const locale = useLocale();
   const [stamp, setStamp] = useState<{ date: string; time: string }>({ date: '', time: '--:--' });
 
   useEffect(() => {
-    const date = new Intl.DateTimeFormat(locale === 'ka' ? 'ka-GE' : 'en-GB', {
+    const date = new Intl.DateTimeFormat('en-GB', {
       timeZone: timezone,
       weekday: 'short',
       day: 'numeric',
@@ -41,7 +39,7 @@ export default function CornerClock({
     tick();
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
-  }, [timezone, locale]);
+  }, [timezone]);
 
   return (
     <div className="obs-corner">

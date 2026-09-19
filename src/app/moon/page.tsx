@@ -5,12 +5,10 @@
  * Scrub the date (drag the timeline or use the arrows); the moon drawing and every
  * value recompute from astronomy-engine (real ephemeris) for the selected date.
  * Location fixed to Tbilisi for rise/set; phase/illumination/distance are global.
- * Bilingual: labels/phase names + date formatting switch on the active locale (en/ka).
  */
 
 import { useMemo, useRef, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { useLocale } from 'next-intl';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import {
   Body, Illumination, MoonPhase, SearchRiseSet, SearchMoonQuarter,
@@ -24,31 +22,30 @@ const KM_MI = 0.621371;
 const PPD = 26; // px per day on the scrubber
 const RANGE = 45; // ± days
 
-// [en, ka]
 const STR = {
-  ctx:      ['Moon · Sky Tonight', 'მთვარე · ცა ახლა'],
-  today:    ['Today', 'დღეს'],
-  todayCap: ['TODAY', 'დღეს'],
-  visible:  ['Visible now', 'ახლა ხილულია'],
-  illum:    ['Illumination', 'განათება'],
-  rise:     ['Moonrise', 'ამოსვლა'],
-  set:      ['Moonset', 'ჩასვლა'],
-  nextFull: ['Next Full Moon', 'შემდეგი სავსემთვარეობა'],
-  distance: ['Distance', 'მანძილი'],
-  day:      ['DAY', 'დღე'],
-  days:     ['DAYS', 'დღე'],
-  distUnit: ['MI', 'კმ'],
+  ctx:      'Moon · Sky Tonight',
+  today:    'Today',
+  todayCap: 'TODAY',
+  visible:  'Visible now',
+  illum:    'Illumination',
+  rise:     'Moonrise',
+  set:      'Moonset',
+  nextFull: 'Next Full Moon',
+  distance: 'Distance',
+  day:      'DAY',
+  days:     'DAYS',
+  distUnit: 'MI',
 } as const;
 
-const PHASES: [string, string][] = [
-  ['New Moon', 'ახალმთვარეობა'],          // 0
-  ['Waxing Crescent', 'მზარდი ნამგალა'],  // 1
-  ['First Quarter', 'პირველი მეოთხედი'],   // 2
-  ['Waxing Gibbous', 'მზარდი ამოზნექილი'], // 3
-  ['Full Moon', 'სავსემთვარეობა'],         // 4
-  ['Waning Gibbous', 'კლებადი ამოზნექილი'],// 5
-  ['Last Quarter', 'ბოლო მეოთხედი'],       // 6
-  ['Waning Crescent', 'კლებადი ნამგალა'],  // 7
+const PHASES: string[] = [
+  'New Moon',         // 0
+  'Waxing Crescent',  // 1
+  'First Quarter',    // 2
+  'Waxing Gibbous',   // 3
+  'Full Moon',        // 4
+  'Waning Gibbous',   // 5
+  'Last Quarter',     // 6
+  'Waning Crescent',  // 7
 ];
 
 function phaseIndex(angle: number): number {
@@ -78,9 +75,8 @@ function startOfDay(d: Date): Date {
 
 export default function MoonPage() {
   const router = useRouter();
-  const lang = useLocale() === 'ka' ? 1 : 0;
-  const tag = lang ? 'ka-GE' : 'en-US';
-  const t = (k: keyof typeof STR) => STR[k][lang];
+  const tag = 'en-US';
+  const t = (k: keyof typeof STR) => STR[k];
 
   const fmtTime = (d: Date | null) =>
     d ? new Intl.DateTimeFormat(tag, { hour: 'numeric', minute: '2-digit', timeZone: 'Asia/Tbilisi' }).format(d) : '—';
@@ -123,7 +119,7 @@ export default function MoonPage() {
       const eq = Equator(Body.Moon, d, TBILISI, true, true);
       up = Horizon(d, TBILISI, eq.ra, eq.dec, 'normal').altitude > 0;
     } catch {}
-    return { angle, illum, waxing, rise, set, fullDays, km, mi, up };
+    return { angle, illum, waxing, rise, set, fullDays, mi, up };
   }, [selected]);
 
   const onDown = useCallback((e: React.PointerEvent) => {
@@ -141,8 +137,8 @@ export default function MoonPage() {
   const R = 118, C = 118;
   const marks = [-3, -2, -1, 0, 1, 2, 3];
   const isToday = offset === 0;
-  const phase = PHASES[phaseIndex(data.angle)][lang];
-  const dist = lang ? data.km : data.mi;
+  const phase = PHASES[phaseIndex(data.angle)];
+  const dist = data.mi;
 
   return (
     <div className="moonpg">

@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { MoonPhase } from 'astronomy-engine';
-import { useLocale } from 'next-intl';
 import { getTonightDarkWindow } from '@/lib/dark-window';
 import { useLocation } from '@/lib/location';
 import { LOCATION_UPDATED_EVENT } from '@/lib/observer-location';
@@ -169,7 +168,6 @@ function cachedJson<T>(url: string): Promise<T | null> {
 }
 
 export function useSkyData() {
-  const locale = useLocale() === 'ka' ? 'ka' : 'en';
   const { location, locationReady } = useLocation();
   const [data, setData] = useState<SkyData>({
     loading: true,
@@ -191,7 +189,7 @@ export function useSkyData() {
       const coords = {
         lat: location.lat,
         lon: location.lon,
-        city: location.city || (locale === 'ka' ? 'შენი მდებარეობა' : 'Your location'),
+        city: location.city || ('Your location'),
       };
 
       const dark = getTonightDarkWindow(coords.lat, coords.lon);
@@ -209,7 +207,7 @@ export function useSkyData() {
 
       const planets: PlanetData[] = planetsRaw.map(normalizePlanet);
 
-      const score = computeObservationScore(planets, verify, sunMoon, locale);
+      const score = computeObservationScore(planets, verify, sunMoon);
 
       const conditions: SkyConditions | null = verify
         ? {
@@ -226,7 +224,7 @@ export function useSkyData() {
 
       const forecast: ForecastDay[] = forecastRaw
         .slice(0, 7)
-        .map((d, i) => toForecastDay(d, forecastRaw[i + 1], locale));
+        .map((d, i) => toForecastDay(d, forecastRaw[i + 1]));
 
       setData({
         loading: false,
@@ -253,7 +251,7 @@ export function useSkyData() {
         error: err instanceof Error ? err.message : 'Failed to load sky data',
       }));
     }
-  }, [location.lat, location.lon, location.city, locationReady, locale]);
+  }, [location.lat, location.lon, location.city, locationReady]);
 
   useEffect(() => {
     if (!locationReady) return;
@@ -298,7 +296,6 @@ export function useSkyData() {
  * fetch layer as useSkyData, so it never double-fetches.
  */
 export function useSkyForecast() {
-  const locale = useLocale() === 'ka' ? 'ka' : 'en';
   const { location, locationReady } = useLocation();
   const [state, setState] = useState<{ loading: boolean; forecast: ForecastDay[]; planets: PlanetData[] }>({
     loading: true,
@@ -319,9 +316,9 @@ export function useSkyForecast() {
     ]);
 
     const planets = planetsRaw.map(normalizePlanet);
-    const forecast = forecastRaw.slice(0, 7).map((d, i) => toForecastDay(d, forecastRaw[i + 1], locale));
+    const forecast = forecastRaw.slice(0, 7).map((d, i) => toForecastDay(d, forecastRaw[i + 1]));
     setState({ loading: false, forecast, planets });
-  }, [location.lat, location.lon, locationReady, locale]);
+  }, [location.lat, location.lon, locationReady]);
 
   useEffect(() => {
     if (!locationReady) return;
@@ -443,7 +440,6 @@ function eveningWeather(d: RawSkyDay, next: RawSkyDay | undefined): {
 function toForecastDay(
   d: RawSkyDay,
   next: RawSkyDay | undefined,
-  locale: 'en' | 'ka' = 'en',
 ): ForecastDay {
   const nightHours = buildNightHours(d, next);
   // Average the same 20:00→04:00 cells the UI strips render, so the number,
@@ -462,13 +458,7 @@ function toForecastDay(
     humidityPct,
     badge: cloudCoverPct < 30 ? 'go' : cloudCoverPct < 70 ? 'maybe' : 'skip',
     recommendation:
-      locale === 'ka'
-        ? cloudCoverPct < 30
-          ? 'ღრმა ცა'
-          : cloudCoverPct < 70
-            ? 'ნათელი სამიზნეები'
-            : 'სახლში დარჩი'
-        : cloudCoverPct < 30
+      cloudCoverPct < 30
           ? 'Deep sky'
           : cloudCoverPct < 70
             ? 'Bright targets'
@@ -483,7 +473,6 @@ function computeObservationScore(
   planets: PlanetData[],
   verify: RawVerify | null,
   sunMoon: RawSunMoon | null,
-  locale: 'en' | 'ka' = 'en',
 ): ObservationScore {
   const cloudCover = verify?.cloudCover ?? 50;
   const moonIllum = sunMoon?.moonIllumination ?? 0.5;
@@ -499,17 +488,10 @@ function computeObservationScore(
   const score = Math.round(cloudScore + moonScore + targetScore);
 
   let headline = '';
-  if (locale === 'ka') {
-    if (score >= 75) headline = 'მოწმენდილია — დროა გახვიდე დასაკვირვებლად';
-    else if (score >= 50) headline = 'ამაღამ პირობები მისაღებია';
-    else if (score >= 25) headline = 'ხილვადობა შეზღუდულია — აირჩიე ნათელი სამიზნეები';
-    else headline = 'პირობები სუსტია — სცადე ხვალ';
-  } else {
-    if (score >= 75) headline = 'Clear night — go observe';
-    else if (score >= 50) headline = 'Decent conditions tonight';
-    else if (score >= 25) headline = 'Limited visibility — pick bright targets';
-    else headline = 'Poor conditions — better luck tomorrow';
-  }
+  if (score >= 75) headline = 'Clear night — go observe';
+  else if (score >= 50) headline = 'Decent conditions tonight';
+  else if (score >= 25) headline = 'Limited visibility — pick bright targets';
+  else headline = 'Poor conditions — better luck tomorrow';
 
   const ranked = planets
     .filter((p) => p.visible && p.altitude > 10)
@@ -519,24 +501,14 @@ function computeObservationScore(
 
   const moonRiseLabel = sunMoon?.moonRise ? formatHHmm(sunMoon.moonRise) : null;
   const moonNote = moonUp
-    ? locale === 'ka'
-      ? `მთვარე განათებულია ${Math.round(moonIllum * 100)}%-ით`
-      : `Moon ${Math.round(moonIllum * 100)}% illuminated`
+    ? `Moon ${Math.round(moonIllum * 100)}% illuminated`
     : moonRiseLabel
-    ? locale === 'ka'
-      ? `მთვარე აღარ გამოჩნდება ${moonRiseLabel}-ის შემდეგ`
-      : `No moon after ${moonRiseLabel}`
-    : locale === 'ka'
-      ? 'მთვარის გარეშე'
-      : 'Moonless';
+    ? `No moon after ${moonRiseLabel}`
+    : 'Moonless';
   const targetNote = ranked.length > 0
-    ? locale === 'ka'
-      ? ` საუკეთესო სამიზნეებია: ${ranked.join(', ')}.`
-      : ` Best targets: ${ranked.join(', ')}.`
+    ? ` Best targets: ${ranked.join(', ')}.`
     : '';
-  const summary = locale === 'ka'
-    ? `${cloudCover}% ღრუბლიანობა, ${moonNote}.${targetNote}`
-    : `${cloudCover}% cloud, ${moonNote}.${targetNote}`;
+  const summary = `${cloudCover}% cloud, ${moonNote}.${targetNote}`;
 
   return { score, headline, summary, bestTargets: ranked };
 }

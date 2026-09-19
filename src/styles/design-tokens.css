@@ -56,9 +56,6 @@
   --glass-border: var(--border);
   --glass-blur:   16px;
 
-  /* Fonts — defer to layout.tsx next/font assignments */
-  --font-georgian: 'Noto Sans Georgian', system-ui, sans-serif;
-
   /* Type scale (rem) */
   --text-xs:   0.6875rem;  /* 11px */
   --text-sm:   0.8125rem;  /* 13px */
