@@ -127,7 +127,13 @@ export function connectRealtime(url: string, key: string): RealtimeClient {
 
   const open = () => {
     if (closed) return;
-    const sock = new WebSocket(endpoint);
+    let sock: WebSocket;
+    try {
+      sock = new WebSocket(endpoint);
+    } catch {
+      reconnectTimer = window.setTimeout(open, Math.min(15_000, 500 * 2 ** retry++));
+      return;
+    }
     ws = sock;
     sock.onopen = () => {
       retry = 0;
