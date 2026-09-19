@@ -16,13 +16,14 @@ import type { Kit } from '@/lib/solar-system/moon-kit';
 import type { PointOfInterest } from '@/lib/solar-system/moon-base';
 import { pivot } from '@/lib/solar-system/moon-batch';
 import { acquireModel, firstMesh } from '@/game/models';
+import { TELESCOPE_PAD } from '@/lib/solar-system/moon-terrain';
 
 /** The supply crate, built in Blender (assets-src/blender/crate.py). */
 const CRATE_MODEL = '/explore/models/crate.glb';
 /** The modular base kit: every piece a named root node (assets-src/blender/base_kit.py). */
 const KIT_MODEL = '/explore/models/base-kit.glb';
 /** The telescope station: up on the western ridge, well away from the landing zone's dust. */
-export const TELESCOPE_SITE = { x: -58, z: -44, yaw: 0.9 };
+export const TELESCOPE_SITE = { x: TELESCOPE_PAD.x, z: TELESCOPE_PAD.z, yaw: 0.9 };
 const UP = new THREE.Vector3(0, 1, 0);
 
 export interface Anchor { x: number; z: number; y: number; yaw: number }
@@ -76,7 +77,6 @@ export function buildZones(
   const status = { power: statusMat(), comms: statusMat(), isru: statusMat(), charger: statusMat() };
   const blinkRed = own(new THREE.MeshStandardMaterial({ color: 0x1a0404, emissive: new THREE.Color(0xff3b2e), emissiveIntensity: 2, roughness: 0.4 }));
   const reflector = own(new THREE.MeshStandardMaterial({ color: 0x2a1a06, emissive: new THREE.Color(0xffa23a), emissiveIntensity: 0.7, roughness: 0.5 }));
-  const dishMat = own(new THREE.MeshStandardMaterial({ color: 0xc3c6cb, roughness: 0.35, metalness: 0.8, side: THREE.DoubleSide }));
   const hopperMat = own(new THREE.MeshStandardMaterial({ color: 0x70757c, roughness: 0.5, metalness: 0.75, side: THREE.DoubleSide }));
 
   const place = (x: number, z: number, yaw = 0): THREE.Group => {
@@ -103,55 +103,39 @@ export function buildZones(
     kit.tube(group, pts.map(([x, z]) => [x, heightAt(x, z) + r + 0.02, z]), r, mat, pts.length * 10);
   };
   const noShadow = (o: THREE.Mesh) => { o.castShadow = false; return o; };
+  // The base kit's pieces (assets-src/blender/base_kit.py): each placed as a
+  // copy of its named node once the file is in; `onPlaced` wires its hinges.
+  const kitSpots: { name: string; parent: THREE.Object3D; onPlaced?: (o: THREE.Object3D) => void }[] = [];
+  const kitAt = (name: string, parent: THREE.Object3D, lx = 0, lz = 0, yaw = 0, onPlaced?: (o: THREE.Object3D) => void) => {
+    const holder = new THREE.Group();
+    holder.position.set(lx, 0, lz);
+    holder.rotation.y = yaw;
+    parent.add(holder);
+    kitSpots.push({ name, parent: holder, onPlaced });
+    return holder;
+  };
 
   // ── Power: three vertical tracking arrays down a service corridor, the
   // battery units and the conditioning cabinet at its foot. ──
   const sunYaw = Math.atan2(sunDir.x, sunDir.z);
   const power = place(37, -12, 0);
   const arrays: THREE.Object3D[] = [];
+  const sunTilt = -Math.asin(THREE.MathUtils.clamp(sunDir.y, -1, 1));
   for (let i = 0; i < 3; i++) {
     const lz = (i - 1) * 8.5;
-    const foot = new THREE.Group();
-    foot.position.set(0, 0, lz);
-    power.add(foot);
-    kit.cyl(foot, 0.75, 0.9, 0.45, m.anodised, 0, 0.22, 0, 20);
-    for (let k = 0; k < 3; k++) {
-      const a = (k / 3) * Math.PI * 2 + 0.3;
-      kit.strut(foot, 0, 0.35, 0, Math.cos(a) * 1.6, 0.04, Math.sin(a) * 1.6, 0.05, m.steel);
-      noShadow(kit.cyl(foot, 0.22, 0.26, 0.06, m.steel, Math.cos(a) * 1.6, 0.03, Math.sin(a) * 1.6, 12));
-    }
-    kit.rbox(foot, 0.5, 0.35, 0.4, 0.04, m.shellDusty, 0.62, 0.3, 0);
-    kit.box(foot, 0.08, 0.05, 0.02, i === 1 ? status.power : m.green, 0.62, 0.36, 0.21);
-    const head = pivot(new THREE.Group());
-    head.position.y = 0.45;
-    foot.add(head);
-    kit.cyl(head, 0.1, 0.13, 7.2, m.alu, 0, 3.6, 0, 12);
-    kit.cyl(head, 0.2, 0.2, 0.34, m.carbon, 0, 0.3, 0, 14);
-    for (const sx of [-1, 1]) {
-      // The blanket array: a tall PV sheet held flat by top and bottom spreaders.
-      kit.box(head, 1.9, 5.4, 0.025, m.solar, sx * 1.1, 4.0, 0);
-      noShadow(kit.box(head, 1.94, 0.06, 0.05, m.alu, sx * 1.1, 6.72, 0));
-      kit.box(head, 1.94, 0.08, 0.06, m.alu, sx * 1.1, 1.26, 0);
-      noShadow(kit.box(head, 0.04, 5.46, 0.04, m.alu, sx * 2.06, 4.0, 0));
-    }
-    kit.box(head, 4.3, 0.1, 0.1, m.anodised, 0, 6.8, -0.04);
-    kit.box(head, 4.3, 0.12, 0.12, m.anodised, 0, 1.2, -0.04);
-    kit.strut(head, -2.1, 6.8, -0.1, 0, 7.2, -0.1, 0.015, m.steel);
-    kit.strut(head, 2.1, 6.8, -0.1, 0, 7.2, -0.1, 0.015, m.steel);
-    arrays.push(head);
+    kitAt('SolarArray', power, 0, lz, 0, (o) => {
+      const panel = o.getObjectByName('SolarArray_Panel');
+      if (!panel) return;
+      // Yaw turns the tilted panel: the tilt faces it up to the sun's height.
+      panel.rotation.order = 'YXZ';
+      panel.rotation.x = sunTilt;
+      arrays[i] = panel;
+    });
     solid(power, 0, lz, 1.2);
   }
   // Batteries and cabinet on the corridor side nearest the habitats.
   for (let i = 0; i < 2; i++) {
-    const b = new THREE.Group();
-    b.position.set(-4.2, 0, -5 + i * 3.2);
-    power.add(b);
-    kit.rbox(b, 1.2, 1.3, 2.5, 0.06, m.anodised, 0, 0.72, 0);
-    kit.box(b, 1.0, 0.06, 2.2, m.radiator, 0, 1.4, 0);
-    noShadow(kit.box(b, 0.02, 0.06, 1.6, m.green, -0.61, 1.0, 0));
-    const plate = noShadow(kit.box(b, 0.02, 0.36, 0.9, kit.label(['BATT ' + (i + 1), '48 kWh'], { w: 256, h: 128, bg: '#1f2328', fg: '#e8e6df' }), -0.62, 0.6, 0));
-    plate.rotation.y = 0;
-    noShadow(kit.box(b, 0.02, 0.18, 0.5, kit.label(['HIGH VOLTAGE'], { w: 256, h: 64, bg: '#d9a21a', fg: '#15181d' }), -0.62, 0.95, 0.8));
+    kitAt('BatteryBank', power, -4.2, -5 + i * 3.2, Math.PI / 2);
     solid(power, -4.2, -5 + i * 3.2, 1.45);
   }
   const cabinet = new THREE.Group();
@@ -220,27 +204,11 @@ export function buildZones(
   // ── Comms: the high-gain dish on its pedestal, the electronics enclosure,
   // two whips and a beacon. ──
   const comms = place(22, -36, -0.4);
-  kit.cyl(comms, 0.9, 1.1, 0.5, m.anodised, 0, 0.25, 0, 22);
-  kit.cyl(comms, 0.32, 0.4, 5.4, m.shell, 0, 3.1, 0, 18);
-  kit.cyl(comms, 0.48, 0.48, 0.3, m.carbon, 0, 5.8, 0, 20);
-  for (let k = 0; k < 3; k++) {
-    const a = (k / 3) * Math.PI * 2;
-    kit.strut(comms, Math.cos(a) * 1.9, 0.05, Math.sin(a) * 1.9, 0, 3.0, 0, 0.06, m.steel);
-  }
-  const dishHead = pivot(new THREE.Group());
-  dishHead.position.set(0, 6.3, 0);
-  comms.add(dishHead);
-  kit.mesh(dishHead, new THREE.SphereGeometry(3.0, kit.seg(40), kit.seg(12), 0, Math.PI * 2, 0, Math.PI * 0.3), dishMat, 0, 0, 3.0).rotation.x = -Math.PI / 2;
-  for (let k = 0; k < 8; k++) {
-    const a = (k / 8) * Math.PI * 2;
-    kit.strut(dishHead, Math.cos(a) * 2.3, Math.sin(a) * 2.3, 0.75, 0, 0, -0.35, 0.035, m.steel);
-  }
-  for (let k = 0; k < 4; k++) {
-    const a = (k / 4) * Math.PI * 2 + Math.PI / 4;
-    kit.strut(dishHead, Math.cos(a) * 2.6, Math.sin(a) * 2.6, 1.0, 0, 0, 2.6, 0.025, m.steel);
-  }
-  kit.mesh(dishHead, new THREE.ConeGeometry(0.18, 0.45, 12), m.carbon, 0, 0, 2.7).rotation.x = -Math.PI / 2;
-  kit.rbox(dishHead, 0.7, 0.5, 0.5, 0.05, m.shellDusty, 0, 0, -0.5);
+  let dishYaw: THREE.Object3D | null = null;
+  let dishPitch: THREE.Object3D | null = null;
+  kitAt('Dish', comms, 0, 0, 0, (o) => { dishYaw = o.getObjectByName('Dish_Yaw') ?? null; dishPitch = o.getObjectByName('Dish_Pitch') ?? null; });
+  kitAt('CommsMast', comms, -3.4, -1.8, 0.3);
+  solid(comms, -3.4, -1.8, 1.0);
   const enclosure = new THREE.Group();
   enclosure.position.set(2.1, 0, 1.2);
   comms.add(enclosure);
@@ -250,7 +218,6 @@ export function buildZones(
   noShadow(kit.box(enclosure, 0.9, 0.18, 0.02, kit.label(['COMMS · S/Ka BAND']), 0, 1.1, 0.46));
   kit.cyl(enclosure, 0.015, 0.02, 2.4, m.steel, -0.55, 2.4, -0.25, 6);
   kit.cyl(enclosure, 0.015, 0.02, 1.8, m.steel, 0.55, 2.1, -0.25, 6);
-  kit.cyl(comms, 0.04, 0.04, 0.12, blinkRed, 0, 6.02, 0, 8);
   solid(comms, 0, 0, 1.6);
   solid(comms, 2.1, 1.2, 0.9);
   poi('dish', comms, 0, 3.5, 7);
@@ -342,41 +309,41 @@ export function buildZones(
   // ── The rover bay: a marked stand, the charger, the pallets, the tool
   // rack, a spare wheel. ──
   const bay = place(22, 10, -0.6);
+  kitAt('Garage', bay, 0, 0, 0, (o) => {
+    const door = o.getObjectByName('Garage_Door');
+    if (door) door.position.y += 1.95;
+    // The charger's lights are the charging status: they pulse while it charges.
+    const charge = o.getObjectByName('Garage_Charge') as THREE.Mesh | undefined;
+    if (charge?.isMesh) charge.material = status.charger;
+  });
+  // The garage walls: back and sides (the front is the open bay).
+  for (const lx of [-3, -1, 1, 3]) solid(bay, lx, -3.3, 0.55);
+  for (const lz of [-2, 0, 2]) { solid(bay, -4.1, lz, 0.5); solid(bay, 4.1, lz, 0.5); }
   for (const lx of [-1.95, 1.95]) noShadow(kit.box(bay, 0.14, 0.02, 5.8, m.hazard, lx, 0.012, 0));
   noShadow(kit.box(bay, 4.0, 0.02, 0.14, m.hazard, 0, 0.012, -2.9));
   noShadow(kit.box(bay, 1.2, 0.02, 0.5, m.hazard, 0, 0.012, -1.6));
-  const charger = new THREE.Group();
-  charger.position.set(-3.2, 0, -2.2);
-  bay.add(charger);
-  kit.rbox(charger, 0.55, 1.55, 0.45, 0.06, m.shellDusty, 0, 0.78, 0);
-  noShadow(kit.box(charger, 0.36, 0.22, 0.02, m.screen, 0, 1.2, 0.23));
-  noShadow(kit.mesh(charger, new THREE.TorusGeometry(0.11, 0.02, 6, 16), status.charger, 0, 0.8, 0.24));
-  kit.cylZ(charger, 0.18, 0.2, m.carbon, 0.3, 0.5, 0, 14);
-  kit.tube(bay, [[-2.9, 0.5, -2.2], [-2.2, 0.08, -1.9], [-1.4, 0.06, -1.7]], 0.03, m.cable, 16);
-  noShadow(kit.box(charger, 0.45, 0.12, 0.02, kit.label(['CHARGE 2'], { w: 128, h: 48 }), 0, 1.45, 0.23));
-  solid(bay, -3.2, -2.2, 0.5);
   anchors.charger = anchorAt(bay, -2.2, -1.2, 0);
   anchors.serviceBay = anchorAt(bay, 0, 0, 0);
   // Pallets of cargo, one crate opened and not closed again. The crate is a
   // real model: every copy is one instance of it, placed once the file is in.
   const crateSpots: { parent: THREE.Object3D; x: number; y: number; z: number; yaw: number }[] = [];
   const crate = (parent: THREE.Object3D, x: number, y: number, z: number, yaw = 0) => { crateSpots.push({ parent, x, y, z, yaw }); };
-  kit.box(bay, 1.8, 0.12, 1.3, m.anodised, 3.8, 0.06, -1.6);
-  crate(bay, 3.4, 0.12, -1.9);
-  crate(bay, 4.2, 0.12, -1.9, 0.06);
-  crate(bay, 3.8, 0.72, -1.9, -0.04);
-  crate(bay, 3.6, 0.12, -1.25, 0.12);
-  solid(bay, 3.8, -1.6, 1.2);
-  kit.box(bay, 1.8, 0.12, 1.3, m.anodised, 4.0, 0.06, 1.4);
-  crate(bay, 3.7, 0.12, 1.4, -0.1);
-  const lid = kit.box(bay, 0.78, 0.05, 0.62, m.orange, 4.55, 0.5, 1.5);
+  kit.box(bay, 1.8, 0.12, 1.3, m.anodised, 6.3, 0.06, -1.6);
+  crate(bay, 5.9, 0.12, -1.9);
+  crate(bay, 6.7, 0.12, -1.9, 0.06);
+  crate(bay, 6.3, 0.72, -1.9, -0.04);
+  crate(bay, 6.1, 0.12, -1.25, 0.12);
+  solid(bay, 6.3, -1.6, 1.2);
+  kit.box(bay, 1.8, 0.12, 1.3, m.anodised, 6.5, 0.06, 1.4);
+  crate(bay, 6.2, 0.12, 1.4, -0.1);
+  const lid = kit.box(bay, 0.78, 0.05, 0.62, m.orange, 7.05, 0.5, 1.5);
   lid.rotation.z = -1.15;
-  for (let k = 0; k < 3; k++) kit.cyl(bay, 0.08, 0.08, 0.28, m.shell, 4.35 + (k % 2) * 0.18, 0.27, 1.2 + k * 0.2, 10);
+  for (let k = 0; k < 3; k++) kit.cyl(bay, 0.08, 0.08, 0.28, m.shell, 6.85 + (k % 2) * 0.18, 0.27, 1.2 + k * 0.2, 10);
   // Low enough to vault at a run.
-  solid(bay, 4.0, 1.4, 1.1, 0.75);
+  solid(bay, 6.5, 1.4, 1.1, 0.75);
   // The tool rack: scoop, rake, tongs, hammer — and one empty hook.
   const rack = new THREE.Group();
-  rack.position.set(-3.8, 0, 1.3);
+  rack.position.set(-5.8, 0, 1.3);
   rack.rotation.y = Math.PI / 2;
   bay.add(rack);
   kit.box(rack, 1.6, 0.06, 0.06, m.steel, 0, 1.55, 0);
@@ -388,10 +355,10 @@ export function buildZones(
   kit.box(rack, 0.2, 0.14, 0.03, m.anodised, -0.55, 1.05, 0.06);
   kit.box(rack, 0.24, 0.03, 0.08, m.anodised, -0.2, 1.03, 0.06);
   kit.box(rack, 0.1, 0.05, 0.05, m.steel, 0.5, 1.09, 0.06);
-  solid(bay, -3.8, 1.3, 0.8);
+  solid(bay, -5.8, 1.3, 0.8);
   // The spare wheel against the rack.
   const spare = new THREE.Group();
-  spare.position.set(-3.35, 0.55, 2.4);
+  spare.position.set(-5.35, 0.55, 2.4);
   spare.rotation.set(0, 0.2, 1.25);
   bay.add(spare);
   kit.cylX(spare, 0.55, 0.4, m.anodised, 0, 0, 0, 24);
@@ -505,19 +472,35 @@ export function buildZones(
   }, () => undefined);
 
   // The kit's pieces, placed once the file is in: each a copy of its named node.
-  const kitSpots: { name: string; parent: THREE.Object3D; onPlaced?: (o: THREE.Object3D) => void }[] = [
-    {
-      name: 'TelescopePlatform', parent: scope,
-      onPlaced(o) {
-        for (const [n, side] of [['Telescope_ShutterL', 1], ['Telescope_ShutterR', -1]] as const) {
-          const node = o.getObjectByName(n);
-          if (node) telescope.shutters.push({ node, side });
-        }
-      },
-    },
-  ];
+  kitAt('TelescopePlatform', scope, 0, 0, 0, (o) => {
+    // The clamshell: the +X half opens with negative roll, the -X half positive.
+    for (const [n, side] of [['Telescope_ShutterL', -1], ['Telescope_ShutterR', 1]] as const) {
+      const node = o.getObjectByName(n);
+      if (node) telescope.shutters.push({ node, side });
+    }
+  });
+
+  // Floodlight masts over the working areas, beacons at the garage apron,
+  // and the small things a working base has lying about.
+  for (const [x, z, yaw] of [[9, 3, -2.4], [-13, -1, 2.3], [31, -3, -1.2], [-25, 13, 2.6], [-47, -30, 2.2]] as const) kitAt('LightMast', place(x, z), 0, 0, yaw);
+  for (const lx of [-3, 3]) kitAt('NavBeacon', bay, lx, 4.6);
+  kitAt('O2Tanks', isru, 4.9, 1.6, -Math.PI / 2);
+  solid(isru, 4.9, 1.6, 1.4);
+  kitAt('CargoContainer', place(18, 28), 0, 0, 0.5);
+  colliders.push({ x: 18, z: 28, r: 1.5 });
+  kitAt('CargoContainer', place(-14, 30), 0, 0, -0.2);
+  colliders.push({ x: -14, z: 30, r: 1.5 });
+  kitAt('ToolRack', place(3.6, -15.5), 0, 0, -0.3);
+  colliders.push({ x: 3.6, z: -15.5, r: 1.0 });
+  kitAt('UtilityBox', place(14, -30), 0, 0, 0.4);
+  kitAt('CableSpool', place(15.6, -29), 0, 0, 1.1);
+  kitAt('UtilityBox', place(26.5, -13), 0, 0, -0.2);
+
   let releaseKit: (() => void) | null = null;
   const kitPlaced: THREE.Object3D[] = [];
+  // The kit's lamps are the base's own: they follow its power.
+  let kitLamp: THREE.MeshStandardMaterial | null = null;
+  let kitLampFull = 1;
   acquireModel(KIT_MODEL, true).then(({ scene, release }) => {
     if (disposed) { release(); return; }
     releaseKit = release;
@@ -527,14 +510,32 @@ export function buildZones(
       const o = src.clone(true);
       o.position.set(0, 0, 0);
       o.rotation.set(0, 0, 0);
-      o.traverse((c) => { if ((c as THREE.Mesh).isMesh) { c.castShadow = true; c.receiveShadow = true; } });
+      o.traverse((c) => {
+        const mesh = c as THREE.Mesh;
+        if (!mesh.isMesh) return;
+        mesh.castShadow = true; mesh.receiveShadow = true;
+        const mt = mesh.material as THREE.MeshStandardMaterial;
+        if (mt.name === 'KitLamp') {
+          if (!kitLamp) { kitLamp = mt.clone(); kitLampFull = mt.emissiveIntensity; owned.push(kitLamp); }
+          mesh.material = kitLamp;
+        }
+      });
+      // Far off, the lighter body stands in for the full one.
+      const body = o.getObjectByName(`${spot.name}_Body`);
+      const far = o.getObjectByName(`${spot.name}_LOD1`);
+      if (body && far) {
+        const lod = new THREE.LOD();
+        body.removeFromParent(); far.removeFromParent();
+        lod.addLevel(body, 0);
+        lod.addLevel(far, 70);
+        o.add(lod);
+      }
       spot.parent.add(o);
       kitPlaced.push(o);
       spot.onPlaced?.(o);
     }
   }, () => undefined);
 
-  const tmp = new THREE.Vector3();
   const aim = new THREE.Vector3();
   const setStatus: ZonesHandle['setStatus'] = (which, state) => status[which].emissive.setHex(STATUS[state]);
 
@@ -560,8 +561,12 @@ export function buildZones(
       // The dish tracks Earth, less whatever the job has knocked it off by.
       const c = Math.cos(handle.dishFault.yaw); const s = Math.sin(handle.dishFault.yaw);
       aim.set(earthDir.x * c + earthDir.z * s, earthDir.y + handle.dishFault.pitch, -earthDir.x * s + earthDir.z * c).normalize();
-      dishHead.getWorldPosition(tmp).add(aim);
-      dishHead.lookAt(tmp);
+      if (dishYaw && dishPitch) {
+        // Azimuth in the dish's own frame, then elevation: pitching up is negative about X.
+        dishYaw.rotation.y = Math.atan2(aim.x, aim.z) - comms.rotation.y;
+        dishPitch.rotation.x = -Math.asin(THREE.MathUtils.clamp(aim.y, -1, 1));
+      }
+      if (kitLamp) kitLamp.emissiveIntensity = kitLampFull * k;
       const blink = Math.sin(t * 2.6) > 0.55 ? 2.2 : 0.12;
       blinkRed.emissiveIntensity = blink * k;
       reflector.emissiveIntensity = 0.55 + 0.15 * Math.sin(t * 0.7);

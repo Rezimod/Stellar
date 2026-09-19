@@ -14,6 +14,8 @@ export const TERRAIN_WALK_RADIUS = 165;
 /** Base pad: level ground so the habitats sit square. */
 export const PAD_CENTER = new THREE.Vector2(0, -6);
 export const PAD_RADIUS = 46;
+/** The telescope station's footing on the western ridge: levelled to the crest. */
+export const TELESCOPE_PAD = { x: -58, z: -44, r: 5.5 };
 
 function hash(ix: number, iy: number, seed: number): number {
   let n = (ix * 374761393 + iy * 668265263 + seed * 1442695041) | 0;
@@ -318,7 +320,13 @@ export function makeMoonTerrain(lite: boolean, density = 1): TerrainHandle {
     return h;
   };
   const padHeight = rawHeight(PAD_CENTER.x, PAD_CENTER.y) * 0.3;
+  const scopeLevel = rawHeight(TELESCOPE_PAD.x, TELESCOPE_PAD.z);
   const heightFn = (x: number, z: number): number => {
+    const ds = Math.hypot(x - TELESCOPE_PAD.x, z - TELESCOPE_PAD.z);
+    if (ds < TELESCOPE_PAD.r + 8) {
+      const t = ds <= TELESCOPE_PAD.r ? 0 : smooth((ds - TELESCOPE_PAD.r) / 8);
+      return scopeLevel + (rawHeight(x, z) - scopeLevel) * t;
+    }
     const h = rawHeight(x, z);
     const d = Math.hypot(x - PAD_CENTER.x, z - PAD_CENTER.y);
     if (d >= PAD_RADIUS + 22) return h;
