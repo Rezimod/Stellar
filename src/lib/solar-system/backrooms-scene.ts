@@ -532,7 +532,7 @@ export function makeBackrooms(deps: BackroomsDeps): BackroomsHandle {
         // end of the corridor is worth having something between you and it.
         cam.chase(dt, {
           position: cosmonaut.position, velocity: cosmonaut.velocity, yaw: cosmonaut.yaw,
-          height: 2.2, distance: Math.max(cam.distance, 6.5),
+          height: 2.0, distance: Math.max(cam.distance, 7.5), fovExtra: 18,
           speedFrac: Math.min(1, cosmonaut.state.speed / cosmonaut.profile.run),
         }, { follow: 2.4, lead: 0.22, leadMax: 0.5, fovKick: 3, horizontal: 10, vertical: 5, blocked: walled, shoulder: 0.38 });
       } else if (telemetry.phase === 'climb' || telemetry.phase === 'out') {

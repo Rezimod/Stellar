@@ -22,7 +22,7 @@ export const SIDE = CHUNK * PERIOD;
 export const CHUNK_M = CELL * CHUNK;
 /** The plan is laid out in these units and drawn this many times over around
  *  a crew of ordinary size: the rooms are huge and the explorers small in them. */
-export const SCALE = 3;
+export const SCALE = 4;
 
 /** 0 open, 1 full wall, 2 half-height wall. */
 export type Edge = 0 | 1 | 2;
