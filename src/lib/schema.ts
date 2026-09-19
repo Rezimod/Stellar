@@ -1,4 +1,5 @@
-import { pgTable, uuid, text, integer, timestamp, doublePrecision, boolean, uniqueIndex, index, date, jsonb } from 'drizzle-orm/pg-core'
+import { sql } from 'drizzle-orm'
+import { pgTable, uuid, text, integer, bigint, bigserial, timestamp, doublePrecision, boolean, uniqueIndex, index, date, jsonb } from 'drizzle-orm/pg-core'
 
 // Run in Neon SQL editor if migrating an existing DB:
 //   ALTER TABLE public.users ADD COLUMN IF NOT EXISTS avatar text;
@@ -779,10 +780,13 @@ export const edition = pgTable('edition', {
   ownerWallet: text('owner_wallet').notNull(),
   acquiredAt: timestamp('acquired_at', { withTimezone: true }).defaultNow().notNull(),
   capsuleId: uuid('capsule_id'),
+  /** Set when the edition was bought on its own: one order, one edition. */
+  orderId: uuid('order_id'),
   /** The card's latest capture. Shared by every edition of the card. */
   observationCaptureId: uuid('observation_capture_id'),
 }, (t) => [
   uniqueIndex('edition_card_number_unique').on(t.cardId, t.editionNumber),
+  uniqueIndex('edition_order_unique').on(t.orderId).where(sql`order_id IS NOT NULL`),
   index('edition_owner_idx').on(t.ownerWallet),
 ])
 
@@ -797,4 +801,135 @@ export const nightlyTarget = pgTable('nightly_target', {
   captureId: uuid('capture_id'),
 }, (t) => [
   index('nightly_target_card_idx').on(t.cardId, t.nightDate),
+])
+
+// Sidera capsules (Phase 5). A capsule is committed to when it is listed: its
+// secret is drawn then, sealed with CAPSULE_SEAL_KEY, and only SHA-256 of it is
+// published. The buyer's nonce arrives at purchase; the draws come from both;
+// the secret is revealed when the capsule is opened, or voided. capsule_log is
+// the public record of all of it and is append-only — a trigger refuses every
+// UPDATE, DELETE and TRUNCATE, and no code path issues one.
+//
+//   ALTER TABLE edition ADD COLUMN IF NOT EXISTS order_id uuid;
+//   CREATE UNIQUE INDEX IF NOT EXISTS edition_order_unique
+//     ON edition (order_id) WHERE order_id IS NOT NULL;
+//
+//   CREATE TABLE IF NOT EXISTS capsule (
+//     id uuid PRIMARY KEY,
+//     set_id uuid NOT NULL,
+//     sequence bigint NOT NULL UNIQUE,
+//     commitment text NOT NULL UNIQUE,
+//     server_secret_sealed text NOT NULL,
+//     server_secret text,
+//     state text NOT NULL DEFAULT 'listed',
+//     price_gel double precision NOT NULL,
+//     cards_per_capsule integer NOT NULL,
+//     listed_at timestamptz NOT NULL DEFAULT now(),
+//     buyer_wallet text,
+//     buyer_nonce text,
+//     buyer_signature text,
+//     purchase_hash text,
+//     order_id uuid,
+//     purchased_at timestamptz,
+//     opened_at timestamptz,
+//     voided_at timestamptz
+//   );
+//   CREATE INDEX IF NOT EXISTS capsule_state_idx ON capsule (state, sequence);
+//   CREATE INDEX IF NOT EXISTS capsule_buyer_idx ON capsule (buyer_wallet);
+//
+//   CREATE TABLE IF NOT EXISTS capsule_pull (
+//     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+//     capsule_id uuid NOT NULL,
+//     draw_index integer NOT NULL,
+//     edition_id uuid NOT NULL,
+//     card_id uuid NOT NULL,
+//     rarity text NOT NULL,
+//     revealed_at timestamptz NOT NULL DEFAULT now()
+//   );
+//   CREATE UNIQUE INDEX IF NOT EXISTS capsule_pull_draw_unique
+//     ON capsule_pull (capsule_id, draw_index);
+//
+//   CREATE TABLE IF NOT EXISTS capsule_log (
+//     seq bigserial PRIMARY KEY,
+//     capsule_id uuid NOT NULL,
+//     capsule_sequence bigint NOT NULL,
+//     event text NOT NULL,
+//     commitment text NOT NULL,
+//     buyer_wallet text,
+//     buyer_nonce text,
+//     purchase_hash text,
+//     outcome jsonb,
+//     at timestamptz NOT NULL DEFAULT now()
+//   );
+//   CREATE UNIQUE INDEX IF NOT EXISTS capsule_log_event_unique
+//     ON capsule_log (capsule_id, event);
+//   CREATE OR REPLACE FUNCTION capsule_log_append_only() RETURNS trigger
+//     LANGUAGE plpgsql AS $$
+//     BEGIN RAISE EXCEPTION 'capsule_log is append-only'; END $$;
+//   CREATE OR REPLACE TRIGGER capsule_log_no_update_delete
+//     BEFORE UPDATE OR DELETE ON capsule_log
+//     FOR EACH ROW EXECUTE FUNCTION capsule_log_append_only();
+//   CREATE OR REPLACE TRIGGER capsule_log_no_truncate
+//     BEFORE TRUNCATE ON capsule_log
+//     FOR EACH STATEMENT EXECUTE FUNCTION capsule_log_append_only();
+export const capsule = pgTable('capsule', {
+  /** Chosen by the server before insert: it is part of what the draws are derived from. */
+  id: uuid('id').primaryKey(),
+  setId: uuid('set_id').notNull(),
+  /** 1, 2, 3 … across every capsule ever listed. A missing number is a capsule missing from the log. */
+  sequence: bigint('sequence', { mode: 'number' }).notNull().unique(),
+  /** SHA-256 of the server secret, hex. Public from the moment of listing. */
+  commitment: text('commitment').notNull().unique(),
+  /** The secret, AES-256-GCM under CAPSULE_SEAL_KEY. Never leaves the server. */
+  serverSecretSealed: text('server_secret_sealed').notNull(),
+  /** The secret in the clear — null until the capsule is opened or voided. */
+  serverSecret: text('server_secret'),
+  /** 'listed' | 'purchased' | 'opened' | 'void' */
+  state: text('state').notNull().default('listed'),
+  priceGel: doublePrecision('price_gel').notNull(),
+  cardsPerCapsule: integer('cards_per_capsule').notNull(),
+  listedAt: timestamp('listed_at', { withTimezone: true }).defaultNow().notNull(),
+  buyerWallet: text('buyer_wallet'),
+  buyerNonce: text('buyer_nonce'),
+  /** The buyer's ed25519 signature over the purchase message, base58, when one was given. */
+  buyerSignature: text('buyer_signature'),
+  /** SHA-256 of the purchase message, which binds the nonce to this capsule and holder. */
+  purchaseHash: text('purchase_hash'),
+  orderId: uuid('order_id'),
+  purchasedAt: timestamp('purchased_at', { withTimezone: true }),
+  openedAt: timestamp('opened_at', { withTimezone: true }),
+  voidedAt: timestamp('voided_at', { withTimezone: true }),
+}, (t) => [
+  index('capsule_state_idx').on(t.state, t.sequence),
+  index('capsule_buyer_idx').on(t.buyerWallet),
+])
+
+export const capsulePull = pgTable('capsule_pull', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  capsuleId: uuid('capsule_id').notNull(),
+  drawIndex: integer('draw_index').notNull(),
+  editionId: uuid('edition_id').notNull(),
+  cardId: uuid('card_id').notNull(),
+  rarity: text('rarity').notNull(),
+  revealedAt: timestamp('revealed_at', { withTimezone: true }).defaultNow().notNull(),
+}, (t) => [
+  uniqueIndex('capsule_pull_draw_unique').on(t.capsuleId, t.drawIndex),
+])
+
+export const capsuleLog = pgTable('capsule_log', {
+  /** Orders the log. May skip a number after a rolled-back write; the listing sequence may not. */
+  seq: bigserial('seq', { mode: 'number' }).primaryKey(),
+  capsuleId: uuid('capsule_id').notNull(),
+  capsuleSequence: bigint('capsule_sequence', { mode: 'number' }).notNull(),
+  /** 'listed' | 'purchased' | 'opened' | 'voided' */
+  event: text('event').notNull(),
+  commitment: text('commitment').notNull(),
+  buyerWallet: text('buyer_wallet'),
+  buyerNonce: text('buyer_nonce'),
+  purchaseHash: text('purchase_hash'),
+  /** Opened: the secret, odds, supply and pulls. Voided: the secret and the reason. */
+  outcome: jsonb('outcome'),
+  at: timestamp('at', { withTimezone: true }).defaultNow().notNull(),
+}, (t) => [
+  uniqueIndex('capsule_log_event_unique').on(t.capsuleId, t.event),
 ])

@@ -1,0 +1,67 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { and, eq } from 'drizzle-orm';
+import { getDb } from '@/lib/db';
+import { orders } from '@/lib/schema';
+import { assertOwnsWallet, verifyPrivy } from '@/lib/api-auth';
+import { paused } from '@/lib/kill-switch';
+import { sideraOpenRateLimit } from '@/lib/rate-limit';
+import { openCapsule, readCapsule } from '@/lib/sidera/capsule';
+import { SoldOutError } from '@/lib/sidera/randomness';
+import { limited } from '@/lib/sidera/route-guards';
+
+export const runtime = 'nodejs';
+
+/**
+ * Opens a capsule: only its holder, and only once its order is paid. The
+ * response reveals the secret committed to at listing, so the holder can
+ * check the draws themselves. Opening twice returns the same cards.
+ */
+export async function POST(req: NextRequest) {
+  const p = paused();
+  if (p) return p;
+  const privyId = await verifyPrivy(req);
+  if (!privyId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const body = (await req.json().catch(() => null)) as { capsuleId?: unknown } | null;
+  const capsuleId = body?.capsuleId;
+  if (typeof capsuleId !== 'string' || !/^[0-9a-f-]{36}$/.test(capsuleId)) {
+    return NextResponse.json({ error: 'capsuleId required' }, { status: 400 });
+  }
+
+  const db = getDb();
+  if (!db) return NextResponse.json({ error: 'Database not configured' }, { status: 503 });
+
+  const c = await readCapsule(db, capsuleId);
+  // Someone else's capsule and no capsule at all look the same from outside.
+  if (!c || !c.buyer_wallet || !c.order_id) return NextResponse.json({ error: 'Capsule not found' }, { status: 404 });
+  if (!(await assertOwnsWallet(privyId, c.buyer_wallet))) return NextResponse.json({ error: 'Capsule not found' }, { status: 404 });
+
+  const l = await limited(sideraOpenRateLimit, c.buyer_wallet);
+  if (l) return l;
+
+  const [order] = await db
+    .select({ status: orders.status })
+    .from(orders)
+    .where(and(eq(orders.id, c.order_id), eq(orders.privyId, privyId)))
+    .limit(1);
+  if (!order) return NextResponse.json({ error: 'Capsule not found' }, { status: 404 });
+  if (order.status !== 'paid') return NextResponse.json({ error: 'The capsule’s payment is not confirmed yet' }, { status: 409 });
+
+  try {
+    const result = await openCapsule(db, capsuleId);
+    if (!result.ok) return NextResponse.json({ error: 'This capsule cannot be opened' }, { status: 409 });
+    return NextResponse.json({
+      capsuleId,
+      sequence: Number(c.sequence),
+      commitment: c.commitment,
+      nonce: c.buyer_nonce,
+      secret: result.secret,
+      alreadyOpened: result.alreadyOpened,
+      cards: result.pulls,
+    });
+  } catch (err) {
+    if (err instanceof SoldOutError) return NextResponse.json({ error: err.message }, { status: 409 });
+    console.error('[sidera/capsules/open]', err);
+    return NextResponse.json({ error: 'Could not open the capsule — please retry.' }, { status: 500 });
+  }
+}

@@ -49,6 +49,14 @@ export const firstLightPosterRateLimit = { limit: (id: string) => makeLimit('60 
 export const subscribeRateLimit = { limit: (id: string) => makeLimit('3600 s', 10, 'rl:subscribe').limit(id) };
 export const clubActivateRateLimit = { limit: (id: string) => makeLimit('3600 s', 5, 'rl:club').limit(id) };
 
+// Sidera capsules and cards. Buying opens an order and fixes a capsule's
+// nonce, so it is capped per wallet; opening and confirming are cheap to retry
+// but each one reads the chain or writes a batch; the public log is read-only.
+export const sideraBuyRateLimit = { limit: (id: string) => makeLimit('3600 s', 20, 'rl:sidera:buy').limit(id) };
+export const sideraConfirmRateLimit = { limit: (id: string) => makeLimit('60 s', 30, 'rl:sidera:confirm').limit(id) };
+export const sideraOpenRateLimit = { limit: (id: string) => makeLimit('60 s', 20, 'rl:sidera:open').limit(id) };
+export const sideraLogRateLimit = { limit: (id: string) => makeLimit('60 s', 60, 'rl:sidera:log').limit(id) };
+
 // Daily ceilings (24h sliding) — bound the worst-case AI cost / token
 // issuance per user even if the per-minute / per-hour limits are saturated.
 // These are the numbers we cite in the pitch math:

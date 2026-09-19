@@ -52,3 +52,36 @@ most reversible option; each needs a yes/no from Rezi.
 10. **Real-node path is blocked on the Darkview contract.** `DarkviewAdapter.capture()`
     returns retry by design: the contract has no machine-to-machine capture
     operation, and it forbids inventing one. Needs a contract change from Darkview.
+
+## Phase 5
+
+11. **Digital, physical, or both?** Gate 2's cost list (fulfilment, packaging,
+    returns) implies printed cards. The capsule order stores no shipping address
+    today (the orders columns are written empty). Decide before Gate 2's numbers
+    are final; `contentsCostPerCardGel`, `fulfilmentGel` and `packagingGel` are 0
+    until then.
+
+12. **Unpaid capsules.** A purchase fixes the nonce before payment, so an order
+    that is never paid has to be voided (admin/cron `POST /api/sidera/capsules/void`),
+    and the log shows it as voided after purchase, with the reason and the
+    revealed secret. What timeout voids an unpaid capsule — and should a cron do it?
+
+13. **Refunds.** A direct card order whose card sells out between order and
+    payment is marked `refund_due`; a payment that lands after its capsule was
+    voided has nothing to open. Both need a manual refund path; none exists.
+
+14. **Direct sales and capsule supply.** Listing refuses capsules the remaining
+    editions cannot fill, but a direct card purchase can still take an edition a
+    listed capsule was counting on. With Set 001's 3,035 editions this is
+    theoretical; at a sold-out set it is not.
+
+15. **Release gating.** Set 001 is `draft`. Nothing in the capsule or card routes
+    checks the set's status — listing is the gate for capsules, but a direct card
+    purchase works on a draft set. Gate on `card_set.status = 'released'`?
+
+16. **CAPSULE_SEAL_KEY.** Must be set (32 bytes hex) in any environment that
+    lists or opens capsules. Losing it strands every listed-but-unopened
+    capsule: its secret can no longer be revealed, so it can be neither opened
+    nor voided. Capsule 3 on the sidera branch is one such — listed by a demo
+    run with a temporary key, permanently on sale, and it will show as an
+    unopenable listing.
