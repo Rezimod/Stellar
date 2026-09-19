@@ -107,6 +107,8 @@ export function makeFlora(profile: WorldProfile, terrain: WorldTerrain, lite: bo
           float pulse = 0.55 + 0.45 * sin(uTime * 1.6 - vH * 2.2 + vGlow.r * 3.0);
           totalEmissiveRadiance = vGlow * pulse * ${(base.emissiveIntensity ?? 1).toFixed(2)};`);
     };
+    // The sway and glow are baked into the shader text: each pair is its own program.
+    mat.customProgramCacheKey = () => `flora-glow|${sway.toFixed(3)}|${(base.emissiveIntensity ?? 1).toFixed(2)}`;
     mats.push(mat);
     return mat;
   };

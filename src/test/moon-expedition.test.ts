@@ -153,7 +153,8 @@ describe('the expedition', () => {
       // Walk to wherever the telemetry points, and work it.
       c.stand(c.at.x, c.at.z, 0.1);
       const tx = c.at.x + Math.sin(m.telemetry.bearing) * (m.telemetry.distance - 1.2);
-      const tz = c.at.z + Math.cos(m.telemetry.bearing) * (m.telemetry.distance - 1.2);
+      // Bearings are map bearings: north is -z.
+      const tz = c.at.z - Math.cos(m.telemetry.bearing) * (m.telemetry.distance - 1.2);
       c.stand(tx, tz, 0.1);
       expect(c.io.prompt.label).toBe('clear');
       c.hold(1);
@@ -166,7 +167,7 @@ describe('the expedition', () => {
     // The seam wakes first; the hatch only answers after it.
     c.stand(m.marker ? m.marker.x : c.at.x, m.marker ? m.marker.z : c.at.z, 0.1);
     const hx = c.at.x + Math.sin(m.telemetry.bearing) * m.telemetry.distance;
-    const hz = c.at.z + Math.cos(m.telemetry.bearing) * m.telemetry.distance;
+    const hz = c.at.z - Math.cos(m.telemetry.bearing) * m.telemetry.distance;
     c.stand(hx, hz, 2);
     expect(m.telemetry.objective).toBe('obj.contactWait');
     c.stand(hx, hz, 5);

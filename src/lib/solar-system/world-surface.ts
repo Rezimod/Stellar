@@ -537,7 +537,7 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
     telemetry.crouched = cosmonaut.state.crouched;
     telemetry.stumbling = cosmonaut.state.stumble > 0;
     telemetry.sliding = cosmonaut.state.sliding;
-    telemetry.heading = earth ? earth.heading(cam.yaw) : (THREE.MathUtils.radToDeg(Math.atan2(-Math.sin(cam.yaw), -Math.cos(cam.yaw))) + 360) % 360;
+    telemetry.heading = earth ? earth.heading(cam.yaw) : (THREE.MathUtils.radToDeg(Math.atan2(-Math.sin(cam.yaw), Math.cos(cam.yaw))) + 360) % 360;
     const work = Math.min(1, cosmonaut.state.effort + (interactions.prompt.holding ? 0.35 : 0));
     exertion += (work - exertion) * (1 - Math.exp(-dt * 0.35));
     if (telemetry.phase === 'surface') {

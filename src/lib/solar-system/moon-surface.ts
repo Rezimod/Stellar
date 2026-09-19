@@ -16,7 +16,7 @@
 // glass run once per drawn frame.
 
 import * as THREE from 'three';
-import { softSpriteTexture } from '@/lib/solar-system/soft-sprite';
+import { makeMoonSky } from '@/lib/solar-system/moon-sky';
 import { makeMoonTerrain, makeMoonHorizon, TERRAIN_WALK_RADIUS, PAD_CENTER } from '@/lib/solar-system/moon-terrain';
 import { makeMoonDust } from '@/lib/solar-system/moon-fx';
 import { makeCosmonaut, type SuitAnim, type WalkInput } from '@/lib/solar-system/moon-cosmonaut';
@@ -230,8 +230,9 @@ const EGRESS_HOLD = 4.2;
 const HOLE_CALL_AFTER = 75;
 const STEP = 1 / 120;
 const MAX_STEPS = 12;
-const SUN_DIR = new THREE.Vector3(-0.62, 0.46, 0.64).normalize();
-const EARTH_DIR = new THREE.Vector3(0.28, 0.6, -0.75).normalize();
+// Near the south pole the Sun never climbs far: a low sun out of the south-west,
+// long shadows across the base. Earth's direction is real, from moon-sky.
+const SUN_DIR = new THREE.Vector3(-0.62, 0.3, 0.72).normalize();
 
 export function starfield(count: number, band: number): THREE.Points {
   const total = count + band;
@@ -287,14 +288,6 @@ function makeEnvironment(renderer: THREE.WebGLRenderer): THREE.WebGLRenderTarget
   return target;
 }
 
-const AtmosphereShader = {
-  uniforms: { uSun: { value: new THREE.Vector3() } },
-  vertexShader: `varying vec3 vN; varying vec3 vV; void main() { vN = normalize(normalMatrix * normal); vec4 mv = modelViewMatrix * vec4(position, 1.0); vV = normalize(-mv.xyz); gl_Position = projectionMatrix * mv; }`,
-  fragmentShader: `uniform vec3 uSun; varying vec3 vN; varying vec3 vV;
-    void main() { float rim = pow(1.0 - max(dot(vN, vV), 0.0), 3.2); float lit = clamp(dot(vN, uSun) * 1.4 + 0.35, 0.0, 1.0);
-      gl_FragColor = vec4(vec3(0.42, 0.66, 1.0) * rim * lit * 1.6, rim * lit); }`,
-};
-
 export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): MoonSurfaceHandle {
   const isMobile = window.matchMedia('(max-width: 768px)').matches;
   // One hard sun; the host owns it, its shadow box and the light pool.
@@ -308,54 +301,12 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
   // ── A faint bounce off the regolith from below, and earthshine. No sky to
   // scatter light, but the sunlit ground bounces a warm grey up into every
   // shadow: that is what keeps a shaded suit readable. ──
-  scene.add(new THREE.HemisphereLight(0x11141b, 0x6f6b65, 0.55));
-  const earthFill = new THREE.DirectionalLight(0xa9bde0, 0.16);
-  earthFill.position.copy(EARTH_DIR);
+  scene.add(new THREE.HemisphereLight(0x11141b, 0x6f6b65, 0.4));
+  const sky = makeMoonSky(SUN_DIR, { faint: quality.stars, band: quality.band });
+  scene.add(sky.group);
+  const earthFill = new THREE.DirectionalLight(0xa9bde0, 0.12);
+  earthFill.position.copy(sky.earthDir);
   scene.add(earthFill);
-
-  const stars = starfield(quality.stars, quality.band);
-  scene.add(stars);
-  const glowTex = softSpriteTexture();
-  const sunSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: new THREE.Color(6, 5.7, 5.2), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
-  sunSprite.position.copy(SUN_DIR).multiplyScalar(1700);
-  sunSprite.scale.setScalar(90);
-  scene.add(sunSprite);
-  const sunHalo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: 0xfff1d6, transparent: true, opacity: 0.22, depthWrite: false, blending: THREE.AdditiveBlending }));
-  sunHalo.position.copy(sunSprite.position);
-  sunHalo.scale.setScalar(420);
-  scene.add(sunHalo);
-
-  const earthGeom = new THREE.SphereGeometry(52, 32, 20);
-  const earthMat = new THREE.MeshStandardMaterial({ color: 0x8fb7ff, roughness: 0.9, metalness: 0 });
-  const earth = new THREE.Mesh(earthGeom, earthMat);
-  earth.position.copy(EARTH_DIR).multiplyScalar(1250);
-  earth.rotation.z = 0.41;
-  scene.add(earth);
-  const cloudGeom = new THREE.SphereGeometry(52.7, 32, 20);
-  const cloudMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 1, transparent: true, opacity: 0, depthWrite: false });
-  const clouds = new THREE.Mesh(cloudGeom, cloudMat);
-  earth.add(clouds);
-  const atmoGeom = new THREE.SphereGeometry(54.5, 32, 20);
-  const atmoMat = new THREE.ShaderMaterial({ ...AtmosphereShader, uniforms: { uSun: { value: new THREE.Vector3() } }, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false });
-  earth.add(new THREE.Mesh(atmoGeom, atmoMat));
-  let earthTexCancelled = false;
-  const loader = new THREE.TextureLoader();
-  loader.load('/solar-system/planets/earth-1k.jpg', (tex) => {
-    if (earthTexCancelled) { tex.dispose(); return; }
-    tex.colorSpace = THREE.SRGBColorSpace;
-    tex.anisotropy = 4;
-    earthMat.map = tex;
-    earthMat.color.set(0xffffff);
-    earthMat.needsUpdate = true;
-  });
-  loader.load('/solar-system/planets/earth-clouds-1k.jpg', (tex) => {
-    if (earthTexCancelled) { tex.dispose(); return; }
-    tex.colorSpace = THREE.SRGBColorSpace;
-    cloudMat.map = tex;
-    cloudMat.alphaMap = tex;
-    cloudMat.opacity = 0.9;
-    cloudMat.needsUpdate = true;
-  });
 
   const terrain = makeMoonTerrain(lite, quality.propDensity);
   scene.add(terrain.mesh);
@@ -409,6 +360,14 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
       }
     }
   }
+  for (const path of base.zones.paths) terrain.clearRocks(path, 1.4);
+  for (const tr of base.zones.tracks) terrain.clearRocks(tr, 2.2);
+  /** A crater dug now: the ground, its rocks and the prints on it all agree. */
+  const dig = (x: number, z: number, r: number, depth: number) => {
+    terrain.stampCrater(x, z, r, depth);
+    prints.clear(x, z, r * 1.2);
+    history.clear(x, z, r * 1.2);
+  };
   const horizon = makeMoonHorizon(terrain, lite);
   scene.add(horizon);
 
@@ -433,12 +392,12 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
   const rover = makeRover(base.rover, base.roverCollider, base.roverParts, terrain, dust, prints, gears);
   const lander = makeLander(PAD_CENTER.x, PAD_CENTER.y + 26, terrain.heightAt, dust, lite, lightPool);
   scene.add(lander.group);
-  const mission = makeMission(terrain.heightAt, terrain.stampCrater, dust, lite, lightPool, base.zones.anchors.scienceTerminal);
+  const mission = makeMission(terrain.heightAt, dig, dust, lite, lightPool, base.zones.anchors.scienceTerminal);
   scene.add(mission.group);
   base.colliders.push(...mission.colliders);
   base.walkColliders.push(...mission.colliders);
   const meteors = makeMeteors({
-    heightAt: terrain.heightAt, stampCrater: terrain.stampCrater, dust, colliders: base.colliders,
+    heightAt: terrain.heightAt, stampCrater: dig, dust, colliders: base.colliders,
     walkRadius: TERRAIN_WALK_RADIUS, first: 24, every: 58, lights: lightPool,
   });
   scene.add(meteors.group);
@@ -1018,7 +977,7 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
         }
       }
       bt.distance = bt.known && !bt.escaped ? hole : -1;
-      bt.bearing = Math.atan2(SINKHOLE.x - crew.x, SINKHOLE.z - crew.z);
+      bt.bearing = Math.atan2(SINKHOLE.x - crew.x, crew.z - SINKHOLE.z);
       if (!driving() && !tracking() && sinkhole.onEdge(crew.x, crew.z)) startFall();
       jobs.update(dt, mctx);
 
@@ -1089,7 +1048,8 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
     telemetry.cadence = cosmonaut.state.cadence;
     telemetry.grounded = cosmonaut.state.grounded;
     telemetry.fallen = cosmonaut.state.fallen;
-    telemetry.heading = (THREE.MathUtils.radToDeg(Math.atan2(-Math.sin(cam.yaw), -Math.cos(cam.yaw))) + 360) % 360;
+    // A map, not a mirror: north is -Z, east +X (the base's own layout), so what is on your right is right on the ribbon.
+    telemetry.heading = (THREE.MathUtils.radToDeg(Math.atan2(-Math.sin(cam.yaw), Math.cos(cam.yaw))) + 360) % 360;
 
     const work = onRover ? 0.1 : Math.min(1, cosmonaut.state.effort + (interactions.prompt.holding ? 0.35 : 0));
     exertion += (work - exertion) * (1 - Math.exp(-dt * 0.35));
@@ -1135,15 +1095,12 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
     dust.update(dt, terrain.heightAt);
     rover.light(lightPool);
     if (telemetry.headlamp && !driving()) headlamp(lightPool, crew, view === 'helmet' ? cam.yaw + Math.PI : cosmonaut.yaw);
-    base.update(dt, t, EARTH_DIR, crew.x, crew.z);
+    base.update(dt, t, sky.earthDir, crew.x, crew.z);
     sinkhole.update(dt, t);
-    earth.rotation.y += dt * 0.004;
-    clouds.rotation.y += dt * 0.0015;
-    atmoMat.uniforms.uSun.value.copy(SUN_DIR).transformDirection(camera.matrixWorldInverse);
     terrain.setSunView(tmp.copy(SUN_DIR).transformDirection(camera.matrixWorldInverse));
     host.followShadow(crew, SUN_DIR);
     lightPool.flush(crew.x, crew.y, crew.z);
-    stars.position.copy(camera.position);
+    sky.update(dt, camera, renderer.getPixelRatio());
     if (surfacing > 0) { surfacing = Math.max(0, surfacing - dt * 0.7); post.setBlack(surfacing); }
     host.render(dt);
   };
@@ -1163,13 +1120,7 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
     dust.dispose();
     terrain.dispose();
     horizon.geometry.dispose();
-    earthGeom.dispose(); cloudGeom.dispose(); atmoGeom.dispose();
-    earthMat.map?.dispose(); cloudMat.map?.dispose();
-    earthMat.dispose(); cloudMat.dispose(); atmoMat.dispose();
-    sunSprite.material.dispose();
-    sunHalo.material.dispose();
-    stars.geometry.dispose();
-    (stars.material as THREE.Material).dispose();
+    sky.dispose();
     envTarget.dispose();
   };
 
@@ -1252,7 +1203,6 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
     backrooms: () => br,
     dispose() {
       if (window.__stellarMoon === handle) delete window.__stellarMoon;
-      earthTexCancelled = true;
       unsubSettings();
       unsubQuality();
       audio.dispose();

@@ -436,7 +436,7 @@ export function makeMission(
   const point = (x: number, z: number, ctx: MissionContext) => {
     const dx = x - ctx.crewX; const dz = z - ctx.crewZ;
     telemetry.distance = Math.hypot(dx, dz);
-    telemetry.bearing = Math.atan2(dx, dz);
+    telemetry.bearing = Math.atan2(dx, -dz);
   };
 
   handle.update = (dt, t, ctx) => {

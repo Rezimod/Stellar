@@ -1032,10 +1032,14 @@ Draw calls after this phase (probe, DPR 1, 1280×800): orrery 195 → 153, fligh
 - Known: at close range from below, slivers of the gold visor show inside the chin ring. The upper-arm flags, chest roundel, pack flag and wordmark read in the turntable (`assets-src/renders/cosmonaut/sheet.png`, reference on top).
 
 ### Phase 4 — terrain, lighting, sky
-- [ ] D14 (P2): `EARTH_DIR` is hard-coded. Drive Earth's position and terminator from the ephemeris.
-- [ ] C17 (P3): meteor craters leave rocks and prints misplaced.
-- [ ] E07 (P2): flora glow materials collide on one shader cache key (World, but the same gotcha applies to any new Moon shader hook).
-- [ ] A11 / A23: AA and lighting, if not already closed in Phase 1.
+- [x] D14 (P2): the sky is real (`moon-sky.ts`). Stellar Base stands in the south polar region (76°S, 0°E), so Earth hangs low in the north over the base as seen from the pad. Its direction and size (1.8–2.0°, was 4.8°) come from the libration for the day, and it drifts 5–20° up through the month. The dish and the missions read `sky.earthDir`. Earth is turned so the side in daylight right now faces the scene sun, its pole on its real axis. The ~70 catalogue bright stars and the Milky Way sit at their true places, a seeded faint field between them, sized by magnitude; they dim when the Sun or Earth is in frame. The sky rides with the camera (no parallax), with Earth at 3 km so the horizon hills can hide it.
+- [x] Sun: lower (17°, from the south-west), a darker bounce (hemisphere 0.55 → 0.4) and a weaker earthshine fill. A polar site keeps the sun low for real; its hour is still chosen for play.
+- [x] Compass: the Moon's and the worlds' HUD compass was mirrored (north +Z, east +X: things on your right showed left on the ribbon). Now north −Z, east +X, the base layout's own frame; mission, job and sinkhole bearings use the same `atan2(dx, −dz)`. Tbilisi already did.
+- [x] C17 (P3): a new crater blows the small rocks out of its bowl, re-seats the rest on the new ground and takes the prints in it (`terrain.stampCrater` + `prints.clear`, through `dig` in moon-surface). Rocks are cleared off the walked paths and rover tracks.
+- [x] E07 (P2): flora glow materials carry a `customProgramCacheKey` of their sway and glow.
+- [x] Captures (headless, real GPU): Earthrise over the habitats from beside the lander, the base in raking light, the far horizon, the ridge. No bloom washout; 0 console errors. Moon probe 95 draws total in the base view.
+- [ ] C10: the shadow map still redraws every frame (dynamic casters move every frame anyway); a static/dynamic split is open.
+- [ ] A09 (orrery galactic tier hitch) is not in the lunar slice; it stays open for the orrery pass.
 
 ### Phase 5 — base as a place
 - [ ] D02 (P1): no telescope platform, dome or mount exists. Build the zone and its state hooks.

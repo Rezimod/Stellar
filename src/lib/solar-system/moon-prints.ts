@@ -12,6 +12,8 @@ export interface PrintsHandle {
   track: (x: number, y: number, z: number, yaw: number, width: number) => void;
   /** How many prints stay before the oldest is recycled (the preset's cap, live). */
   setCap: (n: number) => void;
+  /** A crater swallowed the ground within r: its prints go with it. */
+  clear: (x: number, z: number, r: number) => void;
   dispose: () => void;
 }
 
@@ -97,6 +99,17 @@ export function makePrints(max: number, cap = max): PrintsHandle {
     },
     track(x, y, z, yaw, width) {
       put(x, y, z, yaw, width / 0.16, 1.4);
+    },
+    clear(x, z, r) {
+      let hit = false;
+      for (let i = 0; i < mesh.count; i++) {
+        mesh.getMatrixAt(i, m);
+        p.setFromMatrixPosition(m);
+        if ((p.x - x) ** 2 + (p.z - z) ** 2 > r * r) continue;
+        mesh.setMatrixAt(i, m.makeScale(0, 0, 0));
+        hit = true;
+      }
+      if (hit) mesh.instanceMatrix.needsUpdate = true;
     },
     setCap(n) {
       limit = Math.max(1, Math.min(max, Math.round(n)));
