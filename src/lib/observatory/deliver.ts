@@ -19,8 +19,10 @@
 import { eq } from 'drizzle-orm'
 import { getDb } from '@/lib/db'
 import { firstLightOrder } from '@/lib/schema'
+import { attachToTonightsCard } from '@/lib/sidera/attach'
 import { recordCapture } from './captures'
 import { adapterFor, getNode } from './nodes'
+import type { ObservatoryNode } from './types'
 import { release } from './reservations'
 import {
   expireScheduled,
@@ -109,6 +111,7 @@ async function work(request: CaptureRequest, now: Date): Promise<Outcome> {
   }
 
   await attachToPoster(request.id, recorded.capture.id)
+  await attachToCard(node, request.targetId, recorded.capture.id, now)
   return 'delivered'
 }
 
@@ -152,5 +155,28 @@ async function attachToPoster(requestId: string, captureId: string): Promise<voi
       .where(eq(firstLightOrder.captureRequestId, requestId))
   } catch (err) {
     console.error('[observatory] cannot attach capture to a First Light order', err)
+  }
+}
+
+/**
+ * Tonight's Sidera card, if this frame is of its object.
+ *
+ * One capture serves every edition of the card, so a request that happened to
+ * photograph tonight's object is that night's observation. A failure here is
+ * the card's problem and never the customer's: their delivery already stands.
+ */
+async function attachToCard(
+  node: ObservatoryNode,
+  targetId: string,
+  captureId: string,
+  now: Date,
+): Promise<void> {
+  const db = getDb()
+  if (!db) return
+
+  try {
+    await attachToTonightsCard(db, node, { targetId, captureId, now })
+  } catch (err) {
+    console.error('[observatory] cannot attach capture to tonight’s card', err)
   }
 }

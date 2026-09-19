@@ -1,4 +1,5 @@
 import { Body, Equator, Horizon, Observer, SearchAltitude, SearchRiseSet } from 'astronomy-engine';
+import { siteLocalHours } from '@/lib/observatory/site-time';
 
 /** The Sun's altitude in degrees above the horizon, right now, where you are. */
 export function getSunAltitude(lat: number, lon: number, date: Date): number {
@@ -35,20 +36,34 @@ const ASTRONOMICAL_DEPRESSION = -12;
  *   - if currently inside the dark window: the current moment
  *   - otherwise: the midpoint of tonight's dark window (most representative)
  *   - fallback when the sun never reaches -18° (high-latitude summer): now
+ *
+ * "Noon" is the runtime's own clock unless `timezone` names the site's. The
+ * runtime is UTC on Vercel, so without it a server asking about Tbilisi
+ * between 12:00 and 16:00 local time is handed last night.
  */
 export function getTonightDarkWindow(
   lat: number,
   lon: number,
   reference: Date = new Date(),
+  timezone?: string,
 ): TonightDarkWindow {
   const observer = new Observer(lat, lon, 0);
 
   // Anchor the search at noon yesterday so we cover both the pre-dawn slice
   // (still part of "tonight" in colloquial use) and the upcoming evening.
-  const anchor = new Date(reference);
-  anchor.setHours(12, 0, 0, 0);
-  if (reference.getHours() < 12) {
-    anchor.setDate(anchor.getDate() - 1);
+  let anchor: Date;
+  if (timezone) {
+    // Walk back from the reference to the last noon on the site's wall clock.
+    const hours = siteLocalHours(timezone, reference);
+    const sinceNoon = hours >= 12 ? hours - 12 : hours + 12;
+    anchor = new Date(reference.getTime() - Math.round(sinceNoon * 60) * 60_000);
+    anchor.setUTCSeconds(0, 0);
+  } else {
+    anchor = new Date(reference);
+    anchor.setHours(12, 0, 0, 0);
+    if (reference.getHours() < 12) {
+      anchor.setDate(anchor.getDate() - 1);
+    }
   }
 
   let duskStart: Date | null = null;

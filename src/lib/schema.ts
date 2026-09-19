@@ -661,3 +661,107 @@ export const firstLightOrder = pgTable('first_light_order', {
 }, (t) => [
   index('first_light_order_privy_idx').on(t.privyId, t.createdAt),
 ])
+
+// Sidera. A card is a real object; an edition is one holder's numbered copy of
+// it. Every clear night the observatory photographs one card's object, and that
+// single capture is attached to every edition of the card at once — there is
+// no per-holder queue. The card's observation history is its nightly_target
+// rows that carry a capture_id, append-only; edition.observation_capture_id is
+// only the pointer to the latest of them.
+//
+//   CREATE TABLE IF NOT EXISTS card (
+//     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+//     designation text NOT NULL UNIQUE,
+//     name text NOT NULL,
+//     object_type text NOT NULL,
+//     rarity text NOT NULL,
+//     observation_status text NOT NULL,
+//     edition_size integer NOT NULL,
+//     target_id text NOT NULL,
+//     catalog_ref text NOT NULL,
+//     ra_hours double precision,
+//     dec_deg double precision,
+//     surface_lat double precision,
+//     surface_lon double precision,
+//     art_url text,
+//     blurb text NOT NULL,
+//     created_at timestamptz NOT NULL DEFAULT now()
+//   );
+//   CREATE INDEX IF NOT EXISTS card_target_idx ON card (target_id);
+//
+//   CREATE TABLE IF NOT EXISTS edition (
+//     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+//     card_id uuid NOT NULL,
+//     edition_number integer NOT NULL,
+//     owner_wallet text NOT NULL,
+//     acquired_at timestamptz NOT NULL DEFAULT now(),
+//     capsule_id uuid,
+//     observation_capture_id uuid
+//   );
+//   CREATE UNIQUE INDEX IF NOT EXISTS edition_card_number_unique
+//     ON edition (card_id, edition_number);
+//   CREATE INDEX IF NOT EXISTS edition_owner_idx ON edition (owner_wallet);
+//
+//   CREATE TABLE IF NOT EXISTS nightly_target (
+//     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+//     night_date date NOT NULL UNIQUE,
+//     card_id uuid NOT NULL,
+//     decided_at timestamptz NOT NULL DEFAULT now(),
+//     decision_basis text NOT NULL,
+//     capture_id uuid
+//   );
+//   CREATE INDEX IF NOT EXISTS nightly_target_card_idx
+//     ON nightly_target (card_id, night_date);
+export const card = pgTable('card', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  /** 'TYCHO' — the name a card is filed under, and what its URL will use. */
+  designation: text('designation').notNull().unique(),
+  name: text('name').notNull(),
+  objectType: text('object_type').notNull(),
+  /** 'common' | 'rare' | 'epic' | 'legendary' */
+  rarity: text('rarity').notNull(),
+  /** 'dedicated' | 'eligible' | 'not_available' — whether Node 01 can photograph it. */
+  observationStatus: text('observation_status').notNull(),
+  editionSize: integer('edition_size').notNull(),
+  /** The observatory target the telescope is pointed at — 'moon' for a lunar crater. */
+  targetId: text('target_id').notNull(),
+  catalogRef: text('catalog_ref').notNull(),
+  /** J2000, for fixed objects only. Null for bodies whose RA/Dec move. */
+  raHours: doublePrecision('ra_hours'),
+  decDeg: doublePrecision('dec_deg'),
+  /** Selenographic latitude and longitude, for features on the Moon. */
+  surfaceLat: doublePrecision('surface_lat'),
+  surfaceLon: doublePrecision('surface_lon'),
+  artUrl: text('art_url'),
+  blurb: text('blurb').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+}, (t) => [
+  index('card_target_idx').on(t.targetId),
+])
+
+export const edition = pgTable('edition', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  cardId: uuid('card_id').notNull(),
+  editionNumber: integer('edition_number').notNull(),
+  ownerWallet: text('owner_wallet').notNull(),
+  acquiredAt: timestamp('acquired_at', { withTimezone: true }).defaultNow().notNull(),
+  capsuleId: uuid('capsule_id'),
+  /** The card's latest capture. Shared by every edition of the card. */
+  observationCaptureId: uuid('observation_capture_id'),
+}, (t) => [
+  uniqueIndex('edition_card_number_unique').on(t.cardId, t.editionNumber),
+  index('edition_owner_idx').on(t.ownerWallet),
+])
+
+export const nightlyTarget = pgTable('nightly_target', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  /** The site-local date the night begins on. One object per night. */
+  nightDate: date('night_date').notNull().unique(),
+  cardId: uuid('card_id').notNull(),
+  decidedAt: timestamp('decided_at', { withTimezone: true }).defaultNow().notNull(),
+  decisionBasis: text('decision_basis').notNull(),
+  /** Set once, when that night's photograph exists. */
+  captureId: uuid('capture_id'),
+}, (t) => [
+  index('nightly_target_card_idx').on(t.cardId, t.nightDate),
+])

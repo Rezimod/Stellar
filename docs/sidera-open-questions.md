@@ -34,3 +34,21 @@ most reversible option; each needs a yes/no from Rezi.
    it. A local `npm run build` therefore needs `NEXT_PUBLIC_PRIVY_APP_ID` set
    (Vercel already has it). Watch the preview for any page that relied on
    per-request rendering.
+
+## Phase 3
+
+7. **Crash gap in the lifecycle script.** A crash between `recordCapture` and
+   the attach leaves one orphaned capture; a re-run records a second. Harmless
+   on the simulator; worth a guard before the real node runs unattended.
+
+8. **Customer captures can fill tonight's card.** The cron path attaches a
+   First Light / request capture of tonight's object to the card when the night
+   has none yet. That is the "one capture serves all" rule applied literally —
+   confirm a customer's frame may become the public card image.
+
+9. **TYCHO facts** (85 km, rays over 1,500 km) come from general knowledge —
+   source-check with the Set 001 data pass.
+
+10. **Real-node path is blocked on the Darkview contract.** `DarkviewAdapter.capture()`
+    returns retry by design: the contract has no machine-to-machine capture
+    operation, and it forbids inventing one. Needs a contract change from Darkview.
