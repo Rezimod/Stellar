@@ -2360,6 +2360,86 @@
 .moon-surface[data-immersive='true'] .moon-hud__unhide { display: grid; }
 @keyframes moon-pulse { 0%, 100% { opacity: 0.7; } 50% { opacity: 1; } }
 
+/* ── Build mode: a key under the top row, and a small console under it. ── */
+.build-hud__toggle { position: absolute; top: calc(var(--edge-top) + 52px); right: var(--edge-right); color: var(--hud-dim); }
+.build-hud__toggle[data-on='true'] { color: var(--hud-warm); border-color: rgba(255, 194, 102, 0.7) !important; background: rgba(60, 38, 8, 0.55) !important; }
+.moon-surface:not([data-phase='surface']) .build-hud__toggle,
+.moon-surface:not([data-phase='surface']) .build-hud,
+.moon-surface[data-driving='true'] .build-hud__toggle,
+.moon-surface[data-backrooms]:not([data-backrooms='']):not([data-backrooms='fall']) .build-hud__toggle { display: none; }
+.build-hud {
+  position: absolute;
+  top: calc(var(--edge-top) + 104px);
+  right: var(--edge-right);
+  width: min(272px, calc(100% - 28px));
+  max-height: calc(100% - var(--edge-top) - 104px - var(--edge-bottom) - 150px);
+  min-height: 0;
+  overflow-y: auto;
+  display: grid;
+  gap: 8px;
+  padding: 10px 12px 12px;
+  border: 1px solid var(--hud-line);
+  border-radius: 10px;
+  background: var(--hud-solid);
+  pointer-events: auto;
+  font-size: 12px;
+  animation: build-hud-in 0.18s ease-out both;
+}
+@keyframes build-hud-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+.build-hud__head { display: flex; align-items: center; justify-content: space-between; letter-spacing: 0.18em; text-transform: uppercase; color: var(--hud-warm); }
+.moon-hud .build-hud__head button { width: 28px; min-height: 28px; display: grid; place-items: center; border: 0; background: transparent; color: var(--hud-dim); }
+.build-hud__scopes { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+.moon-hud .build-hud__scopes button { min-height: 32px; font-size: 12px; letter-spacing: 0.08em; color: var(--hud-dim); }
+.moon-hud .build-hud__scopes button[data-on='true'] { color: var(--hud-ink); border-color: var(--hud-accent); background: rgba(77, 178, 255, 0.18); }
+.build-hud__modules { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+.moon-hud .build-hud__modules button {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto auto;
+  column-gap: 6px;
+  align-items: baseline;
+  min-height: 42px;
+  padding: 5px 7px;
+  text-align: left;
+  color: var(--hud-dim);
+}
+.moon-hud .build-hud__modules button[data-on='true'] { color: var(--hud-ink); border-color: rgba(255, 194, 102, 0.75); background: rgba(60, 38, 8, 0.5); }
+.build-hud__modules kbd { grid-row: span 2; font: inherit; font-size: 12px; color: var(--hud-warm); }
+.build-hud__modules span { font-size: 12px; line-height: 1.2; }
+.build-hud__modules small { font-size: 12px; color: var(--hud-dim); opacity: 0.8; }
+.build-hud__count { display: flex; justify-content: space-between; gap: 8px; color: var(--hud-dim); }
+.build-hud__status { margin: 0; line-height: 1.4; color: #5eead4; }
+.build-hud__status[data-bad='true'] { color: #ff8a7a; }
+.build-hud__save { margin: 0; color: var(--hud-dim); line-height: 1.4; }
+.build-hud__save:empty { display: none; }
+.build-hud__save[data-state='offline'] { color: var(--hud-warm); }
+.build-hud__keys { margin: 0; color: var(--hud-dim); line-height: 1.5; }
+.moon-hud .build-hud__signin { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 34px; border-color: var(--hud-accent); }
+.build-hud__actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
+.moon-hud .build-hud__actions button { display: grid; justify-items: center; gap: 2px; min-height: 48px; font-size: 12px; color: var(--hud-dim); }
+.moon-hud .build-hud__actions button[data-kind='place'] { color: var(--hud-ink); border-color: #5eead4; background: rgba(20, 70, 64, 0.5); }
+.moon-hud .build-hud__actions button:disabled { opacity: 0.4; }
+/* While building, the place names and walking hints under the crew give way to the console. */
+.moon-hud:has(.build-hud) .moon-hud__foot { display: none; }
+/* A phone on its side: a wider, shorter console beside the key, clear of the thumbs, the keys that act first. */
+@media (max-height: 520px) {
+  .build-hud {
+    top: calc(var(--edge-top) + 52px);
+    right: calc(var(--edge-right) + 118px);
+    width: min(340px, calc(100% - 260px));
+    max-height: calc(100% - var(--edge-top) - 52px - var(--edge-bottom));
+    gap: 6px;
+    padding: 8px 10px;
+  }
+  .build-hud__head { order: -3; }
+  .build-hud__actions { order: -2; }
+  .build-hud__scopes { order: -1; }
+  .build-hud__modules { grid-template-columns: repeat(3, 1fr); }
+  .moon-hud .build-hud__modules button { min-height: 34px; padding: 3px 6px; }
+  .build-hud__modules small { display: none; }
+  .moon-hud .build-hud__actions button { min-height: 40px; grid-auto-flow: column; align-items: center; gap: 6px; }
+}
+
 @media (max-width: 599px) {
   /* The top row is the compass and the three keys; the cards run down the
      left under it, and the messages sit clear above the thumbs. */

@@ -38,6 +38,8 @@ import { haze } from '@/lib/solar-system/world-earth-haze';
 import { makeFlightAudio } from '@/lib/solar-system/flight-audio';
 import { getSettings, onSettingsChange } from '@/game/settings';
 import { EARTH_CHASE, earthGait } from '@/lib/solar-system/world-earth-gait';
+import { makeBuildMode, type BuildHandle } from '@/lib/solar-system/build-mode';
+import { BUILD_SITES } from '@/lib/solar-system/build-rules';
 
 export type WorldView = 'chase' | 'helmet' | 'wide';
 const VIEWS: WorldView[] = ['chase', 'helmet', 'wide'];
@@ -133,6 +135,8 @@ export interface WorldSurfaceHandle {
   layer: (name: string, on: boolean) => void;
   /** Earth: the sky's working numbers, for checking the light. */
   sky: () => Record<string, number | number[]> | null;
+  /** Player base building (Mars only). */
+  build: BuildHandle | null;
   dispose: () => void;
 }
 
@@ -202,6 +206,9 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
     pois.push(...base.pois);
     for (const i of base.interactables) interactions.add(i);
   }
+  // Player-built pieces round Mars Base, and the shared colony east of the pad.
+  const build = base ? makeBuildMode({ world: 'mars', kit, scene, heightAt, blockers: [...colliders], colliderSets: [colliders] }) : null;
+  if (build) pois.push({ id: 'colonySite', ...BUILD_SITES.mars.colony });
   const flora = world === 'proximaB' && terrain ? makeFlora(profile, terrain, lite) : null;
   const aliens = flora ? makeAliens({
     heightAt, colliders: flora.colliders, village: flora.village, lite,
@@ -466,7 +473,9 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
         }
       }
     } else {
-      const press = input.interact;
+      const building = !!build?.telemetry.active;
+      if (building && input.interact) build?.place();
+      const press = input.interact && !building;
       input.interact = false;
       jumpPress.see(input.jump);
       if (input.viewToggle) {
@@ -495,7 +504,7 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
       if (atWheel && earth) earth.car.present(alpha);
       else cosmonaut.present(alpha);
 
-      interactions.update(dt, { x: crew.x, z: crew.z, yaw: atWheel && earth ? earth.car.yaw : cosmonaut.yaw, driving: atWheel, press, held: input.use || press });
+      interactions.update(dt, { x: crew.x, z: crew.z, yaw: atWheel && earth ? earth.car.yaw : cosmonaut.yaw, driving: atWheel, press, held: !building && (input.use || press) });
 
       if (atWheel && earth) {
         const car = earth.car;
@@ -585,11 +594,13 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
     host.followShadow(crew, SUN_DIR);
     if (telemetry.headlamp && !earth?.driving()) headlamp(lightPool, crew, view === 'helmet' ? cam.yaw + Math.PI : cosmonaut.yaw);
     lightPool.flush(crew.x, crew.y, crew.z);
+    if (telemetry.phase === 'surface') build?.update(crew.x, crew.z, camera);
     host.render(dt);
   };
   host.start(frame, () => { telemetry.ready = true; }, cosmonaut.ready);
 
   const release = () => {
+    build?.dispose();
     lander.dispose();
     entry?.dispose();
     flightAudio?.dispose();
@@ -606,7 +617,7 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
   };
 
   const handle: WorldSurfaceHandle = {
-    input, telemetry, profile,
+    input, telemetry, profile, build,
     startAudio: () => { audio.start(); earth?.startAudio(); },
     teleport(x, z) {
       cosmonaut.position.set(x, floorAt(x, z), z);

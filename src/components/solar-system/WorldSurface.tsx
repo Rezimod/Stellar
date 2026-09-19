@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Camera, ChevronsDown, ChevronsUp, Eye, EyeOff, Flame, Flashlight, Hand, HelpCircle, Menu, Rocket, Volume2, VolumeX, Wind, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { makeWorldSurface, type WorldSurfaceHandle } from '@/lib/solar-system/world-surface';
@@ -16,6 +16,7 @@ import { footBinding } from '@/game/bindings';
 import { attachSurfaceControls, type SurfaceControls } from '@/game/surface-controls';
 import { useLoadingTips } from './useLoadingTips';
 import { useSoundPref } from './useSoundPref';
+import { BuildHud } from './BuildHud';
 
 interface WorldSurfaceProps {
   world: WorldId;
@@ -391,6 +392,8 @@ export function WorldSurface({ world, onReturn, paused, onProgress, onPauseReque
     setRun(c.touchDeck.run);
   };
   const toggleCrouch = () => controlsRef.current?.toggleCrouch();
+  const getBuild = useCallback(() => handleRef.current?.build ?? null, []);
+  const canBuild = useCallback(() => handleRef.current?.telemetry.phase === 'surface', []);
 
   return (
     <div ref={rootRef} className={`moon-surface moon-surface--${world}`} data-phase="descent" data-ready="false" data-immersive={immersive}>
@@ -474,6 +477,7 @@ export function WorldSurface({ world, onReturn, paused, onProgress, onPauseReque
         <button type="button" className="moon-hud__round moon-hud__unhide" onClick={() => setImmersive(false)} aria-label={t('hudShow')} title={t('hudShow')}>
           <Eye size={19} aria-hidden />
         </button>
+        {world === 'mars' && <BuildHud world="mars" getBuild={getBuild} canOpen={canBuild} mount={mountRef} paused={!!paused} touch={touch} />}
         <div className="moon-hud__top">
           <button type="button" className="moon-hud__round" {...tapKey(cycleView)} aria-label={t('camera')} title={t('camera')}>
             <Camera size={19} aria-hidden />

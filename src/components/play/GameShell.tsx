@@ -6,6 +6,7 @@ import { game, STAGE_PROGRESS } from '@/game/state';
 import { isGameScene, type GameScene } from '@/game/save';
 import { attachConsoleGuards, enterFullscreen, exitFullscreen, unlockPointer } from '@/game/console';
 import { exitToStellar } from '@/game/platform';
+import { takeEscape } from '@/game/escape';
 import { registerServiceWorker } from '@/game/sw';
 import { CosmicLoader } from '@/components/solar-system/CosmicLoader';
 import { useLoadingTips } from '@/components/solar-system/useLoadingTips';
@@ -52,6 +53,7 @@ export default function GameShell() {
       if (e.code !== 'Escape') return;
       const s = game.get();
       if (s.overlay !== 'none') game.closeOverlay();
+      else if (s.state === 'playing' && takeEscape()) { /* build mode closed instead */ }
       else if (s.state === 'playing') game.pause();
       else if (s.state === 'paused') game.resume();
       else return;
