@@ -6,6 +6,7 @@
 // crater into it and the geometry, the boots and the rocks all agree.
 
 import * as THREE from 'three';
+import { mergeVertices } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
 export const TERRAIN_SIZE = 360;
 /** Playable radius — the cosmonaut is kept inside this. */
@@ -188,20 +189,39 @@ function regolithMaps(size: number): { map: THREE.CanvasTexture; normal: THREE.C
   return { map: tex(map, true), normal: tex(nrm, false), rough: tex(rgh, false) };
 }
 
+/** A boulder: angular breccia whose edges micrometeorites have rounded. The
+ *  sphere is welded first, so it shades smooth, then cut by a few fracture
+ *  planes (the flats a rock breaks along) before the noise roughens it. */
 function rockGeometry(seed: number, detail: number): THREE.BufferGeometry {
-  const g = new THREE.IcosahedronGeometry(1, detail);
+  const g = mergeVertices(new THREE.IcosahedronGeometry(1, detail).deleteAttribute('normal').deleteAttribute('uv'));
   const pos = g.attributes.position as THREE.BufferAttribute;
   const v = new THREE.Vector3();
   const sx = 0.7 + hash(seed, 1, 5) * 0.6; const sy = 0.55 + hash(seed, 2, 5) * 0.4; const sz = 0.7 + hash(seed, 3, 5) * 0.6;
+  const cuts = Array.from({ length: 5 }, (_, k) => {
+    const a = hash(seed, 10 + k, 7) * Math.PI * 2; const b = (hash(seed, 20 + k, 7) - 0.3) * 1.6;
+    return { n: new THREE.Vector3(Math.cos(a) * Math.cos(b), Math.sin(b), Math.sin(a) * Math.cos(b)), d: 0.62 + hash(seed, 30 + k, 7) * 0.22 };
+  });
   for (let i = 0; i < pos.count; i++) {
     v.fromBufferAttribute(pos, i);
-    const n = 1 + fbm(v.x * 1.7 + seed, v.y * 1.7 + v.z * 0.9, 4, seed + 40) * 0.42;
+    // Fracture faces: a softened clamp, so the flat meets the round without a crease.
+    for (const c of cuts) {
+      const over = v.dot(c.n) - c.d;
+      if (over > 0) v.addScaledVector(c.n, -over * (1 - 0.35 * Math.exp(-over * 12)));
+    }
+    const n = 1 + fbm(v.x * 1.7 + seed, v.y * 1.7 + v.z * 0.9, 4, seed + 40) * 0.3 + fbm(v.x * 6 + seed, v.z * 6 - v.y * 3, 2, seed + 44) * 0.08;
     v.multiplyScalar(n);
     // Flatten the underside so it sits in the dust rather than on a point.
     if (v.y < -0.35) v.y = -0.35 + (v.y + 0.35) * 0.25;
     v.x *= sx; v.y *= sy; v.z *= sz;
     pos.setXYZ(i, v.x, v.y, v.z);
   }
+  // Welding took the sphere's UVs: project new ones off the shape, for the grain.
+  const uv = new Float32Array(pos.count * 2);
+  for (let i = 0; i < pos.count; i++) {
+    uv[i * 2] = pos.getX(i) * 0.9 + pos.getZ(i) * 0.4;
+    uv[i * 2 + 1] = pos.getY(i) * 0.9 + pos.getZ(i) * 0.5;
+  }
+  g.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
   g.computeVertexNormals();
   return g;
 }
@@ -416,7 +436,7 @@ export function makeMoonTerrain(lite: boolean, density = 1): TerrainHandle {
 
   // Rocks: three cuts, a few hundred seats. Small stuff everywhere, boulders
   // only out on the plain and up the ridge.
-  const rockGeoms = [rockGeometry(1, 1), rockGeometry(2, lite ? 1 : 2), rockGeometry(3, lite ? 1 : 2)];
+  const rockGeoms = [rockGeometry(1, lite ? 1 : 2), rockGeometry(2, lite ? 1 : 2), rockGeometry(3, lite ? 1 : 2)];
   const rockMat = new THREE.MeshStandardMaterial({ color: 0xa8a5a0, roughness: 0.92, metalness: 0.02, normalMap: maps.normal, normalScale: new THREE.Vector2(0.5, 0.5) });
   const perCut = Math.round((lite ? 90 : 180) * density);
   const rocks = new THREE.Group();
