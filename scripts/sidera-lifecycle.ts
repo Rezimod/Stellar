@@ -1,8 +1,9 @@
 /**
- * The Sidera machine, end to end, for one card.
+ * The Sidera machine, end to end.
  *
- *   TYCHO → edition #001 to a holder → chosen as a night's target → captured
- *   by Node 01 (on the simulator) → recorded → attached to every edition.
+ *   Set 001 filed → a TYCHO edition to a holder → one card of the set chosen
+ *   as the night's target → captured by Node 01 (on the simulator) → recorded
+ *   → attached to every edition of that card.
  *
  * Idempotent: the same night re-run appends nothing; a different night adds
  * one more entry to the card's history.
@@ -17,20 +18,21 @@
 import { config as loadEnv } from 'dotenv'
 import { and, eq } from 'drizzle-orm'
 import { getDb } from '../src/lib/db'
-import { card, edition } from '../src/lib/schema'
+import { edition } from '../src/lib/schema'
 import { recordCapture } from '../src/lib/observatory/captures'
 import { adapterFor, getNode } from '../src/lib/observatory/nodes'
 import { SIM_TARGET_BY_ID } from '../src/lib/observatory/sim-targets'
 import { attachCaptureToCard } from '../src/lib/sidera/attach'
-import { allocateEdition, decideNightlyTarget, holderView, upsertCard } from '../src/lib/sidera/repo'
+import { allocateEdition, decideNightlyTarget, holderView } from '../src/lib/sidera/repo'
 import { pickTonightsTarget, siteNightDate } from '../src/lib/sidera/target'
-import { TYCHO } from '../src/lib/sidera/tycho'
+import { SET_001, SET_001_CARDS } from '../src/lib/sets/set-001'
+import { seedSet } from '../src/lib/sidera/seed'
 
 loadEnv({ path: '.env.local' })
 loadEnv()
 
 const TEST_WALLET = 'sidera-test-holder-0001'
-/** How far ahead the default search looks for a night the Moon can be worked. */
+/** How far ahead the default search looks for a night some card can be worked. */
 const SEARCH_NIGHTS = 45
 
 function flag(name: string): string | undefined {
@@ -63,17 +65,20 @@ async function main() {
     const tonight = siteNightDate(node.timezone, new Date())
     for (let i = 0; i < SEARCH_NIGHTS && !night; i++) {
       const candidate = addDays(tonight, i)
-      if (pickTonightsTarget([TYCHO], node, candidate)) night = candidate
+      if (pickTonightsTarget(SET_001_CARDS.map((c) => c.seed), node, candidate)) night = candidate
     }
-    if (!night) throw new Error(`The Moon does not clear the safety envelope at ${node.site} in the next ${SEARCH_NIGHTS} nights`)
+    if (!night) throw new Error(`No card of ${SET_001.code} clears the safety envelope at ${node.site} in the next ${SEARCH_NIGHTS} nights`)
   }
 
   const db = getDb()
   if (!db) throw new Error('DATABASE_URL is not configured')
 
-  // 1. The card.
-  const tycho = await upsertCard(db, TYCHO)
-  console.log(`1. Card       ${tycho.designation} (${tycho.name}), ${tycho.rarity}, edition size ${tycho.editionSize}, target ${tycho.targetId}`)
+  // 1. The set, and the card the holder is given.
+  const { cards } = await seedSet(db, SET_001, SET_001_CARDS)
+  const tycho = cards.find((c) => c.designation === 'TYCHO')!
+  const observable = cards.filter((c) => c.observationStatus !== 'not_available').length
+  console.log(`1. Set        ${SET_001.code}: ${cards.length} cards filed, ${observable} observable by ${node.name}`)
+  console.log(`   Card       ${tycho.designation} (${tycho.name}), ${tycho.rarity}, edition size ${tycho.editionSize}, target ${tycho.targetId}`)
 
   // 2. The holder's edition, allocated once.
   const [held] = await db
@@ -88,7 +93,6 @@ async function main() {
   )
 
   // 3. The night's target, decided once.
-  const cards = await db.select().from(card)
   const pick = pickTonightsTarget(cards, node, night)
   if (!pick) {
     console.log(`3. Night      ${night}: no card can be observed from ${node.site}. Stopping.`)

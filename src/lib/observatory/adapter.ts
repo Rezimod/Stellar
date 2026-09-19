@@ -15,7 +15,7 @@ import { getSunAltitude, getTonightDarkWindow } from '@/lib/dark-window';
 import { fetchSkyForecast } from '@/lib/sky-data';
 import type { Provenance } from './provenance';
 import { evaluateSafety } from './safety';
-import { EXPOSURES, SIM_TARGET_BY_ID, targetAltAz } from './sim-targets';
+import { SIM_TARGET_BY_ID, targetAltAz, unattendedStack } from './sim-targets';
 import { utcHourStamp } from './site-time';
 import type { NodeReadiness, ObservatoryNode, ReadinessState } from './types';
 
@@ -128,9 +128,7 @@ export class SimNodeAdapter implements ObservatoryAdapter {
 
     // Lucky imaging on a bright target, long subs on a faint one — the same
     // two regimes the console offers, at the setting a sensible operator picks.
-    const exposures = EXPOSURES[target.brightness];
-    const exposureSec = exposures[Math.floor(exposures.length / 2)];
-    const subs = target.brightness === 'bright' ? 600 : 60;
+    const { exposureSec, subs } = unattendedStack(target.brightness);
 
     return { ok: true, exposureSec, subs, opticalTrain: 'native', roi: 'full' };
   }

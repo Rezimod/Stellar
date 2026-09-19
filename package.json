@@ -16,6 +16,7 @@
     "seed:demo": "npx tsx scripts/seed-demo-data.ts",
     "seed:feed": "npx tsx scripts/seed-feed-demo.ts",
     "sidera:lifecycle": "npx tsx scripts/sidera-lifecycle.ts",
+    "sidera:seed": "npx tsx scripts/sidera-seed-set.ts",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "setup:stars": "npx tsx scripts/import-star-catalog.ts",

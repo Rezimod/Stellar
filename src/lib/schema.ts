@@ -667,10 +667,22 @@ export const firstLightOrder = pgTable('first_light_order', {
 // single capture is attached to every edition of the card at once — there is
 // no per-holder queue. The card's observation history is its nightly_target
 // rows that carry a capture_id, append-only; edition.observation_capture_id is
-// only the pointer to the latest of them.
+// only the pointer to the latest of them. Cards are authored a set at a time
+// (src/lib/sets); rarity and edition size are fixed there, never computed.
+//
+//   CREATE TABLE IF NOT EXISTS card_set (
+//     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+//     code text NOT NULL UNIQUE,
+//     name text NOT NULL,
+//     card_count integer NOT NULL,
+//     released_at timestamptz,
+//     status text NOT NULL,
+//     created_at timestamptz NOT NULL DEFAULT now()
+//   );
 //
 //   CREATE TABLE IF NOT EXISTS card (
 //     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+//     set_id uuid NOT NULL,
 //     designation text NOT NULL UNIQUE,
 //     name text NOT NULL,
 //     object_type text NOT NULL,
@@ -688,6 +700,12 @@ export const firstLightOrder = pgTable('first_light_order', {
 //     created_at timestamptz NOT NULL DEFAULT now()
 //   );
 //   CREATE INDEX IF NOT EXISTS card_target_idx ON card (target_id);
+//   CREATE INDEX IF NOT EXISTS card_set_idx ON card (set_id);
+//
+//   -- A card table created before sets existed (Phase 3) is brought up with
+//   -- ALTER TABLE card ADD COLUMN IF NOT EXISTS set_id uuid; then
+//   -- `npm run sidera:seed`, which files every card under its set; then
+//   -- ALTER TABLE card ALTER COLUMN set_id SET NOT NULL.
 //
 //   CREATE TABLE IF NOT EXISTS edition (
 //     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -712,8 +730,22 @@ export const firstLightOrder = pgTable('first_light_order', {
 //   );
 //   CREATE INDEX IF NOT EXISTS nightly_target_card_idx
 //     ON nightly_target (card_id, night_date);
+export const cardSet = pgTable('card_set', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  /** 'SET001' */
+  code: text('code').notNull().unique(),
+  name: text('name').notNull(),
+  cardCount: integer('card_count').notNull(),
+  /** Null until the set is on sale. */
+  releasedAt: timestamp('released_at', { withTimezone: true }),
+  /** 'draft' | 'released' | 'retired' */
+  status: text('status').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+})
+
 export const card = pgTable('card', {
   id: uuid('id').defaultRandom().primaryKey(),
+  setId: uuid('set_id').notNull(),
   /** 'TYCHO' — the name a card is filed under, and what its URL will use. */
   designation: text('designation').notNull().unique(),
   name: text('name').notNull(),
@@ -737,6 +769,7 @@ export const card = pgTable('card', {
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 }, (t) => [
   index('card_target_idx').on(t.targetId),
+  index('card_set_idx').on(t.setId),
 ])
 
 export const edition = pgTable('edition', {

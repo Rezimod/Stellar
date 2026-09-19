@@ -56,6 +56,9 @@ const CLASS_BY_TARGET: Record<string, RequestClass> = {
   m42: 'deep_short',
   m31: 'deep_short',
   m57: 'deep_long',
+  m13: 'deep_short',
+  albireo: 'bright',
+  mizar: 'bright',
 };
 
 export function classOf(targetId: string): RequestClass | null {

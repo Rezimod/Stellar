@@ -67,6 +67,12 @@ export const SIM_TARGETS: SimTarget[] = [
     expect: 'Far larger than the field. You are looking at the core only.' },
   { frameSpan: 2.0, id: 'm57', brightness: 'faint', name: 'Ring Nebula', kind: 'fixed', ra: 18.886, dec: 33.029, sizeArcmin: 1.4,
     expect: 'A small grey smoke ring. Stacking is what brings it out.' },
+  { frameSpan: 1.3, id: 'm13', brightness: 'faint', name: 'Hercules Cluster', kind: 'fixed', ra: 16.695, dec: 36.46, sizeArcmin: 20,
+    expect: 'Fills most of the frame. The core stays a glow; the edges break into stars.' },
+  { frameSpan: 3.0, id: 'albireo', brightness: 'bright', name: 'Albireo', kind: 'fixed', ra: 19.512, dec: 27.96, sizeArcmin: 0.57,
+    expect: 'Two stars 34 arcseconds apart, one gold and one blue. Split cleanly.' },
+  { frameSpan: 3.0, id: 'mizar', brightness: 'bright', name: 'Mizar', kind: 'fixed', ra: 13.399, dec: 54.925, sizeArcmin: 0.24,
+    expect: 'Splits into two white stars 14 arcseconds apart. Alcor is 12 arcminutes off, at the edge of the field.' },
 ];
 
 export const SIM_TARGET_BY_ID = new Map(SIM_TARGETS.map((t) => [t.id, t]));
@@ -76,6 +82,19 @@ export const EXPOSURES: Record<TargetBrightness, number[]> = {
   bright: [0.005, 0.01, 0.02, 0.05],
   faint: [0.5, 2, 8, 30],
 };
+
+/**
+ * What an unattended capture takes: the middle sub length of the regime, and
+ * as many subs as a sensible operator stacks — hundreds of short frames for
+ * lucky imaging, sixty long ones (eight minutes) for a faint target.
+ */
+export function unattendedStack(brightness: TargetBrightness): { exposureSec: number; subs: number } {
+  const exposures = EXPOSURES[brightness];
+  return {
+    exposureSec: exposures[Math.floor(exposures.length / 2)],
+    subs: brightness === 'bright' ? 600 : 60,
+  };
+}
 
 /** Default when a target does not declare one: a disc with a little margin. */
 export function targetFrameSpan(target: SimTarget): number {
