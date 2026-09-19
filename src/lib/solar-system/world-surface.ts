@@ -13,7 +13,7 @@
 import * as THREE from 'three';
 import { makeMoonDust } from '@/lib/solar-system/moon-fx';
 import { makeCosmonaut, type WalkInput } from '@/lib/solar-system/moon-cosmonaut';
-import { makeSprintLatch, sprintFrom, walkFromStick } from '@/lib/solar-system/surface-input';
+import { headlamp, makeFixedStep, makePressEdge, makeSprintLatch, sprintFrom, walkFromStick } from '@/lib/solar-system/surface-input';
 import { makePrints } from '@/lib/solar-system/moon-prints';
 import { makeSuitAudio } from '@/lib/solar-system/moon-audio';
 import { makeLander, type LanderTelemetry } from '@/lib/solar-system/moon-lander';
@@ -56,7 +56,12 @@ export interface WorldInput {
   zoom: number;
   interact: boolean;
   use: boolean;
+  /** Edge-triggered: in and out of first person. Consumed. */
   viewToggle: boolean;
+  /** Edge-triggered: round every view (the touch camera key). Consumed. */
+  viewCycle: boolean;
+  /** Edge-triggered: the headlamp on or off. Consumed. */
+  headlamp: boolean;
   throttle: number;
 }
 
@@ -75,6 +80,7 @@ export interface WorldTelemetry {
   landing: LanderTelemetry;
   grade: string;
   view: WorldView;
+  headlamp: boolean;
   poiId: string;
   altitude: number;
   speed: number;
@@ -255,10 +261,10 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
 
   const input: WorldInput = {
     moveX: 0, moveY: 0, jump: false, run: false, sprint: false, walk: false, crouch: false, shoulderSwap: false, orbitDX: 0, orbitDY: 0, zoom: 0,
-    interact: false, use: false, viewToggle: false, throttle: 0,
+    interact: false, use: false, viewToggle: false, viewCycle: false, headlamp: false, throttle: 0,
   };
   const telemetry: WorldTelemetry = {
-    ready: false, phase: 'descent', ascended: false, landing: lander.telemetry, grade: '', view: 'chase', poiId: '',
+    ready: false, phase: 'descent', ascended: false, landing: lander.telemetry, grade: '', view: 'chase', headlamp: false, poiId: '',
     altitude: 0, speed: 0, hint: 'walk', driving: false, o2: 97.4, heartRate: 64, suitTemp: 21.5, outsideC: profile.ambientC,
     evaSeconds: 0, distanceM: 0, crouched: false, stumbling: false, sliding: false, heading: 0,
     prompt: interactions.prompt, readout: '', readoutHold: 0, banner: '', bannerHold: 0,
@@ -269,17 +275,18 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
   function banner(key: string) { telemetry.banner = key; telemetry.bannerHold = 5; }
 
   let view: WorldView = 'chase';
-  const setView = (next: WorldView) => {
+  const setView = (next: WorldView, snap = true) => {
     view = next;
     telemetry.view = next;
     cosmonaut.setHelmetView(next === 'helmet');
     cosmonaut.group.visible = true;
     post.setHelmet(next === 'helmet' ? 1 : 0);
     if (next === 'helmet') { cam.yaw = cosmonaut.yaw + Math.PI; cam.lookPitch = 0; }
-    if (next === 'chase') cam.pitch = 0.3;
-    if (next === 'wide') cam.pitch = 0.5;
-    cam.snap();
+    if (next === 'chase' && snap) cam.pitch = 0.3;
+    if (next === 'wide' && snap) cam.pitch = 0.5;
+    if (snap) cam.snap();
   };
+  let outside: WorldView = 'chase';
 
   /** The lander is down: somewhere to walk round, and the way home. */
   let landerSettled = false;
@@ -308,15 +315,14 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
   const ascentFrom = new THREE.Vector3();
 
   let t = 0;
-  let acc = 0;
+  const clock = makeFixedStep(STEP, MAX_STEPS);
+  const jumpPress = makePressEdge();
   let jumped = false;
   let walked = false;
   let lastPoi = '';
   let exertion = 0;
   let egressHold = 0;
   let entryHandoff = !!entry;
-  let jumpLatch = false;
-  let jumpEdge = false;
   const walk: WalkInput = { moveX: 0, moveZ: 0, jump: false, run: false, crouch: false, work: false };
   const tmp = new THREE.Vector3();
   const descentFocus = new THREE.Vector3();
@@ -349,7 +355,8 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
     cosmonaut.settle();
   };
 
-  const simStep = (h: number, firstStep: boolean) => {
+  const simStep = (h: number) => {
+    const jump = jumpPress.take();
     if (earth?.carried()) return;
     if (earth?.driving()) {
       earth.drive(h, { throttle: input.moveY, steer: input.moveX, handbrake: input.jump }, colliders);
@@ -358,7 +365,7 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
     }
     const moving = Math.hypot(input.moveX, input.moveY) > 0.2;
     const sprint = sprintFrom(sprintLatch, input.sprint, moving, h);
-    walkFromStick(walk, { moveX: input.moveX, moveY: input.moveY, jump: false, run: input.run, sprint, walk: input.walk, crouch: input.crouch }, cam.yaw, firstStep && jumpEdge, interactions.prompt.holding);
+    walkFromStick(walk, { moveX: input.moveX, moveY: input.moveY, jump: false, run: input.run, sprint, walk: input.walk, crouch: input.crouch }, cam.yaw, jump, interactions.prompt.holding);
     stepFrom.copy(cosmonaut.position);
     cosmonaut.update(h, walk, floorAt, walkColliders(), walkRadius);
     earth?.confine(cosmonaut.position, stepFrom);
@@ -371,7 +378,8 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
     cam.update(dt);
     cam.orbit(input.orbitDX, input.orbitDY, view === 'helmet');
     input.orbitDX = input.orbitDY = 0;
-    cam.zoom(input.zoom);
+    const zoomIn = input.zoom < 0;
+    const zoomPast = cam.zoom(input.zoom);
     input.zoom = 0;
     const crew = cosmonaut.position;
 
@@ -460,27 +468,31 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
     } else {
       const press = input.interact;
       input.interact = false;
-      jumpEdge = input.jump && !jumpLatch;
-      jumpLatch = input.jump;
+      jumpPress.see(input.jump);
       if (input.viewToggle) {
         input.viewToggle = false;
+        if (view === 'helmet') setView(outside);
+        else { outside = view; setView('helmet'); }
+      }
+      if (input.viewCycle) {
+        input.viewCycle = false;
         setView(VIEWS[(VIEWS.indexOf(view) + 1) % VIEWS.length]);
+      }
+      if (zoomPast && view === 'chase' && !earth?.driving()) setView('wide', false);
+      else if (zoomIn && view === 'wide') setView('chase', false);
+      if (input.headlamp) {
+        input.headlamp = false;
+        telemetry.headlamp = !telemetry.headlamp;
+        audio.bleep();
       }
       if (input.shoulderSwap) {
         input.shoulderSwap = false;
         cam.swapShoulder();
       }
-      acc += dt;
-      let steps = 0;
-      while (acc >= STEP && steps < MAX_STEPS) {
-        simStep(STEP, steps === 0);
-        acc -= STEP;
-        steps += 1;
-      }
-      if (steps === MAX_STEPS) acc = 0;
+      const alpha = clock.advance(dt, simStep);
       const atWheel = !!earth?.driving();
-      if (atWheel && earth) earth.car.present(acc / STEP);
-      else cosmonaut.present(acc / STEP);
+      if (atWheel && earth) earth.car.present(alpha);
+      else cosmonaut.present(alpha);
 
       interactions.update(dt, { x: crew.x, z: crew.z, yaw: atWheel && earth ? earth.car.yaw : cosmonaut.yaw, driving: atWheel, press, held: input.use || press });
 
@@ -570,6 +582,7 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
     flora?.update(dt, t);
     if (aliens && telemetry.phase === 'surface') aliens.update(dt, t, crew.x, crew.z, lightPool);
     host.followShadow(crew, SUN_DIR);
+    if (telemetry.headlamp && !earth?.driving()) headlamp(lightPool, crew, view === 'helmet' ? cam.yaw + Math.PI : cosmonaut.yaw);
     lightPool.flush(crew.x, crew.y, crew.z);
     host.render(dt);
   };

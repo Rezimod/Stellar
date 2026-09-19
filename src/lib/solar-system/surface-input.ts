@@ -5,6 +5,7 @@
 // latches until the stick is let go, so a thumb on a phone gets the same
 // deal as a finger on a key.
 
+import type { LightPool } from '@/lib/solar-system/moon-lights';
 import type { WalkInput } from '@/lib/solar-system/suit-locomotion';
 
 export interface FootStick {
@@ -54,7 +55,45 @@ export function walkFromStick(out: WalkInput, s: FootStick, camYaw: number, jump
   return out;
 }
 
-/** A standard-mapping gamepad's dead zone, with the rest of the travel spread back over 0…1. */
-export function deadZone(v: number, dz = 0.15): number {
-  return Math.abs(v) < dz ? 0 : (v - Math.sign(v) * dz) / (1 - dz);
+/** The walk's clock: frames of any length in, whole fixed steps out, so
+ *  the crew moves the same at 30 frames a second as at 144. */
+export interface FixedStep {
+  /** Run the steps this frame owes; returns how far the frame ends into the next one, 0…1. */
+  advance: (dt: number, step: (h: number) => void) => number;
+}
+
+export function makeFixedStep(h: number, maxSteps: number): FixedStep {
+  let acc = 0;
+  return {
+    advance(dt, step) {
+      acc += dt;
+      let n = 0;
+      // A hair of slack: 144 frames of 1/144 s are 120 steps, not 119.
+      while (acc >= h - 1e-9 && n < maxSteps) { step(h); acc -= h; n += 1; }
+      acc = n === maxSteps ? 0 : Math.max(0, acc);
+      return acc / h;
+    },
+  };
+}
+
+/** A press, kept until a step takes it: at a high frame rate some frames run no step at all. */
+export interface PressEdge {
+  /** The key's state this frame. */
+  see: (down: boolean) => void;
+  /** True once per press, to the first step that asks. */
+  take: () => boolean;
+}
+
+export function makePressEdge(): PressEdge {
+  let was = false;
+  let pending = false;
+  return {
+    see(down) { if (down && !was) pending = true; was = down; },
+    take() { const p = pending; pending = false; return p; },
+  };
+}
+
+/** The helmet lamp: a warm pool of light a couple of metres ahead of the visor. */
+export function headlamp(pool: LightPool, crew: { x: number; y: number; z: number }, yaw: number) {
+  pool.request(crew.x + Math.sin(yaw) * 2.4, crew.y + 1.1, crew.z + Math.cos(yaw) * 2.4, 0xfff1dc, 7, 14, 1.6);
 }

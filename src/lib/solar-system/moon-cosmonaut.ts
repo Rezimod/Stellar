@@ -144,7 +144,8 @@ export function makeCosmonaut(dust: DustHandle, lite = false, g = MOON_G, suited
     setGravity(gravity, pressurised) { loco.setProfile(gaitProfile(gravity, pressurised)); handle.profile = loco.profile; state.gravity = gravity; },
     setProfile(p) { loco.setProfile(p); handle.profile = loco.profile; state.gravity = p.g; },
     setCeiling(c) { loco.ceilingAt = c; },
-    eye(out) { group.updateMatrixWorld(true); return rig.neck.localToWorld(out.copy(poser.eyeLocal)); },
+    // Only the chain from the root to the neck: the rest of the rig is not needed for one point.
+    eye(out) { rig.neck.updateWorldMatrix(true, false); return rig.neck.localToWorld(out.copy(poser.eyeLocal)); },
     setHelmetView(on) { helmetView = on; helmet.visible = !on; },
     look(y, p) { lookYaw = y; lookPitch = p; },
     visor(open) { visorOpen = open; },

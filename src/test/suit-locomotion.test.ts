@@ -264,12 +264,18 @@ describe('jumping like a game', () => {
     const far = (p: GaitProfile) => {
       const w = walker(p);
       w.run(4, { moveZ: 1 });
+      // Asked mid-stride, the jump waits for the boots to come down.
+      const takeOff = () => {
+        w.loco.update(DT, input({ moveZ: 1, jump: true }), flat, [], 999);
+        for (let i = 0; i < 240 && !w.loco.state.jumping; i++) w.run(DT, { moveZ: 1 });
+        expect(w.loco.state.jumping).toBe(true);
+      };
+      takeOff();
       const z0 = w.position.z;
-      w.loco.update(DT, input({ moveZ: 1, jump: true }), flat, [], 999);
       while (w.loco.state.jumping) w.run(DT, { moveZ: 1 });
       const length = w.position.z - z0;
       w.run(1, { moveZ: 1 });
-      w.loco.update(DT, input({ moveZ: 1, jump: true }), flat, [], 999);
+      takeOff();
       let drift = 0;
       while (w.loco.state.jumping) { w.run(DT, { moveX: 1, moveZ: 1 }); drift = w.position.x; }
       return { length, drift };

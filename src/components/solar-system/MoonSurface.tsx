@@ -2,16 +2,18 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  Camera, ChevronsDown, ChevronsUp, Drill, Eye, EyeOff, Flame, Gauge, HelpCircle,
+  Camera, ChevronsDown, ChevronsUp, Drill, Eye, EyeOff, Flame, Flashlight, Gauge, HelpCircle,
   LogIn, Menu, Rocket, Trophy, Volume2, VolumeX, Wind, X,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { makeMoonSurface, type MoonSurfaceHandle } from '@/lib/solar-system/moon-surface';
 import { DRILL_BAND } from '@/lib/solar-system/moon-mission';
-import { setSoundOn, soundOn } from '@/lib/solar-system/sound-prefs';
 import { GameStick, tapKey } from './GameStick';
 import { CosmicLoader } from './CosmicLoader';
-import { lockPointer, unlockPointer } from '@/game/console';
+import { ControlsHelp } from './ControlsHelp';
+import { unlockPointer } from '@/game/console';
+import { footBinding } from '@/game/bindings';
+import { attachSurfaceControls, type SurfaceControls } from '@/game/surface-controls';
 import { useLoadingTips } from './useLoadingTips';
 import { useSoundPref } from './useSoundPref';
 
@@ -25,13 +27,9 @@ interface MoonSurfaceProps {
   onPauseRequest?: () => void;
 }
 
-const KEY_ROWS = ['r1', 'r2', 'r15', 'r9', 'r3', 'r4', 'r16', 'r5', 'r10', 'r6', 'r11', 'r12', 'r8', 'r13', 'r14', 'r7'] as const;
-const TOUCH_ROWS = ['t1', 't2', 't3', 't7', 't4', 't8', 't9', 't6', 't10', 't11', 't5'] as const;
-const HANDLED = new Set([
-  'KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
-  'Space', 'ShiftLeft', 'ShiftRight', 'KeyE', 'KeyC', 'KeyF', 'KeyV', 'KeyM', 'ControlLeft', 'KeyQ', 'AltLeft', 'AltRight',
-  'Digit1', 'Digit2', 'Digit3', 'Digit4',
-]);
+/** The Moon's own notes under the controls: the place, not the keys. */
+const KEY_TIPS = ['r16', 'r10', 'r8', 'r13', 'r7'] as const;
+const TOUCH_TIPS = ['t7', 't6', 't10', 't5'] as const;
 const fmtTime = (s: number) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 const fmtRange = (m: number) => (m >= 1000 ? `${(m / 1000).toFixed(2)} km` : `${Math.round(m)} m`);
 /** A rough range: to the nearest ten metres, marked as such. */
@@ -43,6 +41,7 @@ const TURNS = 3;
 export function MoonSurface({ onReturn, paused, onProgress, onPauseRequest }: MoonSurfaceProps) {
   const t = useTranslations('solarSystem.moon');
   const tl = useTranslations('solarSystem.loading');
+  const tc = useTranslations('solarSystem.controls');
   const tips = useLoadingTips();
   const [sound, toggleSound] = useSoundPref();
   const [touch, setTouch] = useState(false);
@@ -119,6 +118,7 @@ export function MoonSurface({ onReturn, paused, onProgress, onPauseRequest }: Mo
   const tempRef = useRef<HTMLSpanElement>(null);
   const evaRef = useRef<HTMLSpanElement>(null);
   const distRef = useRef<HTMLSpanElement>(null);
+  const lampRef = useRef<HTMLSpanElement>(null);
   const actionRef = useRef<HTMLButtonElement>(null);
   const actionTextRef = useRef<HTMLSpanElement>(null);
   const workRef = useRef<HTMLDivElement>(null);
@@ -132,13 +132,8 @@ export function MoonSurface({ onReturn, paused, onProgress, onPauseRequest }: Mo
   const brRef = useRef<HTMLDivElement>(null);
   const brGravRef = useRef<HTMLSpanElement>(null);
   const brReadRef = useRef<HTMLSpanElement>(null);
-  const movingRef = useRef(false);
-  const keyboardMoveRef = useRef({ x: 0, y: 0 });
-  const runRef = useRef(false);
-  const crouchRef = useRef(false);
+  const controlsRef = useRef<SurfaceControls | null>(null);
   const touchRef = useRef(false);
-  runRef.current = run;
-  crouchRef.current = crouch;
 
   useEffect(() => {
     const coarse = window.matchMedia('(pointer: coarse)').matches;
@@ -178,116 +173,17 @@ export function MoonSurface({ onReturn, paused, onProgress, onPauseRequest }: Mo
     handleRef.current = handle;
     onProgressRef.current?.('compile');
     let readyReported = false;
-    const input = handle.input;
-    const pressed = new Set<string>();
-    const sync = () => {
-      const has = (c: string) => pressed.has(c);
-      const x = (has('KeyD') || has('ArrowRight') ? 1 : 0) - (has('KeyA') || has('ArrowLeft') ? 1 : 0);
-      const y = (has('KeyW') || has('ArrowUp') ? 1 : 0) - (has('KeyS') || has('ArrowDown') ? 1 : 0);
-      const len = Math.hypot(x, y) || 1;
-      keyboardMoveRef.current = { x: x / len, y: y / len };
-      if (!movingRef.current) {
-        input.moveX = x / len;
-        input.moveY = y / len;
-      }
-      // Shift is a sprint (held, or tapped to latch); Alt is a deliberate walk; the touch key is a run.
-      input.run = runRef.current;
-      input.sprint = has('ShiftLeft') || has('ShiftRight');
-      input.walk = has('AltLeft') || has('AltRight');
-      input.crouch = has('ControlLeft') || crouchRef.current;
-      // E and F both hold the job in front of you; E also presses it.
-      input.use = has('KeyE') || has('KeyF');
-      // On the way down, the space bar is the descent engine.
-      input.throttle = has('Space') ? 1 : 0;
-      input.jump = has('Space');
-    };
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (!HANDLED.has(e.code) || pausedRef.current) return;
-      handle.startAudio();
-      if (e.repeat) { e.preventDefault(); return; }
-      pressed.add(e.code);
-      if (e.code === 'KeyE' || e.code === 'KeyF') input.interact = true;
-      if (e.code === 'KeyV') input.viewToggle = true;
-      if (e.code === 'KeyQ') input.shoulderSwap = true;
-      if (e.code === 'KeyC') { crouchRef.current = !crouchRef.current; setCrouch(crouchRef.current); }
-      if (e.code === 'KeyM') setSoundOn(!soundOn());
-      if (e.code.startsWith('Digit')) input.gearRequest = Number(e.code.slice(5)) - 1;
-      sync();
-      e.preventDefault();
-    };
-    const onKeyUp = (e: KeyboardEvent) => {
-      if (!HANDLED.has(e.code)) return;
-      pressed.delete(e.code);
-      sync();
-    };
-    const onBlur = () => {
-      pressed.clear();
-      input.moveX = input.moveY = 0;
-      input.jump = false; input.run = false; input.sprint = false; input.walk = false; input.use = false; input.throttle = 0;
-      keyboardMoveRef.current = { x: 0, y: 0 };
-      input.orbitDX = input.orbitDY = 0;
-      orbitId = -1;
-      runRef.current = false;
-      setRun(false);
-    };
-    const onHidden = () => { if (document.hidden) onBlur(); };
-    window.addEventListener('keydown', onKeyDown);
-    window.addEventListener('keyup', onKeyUp);
-    window.addEventListener('blur', onBlur);
-    document.addEventListener('visibilitychange', onHidden);
-    // Press and hold selects nothing and calls up no menu: this is a game.
-    const noSelect = (e: Event) => {
-      const el = e.target as Element | null;
-      if (el && el.closest('.moon-hud__help, .moon-hud__menu, .moon-hud__log')) return;
-      e.preventDefault();
-    };
-    document.addEventListener('selectstart', noSelect);
-    document.addEventListener('contextmenu', noSelect);
-
-    // Scene drags orbit the camera independently of the movement station.
-    let orbitId = -1;
-    let lastX = 0; let lastY = 0;
-    const onDown = (e: PointerEvent) => {
-      handle.startAudio();
-      if (e.button !== 0 || orbitId >= 0 || pausedRef.current) return;
-      // A mouse on the desk owns the view outright while play lasts; Esc gives it back.
-      if (!touchRef.current) lockPointer(mount);
-      orbitId = e.pointerId;
-      lastX = e.clientX; lastY = e.clientY;
-      mount.setPointerCapture(e.pointerId);
-      e.preventDefault();
-    };
-    const onMove = (e: PointerEvent) => {
-      if (document.pointerLockElement === mount) {
-        if (!pausedRef.current) { input.orbitDX += e.movementX; input.orbitDY += e.movementY; }
-        return;
-      }
-      if (e.pointerId === orbitId) {
-        input.orbitDX += e.clientX - lastX;
-        input.orbitDY += e.clientY - lastY;
-        lastX = e.clientX; lastY = e.clientY;
-      }
-    };
-    const onUp = (e: PointerEvent) => {
-      if (e.pointerId === orbitId) orbitId = -1;
-    };
-    const onWheel = (e: WheelEvent) => { input.zoom += Math.sign(e.deltaY); e.preventDefault(); };
-    // The lock is held from the first click; losing it (Esc) is a pause.
-    let lockHeld = false;
-    const onLockChange = () => {
-      if (document.pointerLockElement === mount) { lockHeld = true; return; }
-      if (!lockHeld) return;
-      lockHeld = false;
-      input.orbitDX = input.orbitDY = 0;
-      if (!pausedRef.current) onPauseRequestRef.current?.();
-    };
-    document.addEventListener('pointerlockchange', onLockChange);
-    mount.addEventListener('pointerdown', onDown);
-    mount.addEventListener('pointermove', onMove);
-    mount.addEventListener('pointerup', onUp);
-    mount.addEventListener('pointercancel', onUp);
-    mount.addEventListener('lostpointercapture', onUp);
-    mount.addEventListener('wheel', onWheel, { passive: false });
+    const controls = attachSurfaceControls({
+      mount, input: handle.input, touch: touchRef.current,
+      paused: () => pausedRef.current,
+      wake: handle.startAudio,
+      onCrouch: setCrouch,
+      onPauseRequest: () => onPauseRequestRef.current?.(),
+      onMap: () => setLog((v) => !v),
+      onGearCycle: () => cycleGear(),
+      selectable: '.moon-hud__help, .moon-hud__menu, .moon-hud__log',
+    });
+    controlsRef.current = controls;
 
     // HUD paint at ~30 Hz off the telemetry, no React state churn.
     const tel = handle.telemetry;
@@ -316,37 +212,11 @@ export function MoonSurface({ onReturn, paused, onProgress, onPauseRequest }: Mo
     let lastPaint = 0;
     const isTouch = window.matchMedia('(pointer: coarse)').matches;
     root.dataset.touch = String(isTouch);
-    // A standard-mapping gamepad: left stick moves (its length picks the gait), right stick looks,
-    // A jumps, X is the action key, B crouches, LT runs, L3 sprints, RB swaps the shoulder, Y turns the camera.
-    const padWas: boolean[] = [];
-    let padMoving = false;
-    const pollPad = () => {
-      const pads = typeof navigator.getGamepads === 'function' ? navigator.getGamepads() : [];
-      const pad = Array.from(pads).find((p) => p && p.mapping === 'standard');
-      if (!pad) return;
-      const dz = (v: number) => (Math.abs(v) < 0.15 ? 0 : (v - Math.sign(v) * 0.15) / 0.85);
-      const mx = dz(pad.axes[0] ?? 0); const my = -dz(pad.axes[1] ?? 0);
-      const down = (i: number) => !!pad.buttons[i]?.pressed;
-      const edge = (i: number) => { const on = down(i); const was = padWas[i]; padWas[i] = on; return on && !was; };
-      if (mx !== 0 || my !== 0) { padMoving = true; input.moveX = mx; input.moveY = my; handle.startAudio(); }
-      else if (padMoving) { padMoving = false; input.moveX = keyboardMoveRef.current.x; input.moveY = keyboardMoveRef.current.y; }
-      input.orbitDX += dz(pad.axes[2] ?? 0) * 14;
-      input.orbitDY += dz(pad.axes[3] ?? 0) * 10;
-      // Held buttons are let go only on their own release, so the keyboard and the touch keys keep theirs.
-      const jumpWas = !!padWas[0]; const useWas = !!padWas[2];
-      if (edge(0)) input.jump = true; else if (jumpWas && !down(0) && !pressed.has('Space')) input.jump = false;
-      if (edge(2)) { input.interact = true; input.use = true; } else if (useWas && !down(2) && !pressed.has('KeyE') && !pressed.has('KeyF')) input.use = false;
-      if (edge(1)) { crouchRef.current = !crouchRef.current; setCrouch(crouchRef.current); input.crouch = crouchRef.current; }
-      if (edge(3)) input.viewToggle = true;
-      if (edge(5)) input.shoulderSwap = true;
-      // LT runs, L3 sprints; the stick's own length picks the gait below that.
-      if (down(6) || padWas[6]) input.run = down(6) || runRef.current;
-      if (down(10) || padWas[10]) input.sprint = down(10) || pressed.has('ShiftLeft') || pressed.has('ShiftRight');
-      padWas[6] = down(6); padWas[10] = down(10);
-    };
+    let lastPoll = performance.now();
     const paint = (now: number) => {
       raf = requestAnimationFrame(paint);
-      pollPad();
+      controls.poll(Math.min(0.1, (now - lastPoll) / 1000));
+      lastPoll = now;
       if (now - lastPaint < 33) return;
       lastPaint = now;
       root.dataset.ready = String(tel.ready);
@@ -434,6 +304,7 @@ export function MoonSurface({ onReturn, paused, onProgress, onPauseRequest }: Mo
       text(tempRef.current, `${tel.suitTemp.toFixed(1)}°`);
       text(evaRef.current, fmtTime(tel.evaSeconds));
       text(distRef.current, fmtRange(tel.distanceM));
+      show(lampRef.current, tel.headlamp);
 
       // ── The one key: underground, the Backrooms' own. ──
       const p = under ? bt.prompt : tel.prompt;
@@ -539,20 +410,8 @@ export function MoonSurface({ onReturn, paused, onProgress, onPauseRequest }: Mo
     return () => {
       cancelAnimationFrame(raf);
       window.clearTimeout(rebuildTimer);
-      window.removeEventListener('keydown', onKeyDown);
-      window.removeEventListener('keyup', onKeyUp);
-      window.removeEventListener('blur', onBlur);
-      document.removeEventListener('visibilitychange', onHidden);
-      document.removeEventListener('selectstart', noSelect);
-      document.removeEventListener('contextmenu', noSelect);
-      mount.removeEventListener('pointerdown', onDown);
-      mount.removeEventListener('pointermove', onMove);
-      mount.removeEventListener('pointerup', onUp);
-      mount.removeEventListener('pointercancel', onUp);
-      mount.removeEventListener('lostpointercapture', onUp);
-      mount.removeEventListener('wheel', onWheel);
-      document.removeEventListener('pointerlockchange', onLockChange);
-      if (document.pointerLockElement === mount) document.exitPointerLock();
+      controls.detach();
+      controlsRef.current = null;
       handle.dispose();
       handleRef.current = null;
     };
@@ -580,16 +439,25 @@ export function MoonSurface({ onReturn, paused, onProgress, onPauseRequest }: Mo
       onPointerUp: off, onPointerCancel: off, onLostPointerCapture: off,
     };
   };
-  const jumpKey = hold((on) => { const h = handleRef.current; if (h) h.input.jump = on; });
-  const throttleKey = hold((on) => { const h = handleRef.current; if (h) h.input.throttle = on ? 1 : 0; });
-  /** The action key: pressing it presses the job in front of you; holding it holds it. */
-  const actionKey = hold((on) => {
-    const h = handleRef.current;
-    if (!h) return;
-    if (on) h.input.interact = true;
-    h.input.use = on;
+  /** Hold a key on the touch deck. */
+  const deck = (key: 'jump' | 'throttle' | 'use') => hold((on) => {
+    const c = controlsRef.current;
+    if (!c) return;
+    c.touchDeck[key] = on;
+    c.sync();
   });
-  const cycleView = () => { const h = handleRef.current; if (h) h.input.viewToggle = true; };
+  const jumpKey = deck('jump');
+  const throttleKey = deck('throttle');
+  /** The action key: pressing it presses the job in front of you; holding it holds it. */
+  const useKey = deck('use');
+  const actionKey = {
+    ...useKey,
+    onPointerDown: (e: React.PointerEvent<HTMLButtonElement>) => {
+      if (e.button === 0 && handleRef.current) handleRef.current.input.interact = true;
+      useKey.onPointerDown(e);
+    },
+  };
+  const cycleView = () => { const h = handleRef.current; if (h) h.input.viewCycle = true; };
   const cycleGear = () => {
     const h = handleRef.current;
     if (!h) return;
@@ -597,20 +465,13 @@ export function MoonSurface({ onReturn, paused, onProgress, onPauseRequest }: Mo
     h.input.gearRequest = (list.indexOf(h.telemetry.gear) + 1) % list.length;
   };
   const toggleRun = () => {
-    setRun((r) => {
-      const h = handleRef.current;
-      if (h) h.input.run = !r;
-      return !r;
-    });
+    const c = controlsRef.current;
+    if (!c) return;
+    c.touchDeck.run = !c.touchDeck.run;
+    c.sync();
+    setRun(c.touchDeck.run);
   };
-  const toggleCrouch = () => {
-    setCrouch((c) => {
-      crouchRef.current = !c;
-      const h = handleRef.current;
-      if (h) h.input.crouch = !c;
-      return !c;
-    });
-  };
+  const toggleCrouch = () => controlsRef.current?.toggleCrouch();
   const rewards = handleRef.current?.telemetry.mission.rewards ?? [];
   const jobsDone = handleRef.current?.telemetry.jobs.done ?? [];
   const underground = handleRef.current?.telemetry.backrooms;
@@ -703,6 +564,7 @@ export function MoonSurface({ onReturn, paused, onProgress, onPauseRequest }: Mo
           <span className="moon-hud__vital"><i>{t('suitTemp')}</i><span ref={tempRef} /></span>
           <span className="moon-hud__vital"><i>{t('eva')}</i><span ref={evaRef} /></span>
           <span className="moon-hud__vital"><i>{t('distance')}</i><span ref={distRef} /></span>
+          <span ref={lampRef} className="moon-hud__vital moon-hud__lamp" hidden><Flashlight size={13} aria-hidden /><i>{tc('lampOn')}</i></span>
         </div>
 
         {/* ── Right rail: the drill's instruments while it runs. ── */}
@@ -755,7 +617,7 @@ export function MoonSurface({ onReturn, paused, onProgress, onPauseRequest }: Mo
               <span>{t('help')}</span>
               <button type="button" onClick={() => setHelp(false)} aria-label={t('close')}><X size={14} aria-hidden /></button>
             </div>
-            {(touch ? TOUCH_ROWS : KEY_ROWS).map((k) => <p key={k}>{t(`keys.${k}`)}</p>)}
+            <ControlsHelp touch={touch} moon tips={(touch ? TOUCH_TIPS : KEY_TIPS).map((k) => t(`keys.${k}`))} />
           </div>
         )}
         {log && (
@@ -787,7 +649,7 @@ export function MoonSurface({ onReturn, paused, onProgress, onPauseRequest }: Mo
         {/* ── The middle of the glass: what is in front of the crew. ── */}
         <div className="moon-hud__foot">
           <div ref={promptRef} className="moon-hud__prompt" hidden>
-            <kbd>E</kbd><span ref={promptTextRef} /><small ref={promptHoldRef} hidden>{t('hold')}</small>
+            <kbd>{footBinding('interact').keyLabel}</kbd><span ref={promptTextRef} /><small ref={promptHoldRef} hidden>{t('hold')}</small>
           </div>
           <div ref={airlockRef} className="moon-hud__airlock" hidden />
           <div ref={stanceRef} className="moon-hud__stance" hidden />
@@ -798,14 +660,11 @@ export function MoonSurface({ onReturn, paused, onProgress, onPauseRequest }: Mo
         {/* ── The thumbs. ── */}
         <div className="moon-hud__move">
           <GameStick label={t('move')} onMove={(x, y) => {
-            movingRef.current = x !== 0 || y !== 0;
-            const h = handleRef.current;
-            if (!h) return;
-            if (movingRef.current) h.startAudio();
-            h.input.moveX = movingRef.current ? x : keyboardMoveRef.current.x;
-            h.input.moveY = movingRef.current ? y : keyboardMoveRef.current.y;
-            // On a touch screen, the stick pushed right out to its rim lopes.
-            if (touchRef.current) h.input.run = runRef.current || Math.hypot(x, y) > 0.93;
+            const c = controlsRef.current;
+            if (!c) return;
+            if (x !== 0 || y !== 0) handleRef.current?.startAudio();
+            c.touchDeck.x = x; c.touchDeck.y = y;
+            c.sync();
           }} />
           <div className="moon-hud__stance-keys">
             <button type="button" className="moon-hud__key" data-on={run} {...tapKey(toggleRun)} aria-pressed={run} title={t('run')}>

@@ -171,6 +171,72 @@ export function makeLander(
   let dustAcc = 0;
   const grain: DustBurst = { x: 0, y: 0, z: 0, count: 1, speedMin: 2, speedMax: 4, cone: 1.5, size: 0.15, dirX: 0, dirZ: 0, bias: 2.4 };
 
+  /** The translation the last step of powered descent asked for. */
+  let tx = 0; let tz = 0;
+  /** One step of powered descent. */
+  const fly = (dt: number, input: LanderInput, height: (x: number, z: number) => number) => {
+    const ground = height(position.x, position.z);
+    const alt = position.y - ground;
+    const fall = Math.max(0, -vel.y);
+    // ── Guidance: could the engine still stop this fall in the height
+    // that is left? Leave a second of margin and a metre of pad. ──
+    const net = MAX_THRUST - g;
+    const offset = Math.hypot(position.x - padX, position.z - padZ);
+    // `safe` is the fastest the vehicle could be falling at this height and
+    // still be stopped by the engine, less the margin that makes a profile
+    // flyable rather than theoretical. Cross it by a clear margin and the
+    // computer takes the stick, because from there on nothing the pilot
+    // does gets it down gently.
+    const safe = Math.sqrt(2 * net * Math.max(0, alt - 1.2)) * PROFILE;
+    const want = Math.max(0.6, Math.min(Math.max(START_DESCENT, start.descent * (1 - 1 / (1 + alt / 60))), safe));
+    // Landing thirty metres off the middle of a pad that is forty-six
+    // across is a landing; landing in the rocks beyond it is not, so the
+    // computer also steps in for a pilot who has not killed the drift.
+    if (fall > safe * 1.06 + 0.9 || (alt < 25 && offset > 32)) telemetry.assist = true;
+
+    let throttle = THREE.MathUtils.clamp(input.throttle, 0, 1);
+    tx = input.moveX; tz = -input.moveY;
+    if (telemetry.assist) {
+      // Hold the profile, and steer the drift out on the way down.
+      throttle = THREE.MathUtils.clamp((fall - want) * 1.4 + (g / MAX_THRUST), 0, 1);
+      const backX = (padX - position.x) * 0.06 - vel.x * 0.55;
+      const backZ = (padZ - position.z) * 0.06 - vel.z * 0.55;
+      tx = THREE.MathUtils.clamp(backX, -1, 1);
+      tz = THREE.MathUtils.clamp(backZ, -1, 1);
+    }
+    // Dry, the engine derates rather than quits: the last of the pressure
+    // will still set it down, just not gently.
+    if (telemetry.fuel <= 0) throttle = Math.min(throttle, 0.55);
+    telemetry.fuel = Math.max(0, telemetry.fuel - throttle * FUEL_BURN * dt);
+    telemetry.throttle += (throttle - telemetry.throttle) * (1 - Math.exp(-dt * 7));
+
+    vel.y += (telemetry.throttle * MAX_THRUST - g) * dt;
+    vel.x += tx * RCS * dt;
+    vel.z += tz * RCS * dt;
+    // A little damping so the RCS is flyable rather than a skid.
+    vel.x *= Math.exp(-dt * 0.35);
+    vel.z *= Math.exp(-dt * 0.35);
+    position.addScaledVector(vel, dt);
+
+    const g2 = height(position.x, position.z);
+    if (position.y - g2 <= TOUCH) {
+      position.y = g2 + TOUCH;
+      telemetry.landed = true;
+      telemetry.touchdown = Math.max(0, -vel.y);
+      vel.set(0, 0, 0);
+      // The pads throw a ring of dust out from under the vehicle.
+      for (let i = 0; i < 26; i++) {
+        const a = Math.random() * Math.PI * 2;
+        grain.x = position.x + Math.cos(a) * 2.6; grain.y = g2; grain.z = position.z + Math.sin(a) * 2.6;
+        grain.count = 3; grain.speedMin = 1.4; grain.speedMax = 5.5; grain.cone = 1.45; grain.size = 0.17;
+        grain.dirX = Math.cos(a); grain.dirZ = Math.sin(a); grain.bias = 2.6;
+        dust.burst(grain);
+      }
+      telemetry.egressX = position.x;
+      telemetry.egressZ = position.z + 6.5;
+    }
+  };
+
   const handle: LanderHandle = {
     group, telemetry, position, yaw: 0,
     update(dt, input, height) {
@@ -211,66 +277,12 @@ export function makeLander(
         lights?.request(position.x, position.y - 1.2, position.z, 0xaad6ff, telemetry.throttle * 20, 20, 2);
         return;
       }
-      const ground = height(position.x, position.z);
-      const alt = position.y - ground;
-      const fall = Math.max(0, -vel.y);
-      // ── Guidance: could the engine still stop this fall in the height
-      // that is left? Leave a second of margin and a metre of pad. ──
-      const net = MAX_THRUST - g;
-      const offset = Math.hypot(position.x - padX, position.z - padZ);
-      // `safe` is the fastest the vehicle could be falling at this height and
-      // still be stopped by the engine, less the margin that makes a profile
-      // flyable rather than theoretical. Cross it by a clear margin and the
-      // computer takes the stick, because from there on nothing the pilot
-      // does gets it down gently.
-      const safe = Math.sqrt(2 * net * Math.max(0, alt - 1.2)) * PROFILE;
-      const want = Math.max(0.6, Math.min(Math.max(START_DESCENT, start.descent * (1 - 1 / (1 + alt / 60))), safe));
-      // Landing thirty metres off the middle of a pad that is forty-six
-      // across is a landing; landing in the rocks beyond it is not, so the
-      // computer also steps in for a pilot who has not killed the drift.
-      if (fall > safe * 1.06 + 0.9 || (alt < 25 && offset > 32)) telemetry.assist = true;
-
-      let throttle = THREE.MathUtils.clamp(input.throttle, 0, 1);
-      let tx = input.moveX; let tz = -input.moveY;
-      if (telemetry.assist) {
-        // Hold the profile, and steer the drift out on the way down.
-        throttle = THREE.MathUtils.clamp((fall - want) * 1.4 + (g / MAX_THRUST), 0, 1);
-        const backX = (padX - position.x) * 0.06 - vel.x * 0.55;
-        const backZ = (padZ - position.z) * 0.06 - vel.z * 0.55;
-        tx = THREE.MathUtils.clamp(backX, -1, 1);
-        tz = THREE.MathUtils.clamp(backZ, -1, 1);
-      }
-      // Dry, the engine derates rather than quits: the last of the pressure
-      // will still set it down, just not gently.
-      if (telemetry.fuel <= 0) throttle = Math.min(throttle, 0.55);
-      telemetry.fuel = Math.max(0, telemetry.fuel - throttle * FUEL_BURN * dt);
-      telemetry.throttle += (throttle - telemetry.throttle) * (1 - Math.exp(-dt * 7));
-
-      vel.y += (telemetry.throttle * MAX_THRUST - g) * dt;
-      vel.x += tx * RCS * dt;
-      vel.z += tz * RCS * dt;
-      // A little damping so the RCS is flyable rather than a skid.
-      vel.x *= Math.exp(-dt * 0.35);
-      vel.z *= Math.exp(-dt * 0.35);
-      position.addScaledVector(vel, dt);
-
+      // The flight itself in steps no longer than a 120th of a second, so the
+      // touchdown — and its grade — does not depend on the frame rate.
+      const n = Math.max(1, Math.ceil(dt * 120 - 1e-6));
+      for (let i = 0; i < n && !telemetry.landed; i++) fly(dt / n, input, height);
       const g2 = height(position.x, position.z);
-      if (position.y - g2 <= TOUCH) {
-        position.y = g2 + TOUCH;
-        telemetry.landed = true;
-        telemetry.touchdown = Math.max(0, -vel.y);
-        vel.set(0, 0, 0);
-        // The pads throw a ring of dust out from under the vehicle.
-        for (let i = 0; i < 26; i++) {
-          const a = Math.random() * Math.PI * 2;
-          grain.x = position.x + Math.cos(a) * 2.6; grain.y = g2; grain.z = position.z + Math.sin(a) * 2.6;
-          grain.count = 3; grain.speedMin = 1.4; grain.speedMax = 5.5; grain.cone = 1.45; grain.size = 0.17;
-          grain.dirX = Math.cos(a); grain.dirZ = Math.sin(a); grain.bias = 2.6;
-          dust.burst(grain);
-        }
-        telemetry.egressX = position.x;
-        telemetry.egressZ = position.z + 6.5;
-      }
+      const alt = position.y - g2;
 
       // ── The exhaust, and what it does to the ground. ──
       flicker += dt * 30;

@@ -1759,8 +1759,8 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
           const am = angVel.length();
           if (am > FREE_ANG_MAX) angVel.multiplyScalar(FREE_ANG_MAX / am);
         }
-        pendYaw += shapeMouse(-input.mouseDX, turn);
-        pendPitch += shapeMouse(input.mouseDY, turn);
+        pendYaw += shapeMouse(-input.mouseDX, turn, dt);
+        pendPitch += shapeMouse(input.mouseDY, turn, dt);
         input.mouseDX = 0;
         input.mouseDY = 0;
         const mk = 1 - Math.exp(-dt * 9);

@@ -2,8 +2,9 @@
 // tuned. Everything the locomotion needs comes from g, the leg, the mass of
 // the body and of what it is wearing, and how hard legs can push; the only
 // numbers of a game's own are the speeds an Earth-bound character jogs,
-// runs and sprints at, and a floor under the jump so a heavy world still
-// gives a hop. No world has a number of its own here.
+// runs and sprints at, a floor under the jump so a heavy world still gives
+// a hop, and how long a landing takes to soak up. No world has a number of
+// its own here.
 //
 // The walk is an inverted pendulum and cannot go faster than √(Fr·g·leg)
 // with Fr ≈ 0.5; past that the body must leave the ground. A game jog sits
@@ -36,6 +37,11 @@ const JOG_E = 3.2;
 const RUN_E = 4.4;
 const SPRINT_E = 5.8;
 export const PIVOT_ANGLE = (135 * Math.PI) / 180;
+/** Below about a third of Earth's gravity a skip costs less than a run
+ *  (Pavei et al. 2015), and the Apollo crews bounded: a sprint there is a
+ *  two-footed hop whose flight is this much longer than a stride's. */
+const BOUND_G = 0.3;
+const BOUND_FLIGHT = 1.6;
 
 export interface GaitProfile {
   g: number;
@@ -53,6 +59,10 @@ export interface GaitProfile {
   /** Ground acceleration and braking the boots can give, m/s². */
   accel: number;
   brake: number;
+  /** Below the walk–run transition a foot can be put down wherever it is
+   *  needed and lands with more than the body's weight on it: starting and
+   *  stopping there are this quick, m/s². */
+  catchStep: number;
   /** Friction coefficient of the boots, and what the legs can add to it sideways, m/s². */
   grip: number;
   lateral: number;
@@ -71,6 +81,9 @@ export interface GaitProfile {
   cadenceRun: number;
   stance: number;
   flight: number;
+  /** A sprint is a two-footed bound here, and its flight, s. */
+  bound: boolean;
+  boundFlight: number;
   /** Facing turn rate standing, rad/s; its fall-off with speed is grip-limited in turnRate(). */
   turnStill: number;
   /** A standing turn step's length, s. */
@@ -102,6 +115,8 @@ export function gaitProfile(g: number, suited = true): GaitProfile {
   const cadenceRun = 0.85 * Math.sqrt(g / LEG);
   const duty = 0.4 * Math.pow(g / EARTH_G, 0.3);
   const sw = Math.sqrt(weight);
+  const flight = (1 - duty) / cadenceRun;
+  const brake = BOOT_MU * g + PLANT;
   return {
     g, suited, weight, leg: LEG, walkLimit,
     walk: Math.min(0.9 * walkLimit, 0.55 * jog),
@@ -110,7 +125,8 @@ export function gaitProfile(g: number, suited = true): GaitProfile {
     sprint: SPRINT_E * s,
     crouch: Math.min(0.9 * walkLimit, 0.4 * jog),
     accel: Math.min(0.6 * push, 1.6 * BOOT_MU * g + PLANT),
-    brake: BOOT_MU * g + PLANT,
+    brake,
+    catchStep: Math.min(0.6 * push, 2 * brake),
     grip: BOOT_MU,
     lateral: 3,
     air: Math.min(2.5, 0.9 * Math.sqrt(EARTH_G / g)),
@@ -121,7 +137,9 @@ export function gaitProfile(g: number, suited = true): GaitProfile {
     cadenceWalk: 0.575 * Math.sqrt(g / LEG),
     cadenceRun,
     stance: duty / cadenceRun,
-    flight: (1 - duty) / cadenceRun,
+    flight,
+    bound: g < BOUND_G * EARTH_G,
+    boundFlight: flight * BOUND_FLIGHT,
     turnStill: 10 * (suited ? 0.8 : 1),
     turnStep: clamp(0.16 + 0.06 * sw, 0.16, 0.3),
     kneeMax: suited ? 1.25 : 2.1,
@@ -139,6 +157,13 @@ export function turnRate(p: GaitProfile, v: number): number {
 }
 
 export type Landing = 'soft' | 'roll' | 'hard' | 'fall';
+
+/** How long the legs take to soak up a soft touchdown at `impact` m/s, s:
+ *  a step off a kerb is gone at once, a drop at the edge of soft takes most
+ *  of half a second, and control comes back over it. */
+export function landRecovery(p: GaitProfile, impact: number): number {
+  return 0.08 + 0.3 * clamp(impact / p.softLand, 0, 1);
+}
 
 /** What a touchdown at `impact` m/s does to the crew on this world. */
 export function classifyLanding(p: GaitProfile, impact: number): Landing {

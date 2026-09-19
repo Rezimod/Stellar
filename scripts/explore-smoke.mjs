@@ -44,7 +44,8 @@ try {
   step('title screen');
   await shot('02-title');
   await page.click('.game-menu__item--primary');
-  await waitState(page, 'loading');
+  // With the assets cached the loading screen can be over between two polls.
+  await waitFor(page, () => ['loading', 'playing'].includes(document.querySelector('.game-shell')?.dataset.state));
   await shot('03-loading');
   await waitState(page, 'playing');
   await waitFor(page, () => !!document.querySelector('.flight-hud__explore') && !!document.querySelector('canvas'));

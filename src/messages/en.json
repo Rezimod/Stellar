@@ -1511,32 +1511,14 @@
         "jumpTouch": "Jump is bottom right. One sixth g: you will be up there a while."
       },
       "keys": {
-        "r1": "W A S D / arrows — walk",
-        "r2": "Shift — sprint: hold it, or tap it to latch. How hard you push the stick picks walk, jog or run",
-        "r3": "Space — jump; on the way down it is the descent engine",
-        "r4": "Mouse drag — look around · wheel — zoom",
-        "r5": "V — walk the camera round: over the shoulder, in the helmet, wide",
-        "r6": "E — the job in front of you: tap to use, hold to work",
         "r7": "Meteoroids land now and then. They never land on you.",
-        "t1": "Left stick — walk",
-        "t2": "Right half — drag to look around",
-        "t3": "Lope and crouch — beside the stick; jump — bottom right",
-        "t4": "Camera — walk the view round: shoulder, helmet, wide",
         "t5": "Meteoroids land now and then. They never land on you.",
         "r8": "The habitats: up a ramp, cycle the airlock with E, and you are in",
         "t6": "The habitats: up a ramp, cycle the airlock with the amber key, and you are in",
-        "r9": "C — crouch: slow, low and steady",
         "r10": "V in the rover: chase, the driver's seat, the mast camera",
-        "r11": "F — hold to work, the same as holding E",
-        "r12": "1 2 3 4 — the rover's gears",
         "t7": "Hold the engine key on the way down. Leave it too late and guidance takes over.",
-        "t8": "The amber key does the job in front of you — tap to use, hold to work",
-        "t9": "The gear key changes the rover’s speed; push the stick to its rim to lope",
         "r13": "The mission computer in the geology lab hands out the day’s jobs",
         "t10": "The mission computer in the geology lab hands out the day’s jobs",
-        "r14": "M — sound on and off",
-        "t11": "Sound — on and off in the menu",
-        "r15": "Alt — walk on purpose · Q — look over the other shoulder",
         "r16": "The rover: E to climb in · hold E at a roll to bail out · Space is the handbrake"
       },
       "pois": {
@@ -1824,21 +1806,11 @@
           "jumpTouch": "Jump is bottom right. A metre, no more: this is a real planet."
         },
         "keys": {
-          "r1": "W A S D / arrows — jog · Shift — sprint · Alt — walk · C — crouch",
-          "r2": "Space — jump; on the way down it is the descent engine",
-          "r3": "Mouse drag — look around · wheel — zoom",
-          "r4": "V — walk the camera round: over the shoulder, in the helmet, wide",
           "r5": "E — read the panel in front of you",
           "r6": "The base is north of the pad: habitats, greenhouse, the plant, the reactors",
           "r7": "Dust devils cross the plain. They will not come near the base.",
-          "t1": "Left stick — walk; push it to the rim to run",
-          "t2": "Right half — drag to look around",
-          "t3": "Run and crouch — beside the stick; jump — bottom right",
-          "t4": "Camera — walk the view round: shoulder, helmet, wide",
           "t5": "The amber key reads the panel in front of you",
-          "t6": "The base is north of the pad: habitats, greenhouse, the plant, the reactors",
-          "r8": "Q — look over the other shoulder",
-          "r9": "Push the stick a little to walk, hard to run; a tap of Shift latches a sprint"
+          "t6": "The base is north of the pad: habitats, greenhouse, the plant, the reactors"
         },
         "pois": {
           "habitat0": "Habitat 1 — crew quarters, under two metres of regolith",
@@ -1892,21 +1864,11 @@
           "jumpTouch": "Jump is bottom right. Not far: this is 1.1 g."
         },
         "keys": {
-          "r1": "W A S D / arrows — jog · Shift — sprint · Alt — walk · C — crouch",
-          "r2": "Space — jump; on the way down it is the descent engine",
-          "r3": "Mouse drag — look around · wheel — zoom",
-          "r4": "V — walk the camera round: over the shoulder, in the helmet, wide",
           "r5": "E — greet a villager who has come to meet you",
           "r6": "The settlement is by the lake, east of the pad. They will find you first.",
           "r7": "Greet them three times and one of them will lead you somewhere.",
-          "t1": "Left stick — walk; push it to the rim to run",
-          "t2": "Right half — drag to look around",
-          "t3": "Run and crouch — beside the stick; jump — bottom right",
-          "t4": "Camera — walk the view round: shoulder, helmet, wide",
           "t5": "The amber key greets a villager who has come to meet you",
-          "t6": "The settlement is by the lake, east of the pad. Greet them three times and one will lead you somewhere.",
-          "r8": "Q — look over the other shoulder",
-          "r9": "Push the stick a little to walk, hard to run; a tap of Shift latches a sprint"
+          "t6": "The settlement is by the lake, east of the pad. Greet them three times and one will lead you somewhere."
         },
         "pois": {
           "lake": "The lake — still, and lit from below",
@@ -1958,21 +1920,11 @@
           "driveTouch": "Stick up and down — drive and brake · left and right — steer · Jump key — handbrake"
         },
         "keys": {
-          "r1": "W A S D / arrows — jog · Shift — sprint · Alt — walk · C — crouch",
-          "r2": "Space — jump; on the way down it is the descent engine",
-          "r3": "Mouse drag — look around · wheel — zoom",
-          "r4": "V — walk the camera round: over the shoulder, first person, wide",
           "r5": "E — the thing in front of you: the car, the lander, the cable car, the roof, the telescope",
           "r6": "The Bridge of Peace is west of the pad; the cable car starts beside it",
           "r7": "Hold E in the cable car to ride six times as fast",
-          "t1": "Left stick — walk; push it to the rim to run",
-          "t2": "Right half — drag to look around",
-          "t3": "Run and crouch — beside the stick; jump — bottom right",
-          "t4": "Camera — walk the view round: shoulder, first person, wide",
           "t5": "The amber key does the thing in front of you",
-          "t6": "The Bridge of Peace is west of the pad; the cable car starts beside it",
-          "r8": "Q — look over the other shoulder",
-          "r9": "Push the stick a little to walk, hard to run; a tap of Shift latches a sprint"
+          "t6": "The Bridge of Peace is west of the pad; the cable car starts beside it"
         },
         "pois": {
           "narikala": "Narikala — the fortress on the Sololaki ridge, from the 4th century",
@@ -2066,7 +2018,39 @@
       }
     },
     "launch": "Launch Stellar Explore",
-    "launchSub": "Land at Stellar Base on the Moon"
+    "launchSub": "Land at Stellar Base on the Moon",
+    "controls": {
+      "keys": {
+        "mouse": "Mouse",
+        "wheel": "Wheel"
+      },
+      "move": "walk; how far you push picks walk, jog or run",
+      "look": "look around (click once to take the mouse; Esc lets go and pauses)",
+      "zoom": "zoom; out past the far stop is the wide view",
+      "jump": "jump; on the way down, the descent engine",
+      "sprint": "sprint: hold it, or tap it to latch. In one-sixth g it is a two-footed bound",
+      "walk": "walk on purpose",
+      "crouch": "crouch: slow, low and steady",
+      "interact": "the thing in front of you: tap to use, hold to work",
+      "headlamp": "headlamp on and off",
+      "view": "in and out of the helmet",
+      "shoulder": "look over the other shoulder",
+      "map": "the expedition log",
+      "gears": "the rover's gears",
+      "sound": "sound on and off",
+      "touch": {
+        "move": "Left stick — walk; push it to the rim to lope",
+        "look": "Right half — drag to look around",
+        "jump": "Jump — bottom right; on the way down, hold the engine key",
+        "sprint": "Lope — the key beside the stick",
+        "crouch": "Crouch — beside the stick",
+        "interact": "The amber key — tap to use, hold to work",
+        "view": "Camera — top right: shoulder, helmet, wide",
+        "map": "The objective card — tap it for the expedition log",
+        "gears": "The gear key — the rover's speed"
+      },
+      "lampOn": "Headlamp on"
+    }
   },
   "missionsPage": {
     "auth": {

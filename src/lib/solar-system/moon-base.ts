@@ -118,6 +118,9 @@ function georgianFlag(): THREE.CanvasTexture {
 const CYCLE_SECONDS = 1.4;
 const LAMP = { closed: 0xff3b2e, cycling: 0xffb347, open: 0x4dff88 } as const;
 
+/** How far a habitat's door stands in front of the middle of its dome, m. */
+export const DOOR_Z = 6.72;
+
 export function makeMoonBase(
   heightAt: (x: number, z: number) => number,
   lite: boolean,
@@ -174,7 +177,6 @@ export function makeMoonBase(
   const DOOR_GAP = 0.42;
   const DOOR_THETA = 1.05;
   const DOOR_HALF = 1.05;
-  const DOOR_Z = 6.72;
   const APRON = 3.4;
   const DOME_TOP = 1.95 + 5.4 * 0.86;
   const habitat = (x: number, z: number, yaw: number, id: string, code: string) => {

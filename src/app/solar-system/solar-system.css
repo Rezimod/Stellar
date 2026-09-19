@@ -2033,6 +2033,9 @@
 .moon-hud__vital { display: grid; grid-template-columns: auto 1fr; gap: 3px 10px; align-items: baseline; }
 .moon-hud__vital > span { text-align: right; }
 .moon-hud__vital i { font-style: normal; font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--hud-dim); }
+.moon-hud__lamp { align-items: center; color: var(--hud-warm); }
+.moon-hud__lamp i { color: var(--hud-warm); }
+.moon-hud__lamp[hidden] { display: none; }
 .moon-hud__bar { grid-column: 1 / -1; display: block; height: 2px; border-radius: 2px; background: rgba(186, 214, 240, 0.2); }
 .moon-hud__bar i { display: block; height: 100%; border-radius: 2px; background: var(--hud-accent); }
 
@@ -2294,6 +2297,18 @@
 .moon-hud__help-head { display: flex; align-items: center; justify-content: space-between; letter-spacing: 0.2em; text-transform: uppercase; color: var(--hud-accent); }
 .moon-hud__help-head button { min-height: 26px; width: 26px; display: grid; place-items: center; border: 0; background: transparent; color: var(--hud-dim); }
 .moon-hud__help p, .moon-hud__log p { margin: 0; font-size: 11px; line-height: 1.55; color: var(--hud-dim); }
+.moon-hud__bind { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px; }
+.moon-hud__bind kbd {
+  font: inherit;
+  font-size: 11px;
+  min-width: 22px;
+  padding: 1px 6px;
+  border: 1px solid var(--hud-line);
+  border-radius: 4px;
+  color: var(--hud-ink);
+  text-align: center;
+}
+.moon-hud__bind .moon-hud__pad { color: var(--hud-dim); }
 .moon-hud__log-brief { color: var(--hud-ink) !important; }
 .moon-hud__log-rewards { display: grid; gap: 8px; padding-top: 6px; border-top: 1px solid var(--hud-line); }
 .moon-hud__reward { display: flex; gap: 8px; align-items: flex-start; color: var(--hud-warm) !important; }
