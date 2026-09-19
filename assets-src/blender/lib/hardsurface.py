@@ -161,8 +161,53 @@ def _max(nodes, links, a, b):
     return m.outputs[0]
 
 
+def _dust(nodes, links, coord, colour, rough, amount, height, seed):
+    """Regolith dust climbing the lower `height` metres (object Z, so the
+    object's origin must sit on the ground): mixed into the colour and
+    pushed toward a matte roughness. Returns the new (colour, roughness)."""
+    sep = nodes.new('ShaderNodeSeparateXYZ')
+    links.new(coord, sep.inputs['Vector'])
+    noise = nodes.new('ShaderNodeTexNoise')
+    noise.noise_dimensions = '4D'
+    noise.inputs['W'].default_value = seed * 5.7
+    noise.inputs['Scale'].default_value = 2.4
+    noise.inputs['Detail'].default_value = 6.0
+    links.new(coord, noise.inputs['Vector'])
+    # Height falloff, broken up by the noise so the dust line is ragged.
+    h = nodes.new('ShaderNodeMath')
+    h.operation = 'MULTIPLY_ADD'
+    links.new(noise.outputs['Fac'], h.inputs[0])
+    h.inputs[1].default_value = height * 0.7
+    h.inputs[2].default_value = -height * 0.35
+    zz = nodes.new('ShaderNodeMath')
+    zz.operation = 'ADD'
+    links.new(sep.outputs['Z'], zz.inputs[0])
+    links.new(h.outputs[0], zz.inputs[1])
+    fall = nodes.new('ShaderNodeMapRange')
+    fall.inputs['From Min'].default_value = height
+    fall.inputs['From Max'].default_value = 0.0
+    fall.inputs['To Min'].default_value = 0.0
+    fall.inputs['To Max'].default_value = amount
+    fall.clamp = True
+    links.new(zz.outputs[0], fall.inputs['Value'])
+    mix = nodes.new('ShaderNodeMixRGB')
+    mix.blend_type = 'MIX'
+    links.new(fall.outputs[0], mix.inputs['Fac'])
+    links.new(colour, mix.inputs['Color1'])
+    mix.inputs['Color2'].default_value = (0.3, 0.285, 0.265, 1)
+    rm = nodes.new('ShaderNodeMath')
+    rm.operation = 'MAXIMUM'
+    links.new(rough, rm.inputs[0])
+    rmul = nodes.new('ShaderNodeMath')
+    rmul.operation = 'MULTIPLY'
+    rmul.inputs[1].default_value = 0.95
+    links.new(fall.outputs[0], rmul.inputs[0])
+    links.new(rmul.outputs[0], rm.inputs[1])
+    return mix.outputs[0], rm.outputs[0]
+
+
 def paint(name, colour, seed=1.0, wear=0.35, grime=0.3, panel=(1.6, 1.1, 0.9), seam=0.035,
-          rough=0.55, metal=0.05, streak_axis='Y', scorch=0.0, patches=0.0):
+          rough=0.55, metal=0.05, streak_axis='Y', scorch=0.0, patches=0.0, dust=0.0, dust_height=0.6, seam_ink=0.75):
     """Weathered paint over hull plating: per-panel tone variation, panel
     seams (bump + dark line), grime streaked along the flow, lighter chipped
     edges from the pointiness pass and optional carbon scoring."""
@@ -282,12 +327,12 @@ def paint(name, colour, seed=1.0, wear=0.35, grime=0.3, panel=(1.6, 1.1, 0.9), s
     line.blend_type = 'MULTIPLY'
     lf = nodes.new('ShaderNodeMath')
     lf.operation = 'MULTIPLY'
-    lf.inputs[1].default_value = 0.75
+    lf.inputs[1].default_value = seam_ink
     links.new(seams, lf.inputs[0])
     links.new(lf.outputs[0], line.inputs['Fac'])
     links.new(worn.outputs[0], line.inputs['Color1'])
     line.inputs['Color2'].default_value = (0.25, 0.25, 0.26, 1)
-    links.new(line.outputs[0], bsdf.inputs['Base Color'])
+    colour_out = line.outputs[0]
     bump = nodes.new('ShaderNodeBump')
     bump.inputs['Strength'].default_value = 0.6
     bump.inputs['Distance'].default_value = 0.01
@@ -307,7 +352,11 @@ def paint(name, colour, seed=1.0, wear=0.35, grime=0.3, panel=(1.6, 1.1, 0.9), s
     links.new(r.outputs[0], rr.inputs[0])
     links.new(ewear.outputs[0], rr.inputs[1])
     rr.use_clamp = True
-    links.new(rr.outputs[0], bsdf.inputs['Roughness'])
+    rough_out = rr.outputs[0]
+    if dust > 0:
+        colour_out, rough_out = _dust(nodes, links, coord, colour_out, rough_out, dust, dust_height, seed)
+    links.new(colour_out, bsdf.inputs['Base Color'])
+    links.new(rough_out, bsdf.inputs['Roughness'])
     mm = nodes.new('ShaderNodeMath')
     mm.operation = 'MULTIPLY_ADD'
     links.new(ewear.outputs[0], mm.inputs[0])
@@ -318,7 +367,7 @@ def paint(name, colour, seed=1.0, wear=0.35, grime=0.3, panel=(1.6, 1.1, 0.9), s
     return mat
 
 
-def metal(name, colour, rough=0.45, metallic=0.55, seed=2.0, ribs=0.0, rib_axis='Y'):
+def metal(name, colour, rough=0.45, metallic=0.55, seed=2.0, ribs=0.0, rib_axis='Y', dust=0.0, dust_height=0.6):
     """Dark machinery: anodised or gunmetal, a little noise in the roughness,
     optional machined ribs (bump) for engine shrouds and ducts."""
     mat, nodes, links, bsdf = _nodes(name)
@@ -338,13 +387,16 @@ def metal(name, colour, rough=0.45, metallic=0.55, seed=2.0, ribs=0.0, rib_axis=
     col.inputs['Fac'].default_value = 1.0
     col.inputs['Color1'].default_value = colour
     links.new(tint.outputs[0], col.inputs['Color2'])
-    links.new(col.outputs[0], bsdf.inputs['Base Color'])
     r = nodes.new('ShaderNodeMath')
     r.operation = 'MULTIPLY_ADD'
     links.new(noise.outputs['Fac'], r.inputs[0])
     r.inputs[1].default_value = 0.2
     r.inputs[2].default_value = rough - 0.1
-    links.new(r.outputs[0], bsdf.inputs['Roughness'])
+    colour_out, rough_out = col.outputs[0], r.outputs[0]
+    if dust > 0:
+        colour_out, rough_out = _dust(nodes, links, coord, colour_out, rough_out, dust, dust_height, seed)
+    links.new(colour_out, bsdf.inputs['Base Color'])
+    links.new(rough_out, bsdf.inputs['Roughness'])
     bsdf.inputs['Metallic'].default_value = metallic
     if ribs > 0:
         rib = _seams(nodes, links, coord, rib_axis, ribs, ribs * 0.35)
@@ -379,4 +431,101 @@ def image_mat(name, img, rough=0.5, emit=False):
     if emit:
         links.new(tex.outputs['Color'], bsdf.inputs['Emission Color'])
         bsdf.inputs['Emission Strength'].default_value = 1.0
+    return mat
+
+
+def hazard(name, a=(0.93, 0.45, 0.1, 1), b=(0.03, 0.03, 0.032, 1), period=0.22, seed=8.0, dust=0.0):
+    """Diagonal hazard stripes (amber and black) in object space, a little
+    worn: for door jambs, bumpers, cable ducts and skid edges."""
+    mat, nodes, links, bsdf = _nodes(name)
+    coord = nodes.new('ShaderNodeTexCoord').outputs['Object']
+    sep = nodes.new('ShaderNodeSeparateXYZ')
+    links.new(coord, sep.inputs['Vector'])
+    s1 = nodes.new('ShaderNodeMath')
+    s1.operation = 'ADD'
+    links.new(sep.outputs['X'], s1.inputs[0])
+    links.new(sep.outputs['Y'], s1.inputs[1])
+    s2 = nodes.new('ShaderNodeMath')
+    s2.operation = 'ADD'
+    links.new(s1.outputs[0], s2.inputs[0])
+    links.new(sep.outputs['Z'], s2.inputs[1])
+    sc = nodes.new('ShaderNodeMath')
+    sc.operation = 'MULTIPLY'
+    sc.inputs[1].default_value = 1.0 / period
+    links.new(s2.outputs[0], sc.inputs[0])
+    fr = nodes.new('ShaderNodeMath')
+    fr.operation = 'FRACT'
+    links.new(sc.outputs[0], fr.inputs[0])
+    gt = nodes.new('ShaderNodeMath')
+    gt.operation = 'GREATER_THAN'
+    gt.inputs[1].default_value = 0.5
+    links.new(fr.outputs[0], gt.inputs[0])
+    mix = nodes.new('ShaderNodeMixRGB')
+    links.new(gt.outputs[0], mix.inputs['Fac'])
+    mix.inputs['Color1'].default_value = a
+    mix.inputs['Color2'].default_value = b
+    noise = nodes.new('ShaderNodeTexNoise')
+    noise.inputs['Scale'].default_value = 7.0
+    noise.inputs['Detail'].default_value = 6.0
+    links.new(coord, noise.inputs['Vector'])
+    wr = nodes.new('ShaderNodeValToRGB')
+    wr.color_ramp.elements[0].position = 0.6
+    wr.color_ramp.elements[1].position = 0.72
+    links.new(noise.outputs['Fac'], wr.inputs['Fac'])
+    worn = nodes.new('ShaderNodeMixRGB')
+    links.new(wr.outputs['Color'], worn.inputs['Fac'])
+    links.new(mix.outputs[0], worn.inputs['Color1'])
+    worn.inputs['Color2'].default_value = (0.32, 0.31, 0.3, 1)
+    colour = worn.outputs[0]
+    r = nodes.new('ShaderNodeValue')
+    r.outputs[0].default_value = 0.6
+    rough = r.outputs[0]
+    if dust > 0:
+        colour, rough = _dust(nodes, links, coord, colour, rough, dust, 0.5, seed)
+    links.new(colour, bsdf.inputs['Base Color'])
+    links.new(rough, bsdf.inputs['Roughness'])
+    return mat
+
+
+def cells(name, colour=(0.012, 0.022, 0.055, 1), module=(1.0, 0.66), cell=0.165, axes='XZ'):
+    """Photovoltaic cells: dark blue glassy cells in a fine silver grid,
+    brighter frame lines between modules. `axes` is the panel's plane in
+    object space."""
+    mat, nodes, links, bsdf = _nodes(name)
+    coord = nodes.new('ShaderNodeTexCoord').outputs['Object']
+    a, b = axes
+    fine = _max(nodes, links, _seams(nodes, links, coord, a, cell, 0.01), _seams(nodes, links, coord, b, cell, 0.01))
+    big = _max(nodes, links, _seams(nodes, links, coord, a, module[0], 0.03), _seams(nodes, links, coord, b, module[1], 0.03))
+    fm = nodes.new('ShaderNodeMath')
+    fm.operation = 'MULTIPLY'
+    fm.inputs[1].default_value = 0.3
+    links.new(fine, fm.inputs[0])
+    lines = _max(nodes, links, fm.outputs[0], big)
+    noise = nodes.new('ShaderNodeTexNoise')
+    noise.inputs['Scale'].default_value = 0.8
+    links.new(coord, noise.inputs['Vector'])
+    tone = nodes.new('ShaderNodeMapRange')
+    tone.inputs['To Min'].default_value = 0.8
+    tone.inputs['To Max'].default_value = 1.25
+    links.new(noise.outputs['Fac'], tone.inputs['Value'])
+    tint = nodes.new('ShaderNodeMixRGB')
+    tint.blend_type = 'MULTIPLY'
+    tint.inputs['Fac'].default_value = 1.0
+    tint.inputs['Color1'].default_value = colour
+    links.new(tone.outputs[0], tint.inputs['Color2'])
+    mix = nodes.new('ShaderNodeMixRGB')
+    links.new(lines, mix.inputs['Fac'])
+    links.new(tint.outputs[0], mix.inputs['Color1'])
+    mix.inputs['Color2'].default_value = (0.26, 0.27, 0.29, 1)
+    links.new(mix.outputs[0], bsdf.inputs['Base Color'])
+    rr = nodes.new('ShaderNodeMapRange')
+    rr.inputs['To Min'].default_value = 0.18
+    rr.inputs['To Max'].default_value = 0.45
+    links.new(lines, rr.inputs['Value'])
+    links.new(rr.outputs[0], bsdf.inputs['Roughness'])
+    mm = nodes.new('ShaderNodeMapRange')
+    mm.inputs['To Min'].default_value = 0.1
+    mm.inputs['To Max'].default_value = 0.8
+    links.new(lines, mm.inputs['Value'])
+    links.new(mm.outputs[0], bsdf.inputs['Metallic'])
     return mat

@@ -43,6 +43,21 @@ colour / normal / ORM / emissive into one 1K atlas with a hull slot and a
 lamp slot, the moving parts split out under hinge empties, LODs, empties,
 export and the reference-view renders.
 
+The Moon base is one **kit** file: thirteen pieces, each its own root node,
+all sharing one 2K atlas (`lib/kit.py` lays the pieces out apart for the
+bake, bakes once, then cuts them back into pieces at the origin with their
+hinge empties, lamp meshes and `<Piece>_LOD1`):
+
+```
+/Applications/Blender.app/Contents/MacOS/Blender -b -P assets-src/blender/base_kit.py -- assets-src/build assets-src/renders/base-kit
+npx --yes @gltf-transform/cli optimize assets-src/build/basekit.glb public/explore/models/base-kit.glb --compress meshopt --texture-compress webp --texture-size 2048 --flatten false --join false --simplify false --prune false --instance false --palette false
+python3 assets-src/blender/base_kit_sheets.py assets-src/renders/base-kit   # review sheets
+```
+
+Iterate on one piece without baking (high-poly, procedural paint, two views):
+`Blender -b -P assets-src/blender/base_kit.py -- preview <dir> Garage,Dish`.
+`KIT_ATLAS=1024` bakes a quicker test atlas.
+
 Blender 4.5 LTS (Intel macOS is supported there; later releases may not be).
 `@gltf-transform/cli` is run as a one-off with `npx` and is not a dependency.
 
