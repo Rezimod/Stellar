@@ -62,12 +62,15 @@ function flatten(scene: THREE.Group): THREE.Group {
   return flat;
 }
 
-/** Load (or share) a model. Every `acquire` must be matched by one `release`. */
-export function acquireModel(url: string): Promise<ModelHandle> {
-  let entry = cache.get(url);
+/** Load (or share) a model. Every `acquire` must be matched by one `release`.
+ *  `keepNodes` leaves the node tree as exported: skinned meshes, and named
+ *  empties a caller reads positions from, need it. */
+export function acquireModel(url: string, keepNodes = false): Promise<ModelHandle> {
+  const key = keepNodes ? `${url}#nodes` : url;
+  let entry = cache.get(key);
   if (!entry) {
-    entry = { users: 0, promise: getLoader().loadAsync(url).then((g) => flatten(g.scene)) };
-    cache.set(url, entry);
+    entry = { users: 0, promise: getLoader().loadAsync(url).then((g) => (keepNodes ? g.scene : flatten(g.scene))) };
+    cache.set(key, entry);
   }
   const e = entry;
   e.users += 1;
@@ -77,7 +80,7 @@ export function acquireModel(url: string): Promise<ModelHandle> {
     released = true;
     e.users -= 1;
     if (e.users > 0) return;
-    cache.delete(url);
+    cache.delete(key);
     e.promise.then(disposeTree, () => undefined);
   };
   return e.promise.then((scene) => ({ scene, release }), (err: unknown) => { release(); throw err; });
