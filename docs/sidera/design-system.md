@@ -18,7 +18,7 @@ export default function Page() {
 }
 ```
 
-The shell puts `.sidera` on its root. That class scopes every token below, re-points `--font-display`, `--font-body` and `--font-mono` to the two Sidera faces, and hides the legacy Stellar nav, footer, bottom tabs and starfield while the page is mounted (`html:has(.sidera)`). Legacy pages do not change. The shell provides a sticky top bar (wordmark, Set 001, Collection, Tonight, account control) and a footer line. Do not render a second `<main>`; the root layout already has one.
+The shell puts `.sidera` on its root. That class scopes every token below, re-points `--font-display`, `--font-body` and `--font-mono` to the two Sidera faces, and hides the legacy Stellar nav, footer, bottom tabs and starfield while the page is mounted (`html:has(.sidera)`). Legacy pages do not change. The shell provides a sticky top bar (wordmark, Set 001, Capsules, Collection, account control — Tonight joins it in Phase 8) and a footer line. Do not render a second `<main>`; the root layout already has one.
 
 Sidera is dark-only. The light theme and the `data-theme` toggle do not reach inside `.sidera`. Field mode (red night vision) still applies, on purpose.
 

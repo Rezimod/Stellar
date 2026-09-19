@@ -1,43 +1,55 @@
+import CardPlate from './CardPlate'
+import Caption from './ui/Caption'
+import type { Rarity } from '@/lib/rarity'
+import { rarityInfo } from '@/lib/rarity'
+import type { ObservationStatus } from '@/lib/sidera/observability'
 import type { CaptureSummary, HolderEdition } from '@/lib/sidera/repo'
 
-function CaptureLine({ capture }: { capture: CaptureSummary }) {
-  return (
-    <>
-      {capture.targetName}, {capture.capturedAt}, provenance {capture.provenance}, node {capture.nodeId}
-    </>
-  )
+const pad = (n: number) => String(n).padStart(3, '0')
+
+function captureParts(capture: CaptureSummary): string[] {
+  return [
+    `Node ${capture.nodeId}`,
+    new Date(capture.capturedAt).toISOString().replace('T', ' ').slice(0, 16) + ' UTC',
+    capture.provenance === 'instrument' ? 'Instrument' : 'Simulated',
+  ]
 }
 
-/** A holder's editions as a plain list. The design comes later; the facts are all here. */
+/**
+ * A holder's editions as plates, scarcest first. Each one carries its own
+ * number and, where Node 01 has photographed the object, the capture data
+ * beneath it — the photograph is the card's, shared by every edition of it.
+ */
 export default function HolderCollection({ editions }: { editions: HolderEdition[] }) {
-  if (editions.length === 0) return <p>This holder has no cards yet.</p>
+  if (editions.length === 0) {
+    return <p className="sd-note">No cards yet. Set 001 is where they come from.</p>
+  }
+
+  const ordered = [...editions].sort((a, b) => {
+    const rank = rarityInfo(b.rarity as Rarity).rank - rarityInfo(a.rarity as Rarity).rank
+    return rank !== 0 ? rank : a.designation.localeCompare(b.designation)
+  })
 
   return (
-    <ul>
-      {editions.map((e) => (
+    <ul className="sd-grid sd-section">
+      {ordered.map((e) => (
         <li key={e.editionId}>
-          <p>
-            <strong>{e.designation}</strong> {e.name}
-          </p>
-          <p>
-            Edition {String(e.editionNumber).padStart(3, '0')} of {e.editionSize}, {e.rarity},
-            observation status {e.observationStatus.replace('_', ' ')}
-          </p>
-          <p>
-            Latest observation:{' '}
-            {e.latest ? <CaptureLine capture={e.latest} /> : 'No observation yet'}
-          </p>
-          {e.history.length > 0 && (
-            <>
-              <p>Observation history</p>
-              <ol>
-                {e.history.map((h) => (
-                  <li key={h.id}>
-                    Night of {h.nightDate}: <CaptureLine capture={h} />
-                  </li>
-                ))}
-              </ol>
-            </>
+          <CardPlate
+            designation={e.designation}
+            name={e.name}
+            rarity={e.rarity as Rarity}
+            observationStatus={e.observationStatus as ObservationStatus}
+            artUrl="/cards/placeholder.svg"
+            href={`/card/${e.designation}`}
+            data={[
+              { label: 'Ed', value: `${pad(e.editionNumber)} / ${e.editionSize}` },
+              { label: 'Nights', value: e.history.length },
+            ]}
+          />
+          {e.latest ? (
+            <Caption as="p" parts={captureParts(e.latest)} />
+          ) : (
+            <Caption as="p">Not yet photographed</Caption>
           )}
         </li>
       ))}

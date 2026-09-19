@@ -5,11 +5,13 @@ import { usePathname } from 'next/navigation';
 
 const LINKS = [
   { href: '/set/001', label: 'Set 001' },
+  { href: '/capsules', label: 'Capsules' },
   { href: '/collection', label: 'Collection' },
-  { href: '/tonight', label: 'Tonight' },
 ] as const;
 
-/** The three Sidera destinations. Client-side only to mark the current page. */
+/** The three Sidera destinations. Client-side only to mark the current page.
+ *  Tonight arrives with the voting in Phase 8; until then the bar links only
+ *  to pages that exist. */
 export default function SideraNavLinks() {
   const pathname = usePathname();
   return (

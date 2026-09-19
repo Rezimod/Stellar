@@ -1,9 +1,18 @@
 // @vitest-environment node
 import { beforeEach, expect, it, vi } from 'vitest';
+import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 const mocks = vi.hoisted(() => ({ db: vi.fn(), holderView: vi.fn() }));
 vi.mock('@/lib/db', () => ({ getDb: mocks.db }));
 vi.mock('@/lib/sidera/repo', () => ({ holderView: mocks.holderView }));
+// The shell and the wallet gate are client components with a Privy session
+// behind them; this test is about what the page itself reads and prints.
+vi.mock('@/components/sidera/SideraShell', () => ({
+  default: ({ children }: { children: React.ReactNode }) => createElement('div', null, children),
+}));
+vi.mock('@/components/sidera/CollectionWallet', () => ({
+  default: () => createElement('p', null, 'Sign in to read your Collection'),
+}));
 import CollectionPage from '@/app/collection/page';
 
 async function render(wallet?: string): Promise<string> {
@@ -34,12 +43,11 @@ it('renders an edition that has not been observed yet', async () => {
   const html = await render('holder-1');
   expect(mocks.holderView).toHaveBeenCalledWith({}, 'holder-1');
   expect(html).toContain('TYCHO');
-  expect(html).toContain('Edition 001 of 10');
-  expect(html).toContain('No observation yet');
-  expect(html).not.toContain('Observation history');
+  expect(html).toContain('001 / 10');
+  expect(html).toContain('Not yet photographed');
 });
 
-it('lists the history of an observed card', async () => {
+it('captions an observed card with the capture data', async () => {
   const capture = { id: 'c1', targetName: 'The Moon', capturedAt: '2026-09-20T16:17:07.790Z', provenance: 'simulated', nodeId: 'tbilisi-01' };
   mocks.holderView.mockResolvedValue([
     {
@@ -49,8 +57,10 @@ it('lists the history of an observed card', async () => {
   ]);
 
   const html = await render('holder-1');
-  expect(html).toContain('Night of 2026-09-20');
-  expect(html).toContain('provenance simulated');
+  expect(html).toContain('Node tbilisi-01');
+  expect(html).toContain('2026-09-20 16:17 UTC');
+  expect(html).toContain('Simulated');
+  expect(html).not.toContain('Not yet photographed');
 });
 
 it('says the Collection cannot be read when there is no database', async () => {
@@ -62,6 +72,6 @@ it('says the Collection cannot be read when there is no database', async () => {
 
 it('asks for a wallet rather than querying for nothing', async () => {
   const html = await render();
-  expect(html).toContain('?wallet=');
+  expect(html).toContain('Sign in to read your Collection');
   expect(mocks.holderView).not.toHaveBeenCalled();
 });

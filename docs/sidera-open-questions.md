@@ -85,3 +85,19 @@ most reversible option; each needs a yes/no from Rezi.
     nor voided. Capsule 3 on the sidera branch is one such — listed by a demo
     run with a temporary key, permanently on sale, and it will show as an
     unopenable listing.
+
+17. **The homepage.** Phase 6 put the Sidera landing at `/`, replacing the
+    legacy Stellar homepage, which now exists only in git history (its last
+    version is in commit `2a677ba`'s tree). The legacy marketing sections and
+    `src/components/home/*` are still in the repo, unreachable. Delete them in
+    a deletion commit of their own, or keep the old landing reachable at a
+    second path until Phase 9 decides the domain?
+
+18. **Tonight.** The design brief's top bar names Set 001, Collection and
+    Tonight. `/tonight` arrives with the voting in Phase 8, so the bar links to
+    Capsules in its place rather than to a 404. Restore Tonight when it exists.
+
+19. **`/collection` and the wallet.** The Collection is read by
+    `?wallet=<address>`, and a signed-in holder is redirected to their own
+    address, so the address is in the URL and in any share of it. Acceptable
+    for beta, or should the page read the session server-side instead?

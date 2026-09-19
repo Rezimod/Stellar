@@ -165,3 +165,83 @@ html:has(.sidera):not([data-field="on"]) body { background: #0b0c0e; }
 html:has(.sidera) body::before,
 html:has(.sidera) body::after { display: none; }
 html:has(.sidera) #stellar-main { padding-top: 0; padding-bottom: 0; }
+
+/* ── Page furniture ───────────────────────────────────────────── */
+.sd-page { padding-block: 32px 8px; }
+.sd-page__head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 24px; }
+.sd-page__title { font-family: var(--sd-serif); font-weight: 400; font-size: clamp(28px, 7vw, 44px); line-height: 1.05; margin: 0; }
+.sd-lede { color: var(--sd-ink-2); max-width: 62ch; margin: 12px 0 0; }
+.sd-note { color: var(--sd-ink-3); max-width: 62ch; margin: 12px 0 0; }
+.sd-section { margin-top: 40px; }
+.sd-section__title { font-family: var(--sd-mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sd-ink-3); margin: 0 0 12px; }
+.sd-back { font-family: var(--sd-mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sd-ink-3); text-decoration: none; display: inline-block; padding-block: 10px; }
+.sd-back:hover { color: var(--sd-ink); }
+.sd-link { color: var(--sd-ink); text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
+.sd-link:hover { color: var(--sd-ink-2); }
+.sd-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 40px; padding: 10px 16px; font-family: var(--sd-mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sd-ink); background: transparent; border: 1px solid var(--sd-rule-strong); text-decoration: none; cursor: pointer; }
+.sd-btn:hover:not(:disabled) { border-color: var(--sd-ink-3); background: var(--sd-plate-hover); }
+.sd-btn:disabled { color: var(--sd-ink-4); border-color: var(--sd-rule); cursor: not-allowed; }
+
+/* ── Card plate ───────────────────────────────────────────────── */
+.sd-plate { background: var(--sd-plate); border: 1px solid var(--sd-rule-strong); display: flex; flex-direction: column; height: 100%; }
+.sd-plate--outline { background: transparent; border-color: var(--sd-ink-4); }
+.sd-plate__frame { aspect-ratio: 5 / 7; background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.sd-plate--outline .sd-plate__frame { background: transparent; }
+.sd-plate__frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.sd-plate__body { padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+.sd-plate__name { font-family: var(--sd-serif); font-weight: 400; font-size: 20px; line-height: 1.15; margin: 0; color: var(--sd-ink); }
+.sd-plate__marks { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin: 0; }
+.sd-plate__link { display: block; text-decoration: none; color: inherit; height: 100%; }
+.sd-plate__link:hover .sd-plate { background: var(--sd-plate-hover); }
+.sd-plate__link:hover .sd-plate--outline { background: var(--sd-plate); }
+
+.sd-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 16px; list-style: none; margin: 0; padding: 0; }
+@media (min-width: 640px) { .sd-grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 24px; } }
+
+/* ── Card page ────────────────────────────────────────────────── */
+.sd-card-page { display: grid; gap: 28px; margin-top: 24px; }
+@media (min-width: 880px) { .sd-card-page { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 40px; align-items: start; } }
+.sd-figure { margin: 0; }
+.sd-figure__frame { background: #000; border: 1px solid var(--sd-rule-strong); aspect-ratio: 5 / 7; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.sd-figure__frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.sd-blurb { color: var(--sd-ink-2); margin: 16px 0 0; max-width: 58ch; }
+
+/* ── Paying ───────────────────────────────────────────────────── */
+.sd-pay { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; }
+.sd-pay__code { border: 1px solid var(--sd-rule-strong); padding: 12px; background: var(--sd-ground); line-height: 0; }
+.sd-pay__side { flex: 1 1 220px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.sd-pay__actions { display: flex; flex-wrap: wrap; gap: 12px; }
+
+/* ── The reveal ───────────────────────────────────────────────── */
+.sd-reveal { display: flex; flex-direction: column; gap: 24px; align-items: center; }
+.sd-reveal__stone { animation: sd-fall 0.55s ease-in both; }
+.sd-reveal__card { opacity: 0; animation: sd-draw 0.5s ease-out both; }
+@keyframes sd-fall {
+  from { transform: translateY(-24px) rotate(-8deg); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+@keyframes sd-draw {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sd-reveal__stone, .sd-reveal__card { animation: none; opacity: 1; }
+}
+
+/* ── Capsules ─────────────────────────────────────────────────── */
+.sd-odds { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 12px 28px; }
+.sd-odds li { display: flex; align-items: center; gap: 10px; }
+.sd-capsule { border: 1px solid var(--sd-rule-strong); background: var(--sd-plate); padding: 16px; margin-bottom: 16px; }
+.sd-log { width: 100%; border-collapse: collapse; font-family: var(--sd-mono); font-size: 12px; font-variant-numeric: tabular-nums; }
+.sd-log th { text-align: left; color: var(--sd-ink-3); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 400; padding: 8px 12px 8px 0; border-bottom: 1px solid var(--sd-rule-strong); }
+.sd-log td { padding: 8px 12px 8px 0; border-bottom: 1px solid var(--sd-rule); color: var(--sd-ink-2); vertical-align: top; }
+.sd-log td:first-child, .sd-log th:first-child { color: var(--sd-ink); }
+.sd-scroll { overflow-x: auto; }
+.sd-verdict { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--sd-rule-strong); padding: 8px 12px; font-family: var(--sd-mono); font-size: 12px; letter-spacing: 0.04em; }
+
+/* ── Landing ──────────────────────────────────────────────────── */
+.sd-hero { padding-block: 64px 24px; }
+.sd-hero__line { margin: 24px 0 0; max-width: 16ch; }
+.sd-steps { list-style: none; margin: 32px 0 0; padding: 0; display: grid; gap: 32px; }
+@media (min-width: 760px) { .sd-steps { grid-template-columns: repeat(3, 1fr); gap: 32px; } }
+.sd-steps h2 { margin: 6px 0 0; }
