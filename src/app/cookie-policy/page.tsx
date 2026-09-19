@@ -40,7 +40,7 @@ export default async function CookiePolicyPage() {
           <p>
             {isKa
               ? 'ინახავს ენის არჩევანს (ქუქი `stellar_locale`), თემას (ღია/მუქი), შენს რეგიონსა და ლოკაციას, რომ გამოცდილება ვიზიტებს შორის ერთგვაროვანი იყოს.'
-              : 'Remember your language choice (the `stellar_locale` cookie), your light/dark theme, your region and location, so the experience is consistent across visits.'}
+              : 'Remember your light/dark theme, your region and location, so the experience is consistent across visits.'}
           </p>
         </section>
 

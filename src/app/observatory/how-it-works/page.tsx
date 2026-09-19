@@ -4,6 +4,8 @@ import { getTranslations } from 'next-intl/server';
 import PageContainer from '@/components/layout/PageContainer';
 import { NODES, adapterFor } from '@/lib/observatory/nodes';
 
+export const revalidate = 300;
+
 export const metadata: Metadata = {
   title: 'How a capture is proved — Stellar Observatory',
   description:
