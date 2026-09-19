@@ -10,14 +10,12 @@ const ctx = (over: Partial<MissionContext> = {}): MissionContext => ({
 describe('expedition log', () => {
   beforeEach(() => localStorage.clear());
 
-  it('has a unique id and a name in both languages for every discovery', async () => {
-    const en = (await import('@/messages/en.json')).default as { solarSystem: { flight: { discoveries: Record<string, { title: string; fact: string }> } } };
-    const ka = (await import('@/messages/ka.json')).default as { solarSystem: { flight: { discoveries: Record<string, { title: string; fact: string }> } } };
+  it('has a unique id and an English name for every discovery', async () => {
+    const en = (await import('../messages.en.json')).default as { solarSystem: { flight: { discoveries: Record<string, { title: string; fact: string }> } } };
     const ids = DISCOVERIES.map((d) => d.id);
     expect(new Set(ids).size).toBe(ids.length);
     for (const id of ids) {
       expect(en.solarSystem.flight.discoveries[id]?.title, `en ${id}`).toBeTruthy();
-      expect(ka.solarSystem.flight.discoveries[id]?.title, `ka ${id}`).toBeTruthy();
     }
   });
 

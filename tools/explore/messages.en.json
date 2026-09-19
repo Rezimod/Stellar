@@ -1,0 +1,1072 @@
+{
+  "solarSystem": {
+    "title": "Solar system",
+    "subtitle": "Live positions from Astronomy Engine — drag to orbit, scroll to zoom, tap a body for facts.",
+    "backSky": "Back to sky",
+    "dragHint": "Drag · pinch zoom · tap a body",
+    "controlsAria": "Simulation controls",
+    "immersive": {
+      "exit": "Exit solar system"
+    },
+    "time": {
+      "title": "Time",
+      "scrub": "Simulation date",
+      "play": "Play",
+      "pause": "Pause",
+      "now": "Now",
+      "speed": {
+        "realtime": "Live",
+        "10m": "+10 m/s",
+        "1h": "+1 h/s",
+        "6h": "+6 h/s",
+        "1d": "+1 d/s",
+        "7d": "+7 d/s"
+      },
+      "speedAria": "Time rate"
+    },
+    "view": {
+      "title": "View",
+      "scale": "Distance scale",
+      "orrery": "Orrery",
+      "linear": "True scale",
+      "pluto": "Show Pluto & dwarf belt context"
+    },
+    "detail": {
+      "title": "Selected body",
+      "placeholder": "Tap a planet or the Sun in the viewport.",
+      "meanRadius": "Mean radius",
+      "diameter": "Diameter",
+      "gravity": "Surface gravity",
+      "meanTemp": "Mean surface temp",
+      "dayLength": "Day length",
+      "moons": "Number of moons",
+      "orbitalPeriod": "Orbital period",
+      "atmosphere": "Atmosphere",
+      "physicalData": "Physical data",
+      "visibleTonight": "Visible tonight?",
+      "loading": "Computing visibility…",
+      "rises": "Rises",
+      "peaks": "Peaks",
+      "sets": "Sets",
+      "maxAltitude": "Max altitude",
+      "askTheSky": "Ask the Sky",
+      "gearRecommender": "What gear?",
+      "clear": "Clear selection",
+      "closeSheet": "Close details — camera stays on this body; zoom out to pick another",
+      "openInfo": "Planet info"
+    },
+    "bodies": {
+      "sun": {
+        "name": "Sun",
+        "blurb": "G-type main-sequence star — light-time in this view is not corrected; geometry is for orientation."
+      },
+      "mercury": {
+        "name": "Mercury",
+        "blurb": "Smallest planet, fastest orbit, extreme day-night swings and no substantial atmosphere."
+      },
+      "venus": {
+        "name": "Venus",
+        "blurb": "Thick CO₂ atmosphere, runaway greenhouse, retrograde spin — brightest planet after the Moon."
+      },
+      "earth": {
+        "name": "Earth",
+        "blurb": "Only known habitable surface — liquid water, active geology, protective magnetic field."
+      },
+      "mars": {
+        "name": "Mars",
+        "blurb": "Rust-colored desert world with polar caps, ancient river beds, and the highest volcano in the Solar System."
+      },
+      "jupiter": {
+        "name": "Jupiter",
+        "blurb": "Gas giant and gravitational hub — more mass than all other planets combined; shepherds many small bodies."
+      },
+      "saturn": {
+        "name": "Saturn",
+        "blurb": "Ringed ice-and-rock giant with a lower mean density than water; hundreds of structured ring features."
+      },
+      "uranus": {
+        "name": "Uranus",
+        "blurb": "Ice giant on its side — extreme axial tilt produces exotic seasonal lighting at the poles."
+      },
+      "neptune": {
+        "name": "Neptune",
+        "blurb": "Windiest planet — deep blue methane absorption and a system of faint rings and small moons."
+      },
+      "pluto": {
+        "name": "Pluto",
+        "blurb": "Kuiper Belt dwarf with a binary companion (Charon) — representative of the third zone of the Solar System."
+      }
+    },
+    "flight": {
+      "pause": "Pause",
+      "resume": "Resume",
+      "explore": "Explore",
+      "exit": "Exit flight mode",
+      "launch": "Launch",
+      "speed": "Speed",
+      "kills": "Kills",
+      "hull": "Hull",
+      "hint": "W S thrust · mouse steer · A D yaw · Q E roll · Space fire · Shift boost · 1 2 3 regime · H jump · T target · G align · Z assist · F wings · V eject · C view · Esc exit",
+      "view": "View",
+      "camera": "Camera",
+      "camIn": "Camera closer",
+      "camOut": "Camera farther",
+      "odometer": "Odometer",
+      "shield": "Shield",
+      "energy": "Energy",
+      "altShort": "Alt",
+      "velShort": "Vel",
+      "orbitOf": "{body} orbit",
+      "commsHeader": "Incoming transmission · {from}",
+      "comms": {
+        "centauriPrime": {
+          "l1": "Unknown craft, this is Kaelith Harbour Control. We read your drive signature. You are welcome here.",
+          "l2": "Hold your course above the cloud line. Our freighters keep the lower lanes.",
+          "l3": "Your tanks read low from here. Stay inside the hail and the harbour will pass you fuel, stores and shield charge — no charge to a first visitor.",
+          "l4": "Take what you need, traveller. Transmission ends. Safe orbits."
+        }
+      },
+      "hangar": "Hangar",
+      "ships": {
+        "kestrel": "Kestrel",
+        "xfoil": "X-foil",
+        "endurance": "Endurance"
+      },
+      "eject": "Eject",
+      "board": "Board",
+      "evaOut": "EVA — suit jets",
+      "evaBoard": "EVA — press V to board",
+      "evaBoardTouch": "EVA — tap Board",
+      "fire": "Fire",
+      "boost": "Boost",
+      "brake": "Brake",
+      "move": "Thrust and turn",
+      "look": "Pitch and yaw",
+      "speedMode": "Speed mode",
+      "modeLabel": "Mode",
+      "modes": {
+        "cruise": "Cruise",
+        "fast": "Fast",
+        "ultra": "Ultra",
+        "jump": "Light speed",
+        "eva": "EVA suit"
+      },
+      "kmS": "km/s",
+      "c": "c",
+      "ly": "ly",
+      "near": "Near",
+      "alt": "Altitude",
+      "distance": "Distance",
+      "system": "System",
+      "orbit": "Orbit",
+      "target": "Target",
+      "foils": "Wings",
+      "foilsOpen": "Open",
+      "foilsLocked": "Locked",
+      "alerts": {
+        "proximity": "Collision — pull up",
+        "entry": "Atmospheric entry",
+        "masslock": "Mass lock — too close to jump",
+        "charging": "Hyperdrive charging → {target}",
+        "jump": "Light speed → {target}",
+        "arrived": "Arrived: {system}",
+        "solar": "Solar proximity — hull heating",
+        "gravity": "Gravity well — the drive is throttled",
+        "jumpready": "Jump ready",
+        "hostile": "Hostile contact",
+        "contact": "Unknown contact — scanning",
+        "lowshield": "Low shield",
+        "shielddown": "Shields down",
+        "hullcritical": "Hull critical",
+        "docked": "Docked — hull, shields and banks restored",
+        "undocked": "Released — you have the con",
+        "horizon": "Event horizon — tidal forces rising"
+      },
+      "hullLost": "Hull lost",
+      "respawn": "Respawn in {n}",
+      "systems": {
+        "sol": "Solar System",
+        "alphaCentauri": "Alpha Centauri",
+        "gargantua": "Black hole"
+      },
+      "bodies": {
+        "alphaCenA": "Alpha Centauri A",
+        "alphaCenB": "Alpha Centauri B",
+        "proxima": "Proxima Centauri",
+        "proximaB": "Proxima b",
+        "proximaD": "Proxima d",
+        "alphaCenAc": "Alpha Centauri A c",
+        "centauriPrime": "Centauri Prime",
+        "moon": "Moon",
+        "iss": "ISS",
+        "ceres": "Ceres",
+        "vesta": "Vesta",
+        "phobos": "Phobos",
+        "deimos": "Deimos",
+        "io": "Io",
+        "europa": "Europa",
+        "ganymede": "Ganymede",
+        "callisto": "Callisto",
+        "titan": "Titan",
+        "rhea": "Rhea",
+        "titania": "Titania",
+        "oberon": "Oberon",
+        "triton": "Triton",
+        "charon": "Charon",
+        "voyager1": "Voyager 1",
+        "voyager2": "Voyager 2",
+        "pioneer10": "Pioneer 10",
+        "pioneer11": "Pioneer 11",
+        "newHorizons": "New Horizons",
+        "gargantua": "Black hole",
+        "millersPlanet": "Miller's planet",
+        "mannsPlanet": "Mann's planet",
+        "edmundsPlanet": "Edmunds' planet",
+        "endurance": "Endurance"
+      },
+      "groups": {
+        "planets": "Planets",
+        "stars": "Stars"
+      },
+      "launchSub": "Launch sequence",
+      "shipRoles": {
+        "kestrel": "Survey ship",
+        "xfoil": "Starfighter",
+        "endurance": "Interstellar explorer"
+      },
+      "assistOn": "Assist on",
+      "assistOff": "Assist off",
+      "driveReady": "Drive ready",
+      "driveLocked": "Mass locked",
+      "driveCharging": "Drive engaged",
+      "targets": "Targets",
+      "targetNone": "No target",
+      "targetClear": "Clear target",
+      "align": "Align",
+      "heat": "Heat",
+      "log": "Log",
+      "contacts": "{n} contacts",
+      "noContacts": "No contacts",
+      "region": "Approaching {body}",
+      "discovery": "Discovery",
+      "navJump": "Jump · {system}",
+      "navContact": "Unknown contact",
+      "navKinds": {
+        "star": "Star",
+        "planet": "Planet",
+        "moon": "Moon",
+        "station": "Station",
+        "probe": "Probe",
+        "contact": "Contact",
+        "jump": "Jump",
+        "blackhole": "Black hole"
+      },
+      "discoveries": {
+        "moonPass": {
+          "title": "Lunar low pass",
+          "fact": "The Moon drifts 3.8 cm farther from Earth every year."
+        },
+        "earthOrbit": {
+          "title": "Earth orbit",
+          "fact": "The ISS crosses this altitude sixteen times a day at 7.66 km/s."
+        },
+        "issFlyby": {
+          "title": "Station flyby",
+          "fact": "The ISS is the size of a football field and weighs 420 tonnes."
+        },
+        "marsVisit": {
+          "title": "Mars",
+          "fact": "Olympus Mons stands 21 km high, nearly three Everests."
+        },
+        "venusClouds": {
+          "title": "Venus cloud deck",
+          "fact": "Venus's clouds are sulphuric acid; the surface below is 465 °C."
+        },
+        "mercuryDawn": {
+          "title": "Mercury",
+          "fact": "A day on Mercury lasts 176 Earth days, twice its year."
+        },
+        "beltCrossing": {
+          "title": "Asteroid belt",
+          "fact": "The whole belt weighs less than 4% of the Moon."
+        },
+        "jupiterApproach": {
+          "title": "Jupiter",
+          "fact": "Jupiter has 2.5 times the mass of every other planet combined."
+        },
+        "greatRedSpot": {
+          "title": "Great Red Spot",
+          "fact": "A storm wider than Earth, blowing for at least 190 years."
+        },
+        "europaScan": {
+          "title": "Europa",
+          "fact": "Under Europa's ice lies an ocean with twice Earth's water."
+        },
+        "saturnRings": {
+          "title": "Saturn's rings",
+          "fact": "The rings are 280,000 km across and mostly under 100 m thick."
+        },
+        "titanHaze": {
+          "title": "Titan",
+          "fact": "Titan has rivers and seas of liquid methane under an orange haze."
+        },
+        "uranusTilt": {
+          "title": "Uranus",
+          "fact": "Uranus rolls on its side: its axis is tilted 98 degrees."
+        },
+        "neptuneWinds": {
+          "title": "Neptune",
+          "fact": "Neptune's winds reach 2,100 km/h, the fastest in the solar system."
+        },
+        "plutoHeart": {
+          "title": "Pluto",
+          "fact": "Pluto's heart, Sputnik Planitia, is a nitrogen-ice glacier."
+        },
+        "solarCorona": {
+          "title": "Solar corona",
+          "fact": "The corona is over a million degrees, hotter than the surface."
+        },
+        "probeFound": {
+          "title": "Deep-space probe",
+          "fact": "Voyager 1 is the most distant human-made object, past 160 AU."
+        },
+        "heliopause": {
+          "title": "Heliopause",
+          "fact": "Here the solar wind yields to interstellar space; Voyager 1 crossed it in 2012."
+        },
+        "anomaly": {
+          "title": "Anomalous signal",
+          "fact": "Something scanned the ship. Nothing in the catalogue matches."
+        },
+        "firstBlood": {
+          "title": "First contact, resolved",
+          "fact": "Unknown craft destroyed. Expect company."
+        },
+        "lightSpeed": {
+          "title": "Light speed",
+          "fact": "At c, Alpha Centauri is 4.37 years away. The drive cheats."
+        },
+        "alphaCentauri": {
+          "title": "Alpha Centauri",
+          "fact": "The nearest star system: three suns, 4.37 light years out."
+        },
+        "centauriPrime": {
+          "title": "Centauri Prime",
+          "fact": "An inhabited world. Its harbour control speaks first."
+        },
+        "proximaB": {
+          "title": "Proxima b",
+          "fact": "A rocky world in Proxima's habitable zone, found in 2016."
+        },
+        "gargantua": {
+          "title": "The black hole",
+          "fact": "In Interstellar, an hour on Miller's planet cost seven years on Earth."
+        },
+        "millersPlanet": {
+          "title": "Miller's planet",
+          "fact": "So close to the black hole that its tides raise waves a kilometre high."
+        }
+      },
+      "help": "Controls",
+      "helpShow": "Show controls",
+      "keys": {
+        "r1": "W / S — thrust and brake",
+        "r2": "A / D — turn left and right",
+        "r3": "Mouse — steer",
+        "r4": "Q / E — roll",
+        "r5": "Shift — boost · Space — fire",
+        "r6": "1 / 2 / 3 — cruise, fast, ultra · or the gear key on the deck",
+        "r7": "T — next target · G — hold to align",
+        "r8": "F — wings · C — cockpit · Esc — pause",
+        "t1": "Left stick — thrust and turn; release to coast",
+        "t2": "Right of the screen — drag anywhere to look and steer, like a mouse",
+        "t3": "Gear key — cruise → fast → ultra, then round again",
+        "t4": "Tap the compass — next target",
+        "t5": "Pause — top right",
+        "r9": "Right mouse — hold and drag for a 360° look at the ship",
+        "r10": "H — light-year jump · J — change destination",
+        "t6": "Jump card, top right — pick a star and cross the light years",
+        "t7": "Rail on the left — lock the Moon, a planet, the ISS, a star",
+        "t8": "+ / − pull the camera; 3D drops you into the cockpit",
+        "t9": "Eye key — the deck goes, the view stays; the pads still steer where they were",
+        "t10": "Phone key — turn the whole deck to landscape and back",
+        "r11": "I — hide the deck for the view alone",
+        "t11": "Fire, boost, brake and the gear sit under the right thumb",
+        "t12": "Menu, top right — targets, camera, landscape, and Customize the deck: drag every control where you want it, size it, save",
+        "r12": "K — docking computer: bring the ship in to a station nearby",
+        "t13": "Dock key — near a station it appears; tap and the computer brings you in. Push forward to leave.",
+        "r13": "L — down to the surface. The landing card comes up over Earth, the Moon, Mars and Proxima b, and lights when you are low enough.",
+        "r14": "M — sound on and off",
+        "t14": "Sound — on and off in the menu",
+        "r15": "Z — flight assist · V — step out in the suit, and back aboard · R — clear the target",
+        "r16": "+ / − or [ ] — pull the camera in and out · wheel does the same",
+        "t15": "Fly low over the Moon, Mars or Proxima b — the amber key by the stick takes you down"
+      },
+      "dockedAt": "Docked at {body} — push forward to leave",
+      "supplying": "Taking on fuel and stores",
+      "order": "Destroy {body}",
+      "orderTitle": "Standing order",
+      "orderDone": "Objective complete",
+      "landOn": {
+        "moon": "Land on the Moon",
+        "mars": "Land at Mars Base",
+        "proximaB": "Land on Proxima b",
+        "earth": "Land in Tbilisi"
+      },
+      "jumpLabel": "Light-year jump",
+      "jumpShort": "Jump",
+      "jumpMenu": "Choose a destination",
+      "lyLeft": "ly to go",
+      "hudHide": "Hide the deck",
+      "hudShow": "Show the deck",
+      "landscape": "Turn to landscape",
+      "portrait": "Turn to portrait",
+      "menu": "Menu",
+      "nextTarget": "Next target",
+      "customize": "Customize the deck",
+      "layoutHint": "Drag any control where you want it",
+      "layoutSave": "Save",
+      "layoutCancel": "Cancel",
+      "layoutReset": "Reset to default",
+      "sizeUp": "Bigger",
+      "sizeDown": "Smaller",
+      "places": {
+        "head": "Readouts",
+        "topkeys": "Menu keys",
+        "side": "Cards",
+        "move": "Move stick",
+        "fire": "Fire",
+        "boost": "Boost",
+        "brake": "Brake",
+        "gear": "Gear",
+        "console": "Console bar"
+      },
+      "dock": "Dock",
+      "docking": "Docking… tap to cancel",
+      "soundOn": "Sound on",
+      "soundOff": "Sound off",
+      "landReady": "Ready to land",
+      "landDescend": "Descend below {n} km"
+    },
+    "moon": {
+      "place": "Stellar Base · Moon",
+      "descending": "Descending to Stellar Base",
+      "touchdown": "Touchdown in {n} s",
+      "returnOrbit": "Return to orbit",
+      "gravity": "Gravity",
+      "altitude": "Height",
+      "speed": "Speed",
+      "craters": "Craters",
+      "jump": "Jump",
+      "run": "Lope",
+      "move": "Move astronaut",
+      "help": "Surface controls",
+      "helpShow": "Show controls",
+      "close": "Close",
+      "impact": "Meteoroid impact — {n} m away",
+      "hints": {
+        "walk": "W A S D — jog. Shift to sprint, Alt to walk.",
+        "jump": "Space — jump. One sixth g: you will be up there a while.",
+        "walkTouch": "Left stick — walk. Drag anywhere else to look around.",
+        "jumpTouch": "Jump is bottom right. One sixth g: you will be up there a while."
+      },
+      "keys": {
+        "r1": "W A S D / arrows — walk",
+        "r2": "Shift — sprint: hold it, or tap it to latch. How hard you push the stick picks walk, jog or run",
+        "r3": "Space — jump; on the way down it is the descent engine",
+        "r4": "Mouse drag — look around · wheel — zoom",
+        "r5": "V — walk the camera round: over the shoulder, in the helmet, wide",
+        "r6": "E — the job in front of you: tap to use, hold to work",
+        "r7": "Meteoroids land now and then. They never land on you.",
+        "t1": "Left stick — walk",
+        "t2": "Right half — drag to look around",
+        "t3": "Lope and crouch — beside the stick; jump — bottom right",
+        "t4": "Camera — walk the view round: shoulder, helmet, wide",
+        "t5": "Meteoroids land now and then. They never land on you.",
+        "r8": "The habitats: up a ramp, cycle the airlock with E, and you are in",
+        "t6": "The habitats: up a ramp, cycle the airlock with the amber key, and you are in",
+        "r9": "C — crouch: slow, low and steady",
+        "r10": "V in the rover: chase, the driver's seat, the mast camera",
+        "r11": "F — hold to work, the same as holding E",
+        "r12": "1 2 3 4 — the rover's gears",
+        "t7": "Hold the engine key on the way down. Leave it too late and guidance takes over.",
+        "t8": "The amber key does the job in front of you — tap to use, hold to work",
+        "t9": "The gear key changes the rover’s speed; push the stick to its rim to lope",
+        "r13": "The mission computer in the geology lab hands out the day’s jobs",
+        "t10": "The mission computer in the geology lab hands out the day’s jobs",
+        "r14": "M — sound on and off",
+        "t11": "Sound — on and off in the menu",
+        "r15": "Alt — walk on purpose · Q — look over the other shoulder",
+        "r16": "The rover: E to climb in · hold E at a roll to bail out · Space is the handbrake"
+      },
+      "pois": {
+        "habitatA": "Habitat A — crew quarters",
+        "habitatB": "Habitat B — lab and galley",
+        "habitatC": "Habitat C — medical bay and gym",
+        "greenhouse": "Greenhouse tunnel — lettuce, radish, wheat",
+        "tanks": "Life support — oxygen out of regolith",
+        "solar": "Power — vertical tracking arrays, 31 kW",
+        "dish": "Comms — high-gain dish on Earth",
+        "rover": "Rover LTV-01",
+        "lander": "Descent stage of the first crew",
+        "flag": "Flag of Georgia",
+        "seismometer": "Passive seismometer",
+        "sign": "Stellar Base — founded by Astroman, Tbilisi",
+        "ourLander": "Your descent vehicle",
+        "science": "Geology lab — the mission computer",
+        "logistics": "Rover bay and charger",
+        "landingZone": "Landing zone — keep clear",
+        "sinkhole": "Collapsed lava tube — keep back",
+        "hatch": "Maintenance hatch"
+      },
+      "eva": "EVA",
+      "pulse": "Pulse",
+      "suitTemp": "Suit",
+      "distance": "Walked",
+      "crouch": "Crouch",
+      "camera": "Camera",
+      "menu": "Menu",
+      "hudHide": "Hide the glass",
+      "hudShow": "Show the glass",
+      "stance": {
+        "fallen": "Down — push the stick or jump to get up",
+        "fallenTouch": "Down — push the stick or tap jump to get up",
+        "crouch": "Crouched",
+        "slide": "Sliding — that slope will not hold boots",
+        "stumble": "Stumbling — get the feet back under you"
+      },
+      "grades": {
+        "feather": "Feather touchdown",
+        "good": "Good touchdown",
+        "firm": "Firm touchdown",
+        "hard": "Hard touchdown"
+      },
+      "landing": {
+        "title": "Powered descent",
+        "rate": "Rate",
+        "offset": "Off pad",
+        "fuel": "Descent fuel",
+        "assist": "Guidance has the stick",
+        "throttle": "Engine",
+        "touchdown": "{n} m/s at contact",
+        "drift": "Drift",
+        "ascent": "Lift-off"
+      },
+      "gears": {
+        "creep": "Creep",
+        "cruise": "Cruise",
+        "sprint": "Sprint",
+        "ion": "Ion"
+      },
+      "mission": {
+        "title": "Objective",
+        "log": "Expedition log",
+        "brief": "The mission computer in the geology lab has a magnetic anomaly on the survey map, a hundred metres out, that has no business being there. Pin it with the scanner, drill it, follow what the core tells you, and find out what is under the regolith.",
+        "none": "Nothing earned yet. The mission computer is in the geology lab, west of the landing zone.",
+        "obj": {
+          "survey": "Head for the survey area",
+          "drill": "Start the drill",
+          "trace": "Follow the core’s signature across the mare",
+          "excavate": "Clear the regolith off the hull, patch by patch",
+          "contact": "Step through the open seam",
+          "done": "First contact. The craft is yours to visit.",
+          "brief": "Collect the survey at the mission computer — geology lab",
+          "scan": "Sweep the area — the scanner peaks over the anomaly",
+          "drillFeed": "Feed the drill — keep the load in the green",
+          "collect": "Take the core from the tray",
+          "contactWait": "Stand by — the seam is waking",
+          "open": "Open the hatch",
+          "enter": "Step through the hatch"
+        },
+        "banner": {
+          "survey": "Anomaly 3 — drill site",
+          "drill": "Anomaly pinned — the drill is deploying",
+          "trace": "Core out — metal at 4.6 m, and it points across the mare",
+          "excavate": "The crater. Something is under this.",
+          "contact": "The hull is clear — and the seam has power",
+          "done": "First contact — the ion gear is unlocked",
+          "brief": "Survey received — anomaly 3 is on your compass"
+        },
+        "rewards": {
+          "core": "Deep Core — a metre of the Moon in a tube, with metal in it",
+          "hull": "Excavation — the first hull raised on another world",
+          "contact": "First Contact — the rover’s ion gear is unlocked"
+        },
+        "scanner": "Scanner",
+        "scanLock": "Locking — {n}%",
+        "patches": "{n} of {total} patches clear",
+        "radio": {
+          "rover": "Base: it is two hundred metres out — take the rover.",
+          "half": "Base: impact flash on the mare ahead of you. Keep clear of it.",
+          "close": "Base: we are reading you right over it now."
+        },
+        "drill": {
+          "depth": "Depth",
+          "load": "Load",
+          "temp": "Heat",
+          "stalled": "Overheated — let it cool",
+          "ready": "Core out — take it",
+          "hard": "Basalt layer — ease off"
+        }
+      },
+      "hold": "Hold",
+      "act": {
+        "terminal": "Read the survey",
+        "drillStart": "Start drill",
+        "drillFeed": "Feed drill",
+        "collectCore": "Take core",
+        "clear": "Clear regolith",
+        "openHatch": "Open hatch",
+        "jobBoard": "Job board",
+        "resetBreaker": "Reset breaker",
+        "holdReset": "Hold reset",
+        "alignArray": "Turn array",
+        "collectSample": "Collect sample",
+        "depositSamples": "Store samples",
+        "openPanel": "Open panel",
+        "alignDish": "Turn dish",
+        "serviceWheel": "Service wheel",
+        "takePackage": "Take package",
+        "placePackage": "Set down",
+        "levelPackage": "Level it",
+        "activate": "Switch on",
+        "read": {
+          "isru": "Plant status",
+          "power": "Power status",
+          "comms": "Link status",
+          "charger": "Charger"
+        },
+        "placeBeacon": "Set up the beacon",
+        "logSinkhole": "Log the sinkhole",
+        "boardLander": "Board the lander — lift off",
+        "enterAirlock": "Enter the airlock",
+        "exitAirlock": "Leave through the airlock",
+        "getIn": "Get in",
+        "getOut": "Get out",
+        "bailOut": "Hold to bail out"
+      },
+      "airlock": {
+        "cycling": "Equalising — {n}%",
+        "open": "Airlock open — go through"
+      },
+      "rover": {
+        "fault": "Wheel sensor fault — Cruise at most",
+        "charging": "Charging — {n}%"
+      },
+      "readout": {
+        "isru": "ISRU-1 · 1.8 kg of oxygen a day from 160 kg of regolith · furnace 1,050 °C · O₂ tank 74 %",
+        "power": "PCU-1 · arrays A B C · 31 kW in · batteries 88 % · bus 120 V",
+        "comms": "Earth link · Ka band · 42 Mbit/s · 2.6 s round trip",
+        "charger": "Charger 2 · rover battery {n}% · park inside the marks to charge"
+      },
+      "jobs": {
+        "title": "Job",
+        "meter": "Alignment",
+        "names": {
+          "solar": "Array B brought back onto the sun",
+          "samples": "Two samples returned to the store",
+          "comms": "Earth link realigned",
+          "rover": "Rover wheel serviced",
+          "seismo": "Seismometer deployed",
+          "sinkhole": "Sinkhole marked with a beacon"
+        },
+        "start": {
+          "solar": "Job — array B string is offline",
+          "samples": "Job — two tagged samples to bring in",
+          "comms": "Job — the Earth link has degraded",
+          "rover": "Job — a rover wheel sensor has faulted",
+          "seismo": "Job — deploy a seismometer",
+          "sinkhole": "Job — mark the sinkhole before someone else walks into it"
+        },
+        "done": {
+          "solar": "Array B back on the sun — full power",
+          "samples": "Samples sealed in the store",
+          "comms": "Dish on Earth — link restored",
+          "rover": "Wheel serviced — all gears back",
+          "seismo": "Seismometer listening",
+          "sinkhole": "Beacon at the sinkhole — logged"
+        },
+        "steps": {
+          "solar": {
+            "go": "Go to the power cabinet",
+            "breaker": "Reset the array B breaker",
+            "reset": "Hold the reset until the string comes up",
+            "align": "Turn array B onto the sun — let go on the peak"
+          },
+          "samples": {
+            "collect": "Collect the two tagged rock samples",
+            "return": "Put the samples in the sealed store"
+          },
+          "comms": {
+            "go": "Go to the comms enclosure",
+            "panel": "Open the dish control panel",
+            "align": "Bring the dish round to Earth — let go on the peak"
+          },
+          "rover": {
+            "bring": "Drive the rover into the service bay",
+            "wheel": "Service the rear left wheel"
+          },
+          "seismo": {
+            "take": "Take the seismometer package from the sample store",
+            "go": "Carry it to the marked geology point",
+            "place": "Set it down",
+            "level": "Level it — let go when the bubble centres",
+            "activate": "Switch it on"
+          },
+          "sinkhole": {
+            "go": "Go to the sinkhole — stay back from the rim",
+            "place": "Set up the warning beacon",
+            "log": "Log the sinkhole at the mission computer"
+          }
+        }
+      },
+      "soundOn": "Sound on",
+      "soundOff": "Sound off",
+      "backrooms": {
+        "place": "Level 0",
+        "gravityRead": "Gravity {n} m/s² · {g} g",
+        "air": "Outside air",
+        "noCarrier": "No carrier",
+        "elapsed": "Off comms",
+        "log": "Came back out of the Backrooms — {time}",
+        "act": {
+          "removeHelmet": "Take the helmet off",
+          "openDoor": "Open the door",
+          "climb": "Climb"
+        },
+        "radio": {
+          "hint": "…base to EVA… there is a hum on channel two… out past the comms mast… say again…",
+          "static": "No carrier. The set is searching.",
+          "guide": "The panels ahead are coming on, one after another.",
+          "back": "Where were you? You were off comms for 47 minutes."
+        },
+        "readout": {
+          "air": "External atmosphere: 20.9% O₂ · 101 kPa · 23 °C",
+          "gravity": "Gravity 9.81 m/s² — one full g. This is not the Moon.",
+          "repress": "Helmet sealed — suit repressurising"
+        },
+        "wake": "Get up.",
+        "crack": "Visor cracked"
+      }
+    },
+    "loading": {
+      "title": "Opening the solar system",
+      "detail": "Charting every orbit for today",
+      "moon": "Descending to Stellar Base",
+      "moonDetail": "Preparing the surface",
+      "gpu": "The graphics card reset — rebuilding the scene",
+      "preflight": "Preflight",
+      "preflightDetail": "Powering up the {ship}",
+      "ascent": "Climbing back to orbit",
+      "ascentDetail": "The surface falls away below",
+      "tips": {
+        "t1": "Light from the Sun takes 8 minutes 20 seconds to reach Earth.",
+        "t2": "The Moon drifts 3.8 cm farther from Earth every year.",
+        "t3": "Jupiter's Great Red Spot has been blowing for at least 190 years.",
+        "t4": "Saturn's rings are mostly water ice; some pieces are the size of a house.",
+        "t5": "Alpha Centauri is 4.37 light years away — 300,000 years at highway speed.",
+        "t6": "A day on Venus lasts longer than its year.",
+        "t7": "Close to a black hole time runs slow: an hour there is years back home.",
+        "t8": "Proxima Centauri b sits in its star's habitable zone, 4.24 light years from here."
+      }
+    },
+    "worlds": {
+      "mars": {
+        "place": "Mars Base · Jezero",
+        "loading": "Descending to Mars Base",
+        "loadingDetail": "Preparing the plain — 0.38 g, thin air, dust in it",
+        "outside": "Outside",
+        "run": "Run",
+        "hints": {
+          "walk": "W A S D — walk. Hold Shift to run. Mars holds you down twice as hard as the Moon.",
+          "jump": "Space — jump. A metre, no more: this is a real planet.",
+          "walkTouch": "Left stick — walk. Drag anywhere else to look around.",
+          "jumpTouch": "Jump is bottom right. A metre, no more: this is a real planet."
+        },
+        "keys": {
+          "r1": "W A S D / arrows — jog · Shift — sprint · Alt — walk · C — crouch",
+          "r2": "Space — jump; on the way down it is the descent engine",
+          "r3": "Mouse drag — look around · wheel — zoom",
+          "r4": "V — walk the camera round: over the shoulder, in the helmet, wide",
+          "r5": "E — read the panel in front of you",
+          "r6": "The base is north of the pad: habitats, greenhouse, the plant, the reactors",
+          "r7": "Dust devils cross the plain. They will not come near the base.",
+          "t1": "Left stick — walk; push it to the rim to run",
+          "t2": "Right half — drag to look around",
+          "t3": "Run and crouch — beside the stick; jump — bottom right",
+          "t4": "Camera — walk the view round: shoulder, helmet, wide",
+          "t5": "The amber key reads the panel in front of you",
+          "t6": "The base is north of the pad: habitats, greenhouse, the plant, the reactors",
+          "r8": "Q — look over the other shoulder",
+          "r9": "Push the stick a little to walk, hard to run; a tap of Shift latches a sprint"
+        },
+        "pois": {
+          "habitat0": "Habitat 1 — crew quarters, under two metres of regolith",
+          "habitat1": "Habitat 2 — lab, galley and the medical bay",
+          "habitat2": "Habitat 3 — workshop and suit maintenance",
+          "greenhouse": "Greenhouse — potatoes, wheat, and the first Martian tomatoes",
+          "isru": "Sabatier plant — methane and oxygen out of the air",
+          "power": "Kilopower — two 10 kW fission units",
+          "solar": "Solar field — 28 panels, dusted every sol",
+          "dish": "Comms — high-gain dish on Earth, 4 to 24 minutes away",
+          "weather": "Weather mast — wind, pressure, dust opacity",
+          "flag": "Flag of Georgia",
+          "sign": "Mars Base — founded by Astroman, Tbilisi",
+          "cargoShip": "Cargo ship — everything here came down in it",
+          "rover": "Pressurised rover — 200 km on a charge",
+          "landingZone": "Landing zone — keep clear",
+          "ourLander": "Your descent vehicle"
+        },
+        "act": {
+          "read": {
+            "habitat": "Habitat status",
+            "greenhouse": "Crop status",
+            "isru": "Plant status",
+            "power": "Reactor status"
+          },
+          "boardLander": "Board the lander — lift off"
+        },
+        "readout": {
+          "habitat": "HAB-1 · 101 kPa · 21 °C · CO₂ 0.4 % · shielding 2.1 m regolith · 4 crew asleep",
+          "greenhouse": "GH-1 · 6 beds · wheat day 58, potatoes day 41, tomatoes flowering · 320 g O₂ a day",
+          "isru": "SABATIER-1 · CO₂ in 2.6 kg/h · CH₄ 0.9 kg/h · O₂ 1.8 kg/h · tanks 74 % · return fuel by sol 410",
+          "power": "KRUSTY-1 and 2 · 20 kWe · core 800 °C · radiators nominal · 11 years of fuel"
+        },
+        "banner": {
+          "arrived": "Mars Base — sol 1,214 · welcome down"
+        },
+        "dialog": {
+          "who": ""
+        }
+      },
+      "proximaB": {
+        "place": "Proxima b · the terminator",
+        "loading": "Descending to Proxima b",
+        "loadingDetail": "A red dwarf's day side — 1.1 g, warm, and something is alive",
+        "outside": "Outside",
+        "run": "Run",
+        "hints": {
+          "walk": "W A S D — walk. Hold Shift to run. The ground pulls harder than home.",
+          "jump": "Space — jump. Not far: this is 1.1 g.",
+          "walkTouch": "Left stick — walk. Drag anywhere else to look around.",
+          "jumpTouch": "Jump is bottom right. Not far: this is 1.1 g."
+        },
+        "keys": {
+          "r1": "W A S D / arrows — jog · Shift — sprint · Alt — walk · C — crouch",
+          "r2": "Space — jump; on the way down it is the descent engine",
+          "r3": "Mouse drag — look around · wheel — zoom",
+          "r4": "V — walk the camera round: over the shoulder, in the helmet, wide",
+          "r5": "E — greet a villager who has come to meet you",
+          "r6": "The settlement is by the lake, east of the pad. They will find you first.",
+          "r7": "Greet them three times and one of them will lead you somewhere.",
+          "t1": "Left stick — walk; push it to the rim to run",
+          "t2": "Right half — drag to look around",
+          "t3": "Run and crouch — beside the stick; jump — bottom right",
+          "t4": "Camera — walk the view round: shoulder, helmet, wide",
+          "t5": "The amber key greets a villager who has come to meet you",
+          "t6": "The settlement is by the lake, east of the pad. Greet them three times and one will lead you somewhere.",
+          "r8": "Q — look over the other shoulder",
+          "r9": "Push the stick a little to walk, hard to run; a tap of Shift latches a sprint"
+        },
+        "pois": {
+          "lake": "The lake — still, and lit from below",
+          "village": "The settlement — seven grown pods",
+          "stone": "The council stone — their script, lit into it",
+          "ourLander": "Your descent vehicle"
+        },
+        "act": {
+          "greet": "Greet",
+          "boardLander": "Board the lander — lift off"
+        },
+        "readout": {
+          "none": ""
+        },
+        "banner": {
+          "arrived": "Proxima b — the star never moves here",
+          "noticed": "They have seen you",
+          "firstContact": "First contact — recorded on the stone"
+        },
+        "dialog": {
+          "who": "Villager {n} · Astra translation",
+          "hello": "A pattern of greeting, held long. Roughly: you are new, and you are welcome.",
+          "peace": "Both hands open, every band lit slowly. This is what they do when nothing is wrong.",
+          "welcome": "They are naming the place. The word for it is the same as the word for the lake.",
+          "suit": "They are asking about the suit. They think it is your skin, and that it does not glow.",
+          "star": "They are pointing at the star. It has never moved, and they do not understand a sky that turns.",
+          "light": "The colours are a question: which is yours? Astra has answered teal, on your behalf.",
+          "water": "They are offering water from the lake. It is safe to carry; Astra advises not to drink it.",
+          "friend": "That was understood. The whole group answered at once.",
+          "stone": "This one wants you to follow. It keeps looking toward the stone.",
+          "gift": "They have added a mark to the stone: a suit, standing next to one of them. You are in their record now."
+        }
+      },
+      "earth": {
+        "place": "Tbilisi · Rike Park",
+        "loading": "Descending to Tbilisi",
+        "loadingDetail": "Loading the Mtkvari valley — 34,000 buildings, the Caucasus on the horizon",
+        "loadError": "Tbilisi's map did not load. Check the connection and land again.",
+        "outside": "Outside",
+        "localTime": "Tbilisi",
+        "run": "Run",
+        "credits": "Map data © OpenStreetMap contributors (ODbL) · Terrain: SRTM and GMTED2010 (USGS), ETOPO1 (NOAA), via AWS Terrain Tiles · Weather: Open-Meteo.com (CC BY 4.0)",
+        "hints": {
+          "walk": "W A S D — jog. Shift — sprint. The red car by the pad is yours: E to get in.",
+          "jump": "Space — jump. The red car by the pad is yours: E to get in.",
+          "walkTouch": "Left stick — jog; push it to the rim to sprint. Drag anywhere else to look around.",
+          "jumpTouch": "Jump is bottom right. The red car by the pad: the amber key gets you in.",
+          "drive": "W / S — drive and brake (reverse when stopped) · A / D — steer · Space — handbrake · E — get out",
+          "driveTouch": "Stick up and down — drive and brake · left and right — steer · Jump key — handbrake"
+        },
+        "keys": {
+          "r1": "W A S D / arrows — jog · Shift — sprint · Alt — walk · C — crouch",
+          "r2": "Space — jump; on the way down it is the descent engine",
+          "r3": "Mouse drag — look around · wheel — zoom",
+          "r4": "V — walk the camera round: over the shoulder, first person, wide",
+          "r5": "E — the thing in front of you: the car, the lander, the cable car, the roof, the telescope",
+          "r6": "The Bridge of Peace is west of the pad; the cable car starts beside it",
+          "r7": "Hold E in the cable car to ride six times as fast",
+          "t1": "Left stick — walk; push it to the rim to run",
+          "t2": "Right half — drag to look around",
+          "t3": "Run and crouch — beside the stick; jump — bottom right",
+          "t4": "Camera — walk the view round: shoulder, first person, wide",
+          "t5": "The amber key does the thing in front of you",
+          "t6": "The Bridge of Peace is west of the pad; the cable car starts beside it",
+          "r8": "Q — look over the other shoulder",
+          "r9": "Push the stick a little to walk, hard to run; a tap of Shift latches a sprint"
+        },
+        "pois": {
+          "narikala": "Narikala — the fortress on the Sololaki ridge, from the 4th century",
+          "kartlisDeda": "Kartlis Deda — Mother of Georgia, 20 m, 1958",
+          "sameba": "Sameba — the Holy Trinity Cathedral, 87 m",
+          "bridgeOfPeace": "Bridge of Peace — 150 m of steel and glass over the Mtkvari, 2010",
+          "rikeTubes": "Rike Park Music Theatre and Exhibition Hall — the two tubes",
+          "abanotubani": "Abanotubani — the sulphur baths under their brick domes",
+          "ourLander": "Your descent vehicle"
+        },
+        "act": {
+          "board": "Board the cable car",
+          "climb": "Up to the roof",
+          "descend": "Down the stairwell",
+          "part": {
+            "tripod": "Set up the tripod",
+            "mount": "Fit the mount",
+            "tube": "Mount the telescope"
+          },
+          "align": "Align on north",
+          "faceNorth": "Face north to align",
+          "slew": "Slew to the target",
+          "eyepiece": "Look through the eyepiece",
+          "closeEyepiece": "Close the eyepiece",
+          "boardLander": "Board the lander — lift off",
+          "drive": "Get in the car",
+          "getOut": "Get out",
+          "stopToExit": "Stop to get out"
+        },
+        "readout": {
+          "none": ""
+        },
+        "banner": {
+          "arrived": "Tbilisi — welcome home",
+          "bridge": "Act 1 — Cross the Bridge of Peace",
+          "cable": "Act 2 — Ride up to Narikala",
+          "overlook": "Act 3 — Read the city from the walls",
+          "rooftop": "Act 4 — A telescope on an Avlabari roof",
+          "firstLight": "Act 5 — First light",
+          "done": "First light — Tbilisi, tonight",
+          "welcome": "Tbilisi comes out to meet you"
+        },
+        "dialog": {
+          "who": ""
+        },
+        "expedition": {
+          "title": "Expedition",
+          "obj": {
+            "bridge": "Cross the Bridge of Peace into the Old Town",
+            "cable": "Walk to the Rike cable car station and board",
+            "riding": "Riding up to Narikala — three minutes",
+            "overlook": "From the walls, find Sameba, the TV tower and the Bridge of Peace — look straight at each",
+            "rooftop": "Find the stairwell of the flat-roofed building in Avlabari",
+            "assemble": "Put the telescope together",
+            "align": "Face north and align the mount",
+            "backToRoof": "Back up to the roof — it is dusk",
+            "slew": "Slew the telescope to tonight's target",
+            "look": "Look",
+            "done": "Expedition complete — come back at dusk any day",
+            "doneRoof": "The eyepiece is yours: tonight's sky over Tbilisi"
+          },
+          "spot": "Looking for {name}",
+          "found": "{n} of 3 found",
+          "names": {
+            "sameba": "Sameba",
+            "tvTower": "the TV tower",
+            "bridgeOfPeace": "the Bridge of Peace"
+          }
+        },
+        "eyepiece": {
+          "title": "Eyepiece · {mag}×",
+          "close": "Close",
+          "alt": "Altitude",
+          "az": "Azimuth",
+          "brightness": "Magnitude",
+          "size": "Size",
+          "phase": "Lit",
+          "time": "Tbilisi",
+          "note": "Positions for Tbilisi from astronomy-engine",
+          "targets": {
+            "saturn": "Saturn",
+            "jupiter": "Jupiter",
+            "moon": "The Moon",
+            "mars": "Mars",
+            "venus": "Venus",
+            "mercury": "Mercury",
+            "star": "{name}"
+          }
+        },
+        "entry": "Entry interface"
+      }
+    },
+    "room": {
+      "title": "Explore together",
+      "open": "Play together",
+      "close": "Close",
+      "unconfigured": "Multiplayer is not switched on for this site yet.",
+      "signInPrompt": "Sign in to open a room or join friends. Everyone in a room sees each other in flight and on the same world.",
+      "signIn": "Sign in",
+      "create": "Create a room",
+      "joinLabel": "Join with a code",
+      "codePlaceholder": "e.g. K7M2Q",
+      "join": "Join",
+      "badCode": "A room code is {n} letters and digits.",
+      "full": "That room is full — {max} explorers at most.",
+      "openRooms": "Open rooms",
+      "noRooms": "No open rooms right now. Create one and send the code to a friend.",
+      "hostedBy": "{name}'s room",
+      "joining": "Joining room {code}…",
+      "roomCode": "Room code",
+      "copyInvite": "Copy invite link",
+      "copied": "Link copied",
+      "howItWorks": "Launch or land anywhere — the others see your ship in flight and your suit on the same world. Friends sign in and open the link, or type the code.",
+      "explorers": "Explorers {n}/{max}",
+      "you": "{name} (you)",
+      "leave": "Leave room",
+      "defaultName": "Explorer {tag}",
+      "badgeAria": "Room {code}, {n} explorers — open room",
+      "places": {
+        "orbit": "System view",
+        "flight": "Flying",
+        "surface": "On a surface",
+        "moon": "On the Moon",
+        "mars": "On Mars",
+        "proximaB": "On Proxima b",
+        "earth": "In Tbilisi",
+        "backrooms": "In the Backrooms"
+      },
+      "toast": {
+        "joined": "{name} joined the room",
+        "left": "{name} left the room",
+        "landed": "{name}: {place}",
+        "launched": "{name} lifted off"
+      }
+    }
+  }
+}

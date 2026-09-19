@@ -1,12 +1,8 @@
 import { getRequestConfig } from 'next-intl/server';
-import { cookies } from 'next/headers';
+import en from '../messages/en.json';
 
-export default getRequestConfig(async () => {
-  const locale = (await cookies()).get('stellar_locale')?.value ?? 'en';
-  const validLocale = ['en', 'ka'].includes(locale) ? locale : 'en';
-
-  return {
-    locale: validLocale,
-    messages: (await import(`../messages/${validLocale}.json`)).default,
-  };
-});
+// Sidera v1 is English-only. The Georgian file is archived in docs/archive/ka.json.
+export default getRequestConfig(async () => ({
+  locale: 'en',
+  messages: en,
+}));

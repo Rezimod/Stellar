@@ -144,7 +144,7 @@ describe('the Tbilisi expedition', () => {
 describe('the landmarks on the baked ground', () => {
   let data: EarthData;
   beforeAll(() => {
-    const dir = path.resolve(__dirname, '../../public/explore/tbilisi');
+    const dir = path.resolve(__dirname, '../public/explore/tbilisi');
     const buf = (f: string) => { const b = readFileSync(path.join(dir, f)); return b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength); };
     const manifest = JSON.parse(readFileSync(path.join(dir, 'manifest.json'), 'utf8')) as Manifest;
     data = { manifest, grids: parseTerrain(buf('terrain.bin')), ...parseCity(buf('city.bin')) };

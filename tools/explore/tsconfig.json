@@ -1,0 +1,18 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "incremental": false,
+    "plugins": [],
+    "baseUrl": ".",
+    "paths": {
+      "@/lib/solar-system/ephemeris": ["../../src/lib/solar-system/ephemeris"],
+      "@/lib/solar-system/planet-palettes": ["../../src/lib/solar-system/planet-palettes"],
+      "@/lib/solar-system/*": ["./lib/solar-system/*"],
+      "@/components/solar-system/*": ["./components/solar-system/*"],
+      "@/lib/multiplayer/*": ["./lib/multiplayer/*"],
+      "@/*": ["../../src/*"]
+    }
+  },
+  "include": ["**/*.ts", "**/*.tsx", "../../src/**/*.d.ts"],
+  "exclude": []
+}
