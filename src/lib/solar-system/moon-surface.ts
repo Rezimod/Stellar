@@ -45,6 +45,8 @@ import { makeBackrooms, type BackroomsHandle, type BackroomsTelemetry } from '@/
 import { makeBackroomsAudio } from '@/lib/solar-system/backrooms-audio';
 import { loadBackrooms, recordEntry, recordEscape } from '@/lib/solar-system/backrooms-save';
 import { MOON_G } from '@/lib/solar-system/moon-fx';
+import { makeBuildMode, type BuildHandle } from '@/lib/solar-system/build-mode';
+import { BUILD_SITES } from '@/lib/solar-system/build-rules';
 
 /** Three ways to watch the crew, three to ride the rover. */
 export type SurfaceView = 'chase' | 'helmet' | 'wide' | 'rover' | 'cockpit' | 'mast';
@@ -215,6 +217,8 @@ export interface MoonSurfaceHandle {
   escapeBackrooms: () => void;
   /** The Backrooms while the crew is in them. */
   backrooms: () => BackroomsHandle | null;
+  /** Player base building: the pieces, the ghost, the catalogue. */
+  build: BuildHandle;
   dispose: () => void;
 }
 
@@ -403,6 +407,14 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
     walkRadius: TERRAIN_WALK_RADIUS, first: 24, every: 58, lights: lightPool,
   });
   scene.add(meteors.group);
+  // Player-built pieces: private ones round the outpost, the shared colony to the east.
+  const build = makeBuildMode({
+    world: 'moon', kit, scene, heightAt: terrain.heightAt,
+    blockers: base.colliders.filter((c) => c !== base.roverCollider),
+    colliderSets: [base.colliders, base.walkColliders],
+    movers: () => [base.roverCollider],
+  });
+  base.pois.push({ id: 'colonySite', ...BUILD_SITES.moon.colony });
   let roverFault = false;
   const jobs = makeJobs({
     anchors: base.zones.anchors, heightAt: terrain.heightAt,
@@ -893,8 +905,13 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
       }
     } else {
       // ── Edges and the keys that are not movement. ──
-      const press = input.interact;
+      // Building: the action key puts the piece down instead, and the number keys pick modules, not gears.
+      if (build.telemetry.active && (driving() || tracking() || base.inside)) build.setActive(false);
+      const building = build.telemetry.active;
+      if (building && input.interact) build.place();
+      const press = input.interact && !building;
       input.interact = false;
+      if (building) input.gearRequest = null;
       jumpPress.see(input.jump);
       if (input.viewToggle) {
         input.viewToggle = false;
@@ -957,7 +974,7 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
       if (!driving()) cosmonaut.indoors = !!base.inside;
 
       // ── The one key. ──
-      ictx.x = crew.x; ictx.z = crew.z; ictx.yaw = driving() ? rover.yaw : cosmonaut.yaw; ictx.driving = driving(); ictx.press = press; ictx.held = input.use || press;
+      ictx.x = crew.x; ictx.z = crew.z; ictx.yaw = driving() ? rover.yaw : cosmonaut.yaw; ictx.driving = driving(); ictx.press = press; ictx.held = !building && (input.use || press);
       interactions.update(dt, ictx);
       if (!interactions.prompt.holding) bailHold = 0;
       mctx.crewX = crew.x; mctx.crewZ = crew.z; mctx.driving = driving();
@@ -1104,11 +1121,13 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
     lightPool.flush(crew.x, crew.y, crew.z);
     sky.update(dt, camera, renderer.getPixelRatio());
     if (surfacing > 0) { surfacing = Math.max(0, surfacing - dt * 0.7); post.setBlack(surfacing); }
+    if (telemetry.phase === 'surface') build.update(crew.x, crew.z, camera);
     host.render(dt);
   };
   host.start(frame, () => { telemetry.ready = true; }, cosmonaut.ready);
 
   const release = () => {
+    build.dispose();
     sinkhole.dispose();
     lander.dispose();
     mission.dispose();
@@ -1204,6 +1223,7 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
     teleportToExit() { br?.teleportToExit(); },
     escapeBackrooms() { br?.finish(); },
     backrooms: () => br,
+    build,
     dispose() {
       if (window.__stellarMoon === handle) delete window.__stellarMoon;
       unsubSettings();

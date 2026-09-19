@@ -1541,7 +1541,8 @@
         "landingZone": "Landing zone — keep clear",
         "sinkhole": "Collapsed lava tube — keep back",
         "hatch": "Maintenance hatch",
-        "telescope": "Telescope station — on the ridge"
+        "telescope": "Telescope station — on the ridge",
+        "colonySite": "Stellar Colony — the shared build site"
       },
       "eva": "EVA",
       "pulse": "Pulse",
@@ -1829,7 +1830,8 @@
           "cargoShip": "Cargo ship — everything here came down in it",
           "rover": "Pressurised rover — 200 km on a charge",
           "landingZone": "Landing zone — keep clear",
-          "ourLander": "Your descent vehicle"
+          "ourLander": "Your descent vehicle",
+          "colonySite": "Stellar Colony — the shared build site"
         },
         "act": {
           "read": {
@@ -2052,6 +2054,60 @@
         "gears": "The gear key — the rover's speed"
       },
       "lampOn": "Headlamp on"
+    },
+    "build": {
+      "title": "Build",
+      "toggle": "Build mode",
+      "close": "Leave build mode",
+      "worldMoon": "Moon",
+      "worldMars": "Mars",
+      "scopePrivate": "My base",
+      "scopeColony": "Colony",
+      "scopeHint": "Build where",
+      "modules": {
+        "habitat": "Habitat",
+        "corridor": "Corridor",
+        "solar": "Solar array",
+        "battery": "Battery",
+        "pad": "Landing pad",
+        "rocketStand": "Rocket stand"
+      },
+      "size": "{w}×{d} m",
+      "count": "Mine here: {n} / {cap}",
+      "colonyCount": "Colony: {n} pieces",
+      "loading": "Loading bases…",
+      "offline": "Saving unavailable — pieces stay for this session",
+      "saved": "Saved to your account",
+      "ready": "Ready to place",
+      "signIn": "Sign in to build — your pieces are kept on your account",
+      "signInButton": "Sign in",
+      "colonyAway": "Colony site {n} m away, bearing {deg}°",
+      "hoverMine": "Your {name} — X to remove",
+      "hoverOther": "{name} — built by another player",
+      "problem": {
+        "sitePrivate": "Too close to Stellar Base, a site or the colony",
+        "siteColony": "Outside the colony ring",
+        "overlap": "Something is already there",
+        "blocked": "Blocked",
+        "slope": "Ground too steep",
+        "cap": "Piece limit reached",
+        "signIn": "Sign in to build"
+      },
+      "refused": {
+        "signIn": "Sign in to build",
+        "tooFast": "Building too fast — wait a moment",
+        "notYours": "That piece is not yours",
+        "site": "The server refused that spot",
+        "overlap": "Someone built there first",
+        "coords": "The server refused that spot",
+        "module": "Unknown module",
+        "cap": "Piece limit reached",
+        "error": "Could not save — try again"
+      },
+      "place": "Place",
+      "rotate": "Rotate",
+      "remove": "Remove",
+      "keys": "E or click: place · R: rotate · 1–6: module · T: my base / colony · X: remove · B or Esc: leave"
     }
   },
   "missionsPage": {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Camera, ChevronsDown, ChevronsUp, Drill, Eye, EyeOff, Flame, Flashlight, Gauge, HelpCircle,
   LogIn, Menu, Rocket, Trophy, Volume2, VolumeX, Wind, X,
@@ -16,6 +16,7 @@ import { footBinding } from '@/game/bindings';
 import { attachSurfaceControls, type SurfaceControls } from '@/game/surface-controls';
 import { useLoadingTips } from './useLoadingTips';
 import { useSoundPref } from './useSoundPref';
+import { BuildHud } from './BuildHud';
 
 interface MoonSurfaceProps {
   onReturn: () => void;
@@ -472,6 +473,11 @@ export function MoonSurface({ onReturn, paused, onProgress, onPauseRequest }: Mo
     setRun(c.touchDeck.run);
   };
   const toggleCrouch = () => controlsRef.current?.toggleCrouch();
+  const getBuild = useCallback(() => handleRef.current?.build ?? null, []);
+  const canBuild = useCallback(() => {
+    const tel = handleRef.current?.telemetry;
+    return !!tel && tel.phase === 'surface' && !tel.driving && !tel.inside && tel.backrooms.phase === '';
+  }, []);
   const rewards = handleRef.current?.telemetry.mission.rewards ?? [];
   const jobsDone = handleRef.current?.telemetry.jobs.done ?? [];
   const underground = handleRef.current?.telemetry.backrooms;
@@ -575,6 +581,8 @@ export function MoonSurface({ onReturn, paused, onProgress, onPauseRequest }: Mo
           <span className="moon-hud__drill-row"><span>{t('mission.drill.temp')}</span><span ref={drillHeatRef} className="moon-hud__gauge"><i /></span></span>
           <span ref={drillWarnRef} className="moon-hud__drill-warn" hidden />
         </div>
+
+        <BuildHud world="moon" getBuild={getBuild} canOpen={canBuild} mount={mountRef} paused={!!paused} touch={touch} />
 
         {/* ── Top right: the camera, the eye, the menu. ── */}
         <button type="button" className="moon-hud__round moon-hud__unhide" onClick={() => setImmersive(false)} aria-label={t('hudShow')} title={t('hudShow')}>
