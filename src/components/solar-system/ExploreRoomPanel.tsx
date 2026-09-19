@@ -14,10 +14,11 @@ interface ExploreRoomPanelProps {
   onClose: () => void;
 }
 
-const PLACES = new Set(['orbit', 'flight', 'surface', 'moon', 'mars', 'proximaB', 'earth']);
+const PLACES = new Set(['orbit', 'flight', 'surface', 'moon', 'mars', 'proximaB', 'earth', 'backrooms']);
 /** Where a roster entry is, as a message key under solarSystem.room.places. */
 export const placeKey = (scene: string, world: string) => {
-  const k = scene === 'surface' && world ? world : scene;
+  // Each room's maze is its own world, `backrooms-<seed>`.
+  const k = scene === 'surface' && world ? world.replace(/^backrooms-\d+$/, 'backrooms') : scene;
   return PLACES.has(k) ? k : 'orbit';
 };
 

@@ -107,6 +107,7 @@ export function useExploreRoom(link: RoomLink, opts: { name: string; epochMs: nu
     setJoined(false);
     setError(null);
     link.peers.clear();
+    link.code = code;
     const joinedAt = Date.now();
     const meta: RoomMeta = { name: optsRef.current.name, scene: link.self.s, world: link.self.w ?? '', joinedAt, epoch: optsRef.current.epochMs };
     metaRef.current = meta;
@@ -179,6 +180,7 @@ export function useExploreRoom(link: RoomLink, opts: { name: string; epochMs: nu
       roomRef.current = null;
       lobbyRef.current?.track({ room: '', name: meta.name, joinedAt: 0 });
       link.peers.clear();
+      link.code = null;
       setRoster([]);
       setJoined(false);
     };

@@ -21,8 +21,8 @@ import { softSpriteTexture } from '@/lib/solar-system/soft-sprite';
 import { makeMoonTerrain, makeMoonHorizon, TERRAIN_WALK_RADIUS, PAD_CENTER } from '@/lib/solar-system/moon-terrain';
 import { makeMoonDust } from '@/lib/solar-system/moon-fx';
 import { makeCosmonaut, type SuitAnim, type WalkInput } from '@/lib/solar-system/moon-cosmonaut';
-import { makeRemoteCrew, writeSurfacePose } from '@/lib/multiplayer/remote-crew';
-import type { RoomLink } from '@/lib/multiplayer/room-link';
+import { makeRemoteCrew, writeSurfacePose, type RemoteCrew } from '@/lib/multiplayer/remote-crew';
+import { seedFromCode, type RoomLink } from '@/lib/multiplayer/room-link';
 import type { Gait, Mode, Track } from '@/lib/solar-system/suit-locomotion';
 import { walkTrack } from '@/lib/solar-system/suit-scripted';
 import { makeSprintLatch, sprintFrom, walkFromStick } from '@/lib/solar-system/surface-input';
@@ -673,6 +673,9 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
   let br: BackroomsHandle | null = null;
   let brReady = false;
   let brSeed: number | null = null;
+  /** The room's name for this maze, and the others in it. */
+  let brWorld = '';
+  let brCrowd: RemoteCrew | null = null;
   let holeHinted = false;
   let surfacing = 0;
   const bt = telemetry.backrooms;
@@ -686,8 +689,16 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
     fall.reset();
     const entry = recordEntry();
     cosmonaut.group.rotation.set(0, cosmonaut.yaw, 0);
-    const next = makeBackrooms({ renderer, camera, cosmonaut, cam, audio: brAudio, seed: brSeed ?? 1000 + entry.entries, lite });
+    // In a room, everyone who falls in wakes in the room's maze, a step apart.
+    const code = opts.room?.code ?? null;
+    const seed = brSeed ?? (code ? seedFromCode(code) : 1000 + entry.entries);
+    const next = makeBackrooms({
+      renderer, camera, cosmonaut, cam, audio: brAudio, seed, lite,
+      spawnShift: code ? (Math.random() * 2 - 1) * 1.6 : 0,
+    });
     br = next;
+    brWorld = `backrooms-${seed}`;
+    brCrowd = opts.room ? makeRemoteCrew(next.scene, brWorld, lite, false) : null;
     brReady = false;
     next.ready.then(() => { if (br === next) brReady = true; });
     scene.remove(cosmonaut.group);
@@ -705,6 +716,8 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
     if (!old) return;
     br = null;
     brReady = false;
+    brCrowd?.dispose();
+    brCrowd = null;
     old.scene.remove(cosmonaut.group);
     scene.add(cosmonaut.group);
     post.setScene(scene);
@@ -893,9 +906,17 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
     input.zoom = 0;
     const crew = cosmonaut.position;
     if (opts.room) {
-      const out = telemetry.phase === 'surface' && !fall.active && !br && cosmonaut.group.visible;
-      writeSurfacePose(opts.room.self, 'moon', out, crew, cosmonaut.yaw, cosmonaut.state.speed);
+      if (br) {
+        // Underground the crew is on its feet from waking until the top of the shaft.
+        const p = br.telemetry.phase;
+        const up = brReady && (p === 'explore' || p === 'door' || p === 'stairs' || p === 'climb');
+        writeSurfacePose(opts.room.self, brWorld, up, crew, cosmonaut.yaw, cosmonaut.state.speed);
+      } else {
+        const out = telemetry.phase === 'surface' && !fall.active && cosmonaut.group.visible;
+        writeSurfacePose(opts.room.self, 'moon', out, crew, cosmonaut.yaw, cosmonaut.state.speed);
+      }
       crowd?.update(dt, opts.room, now);
+      brCrowd?.update(dt, opts.room, now);
     }
 
     if (telemetry.phase === 'surface' && (fall.active || br)) {

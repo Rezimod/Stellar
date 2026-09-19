@@ -2098,7 +2098,8 @@
         "moon": "On the Moon",
         "mars": "On Mars",
         "proximaB": "On Proxima b",
-        "earth": "In Tbilisi"
+        "earth": "In Tbilisi",
+        "backrooms": "In the Backrooms"
       },
       "toast": {
         "joined": "{name} joined the room",

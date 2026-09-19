@@ -12,7 +12,7 @@
 import * as THREE from 'three';
 import { keep, mergeStatic } from '@/lib/solar-system/moon-batch';
 import {
-  CEILING, CELL, CHUNK, CHUNK_M, DX, DZ, PERIOD, SIDE, hash, mod, type Dir, type Maze,
+  CEILING, CELL, CHUNK, CHUNK_M, DX, DZ, PERIOD, SCALE, SIDE, hash, mod, type Dir, type Maze,
 } from '@/lib/solar-system/backrooms-maze';
 import { carpetTexture, ceilingTexture, dampTexture, decalAtlas, decalUV, wallpaperTexture, type DecalId } from '@/lib/solar-system/backrooms-textures';
 
@@ -47,7 +47,7 @@ function fluoro(mat: THREE.MeshLambertMaterial, kind: 'WALL' | 'FLOOR' | 'CEIL' 
     shader.vertexShader = shader.vertexShader
       .replace('#include <common>', '#include <common>\nvarying vec3 vBrPos;\nvarying vec3 vBrNrm;')
       .replace('#include <project_vertex>', `#include <project_vertex>
-        vBrPos = (modelMatrix * vec4(transformed, 1.0)).xyz;
+        vBrPos = (modelMatrix * vec4(transformed, 1.0)).xyz / ${SCALE.toFixed(1)};
         vBrNrm = normalize(mat3(modelMatrix) * objectNormal);`);
     shader.fragmentShader = shader.fragmentShader
       .replace('#include <common>', `#include <common>

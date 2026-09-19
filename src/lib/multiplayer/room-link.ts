@@ -48,6 +48,8 @@ export interface Peer {
 export interface RoomLink {
   self: PoseMsg;
   peers: Map<string, Peer>;
+  /** The room this explorer is in, or null. */
+  code: string | null;
 }
 
 declare global {
@@ -68,7 +70,7 @@ export const RENDER_DELAY_MS = 260;
 const KEEP = 12;
 
 export function createRoomLink(id: string): RoomLink {
-  return { self: { id, n: 0, s: 'orbit' }, peers: new Map() };
+  return { self: { id, n: 0, s: 'orbit' }, peers: new Map(), code: null };
 }
 
 export function pushSample(peer: Peer, msg: PoseMsg, at: number): void {
@@ -111,6 +113,13 @@ export function makeRoomCode(rand: () => number = Math.random): string {
   let s = '';
   for (let i = 0; i < CODE_LENGTH; i++) s += CODE_ALPHABET[Math.floor(rand() * CODE_ALPHABET.length)];
   return s;
+}
+
+/** One Backrooms plan per room: everyone who falls in from the same room wakes in the same maze. */
+export function seedFromCode(code: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < code.length; i++) h = Math.imul(h ^ code.charCodeAt(i), 16777619);
+  return 100000 + ((h >>> 0) % 900000);
 }
 
 /** A typed or linked code, cleaned up, or null if it cannot be one. */

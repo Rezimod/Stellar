@@ -14,7 +14,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import {
-  makeMaze, collide, CELL, CEILING, DX, DZ, SIDE, hash, mod, type Dir, type Maze,
+  makeMaze, collide, CELL, CEILING, DX, DZ, SCALE, SIDE, hash, mod, type Dir, type Maze,
 } from '@/lib/solar-system/backrooms-maze';
 import { makeChunkKit, PANEL_COLOR, type ChunkBuild } from '@/lib/solar-system/backrooms-chunks';
 import { makeChunkWindow } from '@/lib/solar-system/backrooms-window';
@@ -58,6 +58,8 @@ export interface BackroomsDeps {
   audio: BackroomsAudio;
   seed: number;
   lite: boolean;
+  /** Metres to the side of the plan's spawn to wake at, so a crew waking together does not wake in one body. */
+  spawnShift?: number;
 }
 
 export interface BackroomsHandle {
@@ -73,7 +75,7 @@ export interface BackroomsHandle {
   /** The climb is over: the owner puts the crew on the surface. */
   done: boolean;
   teleportToExit: () => void;
-  /** Development: stand somewhere, facing somewhere; put the watcher somewhere. */
+  /** Development: stand somewhere, facing somewhere; put the watcher somewhere. Plan metres (world ÷ SCALE). */
   teleport: (x: number, z: number, yaw: number) => void;
   showWatcher: (x: number, z: number, yaw: number) => void;
   /** Skip to the top of the shaft. */
@@ -121,16 +123,18 @@ export function makeBackrooms(deps: BackroomsDeps): BackroomsHandle {
   scene.name = 'backrooms';
   const haze = new THREE.Color(HAZE);
   scene.background = haze.clone();
-  scene.fog = new THREE.Fog(HAZE, 9, lite ? 40 : 52);
+  scene.fog = new THREE.Fog(HAZE, 9 * SCALE, (lite ? 40 : 52) * SCALE);
   const kit = makeChunkKit(maze);
+  // Chunks, doors and the watcher are built in plan metres; the crew walks in world metres.
   const root = new THREE.Group();
+  root.scale.setScalar(SCALE);
   scene.add(root);
   // The walls carry their own light in their shader; the crew does not, and
   // stood pitch black in the middle of a lit office. A fluorescent sky over
   // carpet, and a tube that keeps station over the crew's head.
   const fill = new THREE.HemisphereLight(0xfff2c2, 0x6a5c33, 0.9);
   scene.add(fill);
-  const crewLamp = new THREE.PointLight(0xfff0c4, 5.5, 11, 1.7);
+  const crewLamp = new THREE.PointLight(0xfff0c4, 8, 14, 1.7);
   scene.add(crewLamp);
   const doors: ChunkBuild['door'][] = [];
   const win = makeChunkWindow<ChunkBuild>(2, 3, (cx, cz) => {
@@ -166,11 +170,12 @@ export function makeBackrooms(deps: BackroomsDeps): BackroomsHandle {
   watcherMat.customProgramCacheKey = () => 'br-watcher';
   const watcher = new THREE.Mesh(watcherGeom, watcherMat);
   watcher.visible = false;
-  scene.add(watcher);
+  root.add(watcher);
 
   // ── The stairwell and the shaft: concrete, one caged bulb, light baked into the vertices. ──
   const stairs = new THREE.Group();
   stairs.position.y = STAIR_Y;
+  stairs.scale.setScalar(SCALE);
   stairs.visible = false;
   scene.add(stairs);
   const stairGeoms: THREE.BufferGeometry[] = [];
@@ -220,9 +225,10 @@ export function makeBackrooms(deps: BackroomsDeps): BackroomsHandle {
   stairs.add(cage);
   stairGeoms.push(cage.geometry);
   const stairFloor = (_x: number, z: number) => {
-    if (z < 1.2) return STAIR_Y;
-    if (z < 10.2) return STAIR_Y + ((z - 1.2) / 9) * 3.06;
-    return STAIR_Y + 3.06;
+    const lz = z / SCALE;
+    if (lz < 1.2) return STAIR_Y;
+    if (lz < 10.2) return STAIR_Y + ((lz - 1.2) / 9) * 3.06 * SCALE;
+    return STAIR_Y + 3.06 * SCALE;
   };
 
   // ── State. ──
@@ -248,8 +254,9 @@ export function makeBackrooms(deps: BackroomsDeps): BackroomsHandle {
   let radioHold = 0;
   let readoutHold = 0;
   let flickT = 0;
-  const spawnX = (maze.spawn.i + 0.5) * CELL;
-  const spawnZ = (maze.spawn.j + 0.5) * CELL;
+  const shift = deps.spawnShift ?? 0;
+  const spawnX = (maze.spawn.i + 0.5) * CELL * SCALE;
+  const spawnZ = (maze.spawn.j + 0.5) * CELL * SCALE;
   const eye = new THREE.Vector3();
   const lying = new THREE.Vector3();
   // Where the camera may not go. Corridors are one cell wide, so the chase
@@ -258,12 +265,14 @@ export function makeBackrooms(deps: BackroomsDeps): BackroomsHandle {
   const probe = { x: 0, z: 0 };
   const still = { x: 0, z: 0 };
   const walled = (x: number, y: number, z: number) => {
-    if (y < 0.35 || y > CEILING - 0.25) return true;
-    probe.x = x; probe.z = z;
+    if (y < 0.35 || y > CEILING * SCALE - 0.25) return true;
+    probe.x = x / SCALE; probe.z = z / SCALE;
     still.x = 0; still.z = 0;
-    collide(maze, probe, still, 0.24);
-    return Math.abs(probe.x - x) > 1e-9 || Math.abs(probe.z - z) > 1e-9;
+    collide(maze, probe, still, 0.24 / SCALE);
+    return Math.abs(probe.x * SCALE - x) > 1e-6 || Math.abs(probe.z * SCALE - z) > 1e-6;
   };
+  /** The crew against the walls, in plan metres. */
+  const plan = { x: 0, z: 0 };
   const tmp = new THREE.Vector3();
   const guided = new Set<number>();
 
@@ -287,13 +296,15 @@ export function makeBackrooms(deps: BackroomsDeps): BackroomsHandle {
     cam.lookPitch = 0;
     cam.snap();
   };
-  place(spawnX, 0, spawnZ, spawnYaw);
+  const wakeX = spawnX + Math.cos(spawnYaw) * shift;
+  const wakeZ = spawnZ - Math.sin(spawnYaw) * shift;
+  place(wakeX, 0, wakeZ, spawnYaw);
   cosmonaut.hold(true);
   cosmonaut.setGravity(9.81, true);
   cosmonaut.setHelmetView(true);
   cosmonaut.group.visible = false;
-  lying.set(spawnX - Math.sin(spawnYaw) * 0.6, 0.26, spawnZ - Math.cos(spawnYaw) * 0.6);
-  win.update(spawnX, spawnZ);
+  lying.set(wakeX - Math.sin(spawnYaw) * 0.6, 0.26, wakeZ - Math.cos(spawnYaw) * 0.6);
+  win.update(wakeX / SCALE, wakeZ / SCALE);
 
   // Compile with everything shown once, so nothing stalls later.
   const hiddenForCompile = [watcher, stairs];
@@ -364,13 +375,16 @@ export function makeBackrooms(deps: BackroomsDeps): BackroomsHandle {
       cosmonaut.hold(phase !== 'explore' && phase !== 'stairs');
       cosmonaut.update(h, walk, inStairs ? stairFloor : () => 0, [], 1e9);
       if (phase === 'explore') {
-        collide(maze, cosmonaut.position, cosmonaut.velocity, 0.32);
+        const p = cosmonaut.position;
+        plan.x = p.x / SCALE; plan.z = p.z / SCALE;
+        collide(maze, plan, cosmonaut.velocity, 0.32 / SCALE);
+        p.x = plan.x * SCALE; p.z = plan.z * SCALE;
       } else if (inStairs) {
         const p = cosmonaut.position; const v = cosmonaut.velocity;
-        if (p.x < -1.0) { p.x = -1.0; v.x = Math.max(0, v.x); }
-        if (p.x > 1.0) { p.x = 1.0; v.x = Math.min(0, v.x); }
-        if (p.z < -0.8) { p.z = -0.8; v.z = Math.max(0, v.z); }
-        if (p.z > 11.5) { p.z = 11.5; v.z = Math.min(0, v.z); }
+        if (p.x < -1.0 * SCALE) { p.x = -1.0 * SCALE; v.x = Math.max(0, v.x); }
+        if (p.x > 1.0 * SCALE) { p.x = 1.0 * SCALE; v.x = Math.min(0, v.x); }
+        if (p.z < -0.8 * SCALE) { p.z = -0.8 * SCALE; v.z = Math.max(0, v.z); }
+        if (p.z > 11.5 * SCALE) { p.z = 11.5 * SCALE; v.z = Math.min(0, v.z); }
       }
     },
     frame(dt, press, held) {
@@ -384,8 +398,9 @@ export function makeBackrooms(deps: BackroomsDeps): BackroomsHandle {
       telemetry.prompt.active = false;
       telemetry.prompt.progress = -1;
       const p = cosmonaut.position;
+      const px = p.x / SCALE; const pz = p.z / SCALE;
       const phase = telemetry.phase;
-      const cellI = Math.floor(p.x / CELL); const cellJ = Math.floor(p.z / CELL);
+      const cellI = Math.floor(px / CELL); const cellJ = Math.floor(pz / CELL);
 
       if (phase === 'wake') {
         telemetry.black = t < WAKE_BLACK ? 1 : 1 - smooth((t - WAKE_BLACK) / 1.4);
@@ -405,7 +420,7 @@ export function makeBackrooms(deps: BackroomsDeps): BackroomsHandle {
       } else if (phase === 'explore' || phase === 'door') {
         telemetry.black = phase === 'door' ? smooth((doorT - 1.9) / 0.6) : 0;
         exploreT += dt;
-        win.update(p.x, p.z);
+        win.update(px, pz);
         telemetry.chunks = win.size();
         telemetry.exitCells = maze.distance(cellI, cellJ);
 
@@ -428,7 +443,7 @@ export function makeBackrooms(deps: BackroomsDeps): BackroomsHandle {
         // The door.
         if (phase === 'explore') {
           door = null;
-          for (const d of doors) if (d && Math.hypot(d.x - p.x, d.z - p.z) < 1.5) door = d;
+          for (const d of doors) if (d && Math.hypot(d.x - px, d.z - pz) < 1.5) door = d;
           if (door && !telemetry.helmet) {
             telemetry.prompt = { active: true, label: 'openDoor', kind: 'tap', progress: -1 };
             if (press) { telemetry.phase = 'door'; doorT = 0; audio.flick(); }
@@ -439,8 +454,8 @@ export function makeBackrooms(deps: BackroomsDeps): BackroomsHandle {
           if (doorT > 1.1) {
             // Walked through, into the dark behind it.
             const k = smooth((doorT - 1.1) / 1.4);
-            p.x += ((door.x - door.nx * 1.4) - p.x) * k * dt * 3;
-            p.z += ((door.z - door.nz * 1.4) - p.z) * k * dt * 3;
+            p.x += ((door.x - door.nx * 1.4) * SCALE - p.x) * k * dt * 3;
+            p.z += ((door.z - door.nz * 1.4) * SCALE - p.z) * k * dt * 3;
           }
           if (doorT > 2.6) {
             telemetry.phase = 'stairs';
@@ -448,7 +463,7 @@ export function makeBackrooms(deps: BackroomsDeps): BackroomsHandle {
             stairs.visible = true;
             (scene.fog as THREE.Fog).color.setHex(0x1a1814);
             (scene.background as THREE.Color).setHex(0x1a1814);
-            place(0, STAIR_Y, -0.4, 0);
+            place(0, STAIR_Y, -0.4 * SCALE, 0);
             win.clear();
             telemetry.chunks = 0;
             watcher.visible = false;
@@ -458,14 +473,14 @@ export function makeBackrooms(deps: BackroomsDeps): BackroomsHandle {
         // The watcher.
         if (sighting) {
           sightAge += dt;
-          if (sightingEnds(sighting, p.x, p.z, cam.yaw + Math.PI, sightAge)) {
+          if (sightingEnds(sighting, px, pz, cam.yaw + Math.PI, sightAge)) {
             sighting = null;
             watcher.visible = false;
             nextSight = exploreT + 45 + hash(deps.seed, Math.floor(exploreT), 9, 9) * 45;
             audio.flick();
           }
         } else if (phase === 'explore' && exploreT > nextSight && Math.floor(exploreT * 2) !== Math.floor((exploreT - dt) * 2)) {
-          sighting = chooseSighting(maze, p.x, p.z, cam.yaw + Math.PI, exploreT, Math.floor(exploreT));
+          sighting = chooseSighting(maze, px, pz, cam.yaw + Math.PI, exploreT, Math.floor(exploreT));
           if (sighting) {
             sightAge = 0;
             watcher.position.set(sighting.x, 0, sighting.z);
@@ -492,7 +507,7 @@ export function makeBackrooms(deps: BackroomsDeps): BackroomsHandle {
         stairsT += dt;
         telemetry.black = phase === 'climb' ? smooth((climbT - (CLIMB - 0.8)) / 0.8) : 1 - smooth(stairsT / 0.9);
         audio.hum(0.12, 0);
-        if (phase === 'stairs' && p.z > 10.4) {
+        if (phase === 'stairs' && pz > 10.4) {
           telemetry.prompt = { active: true, label: 'climb', kind: 'hold', progress: climbHold / 0.6 };
           climbHold = held ? climbHold + dt : 0;
           if (climbHold >= 0.6) { telemetry.phase = 'climb'; climbT = 0; }
@@ -508,7 +523,8 @@ export function makeBackrooms(deps: BackroomsDeps): BackroomsHandle {
       }
       if (telemetry.phase !== 'climb') telemetry.gravity = cosmonaut.state.gravity;
 
-      crewLamp.position.set(cosmonaut.position.x, CEILING - 0.12, cosmonaut.position.z);
+      // Over the crew, well under a ceiling this far up, and not so close it burns the helmet out.
+      crewLamp.position.set(cosmonaut.position.x, 3.8, cosmonaut.position.z);
 
       // ── The camera. ──
       if (telemetry.phase === 'explore' || telemetry.phase === 'stairs' || telemetry.phase === 'door') {
@@ -516,13 +532,13 @@ export function makeBackrooms(deps: BackroomsDeps): BackroomsHandle {
         // end of the corridor is worth having something between you and it.
         cam.chase(dt, {
           position: cosmonaut.position, velocity: cosmonaut.velocity, yaw: cosmonaut.yaw,
-          height: 1.42, distance: Math.min(cam.distance, 2.1),
+          height: 1.8, distance: Math.min(cam.distance, 4.6),
           speedFrac: Math.min(1, cosmonaut.state.speed / cosmonaut.profile.run),
         }, { follow: 2.4, lead: 0.22, leadMax: 0.5, fovKick: 3, horizontal: 10, vertical: 5, blocked: walled, shoulder: 0.38 });
       } else if (telemetry.phase === 'climb' || telemetry.phase === 'out') {
         const k = smooth(climbT / CLIMB);
         cosmonaut.eye(eye);
-        eye.set(0, STAIR_Y + 3.06 + 1.6 + k * 12, 11.75);
+        eye.set(0, STAIR_Y + (3.06 + k * 12) * SCALE + 1.6, 11.75 * SCALE);
         cam.lookPitch = 0.35 + Math.sin(climbT * 5.5) * 0.04;
         cam.firstPerson(dt, eye, 0);
       }
@@ -532,18 +548,18 @@ export function makeBackrooms(deps: BackroomsDeps): BackroomsHandle {
       const ex = maze.exit;
       // The nearest copy of the exit to where the crew is.
       const p = cosmonaut.position;
-      const ci = Math.floor(p.x / CELL); const cj = Math.floor(p.z / CELL);
+      const ci = Math.floor(p.x / SCALE / CELL); const cj = Math.floor(p.z / SCALE / CELL);
       const gi = ex.i + Math.round((ci - ex.i) / SIDE) * SIDE;
       const gj = ex.j + Math.round((cj - ex.j) / SIDE) * SIDE;
       const x = (gi + 0.5) * CELL; const z = (gj + 0.5) * CELL;
-      place(x - DX[ex.wall] * 0.3, 0, z - DZ[ex.wall] * 0.3, Math.atan2(DX[ex.wall], DZ[ex.wall]));
+      place((x - DX[ex.wall] * 0.3) * SCALE, 0, (z - DZ[ex.wall] * 0.3) * SCALE, Math.atan2(DX[ex.wall], DZ[ex.wall]));
       if (telemetry.phase === 'wake') telemetry.phase = 'explore';
       telemetry.helmet = false;
       cosmonaut.setGravity(9.81, false);
       win.update(x, z);
     },
     teleport(x, z, yaw) {
-      place(x, 0, z, yaw);
+      place(x * SCALE, 0, z * SCALE, yaw);
       if (telemetry.phase === 'wake') { telemetry.phase = 'explore'; t = WAKE_END; }
       win.update(x, z);
     },

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
-  bracket, CODE_LENGTH, lerpAngle, makeRoomCode, normalizeRoomCode, pushSample, readPose, type Peer, type PoseMsg,
+  bracket, CODE_LENGTH, lerpAngle, makeRoomCode, normalizeRoomCode, pushSample, readPose, seedFromCode, type Peer, type PoseMsg,
 } from '@/lib/multiplayer/room-link';
 import { connectRealtime, type PresenceState } from '@/lib/multiplayer/realtime';
 
@@ -19,6 +19,15 @@ describe('room codes', () => {
     expect(normalizeRoomCode(' k7m-2q ')).toBe('K7M2Q');
     expect(normalizeRoomCode('K7M2')).toBeNull();
     expect(normalizeRoomCode('K7M2O')).toBeNull(); // O is left out of the alphabet: it reads as 0
+  });
+
+  it('gives everyone in a room the same Backrooms, and other rooms other ones', () => {
+    expect(seedFromCode('K7M2Q')).toBe(seedFromCode('K7M2Q'));
+    const seeds = new Set(Array.from({ length: 200 }, () => seedFromCode(makeRoomCode())));
+    expect(seeds.size).toBeGreaterThan(195);
+    for (const s of seeds) expect(Number.isInteger(s) && s >= 100000 && s < 1000000).toBe(true);
+    // A room's world tag must survive the wire.
+    expect(readPose({ ...pose(1), w: `backrooms-${seedFromCode('K7M2Q')}` })?.w).toBe(`backrooms-${seedFromCode('K7M2Q')}`);
   });
 });
 
