@@ -27,7 +27,9 @@ export async function upsertCard(db: Db, seed: typeof card.$inferInsert): Promis
  *
  * One statement: the number is computed and written together, and the unique
  * (card_id, edition_number) index is what settles two holders arriving at once
- * — the loser collides and asks again. Returns null when the card is sold out.
+ * — the loser collides and asks again. A card photographed before this edition
+ * existed hands it that photograph at once. Returns null when the card is sold
+ * out; a card that does not exist is an error, not a sold-out card.
  */
 export async function allocateEdition(
   db: Db,
@@ -37,15 +39,22 @@ export async function allocateEdition(
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
       const { rows } = await db.execute(sql`
-        INSERT INTO edition (card_id, edition_number, owner_wallet)
-        SELECT ${cardId}::uuid, COALESCE(MAX(e.edition_number), 0) + 1, ${ownerWallet}
+        INSERT INTO edition (card_id, edition_number, owner_wallet, observation_capture_id)
+        SELECT ${cardId}::uuid, COALESCE(MAX(e.edition_number), 0) + 1, ${ownerWallet},
+          (SELECT nt.capture_id FROM nightly_target nt
+           WHERE nt.card_id = ${cardId}::uuid AND nt.capture_id IS NOT NULL
+           ORDER BY nt.night_date DESC LIMIT 1)
         FROM edition e
         WHERE e.card_id = ${cardId}::uuid
         HAVING COALESCE(MAX(e.edition_number), 0) < (SELECT edition_size FROM card WHERE id = ${cardId}::uuid)
         RETURNING id, edition_number
       `)
       const row = rows[0] as { id: string; edition_number: number } | undefined
-      return row ? { id: row.id, editionNumber: Number(row.edition_number) } : null
+      if (row) return { id: row.id, editionNumber: Number(row.edition_number) }
+
+      const [known] = await db.select({ id: card.id }).from(card).where(eq(card.id, cardId)).limit(1)
+      if (!known) throw new Error(`Cannot allocate an edition: no card has id ${cardId}`)
+      return null
     } catch (err) {
       // Drizzle wraps the driver's error; the Postgres code is on its cause.
       const { code, cause } = err as { code?: string; cause?: { code?: string } }
@@ -110,7 +119,13 @@ function summary(row: { id: string; targetName: string; capturedAt: Date; proven
   }
 }
 
-/** A holder's editions, each with its card's latest capture and full history. */
+/**
+ * A holder's editions, each with its card's latest capture and full history.
+ *
+ * The latest is read off the card's history rather than the edition's own
+ * pointer, so an edition is never behind the card it is a copy of — however
+ * late it was allocated, or however a write raced it.
+ */
 export async function holderView(db: Db, wallet: string): Promise<HolderEdition[]> {
   const rows = await db
     .select({
@@ -122,15 +137,9 @@ export async function holderView(db: Db, wallet: string): Promise<HolderEdition[
       editionSize: card.editionSize,
       rarity: card.rarity,
       observationStatus: card.observationStatus,
-      captureId: observatoryCapture.id,
-      targetName: observatoryCapture.targetName,
-      capturedAt: observatoryCapture.capturedAt,
-      provenance: observatoryCapture.provenance,
-      nodeId: observatoryCapture.nodeId,
     })
     .from(edition)
     .innerJoin(card, eq(card.id, edition.cardId))
-    .leftJoin(observatoryCapture, eq(observatoryCapture.id, edition.observationCaptureId))
     .where(eq(edition.ownerWallet, wallet))
     .orderBy(asc(card.designation), asc(edition.editionNumber))
   if (rows.length === 0) return []
@@ -142,20 +151,18 @@ export async function holderView(db: Db, wallet: string): Promise<HolderEdition[
     .where(inArray(nightlyTarget.cardId, [...new Set(rows.map((r) => r.cardId))]))
     .orderBy(desc(nightlyTarget.nightDate))
 
-  return rows.map((r) => ({
-    editionId: r.editionId,
-    designation: r.designation,
-    name: r.name,
-    editionNumber: r.editionNumber,
-    editionSize: r.editionSize,
-    rarity: r.rarity,
-    observationStatus: r.observationStatus,
-    latest:
-      r.captureId && r.targetName && r.capturedAt && r.provenance && r.nodeId
-        ? summary({ id: r.captureId, targetName: r.targetName, capturedAt: r.capturedAt, provenance: r.provenance, nodeId: r.nodeId })
-        : null,
-    history: nights
-      .filter((n) => n.cardId === r.cardId)
-      .map((n) => ({ ...summary(n), nightDate: n.nightDate })),
-  }))
+  return rows.map((r) => {
+    const own = nights.filter((n) => n.cardId === r.cardId)
+    return {
+      editionId: r.editionId,
+      designation: r.designation,
+      name: r.name,
+      editionNumber: r.editionNumber,
+      editionSize: r.editionSize,
+      rarity: r.rarity,
+      observationStatus: r.observationStatus,
+      latest: own[0] ? summary(own[0]) : null,
+      history: own.map((n) => ({ ...summary(n), nightDate: n.nightDate })),
+    }
+  })
 }

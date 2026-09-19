@@ -52,6 +52,23 @@ describe('the night at Tbilisi', () => {
   });
 });
 
+describe('the night west of Greenwich', () => {
+  // Midday UTC is five in the morning in Los Angeles; the night of the 20th
+  // must still start on the evening of the 20th there, not the 19th.
+  const west = { ...node, lat: 34.05, lon: -118.24, timezone: 'America/Los_Angeles' };
+
+  it('is the evening of the date asked for, whatever zone the server runs in', () => {
+    for (const tz of ['UTC', 'Asia/Tbilisi', 'Pacific/Honolulu']) {
+      process.env.TZ = tz;
+      const { duskStart, dawnEnd } = siteDarkWindow(west, NIGHT);
+      expect(siteDateStamp(west.timezone, duskStart!), tz).toBe('2026-09-20');
+      expect(siteDateStamp(west.timezone, dawnEnd!), tz).toBe('2026-09-21');
+      expect(siteLocalHours(west.timezone, duskStart!)).toBeGreaterThan(19);
+      expect(siteLocalHours(west.timezone, duskStart!)).toBeLessThan(21);
+    }
+  });
+});
+
 describe('choosing tonight’s card', () => {
   const cards = [
     TYCHO,

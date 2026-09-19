@@ -3,24 +3,17 @@
  *
  *   SIDERA_DATABASE_CONFIRM=sidera npm run sidera:seed
  *
- * Idempotent. Run only with DATABASE_URL pointing at the sidera Neon branch.
+ * Idempotent. Refuses to run unless DATABASE_URL is the sidera Neon branch —
+ * see sidera-guard.ts.
  */
 
-import { config as loadEnv } from 'dotenv'
 import { getDb } from '../src/lib/db'
 import { SET_001, SET_001_CARDS } from '../src/lib/sets/set-001'
 import { seedSet } from '../src/lib/sidera/seed'
-
-loadEnv({ path: '.env.local' })
-loadEnv()
+import { requireSideraDatabase } from './sidera-guard'
 
 async function main() {
-  if (process.env.SIDERA_DATABASE_CONFIRM !== 'sidera') {
-    console.error(
-      'Refusing to run: set SIDERA_DATABASE_CONFIRM=sidera, with DATABASE_URL pointing at the sidera Neon branch.',
-    )
-    process.exit(1)
-  }
+  requireSideraDatabase()
   const db = getDb()
   if (!db) throw new Error('DATABASE_URL is not configured')
 

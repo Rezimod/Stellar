@@ -11,11 +11,10 @@
  *   SIDERA_DATABASE_CONFIRM=sidera npm run sidera:lifecycle -- \
  *     [--wallet <address>] [--night YYYY-MM-DD] [--adapter sim|node]
  *
- * The confirm variable exists because .env.local points at production. Run
- * this only with DATABASE_URL set to the sidera Neon branch.
+ * Refuses to run unless DATABASE_URL is the sidera Neon branch — see
+ * sidera-guard.ts. Only .env.local is read, never a bare .env.
  */
 
-import { config as loadEnv } from 'dotenv'
 import { and, eq } from 'drizzle-orm'
 import { getDb } from '../src/lib/db'
 import { edition } from '../src/lib/schema'
@@ -27,9 +26,7 @@ import { allocateEdition, decideNightlyTarget, holderView } from '../src/lib/sid
 import { pickTonightsTarget, siteNightDate } from '../src/lib/sidera/target'
 import { SET_001, SET_001_CARDS } from '../src/lib/sets/set-001'
 import { seedSet } from '../src/lib/sidera/seed'
-
-loadEnv({ path: '.env.local' })
-loadEnv()
+import { requireSideraDatabase } from './sidera-guard'
 
 const TEST_WALLET = 'sidera-test-holder-0001'
 /** How far ahead the default search looks for a night some card can be worked. */
@@ -45,12 +42,7 @@ function addDays(night: string, days: number): string {
 }
 
 async function main() {
-  if (process.env.SIDERA_DATABASE_CONFIRM !== 'sidera') {
-    console.error(
-      'Refusing to run: set SIDERA_DATABASE_CONFIRM=sidera, with DATABASE_URL pointing at the sidera Neon branch.',
-    )
-    process.exit(1)
-  }
+  requireSideraDatabase()
 
   const wallet = flag('wallet') ?? TEST_WALLET
   const adapterKind = flag('adapter') ?? 'sim'
@@ -145,9 +137,14 @@ async function main() {
         `${capture.subs} x ${capture.exposureSec}s, provenance ${capture.provenance}`,
     )
 
-    // 5. One statement for every edition, and the night's history row.
-    await attachCaptureToCard(db, { cardId: chosen.id, nightDate: night, captureId: capture.id })
-    console.log(`5. Attached   to every edition of ${chosen.designation}`)
+    // 5. The night's history row and every edition, in one batch. The night
+    // keeps its first frame, so this can lose to a capture already attached.
+    const attached = await attachCaptureToCard(db, { cardId: chosen.id, nightDate: night, captureId: capture.id })
+    console.log(
+      attached
+        ? `5. Attached   to every edition of ${chosen.designation}`
+        : `5. Attached   nothing: ${night} already holds a capture of ${chosen.designation}`,
+    )
   }
 
   const view = await holderView(db, wallet)

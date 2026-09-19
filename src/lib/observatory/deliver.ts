@@ -111,7 +111,12 @@ async function work(request: CaptureRequest, now: Date): Promise<Outcome> {
   }
 
   await attachToPoster(request.id, recorded.capture.id)
-  await attachToCard(node, request.targetId, recorded.capture.id, now)
+  // Only an instrument frame becomes the card's image for every holder — the
+  // same admission rule as the rest of the Collection. A simulated frame is
+  // still the customer's delivery; it just is not the night's observation.
+  if (recorded.admitted) {
+    await attachToCard(node, request.targetId, recorded.capture.id, now)
+  }
   return 'delivered'
 }
 

@@ -46,9 +46,23 @@ export function siteNightDate(timezone: string, now: Date): string {
  * site's clock rather than the server's.
  */
 export function siteDarkWindow(node: ObservatoryNode, night: string) {
-  // Midday UTC on that date is the afternoon of the same date in Tbilisi, and
-  // the timezone makes the window search anchor on the site's noon.
-  return getTonightDarkWindow(node.lat, node.lon, new Date(`${night}T12:00:00Z`), node.timezone)
+  return getTonightDarkWindow(node.lat, node.lon, siteNoon(node.timezone, night), node.timezone)
+}
+
+/**
+ * Noon of `night` on the site's clock, as an instant.
+ *
+ * Midday UTC will not do: west of Greenwich it is still the morning of that
+ * date, and the window search would walk back to the night before.
+ */
+function siteNoon(timezone: string, night: string): Date {
+  const utcNoon = new Date(`${night}T12:00:00Z`)
+  // The site's wall clock at UTC noon, counted in hours from midnight of
+  // `night` — past 24 or below 0 when the site is already on another date.
+  const stamp = siteDateStamp(timezone, utcNoon)
+  const day = stamp === night ? 0 : stamp > night ? 24 : -24
+  const offsetHours = siteLocalHours(timezone, utcNoon) + day - 12
+  return new Date(utcNoon.getTime() - offsetHours * 3_600_000)
 }
 
 /** The instants of that night the node would actually work. */
