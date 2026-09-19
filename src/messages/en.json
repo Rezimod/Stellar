@@ -1169,7 +1169,8 @@
       "hangar": "Hangar",
       "ships": {
         "kestrel": "Kestrel",
-        "xfoil": "X-foil",
+        "xfoil": "Magpie",
+        "cruiser": "Meridian",
         "endurance": "Endurance"
       },
       "eject": "Eject",

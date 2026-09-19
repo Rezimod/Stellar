@@ -38,7 +38,7 @@ interface PlayerShipProps {
   /** The deck paused itself (Esc, a lost pointer lock): the shell should show its menu. */
   onPauseRequest?: () => void;
 }
-const SHIPS: ShipKind[] = ['kestrel', 'xfoil', 'endurance'];
+const SHIPS: ShipKind[] = ['kestrel', 'xfoil', 'cruiser', 'endurance'];
 const BARS = ['shield', 'energy', 'boost'] as const;
 const KEY_ROWS = ['r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r10', 'r12', 'r13', 'r7', 'r15', 'r8', 'r16', 'r11', 'r14', 'r9'] as const;
 const TOUCH_ROWS = ['t1', 't2', 't3', 't11', 't6', 't15', 't13', 't12', 't9', 't14', 't5'] as const;

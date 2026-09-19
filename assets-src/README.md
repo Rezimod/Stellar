@@ -20,6 +20,21 @@ build/              raw exports and baked textures (ignored by git)
 npx --yes @gltf-transform/cli optimize assets-src/build/crate.glb public/explore/models/crate.glb --compress meshopt --texture-compress webp --texture-size 1024
 ```
 
+Ships keep their node tree (wing hinges, named empties), so optimise them
+without flattening, joining or simplifying:
+
+```
+/Applications/Blender.app/Contents/MacOS/Blender -b -P assets-src/blender/ship_stellar.py -- assets-src/build assets-src/renders/ship-stellar
+npx --yes @gltf-transform/cli optimize assets-src/build/shipstellar.glb public/explore/models/ship-stellar.glb --compress meshopt --texture-compress webp --texture-size 1024 --flatten false --join false --simplify false --prune false
+```
+
+(`ship_fighter.py` → `shipfighter.glb` → `ship-fighter.glb`, `ship_cruiser.py`
+→ `shipcruiser.glb` → `ship-cruiser.glb`.) `lib/vehicle.py` runs their
+loop: high- and low-poly from one build function, an emission-swap bake of
+colour / normal / ORM / emissive into one 1K atlas with a hull slot and a
+lamp slot, the moving parts split out under hinge empties, LODs, empties,
+export and the reference-view renders.
+
 Blender 4.5 LTS (Intel macOS is supported there; later releases may not be).
 `@gltf-transform/cli` is run as a one-off with `npx` and is not a dependency.
 

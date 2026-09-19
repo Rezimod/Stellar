@@ -19,7 +19,7 @@ import type { AlienHandle } from '@/lib/solar-system/aliens';
 import { softSpriteTexture } from '@/lib/solar-system/soft-sprite';
 import { makeFlightAudio } from '@/lib/solar-system/flight-audio';
 import { makeCameraRig, type CameraFrame } from '@/lib/solar-system/flight-camera';
-import { buildCosmonaut, buildEndurance, buildKestrel, buildXfoil, type ShipKind, type ShipParts } from '@/lib/solar-system/ship-mesh';
+import { buildCosmonaut, buildCruiser, buildEndurance, buildKestrel, buildXfoil, type ShipKind, type ShipParts } from '@/lib/solar-system/ship-mesh';
 import { shapeMouse } from '@/lib/solar-system/flight-input';
 import { makeMissionTracker, type MissionContext } from '@/lib/solar-system/flight-missions';
 import { projectTarget, stepTarget, type TargetCandidate, type TargetKind, type TargetScreen } from '@/lib/solar-system/flight-targeting';
@@ -818,11 +818,19 @@ interface Bolt {
 }
 
 /** The starfighter trades armour for pace: faster, and it turns harder. The
- *  Endurance is a long-haul explorer: slower off the mark, slow to turn. */
+ *  Endurance is a long-haul explorer: slower off the mark, slow to turn. The
+ *  Meridian cruises a little faster than the survey ship but turns like the
+ *  big hull it is, and the chase camera stands further back from it. */
+const SHIP_TUNING: Record<Exclude<ShipKind, 'kestrel'>, { speed: number; accel: number; turn: number; cam: number }> = {
+  xfoil: { speed: 1.2, accel: 1.3, turn: 1.15, cam: 1 },
+  cruiser: { speed: 1.08, accel: 0.9, turn: 0.72, cam: 1.25 },
+  endurance: { speed: 0.9, accel: 0.8, turn: 0.75, cam: 1 },
+};
+
 function shipRegimes(kind: ShipKind): Record<Exclude<SpeedMode, 'jump'>, Regime> {
   if (kind === 'kestrel') return REGIMES;
-  const k = kind === 'xfoil' ? { speed: 1.2, accel: 1.3, turn: 1.15 } : { speed: 0.9, accel: 0.8, turn: 0.75 };
-  const tune = (r: Regime): Regime => ({ ...r, max: r.max * k.speed, boost: r.boost * k.speed, accel: r.accel * k.accel, turn: r.turn * k.turn });
+  const k = SHIP_TUNING[kind] ?? SHIP_TUNING.endurance;
+  const tune = (r: Regime): Regime => ({ ...r, max: r.max * k.speed, boost: r.boost * k.speed, accel: r.accel * k.accel, turn: r.turn * k.turn, camBack: r.camBack * k.cam });
   return { cruise: tune(REGIMES.cruise), fast: tune(REGIMES.fast), ultra: tune(REGIMES.ultra) };
 }
 
@@ -831,6 +839,7 @@ function shipRegimes(kind: ShipKind): Record<Exclude<SpeedMode, 'jump'>, Regime>
 const BUILDERS: Record<ShipKind, (h: number) => ShipParts> = {
   kestrel: buildKestrel,
   xfoil: buildXfoil,
+  cruiser: buildCruiser,
   endurance: (h) => buildEndurance(h * 0.6),
 };
 
@@ -2443,6 +2452,7 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
       }
     },
     dispose() {
+      shipParts.release?.();
       audio.dispose();
       crash.dispose();
       boltGeom.dispose();
