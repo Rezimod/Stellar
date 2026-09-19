@@ -761,7 +761,7 @@ export default function NftsPage() {
           <p style={{ color: 'var(--text-secondary)', fontSize: 14, margin: 0, maxWidth: 320 }}>
             {t('empty.desc')}
           </p>
-          <Link href="/missions" className="btn-primary" style={{ textDecoration: 'none', marginTop: 8 }}>
+          <Link href="/sky" className="btn-primary" style={{ textDecoration: 'none', marginTop: 8 }}>
             {t('empty.cta')}
           </Link>
         </div>

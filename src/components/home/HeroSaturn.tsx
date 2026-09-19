@@ -163,7 +163,7 @@ export default function HeroSaturn() {
         </div>
 
         <Link
-          href="/missions"
+          href="/sky"
           className="hero-pill-primary mt-4 inline-flex w-full max-w-[440px] items-center justify-center gap-2.5 rounded-xl px-8 py-4 no-underline"
           style={{
             background: 'linear-gradient(180deg,#ffc866 0%,#f59e2e 55%,#df8214 100%)',
@@ -177,24 +177,6 @@ export default function HeroSaturn() {
         >
           {t('ctaPrimary')}
           <ArrowIcon />
-        </Link>
-
-        <Link
-          href="/solar-system"
-          className="hero-pill-explore mt-3 inline-flex w-full max-w-[440px] items-center justify-center gap-2.5 rounded-xl border px-8 py-3.5 no-underline"
-          style={{
-            borderColor: 'rgba(140,165,235,0.32)',
-            background: 'linear-gradient(180deg, rgba(20,34,70,0.85) 0%, rgba(10,18,40,0.85) 100%)',
-            color: '#dbe4ff',
-            fontWeight: 600,
-            fontSize: 15,
-            fontFamily: 'var(--font-cta, var(--font-body))',
-            boxShadow: 'inset 0 1px 0 rgba(180,200,255,0.18), 0 8px 26px rgba(20,40,120,0.35)',
-            animation: 'heroCardSwap 0.7s ease 0.24s both',
-          }}
-        >
-          <PlanetIcon />
-          {t('ctaExplore')}
         </Link>
       </div>
     </section>
@@ -316,7 +298,7 @@ function TonightCard() {
 
       {/* tonight's mission */}
       <Link
-        href="/missions"
+        href="/sky"
         className="flex items-center gap-3.5 border-t px-5 py-3.5 no-underline transition-colors hover:bg-white/[0.04]"
         style={{ borderColor: 'rgba(140,165,235,0.12)' }}
       >
@@ -405,15 +387,6 @@ function buildMissions(planets: PlanetData[], tp: (k: string) => string): Missio
 }
 
 /* ─── Icons ───────────────────────────────────────────────────────── */
-
-function PlanetIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <circle cx="12" cy="12" r="5.2" />
-      <path d="M3.6 8.4c-1.9 2.4-2.3 4.7-.9 6.1 2.2 2.2 8.5.3 14-4.2 3.6-2.9 5.8-6.1 5.2-8" />
-    </svg>
-  );
-}
 
 function ArrowIcon() {
   return (

@@ -884,19 +884,6 @@ code, pre, .mono, [class*="font-mono"] {
 @media (prefers-reduced-motion: reduce) {
   .hero-pill-primary:hover { transform: none; }
 }
-.hero-pill-explore { transition: transform 150ms ease, box-shadow 200ms ease, border-color 200ms ease; }
-.hero-pill-explore:hover {
-  transform: translateY(-2px);
-  border-color: rgba(160,190,255,0.6);
-  box-shadow: inset 0 1px 0 rgba(180,200,255,0.24), 0 14px 36px rgba(40,70,160,0.5);
-}
-/* The Explore card: a slow lift and a brighter edge under the pointer. */
-.home-explore { transition: transform 220ms ease, box-shadow 260ms ease, border-color 220ms ease; }
-.home-explore:hover { transform: translateY(-3px); border-color: rgba(160,190,255,0.4); box-shadow: 0 36px 90px rgba(0,0,0,0.55), 0 0 0 1px rgba(140,165,235,0.12), inset 0 1px 0 rgba(255,255,255,0.08); }
-.home-explore:focus-visible { outline: 2px solid #ffb347; outline-offset: 3px; }
-@media (prefers-reduced-motion: reduce) {
-  .hero-pill-explore:hover, .home-explore:hover { transform: none; }
-}
 
 /* Circular gradient icon badge — mirror of the rocket/cart/sparkle circles
    on club.astroman.ge. Use .icon-badge-gradient.is-orange for the third
@@ -1454,30 +1441,6 @@ input, select, textarea { font-size: 16px !important; }
 @media (prefers-reduced-motion: reduce) {
   .mkt-card, .mkt-guide { transition: none; }
   .mkt-card:hover, .mkt-guide:hover { transform: none; }
-}
-
-/* Solar system immersive: no rubber-band / pull-to-refresh gesture bleed */
-html:has(body[data-solar-immersive="1"]),
-body[data-solar-immersive="1"] {
-  overscroll-behavior-y: none;
-  overscroll-behavior: none;
-}
-
-/* Solar system immersive: hide global chrome while /solar-system is active */
-body[data-solar-immersive="1"] [data-stellar-chrome="top"],
-body[data-solar-immersive="1"] [data-stellar-chrome="bottom"],
-body[data-solar-immersive="1"] [data-stellar-chrome="footer"],
-body[data-solar-immersive="1"] [data-stellar-chrome="starfield"] {
-  display: none !important;
-}
-
-body[data-solar-immersive="1"] #stellar-main {
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
-  /* Main is z-10 by default; nav/bottom nav are z-50. Lift the page subtree so the
-     fixed solar layer paints above global chrome. */
-  position: relative;
-  z-index: 100 !important;
 }
 
 /* ── Field mode — red-on-black night-vision ───────────────────────────────

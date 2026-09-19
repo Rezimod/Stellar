@@ -9,25 +9,17 @@ import { test, expect } from '@playwright/test';
 const ROUTES = [
   '/',
   '/sky',
-  '/missions',
-  '/feed',
-  '/learn',
+  '/observatory',
+  '/first-light',
+  '/star',
   '/marketplace',
-  '/hub',
   '/profile',
   '/nfts',
-  '/chat',
-  '/field',
-  '/solar-system',
-  '/network',
   '/darksky',
-  '/leaderboard',
   '/contact',
   '/terms',
   '/privacy',
   '/settings',
-  '/observe/demo',
-  '/observe/not-a-mission',
   '/marketplace/checkout',
 ];
 
@@ -50,13 +42,4 @@ test('footer includes legal links', async ({ page }) => {
   await expect(footer.getByRole('link', { name: /terms/i })).toBeVisible();
   await expect(footer.getByRole('link', { name: /privacy/i })).toBeVisible();
   await expect(footer.getByRole('link', { name: /contact/i })).toBeVisible();
-});
-
-test('search modal mission results deep-link to observe flow', async ({ page }) => {
-  await page.setViewportSize({ width: 1280, height: 800 });
-  await page.goto('/', { waitUntil: 'domcontentloaded' });
-  await page.getByRole('button', { name: /search/i }).click();
-  await page.getByPlaceholder(/search missions/i).fill('jupiter');
-  await page.getByRole('button', { name: /jupiter/i }).first().click();
-  await expect(page).toHaveURL(/\/observe\/(jupiter|quick-jupiter)/);
 });

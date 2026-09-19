@@ -7,29 +7,14 @@ import { getOrCreateAssociatedTokenAccount, mintTo } from '@solana/spl-token';
 import { STARS_TOKEN_PROGRAM_ID, getStarsMintAuthority } from '@/lib/stars';
 import bs58 from 'bs58';
 import { getDb } from '@/lib/db';
-import { observationLog, telescopes } from '@/lib/schema';
-import { and, eq, gte, like, count, or } from 'drizzle-orm';
+import { observationLog } from '@/lib/schema';
+import { and, eq, or } from 'drizzle-orm';
 import { verifyPrivy, assertOwnsWallet } from '@/lib/api-auth';
-import { isAllowedAwardReason, maxAwardAmountForReason } from '@/lib/award-stars-policy';
+import { isAllowedAwardReason } from '@/lib/award-stars-policy';
 import { remainingStarsAllowance } from '@/lib/stars-cap';
 import { paused } from '@/lib/kill-switch';
 import { networkMisconfig } from '@/lib/network-guard';
-import { scoreQuiz, MAX_QUIZ_REWARDS_PER_WEEK } from '@/lib/quizzes';
-import { streakFromDates, DAILY_CHECKIN_BASE_REWARD } from '@/lib/daily-checkin';
-import { getTierForStreak } from '@/lib/constellation-streak';
-import { verifyObservationTokenForWallet } from '@/lib/observation-token';
-import { rollCosmicBonus } from '@/lib/cosmic-bonus';
-import { getActiveChallenge } from '@/lib/celestial-challenges';
 import { targetAltitude } from '@/lib/sky/target-visibility';
-import type { NftRarity } from '@/lib/nft-rarity';
-
-// Map an observation's verified confidence to a cosmic-bonus rarity tier. The
-// roll is then server-decided (seeded by the signed token), never client-sent.
-function rarityFromConfidence(confidence: string): NftRarity {
-  if (confidence === 'high') return 'Astral';
-  if (confidence === 'medium') return 'Stellar';
-  return 'Common';
-}
 
 const RPC_URL = process.env.SOLANA_RPC_URL ?? 'https://api.mainnet-beta.solana.com';
 
@@ -43,7 +28,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  let body: { recipientAddress?: unknown; amount?: unknown; reason?: unknown; idempotencyKey?: unknown; answers?: unknown; verificationToken?: unknown; lat?: unknown; lon?: unknown };
+  let body: { recipientAddress?: unknown; reason?: unknown; idempotencyKey?: unknown; lat?: unknown; lon?: unknown };
   try {
     body = await req.json();
   } catch {
@@ -102,141 +87,25 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Rewards are temporarily unavailable' }, { status: 503 });
   }
 
-  // ── Server-authoritative amount ────────────────────────────────────────────
-  // Activity rewards (quiz / find / daily_checkin) are computed from server-held
-  // data, never the client number — closing the "free Stars" claim. Observation-
-  // triggered rewards (cosmic_bonus, weekly_challenge) and telescope:first-
-  // registration still pass the client amount through the policy cap; those are
-  // locked down server-side in Stage 2.
-  let amount: number;
-  // The signed observation's fileHash, captured when a cosmic_bonus /
-  // weekly_challenge token is verified below. Used to derive a server-side
-  // idempotency key so ONE observation pays each bonus at most once — a valid
-  // token can't be replayed with fresh client idempotency keys to farm Stars.
-  let observationFileHash = '';
-  if (reasonStr.startsWith('quiz:')) {
-    const picks = Array.isArray(body.answers) ? (body.answers as unknown[]) : null;
-    if (!picks) {
-      return NextResponse.json({ error: 'answers required for quiz reward' }, { status: 400 });
-    }
-    const scored = scoreQuiz(reasonStr.slice('quiz:'.length), picks as number[]);
-    if (!scored) {
-      return NextResponse.json({ error: 'invalid quiz or answers' }, { status: 400 });
-    }
-    amount = scored.stars;
-  } else if (reasonStr.startsWith('find:')) {
-    // Proof-of-find: re-derive the target's altitude server-side and only award
-    // when it is actually above the horizon at the user's coordinates. Closes the
-    // "POST find:anything for free Stars" hole — the client can no longer claim a
-    // find for an object that isn't up (or a bogus id).
-    const targetId = reasonStr.slice('find:'.length);
-    const lat = typeof body.lat === 'number' ? body.lat : NaN;
-    const lon = typeof body.lon === 'number' ? body.lon : NaN;
-    if (!isFinite(lat) || !isFinite(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) {
-      return NextResponse.json({ error: 'lat and lon required for find reward' }, { status: 400 });
-    }
-    const altitude = targetAltitude(targetId, lat, lon, new Date());
-    if (altitude === null) {
-      return NextResponse.json({ error: 'unknown find target' }, { status: 400 });
-    }
-    if (altitude <= 0) {
-      // Target isn't above the horizon now — no genuine find, succeed with 0 so
-      // the client UI settles without minting.
-      return NextResponse.json({ success: true, txId: null, awarded: 0, reason: 'not_visible' });
-    }
-    amount = 10;
-  } else if (reasonStr === 'daily_checkin') {
-    const today = new Date().toISOString().split('T')[0];
-    let streak = 1;
-    if (db) {
-      const rows = await db
-        .select({ d: observationLog.observedDate })
-        .from(observationLog)
-        .where(and(eq(observationLog.wallet, recipient), eq(observationLog.target, 'daily_checkin')));
-      const dates = rows.map((r) => r.d).filter((d): d is string => typeof d === 'string');
-      streak = streakFromDates([...dates, today], today);
-    }
-    amount = Math.round(DAILY_CHECKIN_BASE_REWARD * getTierForStreak(streak).multiplier);
-  } else if (reasonStr.startsWith('cosmic_bonus:') || reasonStr === 'weekly_challenge') {
-    // Observation-triggered rewards: require the signed observation token so they
-    // can't be claimed without a real verified observation. The server decides
-    // the amount — the client never supplies it.
-    const tok = verifyObservationTokenForWallet(
-      typeof body.verificationToken === 'string' ? body.verificationToken : null,
-      recipient,
-    );
-    if (!tok.ok) {
-      if (tok.status === 503) {
-        return NextResponse.json({ error: 'Server misconfigured' }, { status: 503 });
-      }
-      return NextResponse.json({ error: 'Observation proof required' }, { status: 403 });
-    }
-    observationFileHash = tok.payload.fileHash;
-    if (reasonStr.startsWith('cosmic_bonus:')) {
-      // Deterministic server roll seeded by the signed observation (fileHash) +
-      // wallet + day + target — same observation always yields the same result,
-      // so a retry can't fish for a better roll.
-      const rarity = rarityFromConfidence(tok.payload.confidence);
-      const targetId = reasonStr.slice('cosmic_bonus:'.length);
-      const roll = rollCosmicBonus(rarity, tok.payload.fileHash, privyId, targetId);
-      amount = roll.triggered ? roll.amount : 0;
-    } else {
-      // weekly_challenge: token proves a real observation; cap to the active
-      // challenge's true bonus so the amount can't be inflated. (Full ledger-
-      // derived completion is a follow-up.)
-      amount = getActiveChallenge().bonusStars;
-    }
-  } else if (reasonStr === 'telescope:first-registration') {
-    // Paid once, for a telescope this account actually registered. The amount
-    // and the idempotency key are the server's, not the request's.
-    const [scope] = await db
-      .select({ starsAwarded: telescopes.starsAwarded })
-      .from(telescopes)
-      .where(eq(telescopes.privyId, privyId))
-      .limit(1);
-    if (!scope || scope.starsAwarded) {
-      return NextResponse.json({ success: true, txId: null, awarded: 0 });
-    }
-    amount = 50;
-  } else {
-    const clientAmount = body.amount;
-    if (typeof clientAmount !== 'number' || !Number.isInteger(clientAmount) || clientAmount < 1 || clientAmount > 500) {
-      return NextResponse.json({ error: 'amount must be an integer between 1 and 500' }, { status: 400 });
-    }
-    const reasonMax = maxAwardAmountForReason(reasonStr);
-    if (clientAmount > reasonMax) {
-      return NextResponse.json(
-        { error: `amount exceeds maximum (${reasonMax}) for this reason` },
-        { status: 400 },
-      );
-    }
-    amount = clientAmount;
+  // Proof-of-find, the only remaining award: re-derive the target's altitude
+  // server-side and only award when it is actually above the horizon at the
+  // user's coordinates.
+  const targetId = reasonStr.slice('find:'.length);
+  const lat = typeof body.lat === 'number' ? body.lat : NaN;
+  const lon = typeof body.lon === 'number' ? body.lon : NaN;
+  if (!isFinite(lat) || !isFinite(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+    return NextResponse.json({ error: 'lat and lon required for find reward' }, { status: 400 });
   }
-
-  // Server determined no Stars are owed (failed quiz, no-pick timeout) — succeed
-  // without minting so the client UI settles cleanly.
-  if (amount <= 0) {
-    return NextResponse.json({ success: true, txId: null, awarded: 0 });
+  const altitude = targetAltitude(targetId, lat, lon, new Date());
+  if (altitude === null) {
+    return NextResponse.json({ error: 'unknown find target' }, { status: 400 });
   }
-
-  // Weekly quiz budget: Stars from at most MAX_QUIZ_REWARDS_PER_WEEK quiz
-  // completions per wallet in any trailing 7-day window. The per-quiz-per-day
-  // limit is already enforced by the (wallet, target, observed_date) unique
-  // index on the claim insert below.
-  if (reasonStr.startsWith('quiz:') && db) {
-    const weekAgo = new Date(Date.now() - 7 * 86_400_000);
-    const rows = await db
-      .select({ c: count() })
-      .from(observationLog)
-      .where(and(
-        eq(observationLog.wallet, recipient),
-        like(observationLog.target, 'quiz:%'),
-        gte(observationLog.createdAt, weekAgo),
-      ));
-    if (Number(rows[0]?.c ?? 0) >= MAX_QUIZ_REWARDS_PER_WEEK) {
-      return NextResponse.json({ success: true, txId: null, awarded: 0, capped: 'weekly_quiz_limit' });
-    }
+  if (altitude <= 0) {
+    // Target isn't above the horizon now — no genuine find, succeed with 0 so
+    // the client UI settles without minting.
+    return NextResponse.json({ success: true, txId: null, awarded: 0, reason: 'not_visible' });
   }
+  let amount = 10;
 
   // Unified issuance cap: clamp to what this wallet may still earn under the
   // shared daily + trailing-30-day monthly caps (same ledger as observations).
@@ -268,18 +137,7 @@ export async function POST(req: NextRequest) {
   // idempotencyKey). Confirmed mints flip to 'minted'; uncertain outcomes stay
   // pending until reconciled, so a retry cannot issue the same reward twice.
   const todayStr = new Date().toISOString().split('T')[0];
-  // Activity rewards use a server-derived slot key — a crafted client key can't
-  // dodge the once-per-day dedup. Other reasons keep the client's key (it is
-  // scoped by tx/challenge ids the server can't derive here).
-  const idemKey =
-    reasonStr.startsWith('quiz:') ? `${reasonStr}:${recipient}:${todayStr}`
-    : reasonStr === 'daily_checkin' ? `checkin:${recipient}:${todayStr}`
-    : reasonStr === 'telescope:first-registration' ? `telescope:${recipient}:first`
-    : (reasonStr.startsWith('cosmic_bonus:') || reasonStr === 'weekly_challenge')
-      // Bind the slot to the signed observation (fileHash) + reason + wallet, so
-      // replaying the same 30-min token with new client keys can't re-claim.
-      ? `${reasonStr}:${observationFileHash}:${recipient}`
-    : idempotencyKey;
+  const idemKey = idempotencyKey;
   let claimed = false;
   if (db) {
     const claim = () => db.insert(observationLog).values({
@@ -353,11 +211,6 @@ export async function POST(req: NextRequest) {
           .set({ confidence: 'minted' })
           .where(and(eq(observationLog.wallet, recipient), eq(observationLog.mintTx, idemKey)));
       } catch { /* non-fatal — the row already serves idempotency */ }
-    }
-    if (reasonStr === 'telescope:first-registration') {
-      try {
-        await db.update(telescopes).set({ starsAwarded: true }).where(eq(telescopes.privyId, privyId));
-      } catch { /* the once-ever idempotency key above already holds */ }
     }
 
     return NextResponse.json({

@@ -26,10 +26,9 @@ const columns: FooterColumn[] = [
     titleKey: 'colProduct',
     links: [
       { labelKey: 'sky',      href: '/sky',         Icon: Sparkles },
-      { labelKey: 'missions', href: '/missions',    Icon: CircleDot },
-      { labelKey: 'learning', href: '/learn',       Icon: BookOpen },
-      { labelKey: 'shop',     href: '/marketplace', Icon: ShoppingBag },
       { labelKey: 'observatory', href: '/observatory', Icon: Telescope },
+      { labelKey: 'firstLight',  href: '/first-light', Icon: CircleDot },
+      { labelKey: 'shop',     href: '/marketplace', Icon: ShoppingBag },
     ],
   },
   {

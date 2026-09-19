@@ -103,21 +103,6 @@ export default async function StarIndexPage() {
             >
               Plan tonight's observation →
             </Link>
-            <Link
-              href="/missions"
-              style={{
-                background: 'rgba(var(--ink), 0.06)',
-                color: 'rgba(var(--ink), 0.9)',
-                padding: '11px 20px',
-                borderRadius: 10,
-                fontSize: 14,
-                fontWeight: 600,
-                textDecoration: 'none',
-                border: '1px solid rgba(var(--ink), 0.1)',
-              }}
-            >
-              Browse missions
-            </Link>
           </div>
         </div>
 

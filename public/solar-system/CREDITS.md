@@ -1,7 +1,7 @@
 # Solar system 3D texture credits
 
-Textures in `planets/` are used on equirectangular spheres in `/solar-system`
-and in the sky finder's AR planet layer.
+Textures in `planets/` are used on equirectangular spheres in the sky finder's
+AR planet layer.
 
 Each body ships at two resolutions: `<body>.jpg` at 2048×1024, loaded on first
 paint, and `<body>-4k.jpg` at 4096×2048, fetched only once the body grows large

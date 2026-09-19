@@ -945,44 +945,6 @@
   gap: 8px;
 }
 
-/* 3D solar system shortcut — pairs with AR launcher in the map corner. */
-.sky-v3__solar-launch {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  height: 34px;
-  padding: 0 12px;
-  border-radius: 999px;
-  background: rgba(7, 11, 20, 0.62);
-  border: 0.5px solid rgba(94, 234, 212, 0.32);
-  color: #5eead4;
-  text-decoration: none;
-  cursor: pointer;
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
-  transition: background 140ms ease, border-color 140ms ease, color 140ms ease, transform 140ms ease;
-}
-.sky-v3__solar-launch-label {
-  font-family: var(--mono);
-  font-size: 11px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  font-weight: 600;
-}
-.sky-v3__solar-launch:hover {
-  background: rgba(94, 234, 212, 0.1);
-  border-color: rgba(94, 234, 212, 0.55);
-  color: #b5fff4;
-}
-.sky-v3__solar-launch:active {
-  transform: translateY(1px);
-}
-.sky-v3__solar-launch:focus-visible {
-  outline: 2px solid rgba(94, 234, 212, 0.55);
-  outline-offset: 2px;
-}
-
 /* Compact "AR" launcher for the immersive sky view. Lives in the bottom-
    right corner of the dome's bounding box so it never clashes with
    cardinal labels or content above. Pairs a telescope glyph with a short
@@ -4296,7 +4258,6 @@
 }
 .skx__map .sky-v3__map-stage { max-width: none; width: 100%; }
 .skx__map .sky-map { max-width: min(100%, 560px); width: 100%; }
-.skx__map .sky-v3__solar-launch,
 .skx__map .sky-v3__ar-launch {
   min-height: 44px;
   border-radius: 999px;
@@ -4882,7 +4843,6 @@
 [data-theme="light"] .sky-map__crosshair line { stroke: #F5A623; }
 [data-theme="light"] .sky-map__crosshair.is-locked circle,
 [data-theme="light"] .sky-map__crosshair.is-locked line { stroke: #5EEAD4; }
-[data-theme="light"] .skx__map .sky-v3__solar-launch,
 [data-theme="light"] .skx__map .sky-v3__ar-launch { border-color: rgba(255, 255, 255, 0.12); }
 [data-theme="light"] .sky-strip-mini { color: #9AA4B6; }
 [data-theme="light"] .sky-strip-mini__cell--time { color: #F8F4EC; }

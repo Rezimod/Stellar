@@ -8,20 +8,14 @@ import { useStellarAuth } from '@/hooks/useStellarAuth';
 import { useDisplayProfile } from '@/hooks/useDisplayProfile';
 import { AuthModal } from '@/components/auth/AuthModal';
 import { avatarById } from '@/lib/avatars';
-import {
-  CloudSun, ShoppingBag, Satellite, Search, BookOpen,
-  Sparkles, Telescope, LayoutGrid, User, Gem, LogOut,
-} from 'lucide-react';
+import { Search, Telescope, User, Gem, LogOut } from 'lucide-react';
 import AstroLogo from './AstroLogo';
 import SearchModal from './SearchModal';
-import LanguageToggle from './LanguageToggle';
 
 const NAV_ITEMS = [
-  { href: '/sky',         key: 'sky',         icon: CloudSun },
-  { href: '/missions',    key: 'missions',    icon: Satellite },
-  { href: '/feed',        key: 'feed',        icon: Sparkles },
-  { href: '/learn',       key: 'learn',       icon: BookOpen },
-  { href: '/marketplace', key: 'marketplace', icon: ShoppingBag },
+  { href: '/sky',         key: 'sky' },
+  { href: '/observatory', key: 'observatory' },
+  { href: '/marketplace', key: 'marketplace' },
 ] as const;
 
 const AVATAR_ITEMS = [
@@ -115,10 +109,6 @@ export default function Nav() {
         .nav-tab:hover:not(.nav-tab-active) { background: var(--surface-hover); color: var(--text-primary) !important; }
         .signin-btn { transition: all 0.18s ease; }
         .signin-btn:hover { background: var(--surface-hover); border-color: var(--border-strong); color: var(--text-primary); }
-        .hub-btn { width: 32px; height: 32px; display: none; align-items: center; justify-content: center; border-radius: 8px; background: transparent; border: 1px solid transparent; cursor: pointer; padding: 0; color: var(--text-secondary); transition: all 0.15s ease; text-decoration: none; }
-        @media (min-width: 768px) { .hub-btn { display: flex; } }
-        .hub-btn:hover { background: var(--surface); border-color: var(--border); color: var(--text-primary); }
-        .hub-btn[data-active="true"] { background: rgba(255,179,71,0.10); border-color: rgba(255,179,71,0.25); color: var(--accent-text); }
         .avatar-btn { width: 32px; height: 32px; min-width: 32px; min-height: 32px; aspect-ratio: 1 / 1; flex-shrink: 0; padding: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.18s ease, filter 0.18s ease; }
         .avatar-btn:hover { transform: translateY(-1px); filter: brightness(1.05); }
         .avatar-btn[data-active="true"] { box-shadow: 0 0 0 1.5px rgba(255,179,71,0.55), 0 4px 12px -4px rgba(255,179,71,0.30) !important; }
@@ -179,7 +169,7 @@ export default function Nav() {
               })}
             </div>
 
-            {/* RIGHT cluster: search → language → hub → avatar/sign-in */}
+            {/* RIGHT cluster: search → avatar/sign-in */}
             <div className="ml-auto flex items-center gap-2 flex-shrink-0 z-10">
               <button
                 onClick={() => setSearchOpen(true)}
@@ -189,17 +179,6 @@ export default function Nav() {
               >
                 <Search size={17} strokeWidth={1.9} />
               </button>
-
-              <LanguageToggle />
-
-              <Link
-                href="/hub"
-                className="hub-btn"
-                data-active={pathname.startsWith('/hub')}
-                aria-label={t('hub')}
-              >
-                <LayoutGrid size={17} strokeWidth={1.9} />
-              </Link>
 
               {!ready ? (
                 <div className="w-8 h-8 rounded-full bg-[var(--surface-hover)] animate-pulse shrink-0" style={{ aspectRatio: '1 / 1' }} />

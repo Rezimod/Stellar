@@ -1,17 +1,12 @@
 'use client';
 
 import { createContext, useCallback, useContext, useMemo, useState, useEffect, ReactNode, createElement } from 'react';
-import type { AppState, CompletedMission, QuizResult } from '@/lib/types';
+import type { AppState } from '@/lib/types';
 
 const defaultState: AppState = {
   walletConnected: false,
   walletAddress: '',
-  membershipMinted: false,
-  membershipTx: '',
-  telescope: null,
-  telescopeTx: '',
   completedMissions: [],
-  completedQuizzes: [],
   hiddenObservationIds: [],
   favorites: [],
 };
@@ -19,13 +14,9 @@ const defaultState: AppState = {
 interface AppStateCtx {
   state: AppState;
   setWallet: (address: string) => void;
-  setMembership: (tx: string) => void;
-  setTelescope: (data: { brand: string; model: string; aperture: string }, tx: string) => void;
-  addMission: (mission: CompletedMission) => void;
   removeMission: (txId: string) => void;
   hideObservation: (id: string) => void;
   unhideObservation: (id: string) => void;
-  addQuizResult: (r: QuizResult) => void;
   toggleFavorite: (id: string) => void;
   pendingCount: number;
   reset: () => void;
@@ -104,15 +95,6 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   const setWallet = useCallback((address: string) => {
     setState(s => ({ ...s, walletConnected: true, walletAddress: address }));
   }, []);
-  const setMembership = useCallback((tx: string) => {
-    setState(s => ({ ...s, membershipMinted: true, membershipTx: tx }));
-  }, []);
-  const setTelescope = useCallback((data: { brand: string; model: string; aperture: string }, tx: string) => {
-    setState(s => ({ ...s, telescope: data, telescopeTx: tx }));
-  }, []);
-  const addMission = useCallback((mission: CompletedMission) => {
-    setState(s => ({ ...s, completedMissions: [...s.completedMissions, mission] }));
-  }, []);
   const removeMission = useCallback((key: string) => {
     setState(s => ({
       ...s,
@@ -132,9 +114,6 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   }, []);
   const unhideObservation = useCallback((id: string) => {
     setState(s => ({ ...s, hiddenObservationIds: (s.hiddenObservationIds ?? []).filter(x => x !== id) }));
-  }, []);
-  const addQuizResult = useCallback((r: QuizResult) => {
-    setState(s => ({ ...s, completedQuizzes: [...(s.completedQuizzes ?? []), r] }));
   }, []);
   const toggleFavorite = useCallback((id: string) => {
     setState(s => {
@@ -159,18 +138,14 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     () => ({
       state,
       setWallet,
-      setMembership,
-      setTelescope,
-      addMission,
       removeMission,
       hideObservation,
       unhideObservation,
-      addQuizResult,
       toggleFavorite,
       pendingCount,
       reset,
     }),
-    [state, setWallet, setMembership, setTelescope, addMission, removeMission, hideObservation, unhideObservation, addQuizResult, toggleFavorite, pendingCount, reset],
+    [state, setWallet, removeMission, hideObservation, unhideObservation, toggleFavorite, pendingCount, reset],
   );
 
   return createElement(Ctx.Provider, { value: ctx }, children);

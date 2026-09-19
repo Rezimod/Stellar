@@ -66,7 +66,7 @@ export async function GET(req: NextRequest) {
       payload = {
         title: `Tonight: ${eventToday.name}`,
         body: eventToday.infoBar || 'A sky event peaks tonight — tap for details.',
-        url: '/missions',
+        url: '/sky',
         tag: `event-${eventToday.date}`,
       };
     } else if (wantsWeather && sub.lat != null && sub.lon != null) {

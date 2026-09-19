@@ -9,12 +9,13 @@ vi.mock('@/lib/rate-limit', () => ({ checkRateLimit: async () => ({ success: tru
 vi.mock('@/lib/kill-switch', () => ({ paused: () => null }));
 vi.mock('@/lib/network-guard', () => ({ networkMisconfig: () => null }));
 vi.mock('@/lib/stars-cap', () => ({ remainingStarsAllowance: async () => 100 }));
+vi.mock('@/lib/sky/target-visibility', () => ({ targetAltitude: () => 30 }));
 vi.mock('@/lib/stars', () => ({ STARS_TOKEN_PROGRAM_ID: 'program', getStarsMintAuthority: () => ({}) }));
 vi.mock('@solana/spl-token', () => ({ getOrCreateAssociatedTokenAccount: mocks.ata, mintTo: mocks.mint }));
 vi.mock('@solana/web3.js', () => ({ PublicKey: class {}, Connection: class {}, Keypair: { fromSecretKey: () => ({}) } }));
 import { POST } from '@/app/api/award-stars/route';
 
-const request = () => POST(new NextRequest('http://localhost/api/award-stars', { method: 'POST', body: JSON.stringify({ recipientAddress: 'wallet', amount: 50, reason: 'telescope:first-registration', idempotencyKey: 'registration:wallet' }) }));
+const request = () => POST(new NextRequest('http://localhost/api/award-stars', { method: 'POST', body: JSON.stringify({ recipientAddress: 'wallet', reason: 'find:m31', idempotencyKey: 'find:m31:wallet', lat: 41.7, lon: 44.8 }) }));
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -61,23 +62,19 @@ it('returns an already confirmed award without minting again', async () => {
   expect(mocks.mint).not.toHaveBeenCalled();
 });
 
-it('looks up the stable receipt key so yesterday’s confirmed award can be recognized', async () => {
+it('looks up the receipt by its idempotency key', async () => {
   mocks.claim.mockRejectedValue({ code: '23505' });
   mocks.rows.mockResolvedValue([{ confidence: 'minted' }]);
   await request();
-  // Call 0 is the telescope-registration scope check; call 1 is the receipt
-  // lookup. The key it searches for is the server's, not the request's.
-  const lookup = new PgDialect().sqlToQuery(mocks.where.mock.calls[1][0]);
-  expect(lookup.params).toContain('telescope:wallet:first');
-  expect(lookup.params).not.toContain('registration:wallet');
+  const lookup = new PgDialect().sqlToQuery(mocks.where.mock.calls[0][0]);
+  expect(lookup.params).toContain('find:m31:wallet');
   expect(mocks.mint).not.toHaveBeenCalled();
 });
 
 it('confirms a newly persisted award', async () => {
-  expect(await (await request()).json()).toMatchObject({ success: true, awarded: 50 });
+  expect(await (await request()).json()).toMatchObject({ success: true, awarded: 10 });
   expect(mocks.mint).toHaveBeenCalledOnce();
-  // The ledger slot is confirmed, and the registration bonus is marked paid.
-  expect(mocks.update).toHaveBeenCalledTimes(2);
+  expect(mocks.update).toHaveBeenCalledOnce();
 });
 
 it('retains the claim after an uncertain transaction failure', async () => {

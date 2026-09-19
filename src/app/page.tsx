@@ -3,7 +3,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 import HomeHeroSaturn from '@/components/home/HomeHeroSaturn';
-import HomeExplore from '@/components/home/HomeExplore';
 import ComparisonTable from '@/components/home/ComparisonTable';
 import ScrollReveals from '@/components/home/ScrollReveals';
 
@@ -1051,7 +1050,6 @@ export default async function HomePage() {
           HERO — Saturn parallax, screenshot redesign
          ============================================================ */}
       <HomeHeroSaturn />
-      <HomeExplore />
 
       <section className="relative px-4 md:px-8 pt-14 md:pt-20 pb-2">
         <div className="relative max-w-[960px] mx-auto" data-reveal>
@@ -1174,7 +1172,7 @@ export default async function HomePage() {
           </div>
 
           <div className="mt-6 md:mt-10 text-center" data-reveal>
-            <SectionLink href="/missions">{t('howItWorks.cta')}</SectionLink>
+            <SectionLink href="/sky">{t('howItWorks.cta')}</SectionLink>
           </div>
         </div>
       </section>
@@ -1212,7 +1210,7 @@ export default async function HomePage() {
                 ))}
               </ol>
               <div className="mt-5 md:mt-6 text-center md:text-left">
-                <SectionLink href="/missions">{t('missions.cta')}</SectionLink>
+                <SectionLink href="/sky">{t('missions.cta')}</SectionLink>
               </div>
             </div>
           </div>
@@ -1245,7 +1243,7 @@ export default async function HomePage() {
                 ))}
               </ol>
               <div className="mt-5 md:mt-6">
-                <SectionLink href="/learn">{t('learn.cta')}</SectionLink>
+                <SectionLink href="/sky">{t('learn.cta')}</SectionLink>
               </div>
             </div>
             <div className="order-1 md:order-2 mx-auto">
@@ -1394,7 +1392,7 @@ export default async function HomePage() {
         <div className="max-w-[1200px] mx-auto" data-reveal>
           <div>
             <Link
-              href="/feed"
+              href="/observatory"
               className="hero-pill-primary group inline-flex items-center gap-3 px-10 font-semibold text-[17px] rounded-[16px] transition-all hover:brightness-[1.05] active:translate-y-[0.5px] no-underline"
               style={{
                 paddingTop: 18,

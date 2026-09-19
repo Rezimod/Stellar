@@ -76,14 +76,14 @@ export default function PublicProfilePage({ params }: { params: Promise<{ wallet
       <PageContainer variant="content" className="py-6 pb-10">
         <div style={{ marginBottom: 18 }}>
           <Link
-            href="/feed"
+            href="/"
             style={{
               display: 'inline-flex', alignItems: 'center', gap: 6,
               fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.06em',
               color: 'var(--stl-text-dim)', textDecoration: 'none',
             }}
           >
-            <ArrowLeft size={12} /> Back to feed
+            <ArrowLeft size={12} /> Back to home
           </Link>
         </div>
 

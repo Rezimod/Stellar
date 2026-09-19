@@ -390,9 +390,6 @@ function CheckoutContent() {
                   <p className="text-[12px] text-[#F8F4EC] tabular-nums">
                     {t('starsShort', { balance: starsBalance.toLocaleString(), short: starsShort.toLocaleString() })}
                   </p>
-                  <Link href="/earn" className="text-[10.5px] tracking-[0.14em] uppercase font-semibold" style={{ color: 'var(--accent-text)' }}>
-                    {t('earnMore')} →
-                  </Link>
                 </div>
               )}
 

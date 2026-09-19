@@ -123,19 +123,9 @@ function pickBestNews(news: SpaceNewsItem[]): SpaceNewsItem {
 
 const PRODUCT_SPOTLIGHTS = [
   {
-    name: 'ASTRA',
-    pitch: 'an AI companion that knows tonight\'s sky, your scope, and what you can actually see from where you stand',
-    url: `${SITE}/chat`,
-  },
-  {
     name: '7-day sky forecast',
     pitch: 'cloud cover, seeing, humidity, and moon phase scored into one verdict per night so you stop guessing',
     url: `${SITE}/sky`,
-  },
-  {
-    name: 'Discovery Attestations',
-    pitch: 'verified observations minted on-chain. Proof you saw it, owned by you, not a platform',
-    url: `${SITE}/observe`,
   },
   {
     name: 'Name a Star',
@@ -143,19 +133,14 @@ const PRODUCT_SPOTLIGHTS = [
     url: `${SITE}/star`,
   },
   {
-    name: 'Stellar Field',
-    pitch: 'an offline Android app for dark-sky sites. AI companion runs on-device. No signal needed',
-    url: `${SITE}/field`,
+    name: 'Node 01 observatory',
+    pitch: 'a remote telescope being commissioned under dark skies. Follow its status and first captures as it comes online',
+    url: `${SITE}/observatory`,
   },
   {
-    name: 'Sky missions',
-    pitch: 'guided observation missions for the Moon, planets, and deep-sky targets — earn Stars as you complete them',
-    url: `${SITE}/missions`,
-  },
-  {
-    name: 'Learn',
-    pitch: 'Messier catalog, constellation guides, and observing tips built for people who actually use a telescope',
-    url: `${SITE}/learn`,
+    name: 'Astroman marketplace',
+    pitch: 'real telescopes and accessories next to the sky forecast, so the gear matches what you want to see',
+    url: `${SITE}/marketplace`,
   },
 ]
 
@@ -180,19 +165,9 @@ const BUILD_UPDATES = [
     url: `${SITE}/sky`,
   },
   {
-    focus: 'ASTRA',
-    detail: 'the AI companion calls live sky tools before answering, so advice is tied to the observer location and tonight\'s sky',
-    url: `${SITE}/chat`,
-  },
-  {
-    focus: 'observation verification',
-    detail: 'uploaded sky photos are checked for astronomy context, EXIF signals, visibility, and duplicate hashes before rewards',
-    url: `${SITE}/observe`,
-  },
-  {
-    focus: 'Stellar Field',
-    detail: 'the Android companion is built for dark-sky sites where the useful answer must still work offline',
-    url: `${SITE}/field`,
+    focus: 'Node 01 commissioning',
+    detail: 'the remote observatory is being brought online: mount, camera and weather station reporting status before the first scheduled captures',
+    url: `${SITE}/observatory`,
   },
   {
     focus: 'Astroman marketplace',
@@ -282,7 +257,7 @@ Constellation: ${pick.constellation}
 Minimum scope: ${pick.minScope}
 What's interesting: ${pick.note}
 
-Open with what it is. One line on what scope you need and what you'll see. End with: ${SITE}/learn`,
+Open with what it is. One line on what scope you need and what you'll see. End with: ${SITE}/sky`,
   )
   return {
     kind: 'astro_fact',
@@ -292,15 +267,14 @@ Open with what it is. One line on what scope you need and what you'll see. End w
 }
 
 const SHORT_HOOKS = [
-  { angle: 'app', prompt: 'Stellar (stellarr.club) bundles tonight\'s sky forecast, guided missions, and ASTRA — one app for people who actually observe.' },
-  { angle: 'field', prompt: 'Stellar Field runs your AI astronomer offline at Bortle 1–3 sites where cell service dies. stellarr.club/field' },
-  { angle: 'observe', prompt: 'Seal an observation on Solana, earn Stars, redeem at Astroman.ge — stellarr.club/observe' },
+  { angle: 'app', prompt: 'Stellar (stellarr.club) bundles tonight\'s sky forecast, a live sky map, and a telescope shop — one app for people who actually observe.' },
+  { angle: 'observatory', prompt: 'Node 01, a remote observatory, is being commissioned under dark skies. Follow it at stellarr.club/observatory' },
   { angle: 'sky', prompt: 'Stop guessing if tonight is worth setting up the scope. Stellar scores cloud, seeing, and moon in one verdict. stellarr.club/sky' },
   { angle: 'fact', prompt: 'Light from Andromeda (M31) left 2.5 million years ago — you see it as it was before humans existed.' },
   { angle: 'fact', prompt: 'Saturn\'s rings are younger than the dinosaurs — probably formed 100 million years ago, not with the planet.' },
   { angle: 'fact', prompt: 'A full moon washes out faint galaxies — plan deep-sky nights for the week before and after new moon.' },
   { angle: 'tip', prompt: 'Let your telescope equalize 30 minutes outside before high-magnification work — tube currents lie about sharpness.' },
-  { angle: 'app', prompt: 'ASTRA on stellarr.club knows your location, tonight\'s planets, and what fits your aperture.' },
+  { angle: 'app', prompt: 'The Stellar sky map (stellarr.club/sky) shows tonight\'s planets from your location and which fit your aperture.' },
   { angle: 'fact', prompt: 'The Hercules Cluster (M13) holds about 300,000 stars — visible as a fuzzy ball in binoculars from a dark yard.' },
 ]
 

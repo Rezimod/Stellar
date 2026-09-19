@@ -29,7 +29,6 @@ export default function SettingsPage() {
   const { theme, setTheme, field, toggleField } = useTheme();
   const router = useRouter();
 
-  const [locale, setLocale] = useState('en');
   const [confirmSignOut, setConfirmSignOut] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
 
@@ -47,9 +46,6 @@ export default function SettingsPage() {
   const [iosNeedsInstall, setIosNeedsInstall] = useState(false);
 
   useEffect(() => {
-    const c = document.cookie.split(';').find(s => s.trim().startsWith('stellar_locale='));
-    if (c) setLocale(c.split('=')[1]?.trim() ?? 'en');
-
     try {
       const raw = localStorage.getItem('stellar_notifications');
       if (raw) {
@@ -123,12 +119,6 @@ export default function SettingsPage() {
 
   const notifBlocked = notifPermission === 'denied';
   const notifUnsupported = notifPermission === 'unsupported';
-
-  const switchLocale = (l: string) => {
-    document.cookie = `stellar_locale=${l}; path=/; max-age=31536000`;
-    setLocale(l);
-    window.location.reload();
-  };
 
   const email = user?.email?.address ??
     (user?.linkedAccounts.find(a => a.type === 'email') as { address?: string } | undefined)?.address;
@@ -328,47 +318,6 @@ export default function SettingsPage() {
           right={<ChevronRight size={15} color="var(--text-muted)" />}
           last
         />
-      </Section>
-
-      {/* ── LANGUAGE ── */}
-      <Section title={t('languageTitle')}>
-        <div style={{ padding: 12, display: 'flex', gap: 10 }}>
-          {[
-            { code: 'en', label: 'English', flag: '🇺🇸' },
-            { code: 'ka', label: 'ქართული', flag: '🇬🇪' },
-          ].map(l => {
-            const active = locale === l.code;
-            return (
-              <button
-                key={l.code}
-                onClick={() => switchLocale(l.code)}
-                style={{
-                  flex: 1, padding: '14px 10px',
-                  borderRadius: 14,
-                  cursor: 'pointer',
-                  background: active
-                    ? 'linear-gradient(180deg, rgba(255,179,71,0.16) 0%, rgba(255,179,71,0.04) 100%)'
-                    : 'rgba(var(--ink), 0.04)',
-                  border: `1px solid ${active ? 'rgba(255,179,71,0.45)' : 'rgba(var(--ink), 0.08)'}`,
-                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
-                  transition: 'all 0.2s',
-                  boxShadow: active
-                    ? 'inset 0 1px 0 rgba(var(--ink), 0.10), 0 8px 24px -14px rgba(255,179,71,0.45)'
-                    : 'inset 0 1px 0 rgba(var(--ink), 0.05)',
-                }}
-              >
-                <span style={{ fontSize: 22 }}>{l.flag}</span>
-                <span style={{
-                  color: active ? 'var(--accent-text)' : 'var(--text-secondary)',
-                  fontFamily: 'var(--font-display)',
-                  fontSize: 13,
-                  fontWeight: 500,
-                  letterSpacing: '0.01em',
-                }}>{l.label}</span>
-              </button>
-            );
-          })}
-        </div>
       </Section>
 
       {/* ── ACCOUNT ACTIONS ── */}

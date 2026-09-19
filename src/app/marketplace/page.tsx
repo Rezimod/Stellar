@@ -14,7 +14,6 @@ import MarketplaceHero from '@/components/marketplace/MarketplaceHero';
 import CategoryCircles from '@/components/marketplace/CategoryCircles';
 import FeaturedDeals from '@/components/marketplace/FeaturedDeals';
 import RecommendedRow from '@/components/marketplace/RecommendedRow';
-import HelpBanner from '@/components/marketplace/HelpBanner';
 import MarketplaceSectionHeader from '@/components/marketplace/MarketplaceSectionHeader';
 import { SolGradientDef } from '@/components/marketplace/SolMark';
 import { X } from 'lucide-react';
@@ -311,9 +310,6 @@ export default function MarketplacePage() {
             onToggleFavorite={toggleFavorite}
             onViewAll={() => scrollTo(catalogRef)}
           />
-
-          {/* 8. Need help choosing? */}
-          <HelpBanner />
 
           {/* Buying guide — preserved goal-based shortcuts into the catalog */}
           <section>

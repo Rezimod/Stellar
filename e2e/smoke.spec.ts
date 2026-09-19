@@ -39,17 +39,6 @@ test.describe('smoke — golden routes', () => {
     expect(errors, `pageerrors on /sky: ${errors.join('\n')}`).toEqual([]);
   });
 
-  test('missions page mounts without runtime errors', async ({ page }) => {
-    const errors: string[] = [];
-    page.on('pageerror', (err) => errors.push(err.message));
-
-    const response = await page.goto('/missions');
-    expect(response?.ok()).toBeTruthy();
-
-    await page.waitForLoadState('domcontentloaded');
-    expect(errors, `pageerrors on /missions: ${errors.join('\n')}`).toEqual([]);
-  });
-
   test('marketplace page renders products', async ({ page }) => {
     const errors: string[] = [];
     page.on('pageerror', (err) => errors.push(err.message));

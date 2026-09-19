@@ -4,10 +4,9 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, ArrowUpRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { MISSIONS } from '@/lib/constants';
 
 interface ResolvedItem {
-  type: 'mission' | 'page' | 'object';
+  type: 'page' | 'object';
   label: string;
   sub: string;
   href: string;
@@ -25,23 +24,20 @@ interface StaticItem {
 const STATIC_ITEMS: StaticItem[] = [
   { type: 'page',   labelKey: 'skyForecast',   subKey: 'skyForecastSub',   href: '/sky',         icon: '🌤' },
   { type: 'page',   labelKey: 'planetTracker', subKey: 'planetTrackerSub', href: '/sky',         icon: '🪐' },
-  { type: 'page',   labelKey: 'solarSystem3d', subKey: 'solarSystem3dSub', href: '/solar-system', icon: '🛰' },
-  { type: 'page',   labelKey: 'astraAi',       subKey: 'astraAiSub',       href: '/chat',        icon: '✦' },
-  { type: 'page',   labelKey: 'astroGuide',    subKey: 'astroGuideSub',    href: '/learn',       icon: '📚' },
+  { type: 'page',   labelKey: 'observatory',   subKey: 'observatorySub',   href: '/observatory', icon: '🔭' },
   { type: 'page',   labelKey: 'nftGallery',    subKey: 'nftGallerySub',    href: '/nfts',        icon: '🖼' },
   { type: 'object', labelKey: 'moon',          subKey: 'moonSub',          href: '/sky',         icon: '🌕' },
   { type: 'object', labelKey: 'jupiter',       subKey: 'jupiterSub',       href: '/sky',         icon: '🪐' },
   { type: 'object', labelKey: 'saturn',        subKey: 'saturnSub',        href: '/sky',         icon: '🪐' },
   { type: 'object', labelKey: 'mars',          subKey: 'marsSub',          href: '/sky',         icon: '🔴' },
-  { type: 'object', labelKey: 'orion',         subKey: 'orionSub',         href: '/observe/orion',    icon: '✨' },
-  { type: 'object', labelKey: 'pleiades',      subKey: 'pleiadesSub',      href: '/observe/pleiades', icon: '💫' },
-  { type: 'object', labelKey: 'andromeda',     subKey: 'andromedaSub',     href: '/observe/andromeda', icon: '🌌' },
+  { type: 'object', labelKey: 'orion',         subKey: 'orionSub',         href: '/sky',         icon: '✨' },
+  { type: 'object', labelKey: 'pleiades',      subKey: 'pleiadesSub',      href: '/sky',         icon: '💫' },
+  { type: 'object', labelKey: 'andromeda',     subKey: 'andromedaSub',     href: '/sky',         icon: '🌌' },
 ];
 
 const QUICK_LINKS = [
   { icon: '🌤', labelKey: 'qSky',      href: '/sky' },
-  { icon: '🛸', labelKey: 'qMissions', href: '/missions' },
-  { icon: '✦',  labelKey: 'qAstra',    href: '/chat' },
+  { icon: '🔭', labelKey: 'qObservatory', href: '/observatory' },
   { icon: '🛒', labelKey: 'qShop',     href: '/marketplace' },
 ];
 
@@ -49,15 +45,7 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
   const router = useRouter();
   const t = useTranslations('searchModal');
 
-  const MISSION_ITEMS: ResolvedItem[] = MISSIONS.map(m => ({
-    type: 'mission',
-    label: m.name,
-    sub: m.desc,
-    href: `/observe/${m.id}`,
-    icon: m.emoji,
-  }));
-
-  const STATIC_RESOLVED: ResolvedItem[] = STATIC_ITEMS.map(it => ({
+  const SEARCH_ITEMS: ResolvedItem[] = STATIC_ITEMS.map(it => ({
     type: it.type,
     label: t(it.labelKey),
     sub: t(it.subKey),
@@ -65,10 +53,7 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
     icon: it.icon,
   }));
 
-  const SEARCH_ITEMS: ResolvedItem[] = [...MISSION_ITEMS, ...STATIC_RESOLVED];
-
   const TYPE_LABELS: Record<string, string> = {
-    mission: t('groupMissions'),
     page: t('groupPages'),
     object: t('groupObjects'),
   };

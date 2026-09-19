@@ -1,11 +1,10 @@
 'use client';
 
 import { useEffect, useRef, type ReactNode } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
 export default function SwipeBack({ children }: { children: ReactNode }) {
   const router = useRouter();
-  const pathname = usePathname();
   const startX = useRef<number | null>(null);
   const startY = useRef<number | null>(null);
 
@@ -17,16 +16,6 @@ export default function SwipeBack({ children }: { children: ReactNode }) {
 
     const onTouchEnd = (e: TouchEvent) => {
       if (startX.current === null || startY.current === null) return;
-      // Full-screen 3D solar uses horizontal drags from the left edge — do not
-      // interpret those as a "back" gesture (was kicking users out mid-session).
-      if (
-        pathname.startsWith('/solar-system') ||
-        document.body.getAttribute('data-solar-immersive') === '1'
-      ) {
-        startX.current = null;
-        startY.current = null;
-        return;
-      }
       const dx = e.changedTouches[0].clientX - startX.current;
       const dy = Math.abs(e.changedTouches[0].clientY - startY.current);
 
@@ -48,7 +37,7 @@ export default function SwipeBack({ children }: { children: ReactNode }) {
       document.removeEventListener('touchstart', onTouchStart);
       document.removeEventListener('touchend', onTouchEnd);
     };
-  }, [router, pathname]);
+  }, [router]);
 
   return <>{children}</>;
 }

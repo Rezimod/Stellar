@@ -3,14 +3,13 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { usePrivy } from '@privy-io/react-auth';
 import { useStellarUser } from '@/hooks/useStellarUser';
 import { AuthModal } from '@/components/auth/AuthModal';
 import { toast } from '@/components/ui/Toast';
 import { track } from '@/lib/track';
-import { Compass, Crosshair, Telescope, Hand, Box, Lightbulb, MapPin, ChevronRight, Eye, Sparkles, Sunrise, Sunset } from 'lucide-react';
+import { Compass, Crosshair, Telescope, Hand, Lightbulb, MapPin, ChevronRight, Eye, Sparkles, Sunrise, Sunset } from 'lucide-react';
 import { TelescopeIcon } from '@/components/sky/CosmicIcons';
 import { useTheme } from '@/components/providers/ThemeProvider';
 import { useLocale, useTranslations } from 'next-intl';
@@ -622,15 +621,6 @@ export default function SkyPage() {
                   } : null}
                 />
                 <div className="sky-v3__map-tools">
-                  <Link
-                    href="/solar-system"
-                    className="sky-v3__solar-launch"
-                    aria-label={tUi('solarSystem3d')}
-                    title={tUi('solarSystem3d')}
-                  >
-                    <Box size={14} aria-hidden="true" />
-                    <span className="sky-v3__solar-launch-label">{tUi('view3d')}</span>
-                  </Link>
                   <button
                     type="button"
                     className="sky-v3__ar-launch"
@@ -670,8 +660,7 @@ export default function SkyPage() {
                 <ul className="skx__look-list">
                   {bestTargets.length === 0 && (
                     <li className="skx__look-empty">
-                      {tUi('nothingUpYet')}{windowOpen ? <> — {tUi('darkSkyOpensAround')} <strong>{fmtClock(windowOpen, dateLocale, tz)}</strong></> : ''}.{' '}
-                      <Link href="/missions" style={{ color: 'var(--accent-text)' }}>{tUi('tryAQuiz')}</Link> {tUi('whileYouWait')}
+                      {tUi('nothingUpYet')}{windowOpen ? <> — {tUi('darkSkyOpensAround')} <strong>{fmtClock(windowOpen, dateLocale, tz)}</strong></> : ''}.
                     </li>
                   )}
                   {bestTargets.slice(0, 3).map((o) => (
@@ -707,8 +696,7 @@ export default function SkyPage() {
               <ol className="skx__vis-rail">
                 {bestTargets.length === 0 && (
                   <li className="skx__vis-empty">
-                    {tUi('nothingAboveHorizon')}{windowOpen ? <> — {tUi('nextDarkWindow')}<strong>{fmtClock(windowOpen, dateLocale, tz)}</strong></> : ''}.{' '}
-                    <Link href="/missions" style={{ color: 'var(--accent-text)' }}>{tUi('quizTime')}</Link> {tUi('untilThen')}
+                    {tUi('nothingAboveHorizon')}{windowOpen ? <> — {tUi('nextDarkWindow')}<strong>{fmtClock(windowOpen, dateLocale, tz)}</strong></> : ''}.
                   </li>
                 )}
                 {bestTargets.map((o, i) => (

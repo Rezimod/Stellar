@@ -7,7 +7,7 @@ import { AuthModal } from '@/components/auth/AuthModal';
 import { useTranslations } from 'next-intl';
 import { Suspense, useState, useEffect } from 'react';
 import {
-  ExternalLink, Telescope, User, ChevronRight, Flag, History, Settings,
+  ExternalLink, Telescope, User, ChevronRight, Flag, Settings,
   Bell, Moon, Sun, LogOut, X, Package, Trash2,
   ShieldCheck, Gift,
 } from 'lucide-react';
@@ -78,16 +78,10 @@ function ProfilePageContent() {
   const [selectedPhoto, setSelectedPhoto] = useState<{ photo: string; name: string } | null>(null);
   const [avatarOpen, setAvatarOpen] = useState(false);
   const [orderHistory, setOrderHistory] = useState<OrderRow[]>([]);
-  const [locale, setLocale] = useState('en');
 
   const isLight = theme === 'light';
 
   useEffect(() => () => setConfirmSignOut(false), []);
-
-  useEffect(() => {
-    const c = document.cookie.split(';').find(s => s.trim().startsWith('stellar_locale='));
-    if (c) setLocale(c.split('=')[1]?.trim() ?? 'en');
-  }, []);
 
   useEffect(() => {
     if (!selectedPhoto) return;
@@ -126,13 +120,6 @@ function ProfilePageContent() {
     navigator.clipboard.writeText(address);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-  };
-
-  const switchLocale = (l: string) => {
-    if (l === locale) return;
-    document.cookie = `stellar_locale=${l}; path=/; max-age=31536000`;
-    setLocale(l);
-    window.location.reload();
   };
 
   if (!authenticated) {
@@ -197,7 +184,7 @@ function ProfilePageContent() {
     : fallbackName;
   const initial = displayName[0]?.toUpperCase() ?? '✦';
   const addrShort = address ? `${address.slice(0, 6)}...${address.slice(-4)}` : null;
-  const dateLocale = locale === 'ka' ? 'ka-GE' : 'en-US';
+  const dateLocale = 'en-US';
 
   const completed = state.completedMissions.filter(m => m.status === 'completed');
   const totalStarsLocal = completed.reduce((sum, m) => sum + (m.stars ?? 0), 0);
@@ -252,10 +239,9 @@ function ProfilePageContent() {
 
   const sidebarItems: SidebarItem[] = [
     { key: 'overview', label: t('overview'), icon: <User size={16} />, active: true },
-    { key: 'missions', label: t('statMissions'), icon: <Flag size={16} />, count: completed.length, href: '/missions' },
+    { key: 'missions', label: t('statMissions'), icon: <Flag size={16} />, count: completed.length, href: '/nfts' },
     { key: 'discoveries', label: t('discoveries'), icon: <Telescope size={16} />, count: photoDiscoveries.length, href: '/nfts' },
     { key: 'gifts', label: t('gifts'), icon: <Gift size={16} />, count: giftsWithinReach, href: '/marketplace' },
-    { key: 'history', label: t('history'), icon: <History size={16} />, href: '/observations' },
     { key: 'settings', label: t('settingsTitle'), icon: <Settings size={16} />, href: '/settings' },
   ];
 
@@ -407,7 +393,7 @@ function ProfilePageContent() {
                     icon: <Telescope size={26} />,
                     title: t('noDiscoveries'),
                     subtitle: t('discoveriesHint'),
-                    cta: { label: t('startObserving'), href: '/observe' },
+                    cta: { label: t('startObserving'), href: '/sky' },
                   } : undefined}
                 >
                   {photoDiscoveries.length > 0 ? (
@@ -604,34 +590,6 @@ function ProfilePageContent() {
                   label={t('notifications')}
                   sublabel={t('notificationsSub')}
                   href="/settings#notifications"
-                />
-                <Row
-                  icon={<span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 700 }}>{locale === 'ka' ? 'ქა' : 'EN'}</span>}
-                  iconBg="rgba(94, 234, 212,0.08)"
-                  iconColor="var(--success)"
-                  label={t('language')}
-                  right={
-                    <span style={{ display: 'inline-flex', gap: 4 }}>
-                      {([['en', 'EN'], ['ka', 'ქა']] as const).map(([code, label]) => {
-                        const active = locale === code;
-                        return (
-                          <button
-                            key={code}
-                            onClick={() => switchLocale(code)}
-                            style={{
-                              padding: '5px 12px', borderRadius: 999, cursor: 'pointer',
-                              fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 600,
-                              background: active ? 'var(--accent)' : 'transparent',
-                              border: `1px solid ${active ? 'var(--accent)' : hairline}`,
-                              color: active ? '#1A1306' : 'var(--text-secondary)',
-                            }}
-                          >
-                            {label}
-                          </button>
-                        );
-                      })}
-                    </span>
-                  }
                 />
                 <Row
                   icon={<ShieldCheck size={15} />}

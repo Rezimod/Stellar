@@ -65,23 +65,10 @@ export interface CompletedMission {
   };
 }
 
-export interface QuizResult {
-  quizId: string;
-  score: number;
-  total: number;
-  stars: number;
-  timestamp: string;
-}
-
 export interface AppState {
   walletConnected: boolean;
   walletAddress: string;
-  membershipMinted: boolean;
-  membershipTx: string;
-  telescope: { brand: string; model: string; aperture: string } | null;
-  telescopeTx: string;
   completedMissions: CompletedMission[];
-  completedQuizzes: QuizResult[];
   hiddenObservationIds: string[];
   favorites: string[];
 }
