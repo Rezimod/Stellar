@@ -28,6 +28,16 @@ apart, so the optimiser may not join, flatten or simplify them:
 npx --yes @gltf-transform/cli optimize assets-src/build/cosmonaut.glb public/explore/models/cosmonaut.glb --compress meshopt --texture-compress webp --texture-size 2048 --join false --flatten false --simplify false --instance false --palette false
 ```
 
+`cosmonaut.py -- preview <dir>` skips the bake: it prints the low-poly
+triangle count and renders the high-poly in its procedural paint from the
+reference sheet's six views (front, back, left, right, top, three-quarter)
+on the sheet's grey. The full build renders the same views baked into
+`<renders>/ref/`. Pair any of these with the reference:
+
+```
+python3 assets-src/blender/ref_sheets.py cosmonaut <renders>/ref assets-src/renders/cosmonaut/sheet.png
+```
+
 Ships keep their node tree (wing hinges, named empties), so optimise them
 without flattening, joining or simplifying:
 

@@ -464,101 +464,162 @@ def build(detail):
         k = smooth(PELVIS_Y - 0.02, PELVIS_Y - 0.12, y) * smooth(0.02, 0.1, abs(x)) * 0.6
         return {'pelvis': 1 - k, side: k}
     brief = loft('Brief', [
-        (0.84, 0.19, 0.12, 0, -0.01), (0.87, 0.215, 0.15, 0, 0), (0.93, 0.235, 0.165, 0, 0),
-        (1.00, 0.24, 0.172, 0, 0), (1.06, 0.232, 0.168, 0, 0), (1.12, 0.222, 0.162, 0, 0),
+        (0.82, 0.2, 0.15, 0, -0.005), (0.86, 0.26, 0.18, 0, 0), (0.93, 0.29, 0.195, 0, 0),
+        (1.00, 0.285, 0.2, 0, 0), (1.06, 0.268, 0.195, 0, 0), (1.12, 0.25, 0.185, 0, 0),
     ], seg, n=2.3, caps=(True, False))
     paint(brief, fab)
     if detail:
         displace(brief, 0.006, 0.05, 1)
     add('lower', brief, brief_w)
-    for name, y, r, t, mat in (('Waist', CHEST_Y - 0.005, 0.228, 0.022, metal), ('WaistSeal', CHEST_Y - 0.035, 0.232, 0.014, fab_grey), ('Belt', 1.0, 0.245, 0.018, grey)):
-        o = paint(ring(name, r, t, y, seg=seg + 8, tseg=10 if detail else 6, sz=0.172 / 0.24), mat)
+    for name, y, r, t, mat in (('Waist', CHEST_Y - 0.005, 0.255, 0.022, metal), ('WaistSeal', CHEST_Y - 0.035, 0.262, 0.014, fab_grey), ('Belt', 1.0, 0.29, 0.02, grey)):
+        o = paint(ring(name, r, t, y, seg=seg + 8, tseg=10 if detail else 6, sz=0.2 / 0.285), mat)
         add('lower', o, rigid('pelvis'))
     for s in SIDES:
-        # A thigh pocket and its flap.
-        o = paint(rbox('Pocket', (0.05, 0.14, 0.12), (s * 0.235, 0.78, 0.0), 0.012, bev), fab_grey)
-        add('leg%d' % SIDES.index(s), o, rigid('hip%d' % SIDES.index(s)))
-        o = paint(rbox('PocketFlap', (0.056, 0.035, 0.125), (s * 0.238, 0.84, 0.0), 0.008, bev), grey)
-        add('leg%d' % SIDES.index(s), o, rigid('hip%d' % SIDES.index(s)))
+        # Belt buckles at the front, where the harness meets the belt.
+        o = paint(rbox('Buckle', (0.05, 0.06, 0.03), (s * 0.13, 1.0, 0.2), 0.008, bev), mech)
+        add('lower', o, rigid('pelvis'))
+    for i, s in enumerate(SIDES):
+        # A cargo pocket on the outside of each thigh, a flap and a dark tab.
+        hw = rigid('hip%d' % i)
+        o = paint(rbox('Pocket', (0.07, 0.17, 0.15), (s * 0.3, 0.73, 0.02), 0.014, bev), fab)
+        add('leg%d' % i, o, hw)
+        o = paint(rbox('PocketFlap', (0.076, 0.04, 0.155), (s * 0.303, 0.8, 0.02), 0.008, bev), fab_grey)
+        add('leg%d' % i, o, hw)
+        o = paint(rbox('PocketTab', (0.02, 0.07, 0.03), (s * 0.34, 0.76, 0.03), 0.004, 1), mech)
+        add('leg%d' % i, o, hw)
 
     # Hard upper torso: broad through the shoulders, flat at the front.
     hut = loft('HUT', [
-        (CHEST_Y - 0.03, 0.212, 0.158, 0, 0), (CHEST_Y + 0.06, 0.245, 0.18, 0, 0.004), (CHEST_Y + 0.18, 0.3, 0.215, 0, 0.01),
-        (CHEST_Y + 0.3, 0.33, 0.232, 0, 0.012), (CHEST_Y + 0.4, 0.335, 0.232, 0, 0.01), (CHEST_Y + 0.48, 0.31, 0.215, 0, 0.004),
-        (CHEST_Y + 0.54, 0.25, 0.19, 0, 0.0), (CHEST_Y + 0.585, 0.175, 0.16, 0, 0.004),
+        (CHEST_Y - 0.03, 0.245, 0.18, 0, 0), (CHEST_Y + 0.06, 0.27, 0.2, 0, 0.004), (CHEST_Y + 0.18, 0.315, 0.228, 0, 0.01),
+        (CHEST_Y + 0.3, 0.345, 0.24, 0, 0.012), (CHEST_Y + 0.4, 0.35, 0.24, 0, 0.01), (CHEST_Y + 0.48, 0.325, 0.222, 0, 0.004),
+        (CHEST_Y + 0.54, 0.26, 0.195, 0, 0.0), (CHEST_Y + 0.585, 0.18, 0.165, 0, 0.004),
     ], seg + 8, n=2.7, caps=(False, True))
     paint(hut, hard)
     if detail:
         model.subdivide(hut, 1)
     add('torso', hut, lambda x, y, z: {'chest': 1 - 0.5 * smooth(CHEST_Y + 0.02, CHEST_Y - 0.03, y), 'pelvis': 0.5 * smooth(CHEST_Y + 0.02, CHEST_Y - 0.03, y)})
+    C = CHEST_Y
     for s in SIDES:
-        # Scye bearings, canted out and a little down, round the top of each arm.
-        o = paint(ring('Scye', 0.1, 0.02, 0, seg=seg + 8, tseg=10 if detail else 6, rot=(0, s * (math.pi / 2 - 0.3), 0)), metal)
-        o.location = G(s * 0.318, SHOULDER_Y - 0.01, 0.0)
+        # A grey flank panel under each arm.
+        o = paint(rbox('Flank', (0.035, 0.22, 0.15), (s * 0.33, C + 0.2, 0.0), 0.01, bev), grey)
+        add('torso', o, rigid('chest'))
+        # Harness webbing over each shoulder and down the chest to the belt, a buckle on it.
+        o = paint(hose('Strap', [
+            (s * 0.17, C + 0.6, -0.08), (s * 0.17, C + 0.585, 0.12), (s * 0.172, C + 0.5, 0.238), (s * 0.172, C + 0.35, 0.262),
+            (s * 0.162, C + 0.15, 0.245), (s * 0.14, C - 0.08, 0.222),
+        ], 0.015, res=10 if detail else 4), fab_grey)
+        add('torso', o, rigid('chest'))
+        o = paint(rbox('StrapBuckle', (0.05, 0.045, 0.02), (s * 0.172, C + 0.47, 0.262), 0.005, bev), mech)
+        add('torso', o, rigid('chest'))
+        # The two big supply connectors low on the chest: dark body, bright collar, dark bore.
+        o = paint(cyl('Connector', 0.056, 0.07, (s * 0.125, C + 0.14, 0.245), 'z', seg=seg), mech)
+        add('torso', o, rigid('chest'))
+        o = paint(ring('ConnectorRing', 0.056, 0.014, 0, seg=seg, tseg=6, rot=(math.pi / 2, 0, 0)), grey)
+        o.location = G(s * 0.125, C + 0.14, 0.278)
         model.apply_transforms(o)
         add('torso', o, rigid('chest'))
-        # A grey flank panel and a harness strap over each shoulder.
-        o = paint(rbox('Flank', (0.035, 0.22, 0.14), (s * 0.315, CHEST_Y + 0.2, 0.0), 0.01, bev), grey)
+        o = paint(cyl('ConnectorBore', 0.03, 0.02, (s * 0.125, C + 0.14, 0.282), 'z', seg=seg), metal)
         add('torso', o, rigid('chest'))
-        strap = paint(rbox('Strap', (0.055, 0.46, 0.014), (s * 0.13, CHEST_Y + 0.33, 0.25), 0.005, bev, rot=(0.0, s * 0.12, 0.08)), fab_grey)
-        add('torso', strap, rigid('chest'))
-        # The two round supply connectors under the module, with their collars.
-        o = paint(cyl('Connector', 0.05, 0.05, (s * 0.1, CHEST_Y + 0.13, 0.225), 'z', seg=seg), mech)
+        # The two small connectors flanking the control module.
+        o = paint(cyl('Port', 0.026, 0.05, (s * 0.1, C + 0.285, 0.262), 'z', seg=16), mech)
         add('torso', o, rigid('chest'))
-        o = paint(ring('ConnectorRing', 0.05, 0.011, 0, seg=seg, tseg=8, rot=(math.pi / 2, 0, 0)), metal)
-        o.location = G(s * 0.1, CHEST_Y + 0.13, 0.252)
+        o = paint(ring('PortRing', 0.026, 0.007, 0, seg=16, tseg=6, rot=(math.pi / 2, 0, 0)), metal)
+        o.location = G(s * 0.1, C + 0.285, 0.286)
         model.apply_transforms(o)
         add('torso', o, rigid('chest'))
-        o = paint(cyl('ConnectorCap', 0.03, 0.02, (s * 0.1, CHEST_Y + 0.13, 0.26), 'z', seg=seg), metal)
-        add('torso', o, rigid('chest'))
-        # Hoses from the connectors round under the arms to the pack.
+        # Corrugated hoses: connector round the waist to the pack, and connector up under the arm.
         o = paint(hose('Hose', [
-            (s * 0.1, CHEST_Y + 0.1, 0.26), (s * 0.2, CHEST_Y + 0.02, 0.26), (s * 0.33, CHEST_Y + 0.06, 0.14),
-            (s * 0.36, CHEST_Y + 0.12, -0.05), (s * 0.3, CHEST_Y + 0.2, -0.22),
-        ], 0.019, res=12 if detail else 5), hosem)
+            (s * 0.125, C + 0.1, 0.27), (s * 0.2, C + 0.03, 0.26), (s * 0.28, C + 0.05, 0.16),
+            (s * 0.3, C + 0.1, -0.05), (s * 0.27, C + 0.18, -0.22),
+        ], 0.021, res=12 if detail else 5), hosem)
         add('torso', o, rigid('chest'))
-    # The display and control module: a sloped box, a screen, controls.
-    dcm = paint(rbox('DCM', (0.25, 0.1, 0.09), (0, CHEST_Y + 0.27, 0.24), 0.014, bev, rot=(-0.2, 0, 0)), mech)
+        o = paint(hose('Hose', [
+            (s * 0.175, C + 0.14, 0.27), (s * 0.24, C + 0.17, 0.26), (s * 0.27, C + 0.28, 0.22), (s * 0.25, C + 0.4, 0.22),
+        ], 0.018, res=10 if detail else 4), hosem)
+        add('torso', o, rigid('chest'))
+    # The display and control module: a dark block, a screen, two controls.
+    dcm = paint(rbox('DCM', (0.14, 0.095, 0.07), (0, C + 0.285, 0.262), 0.012, bev, rot=(-0.12, 0, 0)), mech)
     add('torso', dcm, rigid('chest'))
-    o = paint(rbox('Screen', (0.1, 0.045, 0.01), (-0.045, CHEST_Y + 0.282, 0.288), 0.003, 1, rot=(-0.2, 0, 0)), screen)
+    o = paint(rbox('Screen', (0.07, 0.05, 0.01), (-0.015, C + 0.29, 0.297), 0.003, 1, rot=(-0.12, 0, 0)), screen)
     add('torso', o, rigid('chest'))
-    for dx, mat in ((0.05, metal), (0.09, lamp)):
-        o = paint(cyl('Knob', 0.013, 0.02, (dx, CHEST_Y + 0.285, 0.29), 'z', seg=16), mat)
+    for dy, mat in ((0.305, metal), (0.27, lamp)):
+        o = paint(cyl('Knob', 0.011, 0.02, (0.042, C + dy, 0.296), 'z', seg=16), mat)
         add('torso', o, rigid('chest'))
-    # The flat chest plate where the roundel sits.
-    plate = paint(rbox('ChestPlate', (0.3, 0.15, 0.03), (0, CHEST_Y + 0.43, 0.245), 0.012, bev), hard)
+    # The flat chest plate where the roundel sits, framed in grey.
+    plate = paint(rbox('ChestPlate', (0.2, 0.165, 0.03), (0, C + 0.43, 0.25), 0.012, bev), hard)
     add('torso', plate, rigid('chest'))
-
-    # The pack: tall, deep, vents top and bottom, the flag between, rails and caps.
+    o = paint(rbox('PlateFrame', (0.215, 0.18, 0.022), (0, C + 0.43, 0.244), 0.006, bev), grey)
+    add('torso', o, rigid('chest'))
+    # The pack: tall and white, framed vents top and bottom, the flag between,
+    # black latches down both edges, a padded cap behind the helmet, side grilles.
     pack_w = rigid('pack')
     px, py, pz = PACK
-    shell = rbox('PackShell', (0.54, 0.78, 0.25), (px, py + 0.02, pz - 0.02), 0.035, 3 if detail else 2)
-    for vy in (0.27, -0.25):
-        cut = rbox('VentCut', (0.3, 0.1, 0.06), (px, py + 0.02 + vy, pz - 0.145), 0.004, 1)
+    pc = py + 0.09  # the pack's centre height
+    back = pz - 0.145  # its back face
+    shell = rbox('PackShell', (0.6, 0.9, 0.25), (px, pc, pz - 0.02), 0.04, 3 if detail else 2)
+    for vy in (0.32, -0.31):
+        cut = rbox('VentCut', (0.26, 0.1, 0.06), (px, pc + vy, back), 0.004, 1)
+        model.boolean(shell, cut)
+    for s in SIDES:
+        cut = rbox('SideVentCut', (0.06, 0.2, 0.08), (s * 0.3, pc - 0.04, pz - 0.05), 0.004, 1)
         model.boolean(shell, cut)
     paint(shell, hard)
     add('pack', shell, pack_w)
-    for vy in (0.27, -0.25):
-        for k in range(5):
-            o = paint(rbox('Slat', (0.29, 0.012, 0.03), (px, py + 0.02 + vy - 0.036 + k * 0.018, pz - 0.13), 0.002, 1), mech)
+    for vy in (0.32, -0.31):
+        for k in range(5 if detail else 0):
+            o = paint(rbox('Slat', (0.25, 0.012, 0.03), (px, pc + vy - 0.036 + k * 0.018, back + 0.015), 0.002, 1), mech)
             add('pack', o, pack_w)
-        o = paint(rbox('VentBack', (0.3, 0.1, 0.01), (px, py + 0.02 + vy, pz - 0.12), 0.002, 1), mech)
+        o = paint(rbox('VentBack', (0.26, 0.1, 0.01), (px, pc + vy, back + 0.025), 0.002, 1), mech)
         add('pack', o, pack_w)
-    o = paint(rbox('PackTop', (0.5, 0.07, 0.23), (px, py + 0.43, pz - 0.02), 0.025, bev), fab_grey)
-    add('pack', o, pack_w)
-    o = paint(rbox('PackFoot', (0.46, 0.06, 0.21), (px, py - 0.39, pz - 0.02), 0.02, bev), mech)
+        # A grey frame round each vent.
+        for dx, dy, w, h in ((0, 0.062, 0.3, 0.018), (0, -0.062, 0.3, 0.018), (-0.141, 0, 0.018, 0.14), (0.141, 0, 0.018, 0.14)):
+            o = paint(rbox('VentFrame', (w, h, 0.016), (px + dx, pc + vy + dy, back - 0.004), 0.004, 1), grey)
+            add('pack', o, pack_w)
+    # A tubular handle looping over the top vent.
+    o = paint(hose('Handle', [
+        (-0.17, pc + 0.22, back + 0.01), (-0.17, pc + 0.22, back - 0.03), (-0.17, pc + 0.41, back - 0.03),
+        (0.17, pc + 0.41, back - 0.03), (0.17, pc + 0.22, back - 0.03), (0.17, pc + 0.22, back + 0.01),
+    ], 0.011, res=8 if detail else 3), grey)
     add('pack', o, pack_w)
     for s in SIDES:
-        o = paint(rbox('Rail', (0.03, 0.62, 0.2), (s * 0.28, py + 0.02, pz - 0.02), 0.01, bev), grey)
+        for vy in (0.2, -0.16):
+            # Black latches on the back edges.
+            o = paint(rbox('Latch', (0.035, 0.07, 0.03), (s * 0.29, pc + vy, back + 0.01), 0.006, bev), mech)
+            add('pack', o, pack_w)
+        for vy in (0.28, -0.2):
+            o = paint(rbox('SideLatch', (0.02, 0.05, 0.035), (s * 0.305, pc + vy, pz - 0.1), 0.005, 1), mech)
+            add('pack', o, pack_w)
+        # The side grille and two round ports above it.
+        for k in range(7 if detail else 0):
+            o = paint(rbox('SideSlat', (0.03, 0.012, 0.07), (s * 0.29, pc - 0.12 + k * 0.026, pz - 0.05), 0.002, 1), mech)
+            add('pack', o, pack_w)
+        for vz in (-0.02, -0.09):
+            o = paint(cyl('SidePort', 0.024, 0.02, (s * 0.303, pc + 0.26, pz + vz), 'x', seg=16), mech)
+            add('pack', o, pack_w)
+        # Straps and buckles under the pack.
+        o = paint(rbox('PackStrap', (0.04, 0.09, 0.03), (s * 0.14, pc - 0.49, pz + 0.02), 0.006, bev), mech)
         add('pack', o, pack_w)
-        o = paint(cyl('PackPort', 0.03, 0.05, (s * 0.17, py - 0.44, pz - 0.02), 'y', seg=16), mech)
-        add('pack', o, pack_w)
-        h = paint(hose('Handle', [(s * 0.295, py + 0.18, pz + 0.05), (s * 0.33, py + 0.18, pz - 0.02), (s * 0.295, py + 0.18, pz - 0.09)], 0.009, res=6), metal)
-        add('pack', h, pack_w)
-    o = paint(cyl('Antenna', 0.005, 0.3, (0.22, py + 0.58, pz + 0.02), 'y', seg=8), metal)
+    # A padded cap on top, behind the helmet.
+    o = paint(rbox('PackTop', (0.4, 0.08, 0.2), (px, pc + 0.48, pz - 0.03), 0.035, bev), hard)
+    add('pack', o, pack_w)
+    o = paint(rbox('PackFoot', (0.52, 0.04, 0.2), (px, pc - 0.46, pz - 0.02), 0.015, bev), grey)
     add('pack', o, pack_w)
 
-    # Arms: one surface from the shoulder cap to the wrist, convolutes at the elbow.
+    def band(name, x, y, r, t, mat, zs=1.0, tilt=0.0, cz=0.0):
+        """A strap round a limb: a short raised sleeve, optionally tilted about the forward axis."""
+        o = loft(name, [(t, r * 0.96, r * 0.96 * zs, 0, 0), (t * 0.6, r, r * zs, 0, 0), (-t * 0.6, r, r * zs, 0, 0), (-t, r * 0.96, r * 0.96 * zs, 0, 0)], seg, caps=(False, False))
+        o.rotation_euler = (0, -tilt, 0)
+        o.location = G(x, y, cz)
+        model.apply_transforms(o)
+        return paint(o, mat)
+
+    def quilt(h, lo, hi, period, amp):
+        """Puffy quilting: a soft bulge between stitch lines, only on the high-poly copy."""
+        if not detail or not (lo < h < hi):
+            return 1.0
+        return 1.0 + amp * abs(math.sin((h - lo) / period * math.pi))
+
+    # Arms: one quilted surface from the shoulder cap to the wrist, convolutes at the elbow.
     for i, s in enumerate(SIDES):
         x = s * SHOULDER_X
         sh, el, hd = 'shoulder%d' % i, 'elbow%d' % i, 'hand%d' % i
@@ -568,54 +629,59 @@ def build(detail):
             j = smooth(HAND_Y + 0.045, HAND_Y - 0.01, py)
             return {sh: 1 - k, el: k * (1 - j), hd: k * j}
 
-        def elbow_ripple(h):
-            return 1.0 + 0.1 * max(0.0, math.cos((h - ELBOW_Y) / 0.022 * math.pi)) if abs(h - ELBOW_Y) < 0.07 else 1.0
-        rings = [(SHOULDER_Y + 0.1, 0.03, 0.03, x, 0), (SHOULDER_Y + 0.085, 0.07, 0.07, x, 0), (SHOULDER_Y + 0.05, 0.096, 0.096, x, 0)]
-        ys = np.linspace(SHOULDER_Y + 0.0, HAND_Y + 0.03, 40 if detail else 22)
-        for y in ys:
+        def arm_ripple(h):
+            if abs(h - ELBOW_Y) < 0.07:
+                return 1.0 + 0.09 * max(0.0, math.cos((h - ELBOW_Y) / 0.022 * math.pi))
+            return quilt(h, HAND_Y + 0.06, SHOULDER_Y - 0.02, 0.055, 0.035)
+        rings = [(SHOULDER_Y + 0.12, 0.035, 0.035, x, 0), (SHOULDER_Y + 0.1, 0.085, 0.085, x, 0), (SHOULDER_Y + 0.06, 0.115, 0.115, x, 0)]
+        for y in np.linspace(SHOULDER_Y + 0.02, HAND_Y + 0.03, 72 if detail else 24):
             t = (SHOULDER_Y - y) / (SHOULDER_Y - HAND_Y)
-            r = 0.098 - 0.034 * t
-            rings.append((float(y), r, r * 0.96, x, 0.0))
-        arm = loft('Arm', rings, seg, caps=(True, False), ripple=elbow_ripple)
+            r = 0.121 - 0.03 * t
+            rings.append((float(y), r, r * 0.97, x, 0.0))
+        arm = loft('Arm', rings, seg, caps=(True, False), ripple=arm_ripple)
         paint(arm, fab)
         if detail:
-            displace(arm, 0.004, 0.035, 3 + i)
+            displace(arm, 0.007, 0.035, 3 + i)
         add('arm%d' % i, arm, arm_w)
-        for y, r, mat, t in ((SHOULDER_Y - 0.15, 0.1, fab_grey, 0.042), (ELBOW_Y + 0.09, 0.094, fab_grey, 0.03), (ELBOW_Y - 0.09, 0.087, fab_grey, 0.026)):
-            band = loft('Band', [(y + t, r * 0.97, r * 0.97, x, 0), (y + t * 0.6, r, r, x, 0), (y - t * 0.6, r, r, x, 0), (y - t, r * 0.97, r * 0.97, x, 0)], seg, caps=(False, False))
-            paint(band, mat)
-            add('arm%d' % i, band, arm_w)
-        o = paint(ring('ArmBearing', 0.092, 0.013, SHOULDER_Y - 0.22, x=x, seg=seg, tseg=8), metal)
-        add('arm%d' % i, o, rigid(sh))
-        o = paint(ring('Wrist', 0.068, 0.014, HAND_Y + 0.035, x=x, seg=seg, tseg=8), metal)
+        # The broad dark band round the upper arm, a narrow one above the elbow.
+        add('arm%d' % i, band('Band', x, SHOULDER_Y - 0.15, 0.127, 0.05, fab_grey), arm_w)
+        add('arm%d' % i, band('Band', x, ELBOW_Y + 0.085, 0.118, 0.018, fab_grey), arm_w)
+        # A dark tab on the outside of the forearm.
+        o = paint(rbox('ForearmTab', (0.02, 0.075, 0.05), (x + s * 0.108, ELBOW_Y - 0.1, 0.0), 0.005, bev), mech)
+        add('arm%d' % i, o, rigid(el))
+        o = paint(ring('Wrist', 0.094, 0.014, HAND_Y + 0.04, x=x, seg=seg, tseg=8), metal)
         add('arm%d' % i, o, arm_w)
         if s < 0:
             # A wrist display on the crew's right forearm.
-            o = paint(rbox('Cuff', (0.08, 0.06, 0.035), (x, ELBOW_Y - 0.17, 0.07), 0.008, bev, rot=(-0.1, 0, 0)), mech)
+            o = paint(rbox('Cuff', (0.085, 0.065, 0.035), (x, ELBOW_Y - 0.17, 0.1), 0.008, bev, rot=(-0.1, 0, 0)), mech)
             add('arm%d' % i, o, rigid(el))
-            o = paint(rbox('CuffScreen', (0.055, 0.035, 0.006), (x, ELBOW_Y - 0.168, 0.088), 0.002, 1, rot=(-0.1, 0, 0)), screen)
+            o = paint(rbox('CuffScreen', (0.058, 0.038, 0.006), (x, ELBOW_Y - 0.168, 0.118), 0.002, 1, rot=(-0.1, 0, 0)), screen)
             add('arm%d' % i, o, rigid(el))
-        # The glove: gauntlet, back of hand, palm, four fingers and a thumb.
+        # The glove: a flared gauntlet, a chunky hand, thick curled fingers, a pale knuckle plate.
         gl = rigid(hd)
-        o = paint(loft('Gauntlet', [(HAND_Y + 0.02, 0.07, 0.07, x, 0), (HAND_Y - 0.01, 0.07, 0.068, x, 0), (HAND_Y - 0.05, 0.058, 0.05, x, 0.004)], seg, caps=(False, False)), glove)
+        o = paint(loft('Gauntlet', [(HAND_Y + 0.035, 0.098, 0.098, x, 0), (HAND_Y + 0.0, 0.094, 0.09, x, 0), (HAND_Y - 0.04, 0.074, 0.066, x, 0.004), (HAND_Y - 0.06, 0.06, 0.056, x, 0.006)], seg, caps=(False, False)), glove)
         add('arm%d' % i, o, gl)
-        o = paint(rbox('Palm', (0.058, 0.11, 0.095), (x, HAND_Y - 0.1, 0.006), 0.022, 3 if detail else 2), glove)
+        o = paint(rbox('Palm', (0.07, 0.12, 0.108), (x, HAND_Y - 0.11, 0.008), 0.026, 3 if detail else 2), glove)
+        add('arm%d' % i, o, gl)
+        o = paint(rbox('Knuckles', (0.018, 0.07, 0.085), (x + s * 0.034, HAND_Y - 0.085, 0.008), 0.008, bev), fab_grey)
+        add('arm%d' % i, o, gl)
+        o = paint(rbox('CuffPlate', (0.02, 0.045, 0.06), (x + s * 0.09, HAND_Y + 0.005, 0.0), 0.006, bev), hard)
         add('arm%d' % i, o, gl)
         for f in range(4):
-            fz = 0.036 - f * 0.024
-            fl = 0.07 - abs(f - 1.3) * 0.008
-            # Gloved fingers, thick and curled in toward the palm.
-            o = paint(loft('Finger', [(HAND_Y - 0.145, 0.017, 0.016, x, fz), (HAND_Y - 0.145 - fl * 0.55, 0.016, 0.015, x - s * 0.014, fz), (HAND_Y - 0.145 - fl, 0.014, 0.013, x - s * 0.036, fz)], 12 if detail else 8), glove)
+            fz = 0.045 - f * 0.029
+            fl = 0.08 - abs(f - 1.3) * 0.009
+            o = paint(loft('Finger', [(HAND_Y - 0.165, 0.021, 0.02, x, fz), (HAND_Y - 0.165 - fl * 0.55, 0.02, 0.019, x - s * 0.016, fz), (HAND_Y - 0.165 - fl, 0.017, 0.016, x - s * 0.04, fz)], 12 if detail else 8), glove)
             add('arm%d' % i, o, gl)
-        o = paint(loft('Thumb', [(HAND_Y - 0.08, 0.015, 0.015, x - s * 0.02, 0.05), (HAND_Y - 0.11, 0.014, 0.014, x - s * 0.028, 0.058), (HAND_Y - 0.14, 0.012, 0.012, x - s * 0.03, 0.06)], 12 if detail else 8), glove)
+        o = paint(loft('Thumb', [(HAND_Y - 0.08, 0.019, 0.019, x - s * 0.024, 0.058), (HAND_Y - 0.115, 0.018, 0.018, x - s * 0.034, 0.068), (HAND_Y - 0.15, 0.015, 0.015, x - s * 0.036, 0.07)], 12 if detail else 8), glove)
         add('arm%d' % i, o, gl)
-        # The five-cross flag on the upper arm, facing out (the bake's source only).
+        # The five-cross flag on the upper arm, facing out and a little forward (the bake's source only).
         if detail:
-            add('arm%d' % i, patch('Flag', MATS['FlagDecal'], 0.1, SHOULDER_Y - 0.08, 0.06, 0 if s > 0 else math.pi, 0.95, cx=x), rigid(sh))
+            add('arm%d' % i, patch('Flag', MATS['FlagDecal'], 0.121, SHOULDER_Y - 0.05, 0.085, (0.25 if s > 0 else math.pi - 0.25), 1.08, cx=x), rigid(sh))
 
-    # Legs: one surface from the hip to the ankle, convolutes at the knee.
+    # Legs: one quilted surface from the hip to the ankle, convolutes at the knee,
+    # a little outside the hip pivots, as the bulky suit stands.
     for i, s in enumerate(SIDES):
-        x = s * HIP_X
+        x = s * (HIP_X + 0.03)
         hp, kn, an = 'hip%d' % i, 'knee%d' % i, 'ankle%d' % i
 
         def leg_w(px, py, pz, hp=hp, kn=kn, an=an):
@@ -624,81 +690,102 @@ def build(detail):
             return {hp: 1 - k, kn: k * (1 - j), an: k * j}
 
         def knee_ripple(h):
-            return 1.0 + 0.08 * max(0.0, math.cos((h - KNEE_Y) / 0.026 * math.pi)) if abs(h - KNEE_Y) < 0.08 else 1.0
+            if abs(h - KNEE_Y) < 0.08:
+                return 1.0 + 0.07 * max(0.0, math.cos((h - KNEE_Y) / 0.026 * math.pi))
+            return quilt(h, ANKLE_Y + 0.17, PELVIS_Y - 0.08, 0.07, 0.03)
+
+        def leg_r(y):
+            return 0.15 - 0.034 * (PELVIS_Y - y) / (PELVIS_Y - ANKLE_Y)
         rings = []
-        for y in np.linspace(PELVIS_Y + 0.02, ANKLE_Y + 0.08, 44 if detail else 26):
-            t = (PELVIS_Y - y) / (PELVIS_Y - ANKLE_Y)
-            r = 0.115 - 0.04 * t
-            rings.append((float(y), r, r * 0.95, x, 0.0))
+        for y in np.linspace(PELVIS_Y + 0.02, ANKLE_Y + 0.08, 80 if detail else 26):
+            r = leg_r(y)
+            rings.append((float(y), r, r * 1.05, x, 0.0))
         leg = loft('Leg', rings, seg, caps=(True, False), ripple=knee_ripple)
         paint(leg, fab)
         if detail:
-            displace(leg, 0.004, 0.04, 7 + i)
+            displace(leg, 0.007, 0.04, 7 + i)
         add('leg%d' % i, leg, leg_w)
-        for y, r, t in ((0.8, 0.113, 0.03), (KNEE_Y - 0.14, 0.094, 0.04)):
-            band = loft('Band', [(y + t, r * 0.97, r * 0.97, x, 0), (y + t * 0.6, r, r, x, 0), (y - t * 0.6, r, r, x, 0), (y - t, r * 0.97, r * 0.97, x, 0)], seg, caps=(False, False))
-            add('leg%d' % i, paint(band, fab_grey), leg_w)
-        o = paint(ring('ThighBearing', 0.112, 0.014, 0.9, x=x, seg=seg, tseg=8), metal)
-        add('leg%d' % i, o, rigid(hp))
+        # A harness strap round the top of the thigh, low on the inside.
+        add('leg%d' % i, band('ThighStrap', x, 0.84, leg_r(0.84) + 0.006, 0.02, fab_grey, zs=1.05, tilt=s * 0.22), rigid(hp))
+        # Straps under the knee and above the boot, a dark buckle on the shin.
+        for y, t in ((KNEE_Y - 0.12, 0.022), (ANKLE_Y + 0.2, 0.014)):
+            add('leg%d' % i, band('Band', x, y, leg_r(y) + 0.006, t, fab_grey, zs=1.05), leg_w)
+        o = paint(rbox('ShinBuckle', (0.025, 0.08, 0.04), (x + s * (leg_r(KNEE_Y - 0.25) + 0.008), KNEE_Y - 0.25, 0.02), 0.006, bev), mech)
+        add('leg%d' % i, o, rigid(kn))
         # Knee pads over the joint, split between thigh and shin.
-        pad = paint(sphere('KneePad', 0.075, (x, KNEE_Y + 0.005, 0.085), scale=(1.05, 1.35, 0.55), seg=seg, rings=12 if detail else 8), darkpad)
+        pad = paint(sphere('KneePad', 0.1, (x, KNEE_Y + 0.01, 0.1), scale=(1.05, 1.2, 0.55), seg=seg, rings=12 if detail else 8), darkpad)
         add('leg%d' % i, pad, leg_w)
-        o = paint(ring('AnkleBearing', 0.085, 0.014, ANKLE_Y + 0.1, x=x, seg=seg, tseg=8), metal)
-        add('leg%d' % i, o, rigid(an))
-        # The boot: a shaft round the ankle, the upper, a toe cap, heel, sole and lugs.
+        # The boot: a padded collar, the shaft, the upper, a dark rand, toe cap, heel, sole and lugs.
         b = rigid(an)
-        o = paint(loft('BootShaft', [(ANKLE_Y + 0.12, 0.088, 0.09, x, 0.0), (ANKLE_Y + 0.02, 0.092, 0.1, x, 0.01), (ANKLE_Y - 0.05, 0.085, 0.11, x, 0.03)], seg, caps=(False, False)), boot)
+        bx = s * (HIP_X + 0.025)
+        o = paint(ring('BootCollar', 0.126, 0.02, ANKLE_Y + 0.16, x=bx, seg=seg, tseg=8, sz=1.08), fab_grey)
+        add('leg%d' % i, o, b)
+        o = paint(loft('BootShaft', [(ANKLE_Y + 0.17, 0.124, 0.13, bx, 0.0), (ANKLE_Y + 0.04, 0.122, 0.135, bx, 0.01), (ANKLE_Y - 0.05, 0.112, 0.14, bx, 0.03)], seg, caps=(False, False)), boot)
         add('leg%d' % i, o, b)
         upper = loft('BootUpper', [
-            (-0.1, 0.06, 0.05, x, ANKLE_Y - 0.055), (-0.085, 0.075, 0.075, x, ANKLE_Y - 0.035), (0.0, 0.08, 0.085, x, ANKLE_Y - 0.03),
-            (0.1, 0.078, 0.06, x, ANKLE_Y - 0.05), (0.17, 0.07, 0.045, x, ANKLE_Y - 0.06), (0.2, 0.05, 0.03, x, ANKLE_Y - 0.068),
+            (-0.15, 0.075, 0.06, bx, ANKLE_Y - 0.05), (-0.13, 0.095, 0.085, bx, ANKLE_Y - 0.03), (0.0, 0.1, 0.1, bx, ANKLE_Y - 0.02),
+            (0.12, 0.098, 0.075, bx, ANKLE_Y - 0.045), (0.2, 0.09, 0.055, bx, ANKLE_Y - 0.055), (0.25, 0.065, 0.038, bx, ANKLE_Y - 0.065),
         ], seg, n=2.4, axis='z')
         add('leg%d' % i, paint(upper, boot), b)
-        o = paint(rbox('ToeCap', (0.16, 0.05, 0.07), (x, ANKLE_Y - 0.075, 0.17), 0.02, 3 if detail else 2), sole)
+        o = paint(rbox('Rand', (0.2, 0.04, 0.41), (bx, ANKLE_Y - 0.068, 0.05), 0.014, bev), sole)
         add('leg%d' % i, o, b)
-        o = paint(rbox('Heel', (0.16, 0.05, 0.08), (x, ANKLE_Y - 0.075, -0.07), 0.015, bev), sole)
+        o = paint(rbox('ToeCap', (0.185, 0.06, 0.09), (bx, ANKLE_Y - 0.06, 0.2), 0.025, 3 if detail else 2), sole)
         add('leg%d' % i, o, b)
-        o = paint(rbox('Sole', (0.172, 0.035, 0.33), (x, ANKLE_Y - 0.1, 0.05), 0.012, bev), sole)
+        o = paint(rbox('Heel', (0.19, 0.07, 0.09), (bx, ANKLE_Y - 0.055, -0.1), 0.018, bev), sole)
         add('leg%d' % i, o, b)
-        for k in range(5):
-            o = paint(rbox('Lug', (0.15, 0.014, 0.03), (x, ANKLE_Y - 0.121, -0.07 + k * 0.06), 0.004, 1), sole)
+        o = paint(rbox('Sole', (0.21, 0.035, 0.43), (bx, ANKLE_Y - 0.1, 0.05), 0.012, bev), sole)
+        add('leg%d' % i, o, b)
+        for k in range(6 if detail else 0):
+            o = paint(rbox('Lug', (0.18, 0.014, 0.035), (bx, ANKLE_Y - 0.121, -0.12 + k * 0.066), 0.004, 1), sole)
             add('leg%d' % i, o, b)
-        o = paint(rbox('BootStrap', (0.17, 0.028, 0.05), (x, ANKLE_Y - 0.02, 0.08), 0.006, bev, rot=(0.35, 0, 0)), grey)
+        o = paint(rbox('BootStrap', (0.2, 0.03, 0.06), (bx, ANKLE_Y - 0.005, 0.1), 0.006, bev, rot=(0.4, 0, 0)), grey)
         add('leg%d' % i, o, b)
-        o = paint(rbox('Buckle', (0.028, 0.034, 0.045), (x + s * 0.086, ANKLE_Y - 0.02, 0.08), 0.005, 1, rot=(0.35, 0, 0)), metal)
+        o = paint(rbox('Buckle', (0.03, 0.04, 0.05), (bx + s * 0.1, ANKLE_Y - 0.005, 0.1), 0.005, 1, rot=(0.4, 0, 0)), metal)
         add('leg%d' % i, o, b)
 
     # ── Rigid pieces: the helmet (with the neck ring and lamps), the visor, the head. ──
     helmet_parts, visor_parts, head_parts = [], [], []
     hx, hy, hz = VISOR
-    o = paint(ring('NeckRing', 0.165, 0.03, NECK[1] + 0.02, z=NECK[2], seg=seg + 8, tseg=12 if detail else 8), metal)
+    o = paint(ring('NeckRing', 0.175, 0.032, NECK[1] + 0.02, z=NECK[2], seg=seg + 8, tseg=12 if detail else 8), grey)
     helmet_parts.append(o)
-    shell = sphere('Shell', 0.218, (hx, hy, hz - 0.006), scale=(1.0, 1.02, 1.04), seg=seg + 12, rings=24 if detail else 16)
-    # The face opening: a sphere pushed forward carves it out of the shell.
-    cut = sphere('FaceCut', 0.2, (hx, hy - 0.035, hz + 0.16), scale=(1.0, 0.95, 1.0), seg=32, rings=16)
+    o = paint(ring('NeckSeal', 0.172, 0.018, NECK[1] + 0.058, z=NECK[2], seg=seg + 8, tseg=8 if detail else 6), mech)
+    helmet_parts.append(o)
+    # A big bubble: shell radius R, the face opening cut by a sphere of radius r
+    # pushed `d` forward and a little down along `u`.
+    R, r_cut, d = 0.236, 0.225, 0.15
+    u = Vector((0.0, -0.02, 0.16)).normalized()
+    shell = sphere('Shell', R, (hx, hy, hz - 0.006), scale=(1.0, 1.02, 1.04), seg=seg + 12, rings=24 if detail else 16)
+    cut = sphere('FaceCut', r_cut, (hx, hy + d * u.y, hz + d * u.z), scale=(1.0, 0.95, 1.0), seg=32, rings=16)
     model.boolean(shell, cut)
     model.bevel(shell, 0.004, 2 if detail else 1, 40)
     helmet_parts.append(paint(shell, hard))
-    inner = sphere('InnerVisor', 0.196, (hx, hy, hz), seg=seg + 12, rings=24 if detail else 16)
+    inner = sphere('InnerVisor', R - 0.022, (hx, hy, hz), seg=seg + 12 if detail else 20, rings=24 if detail else 10)
     helmet_parts.append(paint(inner, MATS['InnerVisor']))
-    # A rim round the face opening: where the shell and the cutting sphere meet,
-    # 0.105 m forward and down along their axis, radius 0.191.
-    rim = paint(ring('Rim', 0.191, 0.015, 0, seg=seg + 8, tseg=10 if detail else 6, rot=(math.radians(102.4), 0, 0)), hard)
-    rim.location = G(hx, hy - 0.0224, hz + 0.1024)
+    # A thick rim round the face opening, where the shell and the cutting sphere meet.
+    a = (d * d + R * R - r_cut * r_cut) / (2 * d)
+    rim = paint(ring('Rim', math.sqrt(R * R - a * a), 0.02, 0, seg=seg + 8, tseg=10 if detail else 6,
+                     rot=(math.pi / 2 + math.atan2(-u.y, u.z), 0, 0)), hard)
+    rim.location = G(hx, hy + a * u.y, hz + a * u.z)
     model.apply_transforms(rim)
     helmet_parts.append(rim)
-    ridge = paint(rbox('Ridge', (0.05, 0.02, 0.24), (hx, hy + 0.21, hz - 0.03), 0.008, bev, rot=(0.2, 0, 0)), hard)
+    ridge = paint(rbox('Ridge', (0.07, 0.03, 0.28), (hx, hy + 0.222, hz - 0.03), 0.012, bev, rot=(0.2, 0, 0)), hard)
     helmet_parts.append(ridge)
+    # A camera housing at the back of the crown.
+    o = paint(rbox('CrownPod', (0.15, 0.07, 0.14), (hx, hy + 0.13, hz - 0.185), 0.025, bev, rot=(-0.9, 0, 0)), hard)
+    helmet_parts.append(o)
     for s in SIDES:
-        pod = paint(rbox('LampPod', (0.042, 0.06, 0.09), (s * 0.214, hy + 0.06, hz + 0.02), 0.014, 3 if detail else 2, rot=(0, 0, s * 0.25)), hard)
+        # White lamp housings on both temples, two lamps each, facing forward.
+        pod = paint(rbox('LampPod', (0.065, 0.13, 0.13), (s * 0.235, hy + 0.05, hz + 0.02), 0.02, 3 if detail else 2, rot=(0, 0, s * 0.18)), hard)
         helmet_parts.append(pod)
-        for dy, r in ((0.02, 0.018), (-0.018, 0.013)):
-            lens_o = paint(cyl('LampLens', r * 0.85, 0.012, (s * 0.216 + s * dy * 0.25, hy + 0.06 + dy, hz + 0.068), 'z', seg=16), lamp)
+        for dy in (0.03, -0.027):
+            o = paint(cyl('LampBezel', 0.024, 0.012, (s * 0.24 - s * dy * 0.18, hy + 0.05 + dy, hz + 0.087), 'z', seg=16), mech)
+            helmet_parts.append(o)
+            lens_o = paint(cyl('LampLens', 0.018, 0.012, (s * 0.24 - s * dy * 0.18, hy + 0.05 + dy, hz + 0.093), 'z', seg=16), lamp)
             helmet_parts.append(lens_o)
-    # Visor: the gold shield, hinged at the brow.
-    visor = sphere('Visor', 0.207, (hx, hy, hz + 0.004), seg=seg + 12, rings=24 if detail else 16)
-    # A little wider than the face opening, so the visor's edge tucks under the shell.
-    keep = sphere('VisorKeep', 0.214, (hx, hy - 0.035, hz + 0.16), scale=(1.0, 0.95, 1.0), seg=64, rings=32)
+    # Visor: the gold shield, hinged at the brow, a little wider than the face
+    # opening so its edge tucks under the shell.
+    visor = sphere('Visor', R - 0.011, (hx, hy, hz + 0.004), seg=seg + 12, rings=24 if detail else 16)
+    keep = sphere('VisorKeep', r_cut + 0.014, (hx, hy + d * u.y, hz + d * u.z), scale=(1.0, 0.95, 1.0), seg=64, rings=32)
     model.boolean(visor, keep, op='INTERSECT')
     visor_parts.append(visor)
     # Earth: the pilot's own head, no helmet.
@@ -716,25 +803,25 @@ def build(detail):
     # Decals, on the bake's source only: the roundel on the chest plate, the
     # flag on the pack, the wordmark under it.
     if detail:
-        add('torso', flat_decal('Roundel', MATS['EmblemDecal'], 0.11, 0.11, (0, CHEST_Y + 0.43, 0.2625), '+z'), rigid('chest'))
-        add('pack', flat_decal('PackFlag', MATS['FlagDecal'], 0.17, 0.113, (px, py + 0.04, pz - 0.1475), '-z'), pack_w)
-        word = decal.wordmark('STELLAR', 0.05, G(px, py - 0.12, pz - 0.148), (math.pi / 2, 0, math.pi), extrude=0.002, name='PackWord')
+        add('torso', flat_decal('Roundel', MATS['EmblemDecal'], 0.125, 0.125, (0, CHEST_Y + 0.43, 0.2665), '+z'), rigid('chest'))
+        add('pack', flat_decal('PackFlag', MATS['FlagDecal'], 0.19, 0.127, (px, pc + 0.02, back - 0.0025), '-z'), pack_w)
+        word = decal.wordmark('STELLAR', 0.045, G(px, pc - 0.13, back - 0.003), (math.pi / 2, 0, math.pi), extrude=0.002, name='PackWord')
         add('pack', paint(word, ink), pack_w)
     return parts, helmet_parts, visor_parts, head_parts
 
 
 def make_materials():
     zone('Fabric', (0.79, 0.78, 0.75, 1), 0.86, weave=0.07, quilt=0.6)
-    zone('FabricGrey', (0.46, 0.47, 0.49, 1), 0.8, weave=0.3, quilt=0.2)
+    zone('FabricGrey', (0.1, 0.103, 0.11, 1), 0.8, weave=0.3, quilt=0.2)
     zone('Hard', (0.84, 0.83, 0.8, 1), 0.42, scratch=0.05, dust=0.3)
-    zone('Grey', (0.4, 0.41, 0.43, 1), 0.6, dust=0.3)
-    zone('DarkPad', (0.1, 0.1, 0.11, 1), 0.82, weave=0.4)
-    zone('Boot', (0.56, 0.56, 0.57, 1), 0.85, weave=0.08, dust=0.5)
+    zone('Grey', (0.2, 0.205, 0.215, 1), 0.6, dust=0.3)
+    zone('DarkPad', (0.045, 0.046, 0.05, 1), 0.82, weave=0.4)
+    zone('Boot', (0.5, 0.5, 0.51, 1), 0.85, weave=0.08, dust=0.5)
     zone('Sole', (0.07, 0.07, 0.075, 1), 0.92, dust=0.8)
     zone('Metal', (0.74, 0.75, 0.77, 1), 0.36, metal=0.85, scratch=0.04, dust=0.2)
     zone('Mech', (0.06, 0.065, 0.07, 1), 0.5, metal=0.35, dust=0.1)
-    zone('Glove', (0.26, 0.27, 0.29, 1), 0.78, weave=0.35, dust=0.4)
-    zone('Hose', (0.6, 0.61, 0.62, 1), 0.38, metal=0.7, quilt=0.4, dust=0.2)
+    zone('Glove', (0.07, 0.072, 0.078, 1), 0.78, weave=0.35, dust=0.4)
+    zone('Hose', (0.7, 0.7, 0.68, 1), 0.7, metal=0.0, quilt=0.4, dust=0.2)
     zone('Screen', (0.02, 0.1, 0.1, 1), 0.2, emit=((0.25, 0.92, 0.83), 2.2), dust=0)
     zone('Lamp', (0.9, 0.9, 0.86, 1), 0.2, emit=((1.0, 0.95, 0.85), 5.0), dust=0)
     zone('Lens', (0.2, 0.2, 0.2, 1), 0.2, dust=0)
@@ -848,10 +935,82 @@ def ray_invisible(o, on=True):
         setattr(o, attr, not on)
 
 
+# The reference sheet's six views (Cosmonaut 2.png): eye, target, orthographic scale (0 = perspective).
+REF_VIEWS = (
+    ('front', (0, 1.06, 12), (0, 1.06, 0), 2.28),
+    ('back', (0, 1.06, -12), (0, 1.06, 0), 2.28),
+    ('left', (12, 1.06, 0), (0, 1.06, 0), 2.28),
+    ('right', (-12, 1.06, 0), (0, 1.06, 0), 2.28),
+    ('top', (0, 12, 3.2), (0, 1.1, -0.05), 1.95),
+    ('three-quarter', (1.9, 1.55, 3.4), (0, 1.02, 0), 0),
+)
+
+
+def ref_views(out_dir, samples=24):
+    """The reference sheet's views on its mid-grey studio backdrop, for the side-by-side sheet."""
+    os.makedirs(out_dir, exist_ok=True)
+    sc = bpy.context.scene
+    sc.render.resolution_x, sc.render.resolution_y = 400, 600
+    sc.render.resolution_percentage = 100
+    sc.render.film_transparent = False
+    sc.cycles.samples = samples
+    sc.cycles.use_denoising = True
+    sc.view_settings.view_transform = 'AgX'
+    bg = sc.world.node_tree.nodes['Background']
+    bg.inputs['Color'].default_value = (0.2, 0.205, 0.215, 1)
+    bg.inputs['Strength'].default_value = 0.8
+    cam_data = bpy.data.cameras.new('RefCam')
+    cam = bpy.data.objects.new('RefCam', cam_data)
+    sc.collection.objects.link(cam)
+    sc.camera = cam
+    for name, eye, at, ortho in REF_VIEWS:
+        cam_data.type = 'ORTHO' if ortho else 'PERSP'
+        cam_data.ortho_scale = ortho or 1.0
+        cam_data.lens = 50
+        cam.location = G(*eye)
+        scene.look_at(cam, G(*at))
+        sc.render.filepath = os.path.join(out_dir, f'{name}.png')
+        bpy.ops.render.render(write_still=True)
+
+
+def preview(out_dir):
+    """Quick look without the bake: the high-poly copy in its procedural paint,
+    in the reference views, and the low-poly triangle count."""
+    lo_parts, lo_helmet, lo_visor, lo_head = build(detail=False)
+    tris = sum(model.triangle_count(o) for _, o, _ in lo_parts) + sum(model.triangle_count(o) for o in lo_helmet + lo_visor)
+    print(f'cosmonaut preview: low-poly LOD0 {tris} tris (body + helmet + visor)', flush=True)
+    per = {}
+    for o in [o for _, o, _ in lo_parts] + lo_helmet + lo_visor:
+        key = o.name.split('.')[0]
+        per[key] = per.get(key, 0) + model.triangle_count(o)
+    print('  ' + ', '.join(f'{k} {v}' for k, v in sorted(per.items(), key=lambda kv: -kv[1])[:30]), flush=True)
+    for o in [o for _, o, _ in lo_parts] + lo_helmet + lo_visor + lo_head:
+        bpy.data.objects.remove(o, do_unlink=True)
+    hi_parts, hi_helmet, hi_visor, hi_head = build(detail=True)
+    for o in [o for _, o, _ in hi_parts] + hi_helmet:
+        model.shade_smooth(o, 50)
+    gold = bpy.data.materials.new('Visor')
+    gold.use_nodes = True
+    gb = gold.node_tree.nodes['Principled BSDF']
+    gb.inputs['Base Color'].default_value = (0.86, 0.6, 0.2, 1)
+    gb.inputs['Metallic'].default_value = 1.0
+    gb.inputs['Roughness'].default_value = 0.07
+    for o in hi_visor:
+        paint(o, gold)
+        model.shade_smooth(o, 60)
+    for o in hi_head:
+        o.hide_render = True
+    set_emission('emit')
+    ref_views(out_dir, samples=int(os.environ.get('COSMONAUT_SAMPLES', '16')))
+
+
 def main():
     sc = scene.reset(seed=19)
     scene.sun()
     make_materials()
+    if OUT == 'preview':
+        preview(RENDERS)
+        return
 
     # High-poly source and low-poly game mesh, both in the rest pose.
     hi_parts, hi_helmet, hi_visor, hi_head = build(detail=True)
@@ -983,20 +1142,28 @@ def main():
     if RENDERS:
         lod.hide_render = True
         head.hide_render = True
+
+        def stance(out, bend):
+            """Arms a little out from the rest pose, elbows a little bent."""
+            bpy.ops.object.select_all(action='DESELECT')
+            rig.select_set(True)
+            bpy.context.view_layer.objects.active = rig
+            bpy.ops.object.mode_set(mode='POSE')
+            for i, s in enumerate(SIDES):
+                pb = rig.pose.bones['shoulder%d' % i]
+                pb.rotation_mode = 'XYZ'
+                # Bone Y points up the arm; roll the arm out about the forward axis.
+                pb.rotation_euler = (0, 0, s * out)
+                eb = rig.pose.bones['elbow%d' % i]
+                eb.rotation_mode = 'XYZ'
+                eb.rotation_euler = (bend, 0, 0)
+            bpy.ops.object.mode_set(mode='OBJECT')
+        # The reference sheet's views and stance, for the side-by-side sheet.
+        stance(0.1, -0.15)
+        ref_views(os.path.join(RENDERS, 'ref'), samples=32)
+        sc.world.node_tree.nodes['Background'].inputs['Strength'].default_value = 1.0
         # A relaxed stance for the turntable: the arms out a little, as the game holds them.
-        bpy.ops.object.select_all(action='DESELECT')
-        rig.select_set(True)
-        bpy.context.view_layer.objects.active = rig
-        bpy.ops.object.mode_set(mode='POSE')
-        for i, s in enumerate(SIDES):
-            pb = rig.pose.bones['shoulder%d' % i]
-            pb.rotation_mode = 'XYZ'
-            # Bone Y points up the arm; roll the arm out about the forward axis.
-            pb.rotation_euler = (0, 0, s * 0.2)
-            eb = rig.pose.bones['elbow%d' % i]
-            eb.rotation_mode = 'XYZ'
-            eb.rotation_euler = (-0.4, 0, 0)
-        bpy.ops.object.mode_set(mode='OBJECT')
+        stance(0.2, -0.4)
         sc.view_settings.view_transform = 'AgX'
         sc.world.node_tree.nodes['Background'].inputs['Color'].default_value = (0.09, 0.095, 0.11, 1)
         sc.cycles.use_denoising = True
