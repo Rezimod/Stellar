@@ -143,7 +143,7 @@ export function makeCosmonaut(dust: DustHandle, lite = false, g = MOON_G, suited
   const handle: CosmonautHandle = {
     group, position, velocity: vel, yaw: 0, state, profile: loco.profile, feet: loco.feet, ankles: rig.ankles, onStep: null, indoors: false, ready: rig.ready,
     setGravity(gravity, pressurised) { loco.setProfile(gaitProfile(gravity, pressurised)); handle.profile = loco.profile; state.gravity = gravity; },
-    setProfile(p) { loco.setProfile(p); handle.profile = loco.profile; state.gravity = p.g; },
+    setProfile(p) { loco.setProfile(p); handle.profile = loco.profile; state.gravity = p.worldG; },
     setCeiling(c) { loco.ceilingAt = c; },
     // Only the chain from the root to the neck: the rest of the rig is not needed for one point.
     eye(out) { rig.neck.updateWorldMatrix(true, false); return rig.neck.localToWorld(out.copy(poser.eyeLocal)); },

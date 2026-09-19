@@ -126,7 +126,8 @@ export function makeSuitPoser(rig: SuitRig, loco: Locomotion, bareHead: boolean)
     if (ls.impact > 0.6 && ls.stumble > 0) stumbleRoll = Math.sign(loco.velocity.x * Math.cos(loco.yaw) - loco.velocity.z * Math.sin(loco.yaw) || 1);
     // ── Torso: into the push, into the turn, and over on a roll. ──
     const lean = clamp(ls.lean, -0.5, 0.9);
-    pelvis.rotation.x = lean * 0.55 + b.squat * 0.25 + b.crouch * 0.22 + b.fall * 1.05 + b.roll * 1.3 + b.vault * 0.5 + b.sprint * 0.12 - b.seat * 0.15 + (ls.stumble > 0 ? -0.2 : 0);
+    // A runner carries the body a little ahead of the feet; a walker stands tall.
+    pelvis.rotation.x = lean * 0.55 + b.squat * 0.25 + b.crouch * 0.22 + b.fall * 1.05 + b.roll * 1.3 + b.vault * 0.5 + b.run * 0.1 + b.sprint * 0.1 - b.seat * 0.15 + (ls.stumble > 0 ? -0.2 : 0);
     chest.rotation.x = lean * 0.35 + b.work * 0.2 + b.climb * 0.15 + b.roll * 0.5 + b.sprint * 0.1 + b.seat * 0.1;
     const phase = ls.stepPhase * Math.PI * ls.stepSide;
     const moving = airborne ? 0 : Math.min(1, speed / 0.6);
@@ -138,14 +139,16 @@ export function makeSuitPoser(rig: SuitRig, loco: Locomotion, bareHead: boolean)
     pelvis.rotation.z = clamp(ls.leanSide, -0.35, 0.35) * 0.9 + flailRoll + b.look * Math.sin(b.clock * 0.21) * 0.03;
     chest.scale.y = 1 + Math.sin(b.breath) * (0.005 + ls.effort * 0.012);
 
-    // ── Arms: springs toward swinging against the opposite leg. ──
+    // ── Arms: springs toward swinging with the opposite leg (the left arm
+    // comes forward as the right leg does), hanging close in a walk, bent
+    // at the elbow and pumping in a run. ──
     const flail = airborne ? Math.sin(b.airT * 2.6) * 0.07 : 0;
     const catchArm = Math.max(ls.stumble > 0 ? ls.stumble : 0, b.fall);
     for (let i = 0; i < 2; i++) {
       const s = sides[i];
-      const counter = -hips[1 - i].rotation.x * (0.6 + b.sprint * 0.3) - 0.08;
-      const runArm = -0.3 - clamp(ls.lean, 0, 0.8) * 0.3;
-      let target = lerp(lerp(counter, runArm, b.run * 0.5), -0.95, b.work) * (1 - b.tuck) - b.brake * 0.3 + b.tuck * -0.55 + flail - catchArm * 0.9;
+      // A suit's shoulder bearings keep the swing short: never much above the chest.
+      const counter = clamp(hips[1 - i].rotation.x * (0.6 + b.run * 0.15 + b.sprint * 0.2) - 0.04 - b.run * 0.06, -0.65, 0.5);
+      let target = lerp(counter, -0.95, b.work) * (1 - b.tuck) - b.brake * 0.3 + b.tuck * -0.45 + flail - catchArm * 0.9;
       // Reaching for the crate's top, then the controller of the rover.
       target = lerp(target, -1.5, b.vault);
       target = lerp(target, -0.9, b.seat);
@@ -154,7 +157,9 @@ export function makeSuitPoser(rig: SuitRig, loco: Locomotion, bareHead: boolean)
       arm[i] += armVel[i] * dt;
       shoulders[i].rotation.x = arm[i];
       shoulders[i].rotation.z = s * (0.2 + b.tuck * 0.45 + catchArm * 0.7 + b.work * 0.08 + b.roll * 0.3 - b.seat * 0.1);
-      elbows[i].rotation.x = -(0.45 + b.run * 0.35 + b.tuck * 0.3 + b.work * 0.55 - b.fall * 0.3 + b.seat * 0.7 + b.roll * 0.5 - b.vault * 0.3);
+      // The forearm swings through more than the upper arm does: bent most as the arm comes forward.
+      const pump = Math.max(0, -arm[i]) * 0.5 * b.run;
+      elbows[i].rotation.x = -(0.22 + b.run * 0.9 + pump + b.tuck * 0.2 + b.work * 0.75 - b.fall * 0.15 + b.seat * 0.9 + b.roll * 0.5 - b.vault * 0.1);
       hands[i].rotation.x = -b.work * 0.3 + (b.work > 0.5 ? Math.sin(b.clock * 7 + i) * 0.08 * b.work : 0);
     }
     // ── The pack hangs off the shoulders and lags the bounce. ──

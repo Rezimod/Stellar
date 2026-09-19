@@ -152,7 +152,7 @@ function regolithCanvases(size: number): HTMLCanvasElement[] {
       const grain = hash(x, y, 91) - 0.5;
       const clast = hash(x, y, 97) > 0.9965 ? 0.45 : 0;
       // Albedo: mid grey, a little warmer in the dips, sparkly clasts.
-      const base = 0.74 + v * 0.14 + grain * 0.12 + clast;
+      const base = 0.76 + v * 0.09 + grain * 0.06 + clast;
       const g = Math.max(0, Math.min(1, base));
       mi.data[i] = Math.round(g * 255 * 1.0);
       mi.data[i + 1] = Math.round(g * 255 * 0.985);
@@ -288,8 +288,9 @@ export function makeMoonTerrain(lite: boolean, density = 1): TerrainHandle {
     const ridgeD = Math.abs((x + 0.55 * z) / 1.14 + 68);
     const ridgeMask = Math.exp(-(ridgeD * ridgeD) / (2 * 28 * 28));
     if (ridgeMask > 1e-4) h += ridged(x / 60 + 3.1, z / 60, seed + 5) * 7.5 * ridgeMask;
-    h += fbm(x / 9, z / 9, 3, seed + 9) * 0.55;
-    h += fbm(x / 2.2, z / 2.2, 2, seed + 13) * 0.11;
+    // Small relief stays soft: under a low sun a sharp sub-metre bump reads as ripples, and regolith is powder.
+    h += fbm(x / 9, z / 9, 3, seed + 9) * 0.42;
+    h += fbm(x / 2.2, z / 2.2, 2, seed + 13) * 0.045;
     for (const c of craterBins[binOf(z) * bins + binOf(x)]) {
       const d = Math.hypot(x - c.x, z - c.z);
       if (d < c.r * 1.55) h += craterProfile(d, c);
@@ -379,7 +380,7 @@ export function makeMoonTerrain(lite: boolean, density = 1): TerrainHandle {
   const mat = new THREE.MeshStandardMaterial({
     map: maps.map,
     normalMap: maps.normal,
-    normalScale: new THREE.Vector2(0.9, 0.9),
+    normalScale: new THREE.Vector2(0.55, 0.55),
     roughnessMap: maps.rough,
     roughness: 1,
     metalness: 0,
@@ -398,7 +399,7 @@ export function makeMoonTerrain(lite: boolean, density = 1): TerrainHandle {
       .replace('#include <normal_fragment_maps>', `
         vec3 mapN = texture2D( normalMap, vNormalMapUv ).xyz * 2.0 - 1.0;
         vec3 mapN2 = texture2D( normalMap, vNormalMapUv * 6.37 + vec2(0.31, 0.77) ).xyz * 2.0 - 1.0;
-        mapN = normalize( vec3( mapN.xy * normalScale + mapN2.xy * normalScale * 0.55, mapN.z * mapN2.z ) );
+        mapN = normalize( vec3( mapN.xy * normalScale + mapN2.xy * normalScale * 0.35, mapN.z * mapN2.z ) );
         normal = normalize( tbn * mapN );`)
       .replace('#include <lights_fragment_begin>', `
         {

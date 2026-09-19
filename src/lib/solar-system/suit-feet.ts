@@ -150,14 +150,22 @@ export function makeFeet(position: Vec3, velocity: Vec3): FeetRig {
         const k = inAir ? smooth(flightT / Math.max(1e-3, flightT + remain)) : 0;
         rig.stepPhase = inAir ? 0.5 + 0.5 * k : 0.5 * Math.min(1, stanceT / P.stance);
         rig.stepSide = lead;
+        // A boot left behind past what the leg can reach comes up: legs do not stretch out flat.
+        for (const f of feet) if (f.planted && Math.hypot(f.x - position.x, f.z - position.z) > P.reach + 0.2) lift(f);
         for (const f of feet) {
           if (f.planted) continue;
           const ahead = reachAhead + (f.side === lead ? 0.12 : -0.05);
           if (inAir) {
             neutral(f, ctx.yaw, position.x + velocity.x * remain + ux * ahead, position.z + velocity.z * remain + uz * ahead);
-            f.x = lerp(f.fromX, f.toX, k); f.z = lerp(f.fromZ, f.toZ, k);
+            // The boot comes through early, as a leg does, rather than trailing
+            // on the ground behind a body that has flown on without it...
+            const kf = 1 - Math.pow(1 - k, 2.2);
+            f.x = lerp(f.fromX, f.toX, kf); f.z = lerp(f.fromZ, f.toZ, kf);
             const gy = heightAt(f.x, f.z);
-            f.y = Math.max(gy, lerp(f.fromY, gy, k) + Math.sin(Math.PI * k) * 0.12);
+            // ...and the trailing one folds up behind first: the heel kick.
+            const behind = Math.max(0, -((f.x - position.x) * ux + (f.z - position.z) * uz));
+            const kick = Math.min(0.32, behind * 0.45) * Math.sin(Math.PI * Math.min(1, k * 1.6));
+            f.y = Math.max(gy, lerp(f.fromY, gy, k) + Math.sin(Math.PI * k) * 0.12 + kick);
           } else {
             neutral(f, ctx.yaw, position.x + ux * ahead, position.z + uz * ahead);
             const r = 1 - Math.exp(-dt * 14);

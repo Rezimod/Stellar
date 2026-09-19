@@ -204,6 +204,8 @@ export interface MoonSurfaceHandle {
   probe: (within?: string) => Record<string, number>;
   /** What the base shows: power, dish, dome, charger (missions flip these; development toggles them). */
   baseState: (next?: Partial<BaseState>) => Readonly<BaseState>;
+  /** Development: hold the camera at this offset from the crew (world metres), looking at them; null lets it go. */
+  devCamera: (offset: [number, number, number] | null) => void;
   /** The game shell's pause: no frames, no sim, no sound until resumed. */
   setPaused: (on: boolean) => void;
   roverAt: () => { x: number; z: number };
@@ -804,6 +806,7 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
   const ROVER_CHASE: ChaseTuning = { follow: 3.5, lead: 0.2, leadMax: 3, fovKick: 9, horizontal: 11, vertical: 4.5 };
   const WIDE_CHASE: ChaseTuning = { follow: 1, lead: 0, leadMax: 0, fovKick: 0, horizontal: 4, vertical: 3 };
   const FOOT_CHASE: ChaseTuning = { follow: 2.4, lead: 0.3, leadMax: 0.8, fovKick: 4, horizontal: 9, vertical: 4, shoulder: 0.4, blocked: null };
+  let devCam: [number, number, number] | null = null;
   const frame = (dt: number) => {
     t += dt;
     cam.update(dt);
@@ -1100,6 +1103,10 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
     base.update(dt, t, sky.earthDir, crew.x, crew.z);
     sinkhole.update(dt, t);
     terrain.setSunView(tmp.copy(SUN_DIR).transformDirection(camera.matrixWorldInverse));
+    if (devCam) {
+      camera.position.set(crew.x + devCam[0], crew.y + devCam[1], crew.z + devCam[2]);
+      camera.lookAt(crew.x, crew.y + 1.0, crew.z);
+    }
     host.followShadow(crew, SUN_DIR);
     lightPool.flush(crew.x, crew.y, crew.z);
     sky.update(dt, camera, renderer.getPixelRatio());
@@ -1185,6 +1192,7 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
     perf: perf.sample,
     probe: host.probe,
     baseState(next) { if (next) base.setState(next); return base.state; },
+    devCamera(offset) { devCam = offset; },
     setPaused: host.setPaused,
     roverAt: () => ({ x: base.roverCollider.x, z: base.roverCollider.z }),
     fallIntoBackrooms() {

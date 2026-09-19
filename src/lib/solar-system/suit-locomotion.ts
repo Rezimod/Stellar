@@ -370,6 +370,11 @@ export function makeLocomotion(position: Vec3, velocity: Vec3, initial: GaitProf
       const roof = loco.ceilingAt?.(position.x, position.z) ?? null;
       if (roof !== null && position.y + HEAD > roof) { position.y = roof - HEAD; if (velocity.y > 0) velocity.y = 0; }
       const g2 = heightAt(position.x, position.z);
+      // Into a crate mid-stride, low over the ground: a runner vaults it off the stride too.
+      if (touched && !wasGrounded && state.striding && !state.jumping && position.y - g2 < 0.35 && want > 0.5 && !crouched && state.stumble <= 0) {
+        const over = vaultProbe(position, dirX, dirZ, colliders, heightAt, P.suited ? VAULT_MAX.suited : VAULT_MAX.soft);
+        if (over) { loco.script(vaultTrack({ x: position.x, y: position.y, z: position.z, yaw: loco.yaw }, over.top, over.toX, over.toY, over.toZ, speed0, g < 5), 'move'); finish(1, g2, heightAt); return; }
+      }
       if (wasGrounded && !launched && !state.jumping) {
         const before = position.y;
         const contact = stepGround(position, velocity, prevX, prevZ, g2);

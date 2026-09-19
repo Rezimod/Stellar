@@ -50,13 +50,14 @@ function stopFrom(p: GaitProfile, over: Partial<WalkInput>) {
 }
 
 describe('lunar locomotion: responsive, not floaty', () => {
-  it('hops about a metre and a quarter and hangs two and a half seconds under 1.62 m/s²', () => {
-    const apex = (moon.hop * moon.hop) / (2 * LUNAR_G);
-    const air = (2 * moon.hop) / LUNAR_G;
-    expect(apex).toBeGreaterThan(1.1);
-    expect(apex).toBeLessThan(1.5);
-    expect(air).toBeGreaterThan(2.2);
-    expect(air).toBeLessThan(2.8);
+  it('hops about three quarters of a metre and hangs about a second and a half: the Moon, felt', () => {
+    const apex = (moon.hop * moon.hop) / (2 * moon.g);
+    const air = (2 * moon.hop) / moon.g;
+    expect(moon.worldG).toBeCloseTo(LUNAR_G);
+    expect(apex).toBeGreaterThan(0.6);
+    expect(apex).toBeLessThan(0.9);
+    expect(air).toBeGreaterThan(1.2);
+    expect(air).toBeLessThan(1.6);
   });
 
   it('reaches a walk in a blink, then builds to a sprint on real inertia', () => {
@@ -75,10 +76,10 @@ describe('lunar locomotion: responsive, not floaty', () => {
     expect(w.loco.state.speed).toBeLessThan(moon.sprint * 1.02);
   });
 
-  it('stops in a couple of metres from a sprint, under a metre from a walk', () => {
+  it('stops in a few metres from a sprint (the bound already in the air carries on), under a metre from a walk', () => {
     const sprint = stopFrom(moon, { moveZ: 1, sprint: true });
     expect(sprint.top).toBeGreaterThan(moon.run);
-    expect(sprint.distance).toBeLessThan(2.6);
+    expect(sprint.distance).toBeLessThan(3.8);
     expect(sprint.time).toBeLessThan(1.3);
     const walk = stopFrom(moon, { moveZ: 0.25 });
     expect(walk.distance).toBeLessThan(0.3);
@@ -122,8 +123,8 @@ describe('lunar locomotion: responsive, not floaty', () => {
       while (w.loco.state.mode === 'land' && landed < 2) { w.run(H, { moveZ: 0.15 }); landed += H; }
       return landed;
     };
-    const small = drop(0.6); const big = drop(1.8);
-    expect(classifyLanding(moon, Math.sqrt(2 * LUNAR_G * 1.8))).toBe('soft');
+    const small = drop(0.5); const big = drop(0.8);
+    expect(classifyLanding(moon, Math.sqrt(2 * moon.g * 0.8))).toBe('soft');
     expect(big).toBeGreaterThan(small + 0.05);
     expect(big).toBeLessThan(0.45);
   });

@@ -14,6 +14,14 @@
 // fixed depth, so a jump's take-off speed is √(2·(F/m − g)·d): the Moon
 // hangs, Mars hops, Proxima b barely leaves the ground. Landing is the
 // same push run backwards, which sets the soft / roll / hard thresholds.
+//
+// One design choice sits on top of all that: on a light world the legs feel
+// a gravity eased a third of the way (geometrically) toward Earth's. The true
+// numbers played like wading: a 0.8 m/s walk and a 1.3 m jump hanging 2.5 s
+// on the Moon. Felt, the Moon is ≈ 3 m/s² and Mars ≈ 5: still a lope and a
+// jump that hangs over a second, but a game's. `g` is the gravity the crew
+// moves under; `worldG` is the world's own, for the HUD, for whether a
+// sprint is a bound, and for everything that is not the crew.
 
 export const EARTH_G = 9.81;
 export const LUNAR_G = 1.62;
@@ -24,12 +32,12 @@ const EVA_KG = 77;
 const SOFT_KG = 15;
 /** Legs push this many Earth body-weights, through this much knee travel. */
 const PUSH_G = 2.4;
-const PUSH_DEPTH = { suited: 0.2, soft: 0.35 };
+const PUSH_DEPTH = { suited: 0.25, soft: 0.35 };
 const LAND_SOFT = { suited: 0.3, soft: 0.45 };
 const LAND_ROLL = { suited: 0.6, soft: 0.9 };
 /** Lugged boots on regolith, and what planting a foot adds to plain friction. */
 const BOOT_MU = 0.8;
-const PLANT = 1.5;
+const PLANT = 2.5;
 /** The one design floor: a jump is never less than this high. */
 export const JUMP_MIN_APEX = 0.15;
 /** An Earth-bound game character's speeds, m/s; every world scales from them. */
@@ -37,6 +45,8 @@ const JOG_E = 3.2;
 const RUN_E = 4.4;
 const SPRINT_E = 5.8;
 export const PIVOT_ANGLE = (135 * Math.PI) / 180;
+/** What a running start adds to a jump's take-off, at most, m/s. */
+const RUN_HOP_MAX = 0.4;
 /** Below about a third of Earth's gravity a skip costs less than a run
  *  (Pavei et al. 2015), and the Apollo crews bounded: a sprint there is a
  *  two-footed hop whose flight is this much longer than a stride's. */
@@ -44,7 +54,10 @@ const BOUND_G = 0.3;
 const BOUND_FLIGHT = 1.6;
 
 export interface GaitProfile {
+  /** The gravity the crew moves and falls under (felt; see the header). */
   g: number;
+  /** The world's true gravity. */
+  worldG: number;
   suited: boolean;
   /** Weight relative to an Earth-bound body, suit included. */
   weight: number;
@@ -100,17 +113,24 @@ export interface GaitProfile {
 
 const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
 
-export function gaitProfile(g: number, suited = true): GaitProfile {
+/** The gravity the legs feel: a light world eased a third of the way (geometrically) toward Earth's. */
+export function feltGravity(g: number): number {
+  return g >= EARTH_G ? g : Math.pow(g, 0.65) * Math.pow(EARTH_G, 0.35);
+}
+
+export function gaitProfile(worldG: number, suited = true): GaitProfile {
+  const g = feltGravity(worldG);
   const kg = BODY_KG + (suited ? EVA_KG : SOFT_KG);
   const weight = (g / EARTH_G) * (kg / BODY_KG);
-  const s = (0.75 + 0.25 * Math.sqrt(g / EARTH_G)) * (suited ? 0.85 : 1) * Math.min(1, 1 / Math.sqrt(weight));
+  const s = (0.85 + 0.15 * Math.sqrt(g / EARTH_G)) * (suited ? 0.95 : 1) * Math.min(1, 1 / Math.sqrt(weight));
   const jog = JOG_E * s;
   const walkLimit = Math.sqrt(0.5 * g * LEG);
   const push = PUSH_G * EARTH_G * (BODY_KG / kg);
   const up = Math.max(0, push - g);
   const hop = Math.max(Math.sqrt(2 * up * (suited ? PUSH_DEPTH.suited : PUSH_DEPTH.soft)), Math.sqrt(2 * g * JUMP_MIN_APEX));
   const absorb = Math.max(push - g, 0.2 * push);
-  const softLand = Math.max(Math.sqrt(2 * absorb * (suited ? LAND_SOFT.suited : LAND_SOFT.soft)), Math.sqrt(2 * g * 1.5 * JUMP_MIN_APEX));
+  // Your own jump, running flat out, always lands soft: the legs that threw you catch you.
+  const softLand = Math.max(Math.sqrt(2 * absorb * (suited ? LAND_SOFT.suited : LAND_SOFT.soft)), Math.sqrt(2 * g * 1.5 * JUMP_MIN_APEX), hop + RUN_HOP_MAX + 0.05);
   const rollLand = Math.max(Math.sqrt(2 * absorb * (suited ? LAND_ROLL.suited : LAND_ROLL.soft)), 1.5 * softLand);
   const cadenceRun = 0.85 * Math.sqrt(g / LEG);
   const duty = 0.4 * Math.pow(g / EARTH_G, 0.3);
@@ -118,7 +138,7 @@ export function gaitProfile(g: number, suited = true): GaitProfile {
   const flight = (1 - duty) / cadenceRun;
   const brake = BOOT_MU * g + PLANT;
   return {
-    g, suited, weight, leg: LEG, walkLimit,
+    g, worldG, suited, weight, leg: LEG, walkLimit,
     walk: Math.min(0.9 * walkLimit, 0.55 * jog),
     jog,
     run: RUN_E * s,
@@ -132,13 +152,14 @@ export function gaitProfile(g: number, suited = true): GaitProfile {
     air: Math.min(2.5, 0.9 * Math.sqrt(EARTH_G / g)),
     hop,
     runHop: 0.12,
-    runHopMax: 0.4,
+    runHopMax: RUN_HOP_MAX,
     softLand, rollLand, hardLand: 2 * rollLand,
     cadenceWalk: 0.575 * Math.sqrt(g / LEG),
     cadenceRun,
     stance: duty / cadenceRun,
     flight,
-    bound: g < BOUND_G * EARTH_G,
+    // Whether a sprint is a bound is the world's own gravity, felt or not.
+    bound: worldG < BOUND_G * EARTH_G,
     boundFlight: flight * BOUND_FLIGHT,
     turnStill: 10 * (suited ? 0.8 : 1),
     turnStep: clamp(0.16 + 0.06 * sw, 0.16, 0.3),

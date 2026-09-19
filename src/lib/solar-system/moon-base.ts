@@ -135,6 +135,9 @@ const LAMP = { closed: 0xff3b2e, cycling: 0xffb347, open: 0x4dff88 } as const;
 /** The mission computer in OPS-B: its bearing from the dome's middle (rad) and radius (m). */
 const TERMINAL = { a: 0.95, r: 3.2 };
 
+/** How far the airlock door slides up when it opens: all 2.1 m of it, past the lintel. */
+const DOOR_RISE = 2.3;
+
 /** How far a habitat's door stands in front of the middle of its dome, m. */
 export const DOOR_Z = 6.72;
 
@@ -258,8 +261,10 @@ export function makeMoonBase(
     const door = keep(mesh(g, new THREE.BoxGeometry(DOOR_HALF * 2 - 0.1, 2.1, 0.1), m.shellDusty, 0, 2.65, DOOR_Z));
     mesh(door, new THREE.BoxGeometry(0.34, 0.34, 0.06), m.glass, 0.0, 0.55, 0.06);
     kit.box(g, DOOR_HALF * 2 + 0.3, 0.14, 0.18, m.anodised, 0, 3.8, DOOR_Z);
+    // The housing the door rises into: it clears the whole doorway, out of sight.
+    kit.box(g, DOOR_HALF * 2 + 0.3, DOOR_RISE, 0.34, m.shell, 0, 3.8 + DOOR_RISE / 2, DOOR_Z + 0.02);
     const lamp = std({ color: 0x100404, emissive: new THREE.Color(LAMP.closed), emissiveIntensity: 1.8, roughness: 0.4 });
-    noShadow(mesh(g, new THREE.BoxGeometry(0.9, 0.07, 0.05), lamp, 0, 4.02, DOOR_Z + 0.03));
+    noShadow(mesh(g, new THREE.BoxGeometry(0.9, 0.07, 0.05), lamp, 0, 4.02, DOOR_Z + 0.21));
     // The control panel beside the door, and the handrails.
     const cp = kit.rbox(g, 0.36, 0.5, 0.1, 0.03, m.carbon, 1.3, 2.75, DOOR_Z + 0.06);
     noShadow(mesh(cp, new THREE.PlaneGeometry(0.26, 0.2), m.screen, 0, 0.08, 0.055));
@@ -657,7 +662,7 @@ export function makeMoonBase(
           setLamp(a);
         }
         a.open += ((a.state === 'open' ? 1 : 0) - a.open) * (1 - Math.exp(-dt * 3.2));
-        a.panel.position.y = 2.65 + a.open * 1.95;
+        a.panel.position.y = 2.65 + a.open * DOOR_RISE;
       }
       zones.update(dt, t, earthDir);
       roverPoi.x = roverCollider.x;
