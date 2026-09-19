@@ -1,16 +1,17 @@
-// Stellar's own spacecraft, built from primitives so the page never fetches
-// a model. Two airframes share one design language — graphite and titanium
-// hulls, off-white structural panels, exposed reaction-control pods, a
-// sensor package on the nose, radiators aft, and a real engine cluster with
-// bells, hot cores and plumes — and differ in silhouette: the Kestrel is a
-// broad-winged survey ship, the Lance a needle-nosed interceptor. Forward
-// is +Z, up +Y, so the pilot's left (port) is +X.
+// The player's spacecraft. The three flyable hulls are real models built in
+// Blender (assets-src/blender/ship_*.py) and loaded as glTF; everything the
+// flight model animates — engine cores and plumes, reaction-control jets,
+// position lights, the strobe, gun ports, the fighter's wing pivots — stays
+// code-built here and is placed from the model's named empties. The
+// Endurance (and the suit) are still built from primitives. Forward is +Z,
+// up +Y, so the pilot's left (port) is +X.
 
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { softSpriteTexture } from '@/lib/solar-system/soft-sprite';
+import { acquireModel, type ModelHandle } from '@/game/models';
 
-export type ShipKind = 'kestrel' | 'xfoil' | 'endurance';
+export type ShipKind = 'kestrel' | 'xfoil' | 'cruiser' | 'endurance';
 
 /** A reaction-control jet: a sprite on the hull whose brightness answers
  *  the control inputs it opposes. Weights are signed: a jet with yaw +1
@@ -63,6 +64,9 @@ export interface ShipParts {
   length: number;
   /** Turned about the flight axis every frame — the Endurance's gravity ring. */
   spinner: THREE.Group | null;
+  /** Model ships: hand the loaded hull back. Called before the ship's meshes
+   *  are disposed, so the shared model geometry is left to its cache. */
+  release?: () => void;
 }
 
 interface Palette {
@@ -91,6 +95,15 @@ function palette(accentHex: number, driveHex: number): Palette {
     color: 0x07111c, roughness: 0.08, metalness: 0.9,
     emissive: new THREE.Color(0x0b2a3c), emissiveIntensity: 0.55,
   });
+  const { engineMat, bellMat, plumeMat } = driveMats(driveHex);
+  return {
+    graphite, titanium, panel, dark, accent, glass, engineMat, bellMat, plumeMat,
+    owned: [graphite, titanium, panel, dark, accent, glass, engineMat, bellMat, plumeMat],
+  };
+}
+
+/** Engine core, nozzle bell and plume, tinted by the drive colour. */
+function driveMats(driveHex: number) {
   const drive = new THREE.Color(driveHex);
   const engineMat = new THREE.MeshStandardMaterial({
     color: 0xeaf7ff, emissive: drive, emissiveIntensity: 1.6, roughness: 0.25, metalness: 0,
@@ -102,28 +115,7 @@ function palette(accentHex: number, driveHex: number): Palette {
     color: drive.clone().multiplyScalar(1.5), transparent: true, opacity: 0.5,
     depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
   });
-  return {
-    graphite, titanium, panel, dark, accent, glass, engineMat, bellMat, plumeMat,
-    owned: [graphite, titanium, panel, dark, accent, glass, engineMat, bellMat, plumeMat],
-  };
-}
-
-/** A tapered wing panel laid along ±X: thick chord at the root, thin at
- *  the tip, swept by the caller through its pivot. */
-function wingPanel(side: number, rootChord: number, tipChord: number, span: number, thick: number): THREE.BufferGeometry {
-  const shape = new THREE.Shape();
-  // Chord runs along Z (forward +), span along X.
-  shape.moveTo(0, rootChord * 0.55);
-  shape.lineTo(span, tipChord * 0.35);
-  shape.lineTo(span, -tipChord * 0.65);
-  shape.lineTo(0, -rootChord * 0.45);
-  shape.closePath();
-  const geom = new THREE.ExtrudeGeometry(shape, { depth: thick, bevelEnabled: false });
-  // Extrude runs along +Z; we want thickness along Y and the chord along Z.
-  geom.rotateX(-Math.PI / 2);
-  geom.translate(0, -thick / 2, 0);
-  if (side < 0) geom.scale(-1, 1, 1);
-  return geom;
+  return { engineMat, bellMat, plumeMat };
 }
 
 /** Hollow cone for an exhaust plume: wide end at the nozzle, tip trailing. */
@@ -131,14 +123,6 @@ function plumeCone(radius: number, length: number): THREE.ConeGeometry {
   const geom = new THREE.ConeGeometry(radius, length, 14, 1, true);
   geom.translate(0, length / 2, 0);
   return geom;
-}
-
-/** A six-sided tapered hull section along +Z. */
-function hullSection(rFront: number, rBack: number, length: number, sides = 6): THREE.CylinderGeometry {
-  const g = new THREE.CylinderGeometry(rFront, rBack, length, sides);
-  g.rotateX(Math.PI / 2);
-  g.rotateZ(Math.PI / sides);
-  return g;
 }
 
 interface Builder {
@@ -321,184 +305,266 @@ function standardRcs(b: Builder, noseZ: number, tailZ: number, r: number) {
   rcsPod(b, -0.7 * r, -0.5 * r, noseZ + 0.6 * H, fz, { brake: 1 });
 }
 
-/**
- * Kestrel — the survey ship. A broad graphite fuselage with off-white
- * panel work along the spine and cheeks, a long low canopy, a sensor ball
- * and dish under the chin, two variable-sweep wings carrying the position
- * lights and the cannons, a pair of radiator fins aft, and a three-nozzle
- * engine cluster: one big central bell flanked by two smaller ones.
- */
-export function buildKestrel(H: number): ShipParts {
-  const pal = palette(0xffb347, 0x5fc8ff);
-  const b = builder(H, pal);
-  const hull = b.hull;
-
-  // ── Fuselage: nose cone, forward section, mid body, engine block. ──
-  const nose = mesh(b, new THREE.ConeGeometry(0.42 * H, 1.9 * H, 6), pal.titanium, 0, 0, 3.75 * H);
-  nose.rotation.x = Math.PI / 2;
-  nose.rotation.y = Math.PI / 6;
-  mesh(b, hullSection(0.42 * H, 0.62 * H, 2.2 * H), pal.graphite, 0, 0, 1.7 * H);
-  mesh(b, hullSection(0.62 * H, 0.72 * H, 2.6 * H), pal.graphite, 0, 0, -0.7 * H);
-  const block = mesh(b, new THREE.BoxGeometry(1.7 * H, 0.9 * H, 1.5 * H), pal.dark, 0, -0.05 * H, -2.55 * H);
-  block.rotation.z = 0;
-  // Off-white structural panels: the spine and the two cheeks.
-  mesh(b, new THREE.BoxGeometry(0.46 * H, 0.1 * H, 3.6 * H), pal.panel, 0, 0.62 * H, -0.2 * H);
-  for (const s of [1, -1]) {
-    const cheek = mesh(b, new THREE.BoxGeometry(0.12 * H, 0.42 * H, 2.0 * H), pal.panel, s * 0.62 * H, -0.1 * H, 0.9 * H);
-    cheek.rotation.y = s * 0.08;
-    // Panel breaks: a dark seam and a vent grille.
-    mesh(b, new THREE.BoxGeometry(0.14 * H, 0.05 * H, 1.2 * H), pal.dark, s * 0.66 * H, 0.12 * H, -0.6 * H);
-    for (let i = 0; i < 4; i++) {
-      mesh(b, new THREE.BoxGeometry(0.1 * H, 0.03 * H, 0.16 * H), pal.dark, s * 0.72 * H, -0.28 * H, -1.5 * H - i * 0.24 * H);
-    }
-  }
-  // Amber flight stripe along the spine and the wing roots.
-  mesh(b, new THREE.BoxGeometry(0.1 * H, 0.03 * H, 2.4 * H), pal.accent, 0, 0.69 * H, 0.2 * H);
-
-  // ── Canopy: long and low, set into a dark coaming. ──
-  mesh(b, new THREE.BoxGeometry(0.62 * H, 0.22 * H, 1.5 * H), pal.dark, 0, 0.5 * H, 1.6 * H);
-  const canopy = mesh(b, new THREE.SphereGeometry(0.32 * H, 16, 12), pal.glass, 0, 0.58 * H, 1.65 * H);
-  canopy.scale.set(0.9, 0.55, 2.3);
-  // Canopy frame rails.
-  for (const s of [1, -1]) {
-    mesh(b, new THREE.BoxGeometry(0.03 * H, 0.16 * H, 1.3 * H), pal.titanium, s * 0.27 * H, 0.62 * H, 1.6 * H);
-  }
-
-  // ── Sensor package: chin ball, dish, and an antenna mast. ──
-  mesh(b, new THREE.SphereGeometry(0.2 * H, 12, 10), pal.dark, 0, -0.42 * H, 2.4 * H);
-  const dish = mesh(b, new THREE.CylinderGeometry(0.02 * H, 0.26 * H, 0.1 * H, 14, 1, true), pal.panel, 0, -0.52 * H, 2.1 * H);
-  dish.rotation.x = -Math.PI / 2 + 0.5;
-  mesh(b, new THREE.CylinderGeometry(0.015 * H, 0.02 * H, 0.9 * H, 6), pal.dark, 0.28 * H, 0.6 * H, -1.2 * H);
-  // Sensor tip on the nose.
-  mesh(b, new THREE.SphereGeometry(0.06 * H, 8, 8), pal.dark, 0, 0, 4.72 * H);
-
-  // ── Wings: variable sweep on pivots at the mid body. Each carries a
-  // cannon under the root, a pod and the position light at the tip. ──
-  const wings: WingPivot[] = [];
-  const cannonTips: THREE.Object3D[] = [];
-  const cannonGeom = new THREE.CylinderGeometry(0.05 * H, 0.065 * H, 1.6 * H, 8);
-  const wingGeoms = { 1: wingPanel(1, 1.5 * H, 0.5 * H, 3.0 * H, 0.09 * H), [-1]: wingPanel(-1, 1.5 * H, 0.5 * H, 3.0 * H, 0.09 * H) };
-  for (const s of [1, -1]) {
-    const pivot = new THREE.Group();
-    pivot.position.set(s * 0.6 * H, -0.02 * H, -0.5 * H);
-    hull.add(pivot);
-    wings.push({ pivot, side: s, open: s * 0.12, closed: s * 0.62, axis: 'y' });
-    mesh(b, wingGeoms[s as 1 | -1], pal.titanium, 0, 0, 0, pivot);
-    // Leading-edge strip in panel white, amber tip cap.
-    const le = mesh(b, new THREE.BoxGeometry(2.9 * H, 0.06 * H, 0.14 * H), pal.panel, s * 1.5 * H, 0.03 * H, 0.65 * H, pivot);
-    le.rotation.y = -s * 0.07;
-    mesh(b, new THREE.BoxGeometry(0.12 * H, 0.1 * H, 0.5 * H), pal.accent, s * 2.98 * H, 0, -0.15 * H, pivot);
-    // Wingtip pod with the position light.
-    const pod = mesh(b, new THREE.CylinderGeometry(0.1 * H, 0.08 * H, 0.9 * H, 10), pal.graphite, s * 2.9 * H, 0, 0, pivot);
-    pod.rotation.x = Math.PI / 2;
-    navLight(b, s * 2.9 * H, 0, 0.5 * H, s > 0 ? 0xff3b30 : 0x30ff6a, 0.08 * H, pivot);
-    // Cannon under the wing root.
-    const cannon = mesh(b, cannonGeom, pal.dark, s * 0.75 * H, -0.18 * H, 0.9 * H, pivot);
-    cannon.rotation.x = Math.PI / 2;
-    const tip = new THREE.Object3D();
-    tip.position.set(s * 0.75 * H, -0.18 * H, 1.8 * H);
-    pivot.add(tip);
-    cannonTips.push(tip);
-  }
-
-  // ── Radiators: two thin fins aft, white with an amber hot edge. ──
-  for (const s of [1, -1]) {
-    const fin = mesh(b, new THREE.BoxGeometry(0.05 * H, 0.9 * H, 1.1 * H), pal.panel, s * 0.42 * H, 0.75 * H, -2.3 * H);
-    fin.rotation.z = s * 0.28;
-    fin.rotation.x = 0.12;
-    const edge = mesh(b, new THREE.BoxGeometry(0.06 * H, 0.06 * H, 1.0 * H), pal.accent, s * 0.55 * H, 1.16 * H, -2.35 * H);
-    edge.rotation.z = s * 0.28;
-    edge.rotation.x = 0.12;
-  }
-
-  // ── Engine cluster: one big central bell, two smaller outboard. ──
-  engine(b, 0, 0.02 * H, -3.3 * H, 0.42 * H, 4.2 * H);
-  engine(b, 0.62 * H, -0.12 * H, -3.2 * H, 0.24 * H, 2.8 * H);
-  engine(b, -0.62 * H, -0.12 * H, -3.2 * H, 0.24 * H, 2.8 * H);
-
-  // ── RCS, lights. ──
-  standardRcs(b, 2.6 * H, -2.2 * H, 0.5 * H);
-  const strobeMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-  mesh(b, new THREE.SphereGeometry(0.07 * H, 8, 8), strobeMat, 0, 0.7 * H, -2.9 * H);
-  navLight(b, 0, -0.5 * H, -1.4 * H, 0xffb347, 0.06 * H);
-  return finish(b, wings, cannonTips, strobeMat, 8 * H, 3.8 * H);
+/** A model ship: which file, how big it flies, its drive colour and the
+ *  wing nodes the flight model swings. */
+interface ModelSpec {
+  url: string;
+  /** Hull length in the file (metres) and in flight (H). */
+  metres: number;
+  length: number;
+  drive: number;
+  /** Multiplies the baked colour: a clean white hull reads brighter under the game's sun than in the bake. */
+  tint?: number;
+  wings?: Record<string, Omit<WingPivot, 'pivot'>>;
 }
 
+/** The reaction-control jets a model may carry, by empty name, and the
+ *  inputs that fire them — the same couples as `standardRcs`. N and T are
+ *  the nose and tail rings (PX = the pod on +X, pointing +X), B the braking
+ *  pair facing forward. */
+const RCS_JETS: Record<string, { yaw?: number; pitch?: number; roll?: number; brake?: number }> = {
+  Rcs_N_PX: { yaw: 1 },
+  Rcs_N_NX: { yaw: -1 },
+  Rcs_N_PY: { pitch: -1 },
+  Rcs_N_NY: { pitch: 1 },
+  Rcs_T_PX: { yaw: -1, roll: 0.6 },
+  Rcs_T_NX: { yaw: 1, roll: -0.6 },
+  Rcs_T_PY: { pitch: 1 },
+  Rcs_T_NY: { pitch: -1 },
+  Rcs_B_P: { brake: 1 },
+  Rcs_B_S: { brake: 1 },
+};
+
+/** Past these distances (world units, in H) the hull swaps to its lighter LODs. */
+const LOD_NEAR = 70;
+const LOD_FAR = 180;
+
 /**
- * X-foil starfighter — the shape everyone knows: a long tapered nose on a
- * boxy engine block, a faceted canopy with an astromech dome behind it, and
- * four S-foils that lock flat for the run in and fan into an X for the
- * attack. Each foil carries an engine at its root and a cannon at its tip,
- * so opening them spreads the drives and the guns together. Forward is +Z.
+ * Builds the flight parts at once and fills them in when the model arrives:
+ * until then the ship flies without a visible hull, and if the file cannot
+ * load (offline, or a test without fetch) it simply stays that way.
  */
-export function buildXfoil(H: number): ShipParts {
-  const pal = palette(0xc4302a, 0x6fd0ff);
-  const b = builder(H, pal);
-  const hull = b.hull;
-
-  // ── Fuselage: engine block aft, long nose forward. ──
-  mesh(b, new THREE.BoxGeometry(1.25 * H, 0.95 * H, 2.6 * H), pal.graphite, 0, 0, -0.5 * H);
-  mesh(b, new THREE.BoxGeometry(0.68 * H, 0.24 * H, 2.2 * H), pal.titanium, 0, 0.58 * H, -0.5 * H);
-  mesh(b, new THREE.BoxGeometry(0.78 * H, 0.2 * H, 2.0 * H), pal.dark, 0, -0.54 * H, -0.5 * H);
-  const nose = mesh(b, new THREE.CylinderGeometry(0.3 * H, 0.54 * H, 3.0 * H, 12), pal.titanium, 0, 0, 2.3 * H);
-  nose.rotation.x = Math.PI / 2;
-  const tip = mesh(b, new THREE.ConeGeometry(0.3 * H, 1.5 * H, 12), pal.titanium, 0, 0, 4.55 * H);
-  tip.rotation.x = Math.PI / 2;
-  mesh(b, new THREE.SphereGeometry(0.07 * H, 8, 8), pal.dark, 0, 0, 5.3 * H);
-  // Squadron stripes down the nose and side greebles that break up the block.
-  for (const side of [-1, 1]) {
-    const stripe = mesh(b, new THREE.BoxGeometry(0.12 * H, 0.04 * H, 1.6 * H), pal.accent, side * 0.17 * H, 0.4 * H, 2.4 * H);
-    stripe.rotation.x = -0.08;
-    mesh(b, new THREE.BoxGeometry(0.16 * H, 0.34 * H, 1.3 * H), pal.dark, side * 0.68 * H, -0.08 * H, -0.4 * H);
-  }
-
-  // ── Canopy in a dark coaming, astromech dome behind it. ──
-  mesh(b, new THREE.BoxGeometry(0.8 * H, 0.48 * H, 1.5 * H), pal.dark, 0, 0.54 * H, 1.0 * H);
-  const canopy = mesh(b, new THREE.SphereGeometry(0.4 * H, 14, 10), pal.glass, 0, 0.7 * H, 1.0 * H);
-  canopy.scale.set(0.85, 0.55, 1.5);
-  mesh(b, new THREE.SphereGeometry(0.28 * H, 14, 10), pal.titanium, 0, 0.7 * H, -0.35 * H);
-  const band = mesh(b, new THREE.SphereGeometry(0.285 * H, 14, 10), pal.accent, 0, 0.72 * H, -0.35 * H);
-  band.scale.set(1, 0.32, 1);
-
-  // ── Four S-foils on pivots at the corners of the block. Closed they lie
-  // almost flat; open they fan into the X. ──
-  const wings: WingPivot[] = [];
-  const cannonTips: THREE.Object3D[] = [];
-  const wingGeom = new THREE.BoxGeometry(3.2 * H, 0.08 * H, 1.1 * H);
-  const edgeGeom = new THREE.BoxGeometry(3.2 * H, 0.06 * H, 0.16 * H);
-  const stripeGeom = new THREE.BoxGeometry(1.9 * H, 0.1 * H, 0.2 * H);
-  const cannonGeom = new THREE.CylinderGeometry(0.055 * H, 0.07 * H, 2.5 * H, 8);
-  for (const side of [1, -1]) {
-    for (const layer of [1, -1]) {
-      const pivot = new THREE.Group();
-      pivot.position.set(side * 0.62 * H, layer * 0.16 * H, -0.6 * H);
-      hull.add(pivot);
-      wings.push({ pivot, side, open: layer * side * 0.34, closed: layer * side * 0.04, axis: 'z' });
-      mesh(b, wingGeom, pal.titanium, side * 1.72 * H, 0, 0, pivot);
-      mesh(b, edgeGeom, pal.panel, side * 1.72 * H, 0, 0.6 * H, pivot);
-      mesh(b, stripeGeom, pal.accent, side * 2.05 * H, layer * 0.03 * H, 0.1 * H, pivot);
-      // Engine at the root: intake forward, bell and plume aft.
-      const intake = mesh(b, new THREE.ConeGeometry(0.32 * H, 0.5 * H, 12), pal.dark, side * 0.45 * H, layer * 0.2 * H, 0.6 * H, pivot);
-      intake.rotation.x = Math.PI / 2;
-      const can = mesh(b, new THREE.CylinderGeometry(0.32 * H, 0.28 * H, 1.7 * H, 12), pal.graphite, side * 0.45 * H, layer * 0.2 * H, -0.5 * H, pivot);
-      can.rotation.x = Math.PI / 2;
-      engine(b, side * 0.45 * H, layer * 0.2 * H, -1.42 * H, 0.26 * H, 3.4 * H, pivot);
-      // Cannon along the foil, muzzle well ahead of the nose.
-      const cannon = mesh(b, cannonGeom, pal.dark, side * 3.3 * H, 0, 0.9 * H, pivot);
-      cannon.rotation.x = Math.PI / 2;
-      mesh(b, new THREE.SphereGeometry(0.09 * H, 8, 8), pal.panel, side * 3.3 * H, 0, 2.2 * H, pivot);
-      const t = new THREE.Object3D();
-      t.position.set(side * 3.3 * H, 0, 2.35 * H);
-      pivot.add(t);
-      cannonTips.push(t);
-      if (layer === 1) navLight(b, side * 3.38 * H, 0.06 * H, -0.2 * H, side > 0 ? 0xff3b30 : 0x30ff6a, 0.08 * H, pivot);
-    }
-  }
-
-  standardRcs(b, 2.4 * H, -1.9 * H, 0.5 * H);
+function buildModelShip(H: number, spec: ModelSpec): ShipParts {
+  const group = new THREE.Group();
+  group.name = 'playerShip';
+  const hull = new THREE.Group();
+  group.add(hull);
+  const { engineMat, bellMat, plumeMat } = driveMats(spec.drive);
+  // The inside of the nozzle is what the chase camera sees.
+  bellMat.side = THREE.BackSide;
+  // Takes the hull's own textures once they load; the heat glow drives its emissive.
+  const skinMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
   const strobeMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-  mesh(b, new THREE.SphereGeometry(0.07 * H, 8, 8), strobeMat, 0, 0.76 * H, -1.3 * H);
-  return finish(b, wings, cannonTips, strobeMat, 8 * H, 4.2 * H);
+  const glowTex = softSpriteTexture();
+  const plasmaMat = new THREE.SpriteMaterial({
+    map: glowTex, color: 0xff8a3a, transparent: true, opacity: 0,
+    depthWrite: false, blending: THREE.AdditiveBlending,
+  });
+  const plasma = new THREE.Sprite(plasmaMat);
+  plasma.position.set(0, 0, (spec.length / 2) * H);
+  plasma.scale.setScalar(4 * H);
+  hull.add(plasma);
+  // Until the model names its gun ports, the guns fire from the nose.
+  const noseGun = new THREE.Object3D();
+  noseGun.position.set(0, 0, (spec.length / 2) * H);
+  hull.add(noseGun);
+
+  let handle: ModelHandle | null = null;
+  let released = false;
+  const loaded: THREE.Object3D[] = [];
+  const parts: ShipParts = {
+    group, hull, wings: [], cannonTips: [noseGun], skinMat, engineMat, bellMat,
+    glowMats: [], glowSprites: [], plumes: [], plumeMat, plasmaMat, plasma, strobeMat,
+    navMats: [], rcs: [], owned: [skinMat, engineMat, bellMat, plumeMat, strobeMat],
+    length: spec.length * H, spinner: null,
+    release() {
+      released = true;
+      for (const o of loaded) o.removeFromParent();
+      loaded.length = 0;
+      handle?.release();
+      handle = null;
+    },
+  };
+  acquireModel(spec.url, true).then((h) => {
+    if (released) {
+      h.release();
+      return;
+    }
+    handle = h;
+    fitModel(parts, h.scene, spec, H, glowTex, loaded);
+  }, () => {
+    // No hull to show; the flight model does not need one.
+  });
+  return parts;
+}
+
+function fitModel(parts: ShipParts, source: THREE.Group, spec: ModelSpec, H: number, glowTex: THREE.Texture, loaded: THREE.Object3D[]) {
+  const s = (spec.length * H) / spec.metres;
+  const model = source.clone(true);
+  model.updateMatrixWorld(true);
+  const pos = new THREE.Vector3();
+  const scl = new THREE.Vector3();
+
+  // Materials: the hull takes our skin (so heat can glow through it), the
+  // lamps a brighter copy of their own so windows and canopies bloom.
+  let lampMat: THREE.MeshStandardMaterial | null = null;
+  model.traverse((o) => {
+    const mesh = o as THREE.Mesh;
+    if (!mesh.isMesh) return;
+    const m = mesh.material as THREE.MeshStandardMaterial;
+    if (m.name.endsWith('Lamp')) {
+      if (!lampMat) {
+        lampMat = m.clone();
+        lampMat.emissiveIntensity = 2.2;
+        parts.owned.push(lampMat);
+      }
+      mesh.material = lampMat;
+    } else if (m !== parts.skinMat) {
+      if (parts.skinMat.name !== m.name) {
+        parts.skinMat.copy(m);
+        parts.skinMat.color.multiplyScalar(spec.tint ?? 1);
+        parts.skinMat.needsUpdate = true;
+      }
+      mesh.material = parts.skinMat;
+    }
+  });
+
+  // The body and its lighter copies, swapped by distance.
+  const hullModel = new THREE.Group();
+  hullModel.scale.setScalar(s);
+  // Levels are attached while the LOD still sits at the model's own frame
+  // (attach keeps world transforms, so it must not see the flight scale yet).
+  const lod = new THREE.LOD();
+  const levels: [THREE.Object3D | undefined, number][] = [];
+  model.traverse((o) => {
+    const lv = /_Body(?:_LOD(\d))?$/.exec(o.name);
+    if (lv) levels.push([o, lv[1] ? (lv[1] === '1' ? LOD_NEAR : LOD_FAR) * H : 0]);
+  });
+  levels.sort((a, b) => a[1] - b[1]);
+  for (const [o, d] of levels) {
+    if (!o) continue;
+    lod.attach(o);
+    lod.addLevel(o, d);
+  }
+  hullModel.add(lod);
+  parts.hull.add(hullModel);
+  loaded.push(hullModel);
+
+  // Wings: a pivot at each hinge in hull space; the wing's mesh rides in it
+  // at model scale, its gun ports and lights at flight scale. Only the model's
+  // own meshes go in `loaded`: what is code-built stays for the ship's dispose.
+  const containers = new Map<THREE.Object3D, THREE.Object3D>();
+  for (const [name, w] of Object.entries(spec.wings ?? {})) {
+    const hinge = model.getObjectByName(name);
+    if (!hinge) continue;
+    const pivot = new THREE.Group();
+    hinge.getWorldPosition(pivot.position).multiplyScalar(s);
+    const inner = new THREE.Group();
+    inner.scale.setScalar(s);
+    pivot.add(inner);
+    for (const child of [...hinge.children]) if ((child as THREE.Mesh).isMesh || child.children.length) inner.add(child);
+    parts.hull.add(pivot);
+    loaded.push(inner);
+    parts.wings.push({ pivot, ...w });
+    containers.set(hinge, pivot);
+  }
+
+  // Everything the flight model drives, at the empties. The real gun ports
+  // replace the stand-in on the nose (in place: the flight model holds the array).
+  const noseGun = parts.cannonTips[0];
+  parts.cannonTips.length = 0;
+  noseGun?.removeFromParent();
+  const empties: THREE.Object3D[] = [];
+  model.traverse((o) => { if (!(o as THREE.Mesh).isMesh && /^(Engine|Cannon|Rcs|Nav|Strobe|Plasma)/.test(o.name)) empties.push(o); });
+  for (const e of empties) {
+    const pivot = e.parent ? containers.get(e.parent) : undefined;
+    const into = pivot ?? parts.hull;
+    const at = pivot ? e.position.clone().multiplyScalar(s) : e.getWorldPosition(pos).clone().multiplyScalar(s);
+    e.getWorldScale(scl);
+    const add = (o: THREE.Object3D) => into.add(o);
+    if (e.name.startsWith('Engine_')) modelEngine(parts, add, at, scl.x * s, H, glowTex);
+    else if (e.name.startsWith('Cannon_')) {
+      const tip = new THREE.Object3D();
+      tip.position.copy(at);
+      add(tip);
+      parts.cannonTips.push(tip);
+    } else if (e.name in RCS_JETS) {
+      const k = RCS_JETS[e.name];
+      const mat = new THREE.SpriteMaterial({
+        map: glowTex, color: 0xdff4ff, transparent: true, opacity: 0,
+        depthWrite: false, blending: THREE.AdditiveBlending,
+      });
+      const sprite = new THREE.Sprite(mat);
+      sprite.position.copy(at);
+      sprite.scale.setScalar(0.55 * H);
+      sprite.visible = false;
+      add(sprite);
+      parts.rcs.push({ sprite, mat, yaw: k.yaw ?? 0, pitch: k.pitch ?? 0, roll: k.roll ?? 0, brake: k.brake ?? 0 });
+    } else if (e.name === 'Nav_Port' || e.name === 'Nav_Stbd') {
+      const hex = e.name === 'Nav_Port' ? 0xff3b30 : 0x30ff6a;
+      const m = new THREE.MeshBasicMaterial({ color: new THREE.Color(hex).multiplyScalar(1.6) });
+      m.userData.base = hex;
+      parts.owned.push(m);
+      parts.navMats.push(m);
+      const light = new THREE.Mesh(new THREE.SphereGeometry(0.07 * H, 8, 8), m);
+      light.position.copy(at);
+      add(light);
+    } else if (e.name === 'Strobe') {
+      const strobe = new THREE.Mesh(new THREE.SphereGeometry(0.07 * H, 8, 8), parts.strobeMat);
+      strobe.position.copy(at);
+      add(strobe);
+    } else if (e.name === 'Plasma') parts.plasma.position.copy(at);
+  }
+}
+
+/** A hot core on the nozzle's back wall, the bell that soaks heat round it,
+ *  the plume and the glow, all facing aft. `r` is the core radius. */
+function modelEngine(parts: ShipParts, add: (o: THREE.Object3D) => THREE.Object3D, at: THREE.Vector3, r: number, H: number, glowTex: THREE.Texture) {
+  const core = new THREE.Mesh(new THREE.CircleGeometry(r, 24), parts.engineMat);
+  core.position.set(at.x, at.y, at.z - 0.02 * r);
+  core.rotation.y = Math.PI;
+  add(core);
+  const bell = new THREE.Mesh(new THREE.CylinderGeometry(r * 1.16, r * 0.98, 0.9 * r, 24, 1, true), parts.bellMat);
+  bell.rotation.x = -Math.PI / 2;
+  bell.position.set(at.x, at.y, at.z - 0.45 * r);
+  add(bell);
+  if (parts.plumeMat) {
+    const plume = new THREE.Mesh(plumeCone(r * 0.75, r * 9), parts.plumeMat);
+    plume.rotation.x = -Math.PI / 2;
+    plume.position.set(at.x, at.y, at.z - 1.2 * r);
+    add(plume);
+    parts.plumes.push(plume);
+  }
+  const mat = new THREE.SpriteMaterial({
+    map: glowTex, color: parts.plumeMat?.color ?? 0xffffff, transparent: true, opacity: 0.7,
+    depthWrite: false, blending: THREE.AdditiveBlending,
+  });
+  const sprite = new THREE.Sprite(mat);
+  sprite.position.set(at.x, at.y, at.z - 1.6 * r);
+  sprite.scale.setScalar(H);
+  add(sprite);
+  parts.glowMats.push(mat);
+  parts.glowSprites.push(sprite);
+}
+
+/** The STELLAR exploration craft (ShipKind `kestrel`): the survey ship. */
+export function buildKestrel(H: number): ShipParts {
+  return buildModelShip(H, { url: '/explore/models/ship-stellar.glb', metres: 18.4, length: 8, drive: 0xff9448 });
+}
+
+/** The Magpie (ShipKind `xfoil`): four forward-swept wings that lie stacked
+ *  flat for speed and fan into a shallow X to fight. */
+export function buildXfoil(H: number): ShipParts {
+  const wing = (side: number, layer: number) => ({ side, open: layer * side * 0.34, closed: layer * side * 0.04, axis: 'z' as const });
+  return buildModelShip(H, {
+    url: '/explore/models/ship-fighter.glb', metres: 12.5, length: 8, drive: 0x8ad8ff,
+    wings: { Wing_PU: wing(1, 1), Wing_PD: wing(1, -1), Wing_SU: wing(-1, 1), Wing_SD: wing(-1, -1) },
+  });
+}
+
+/** The Meridian (ShipKind `cruiser`): a long-range lifting-body cruiser. */
+export function buildCruiser(H: number): ShipParts {
+  return buildModelShip(H, { url: '/explore/models/ship-cruiser.glb', metres: 29.5, length: 10, drive: 0x5eead4, tint: 0.7 });
 }
 
 /**

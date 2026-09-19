@@ -394,6 +394,38 @@ describe('EVA and stations', () => {
     other.dispose();
   });
 
+  it('every model hull flies before (and without) its file, and disposes cleanly', async () => {
+    for (const kind of ['kestrel', 'xfoil', 'cruiser'] as const) {
+      const s = createFlightSession();
+      s.shipKind = kind;
+      const other = createPlayerShip(s);
+      other.spawn(world.home);
+      other.group.lookAt(new THREE.Vector3(1, 0, 10));
+      s.input.thrust = 1;
+      for (let i = 0; i < 60; i++) other.update(DT, i * DT, camera, aliens, world);
+      // The model fetch has nowhere to go under jsdom; let it fail quietly.
+      await new Promise((r) => setTimeout(r, 0));
+      expect(s.telemetry.speed).toBeGreaterThan(0);
+      expect(() => other.dispose()).not.toThrow();
+    }
+  });
+
+  it('the cruiser turns slower than the survey ship', () => {
+    const turnAfter = (kind: 'kestrel' | 'cruiser') => {
+      const s = createFlightSession();
+      s.shipKind = kind;
+      const other = createPlayerShip(s);
+      other.spawn(world.home);
+      const q0 = other.group.quaternion.clone();
+      s.input.yaw = 1;
+      for (let i = 0; i < 60; i++) other.update(DT, i * DT, camera, aliens, world);
+      const angle = other.group.quaternion.angleTo(q0);
+      other.dispose();
+      return angle;
+    };
+    expect(turnAfter('cruiser')).toBeLessThan(turnAfter('kestrel'));
+  });
+
   it('ramming a station at speed destroys both; shots wear one down', () => {
     const iss = body('iss', 1, 0.0015, 0.11, 0, 1);
     iss.kind = 'station';

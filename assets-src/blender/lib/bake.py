@@ -92,3 +92,121 @@ def export_material(name, paths):
     links.new(sep.outputs['Green'], bsdf.inputs['Roughness'])
     links.new(sep.outputs['Blue'], bsdf.inputs['Metallic'])
     return mat
+
+
+# ── Vehicles: every channel read straight off the high-poly's Principled
+# inputs through an emission swap, so metals keep their colour, roughness and
+# metalness bake exactly, and lamps get an emissive map of their own. The low
+# poly may carry several material slots (hull + lamps); all share one atlas. ──
+
+_CHANNELS = {'color': 'Base Color', 'rough': 'Roughness', 'metal': 'Metallic', 'emit': 'Emission Color'}
+
+
+def _principled(mat):
+    for n in mat.node_tree.nodes:
+        if n.type == 'BSDF_PRINCIPLED':
+            return n
+    return None
+
+
+def _swap_to_emission(mats, channel):
+    """Route one Principled input into an Emission shader on every material;
+    returns an undo list."""
+    undo = []
+    for mat in mats:
+        nt = mat.node_tree
+        bsdf = _principled(mat)
+        out = next(n for n in nt.nodes if n.type == 'OUTPUT_MATERIAL' and n.is_active_output)
+        prev = out.inputs['Surface'].links[0].from_socket
+        em = nt.nodes.new('ShaderNodeEmission')
+        inp = bsdf.inputs[_CHANNELS[channel]]
+        if inp.is_linked:
+            nt.links.new(inp.links[0].from_socket, em.inputs['Color'])
+        else:
+            v = inp.default_value
+            em.inputs['Color'].default_value = (v, v, v, 1) if isinstance(v, float) else tuple(v)
+        em.inputs['Strength'].default_value = bsdf.inputs['Emission Strength'].default_value if channel == 'emit' else 1.0
+        nt.links.new(em.outputs['Emission'], out.inputs['Surface'])
+        undo.append((nt, em, prev, out))
+    return undo
+
+
+def _restore(undo):
+    for nt, em, prev, out in undo:
+        nt.links.new(prev, out.inputs['Surface'])
+        nt.nodes.remove(em)
+
+
+def _bake_all_slots(low, high_objs, img, kind, cage, samples, margin):
+    sc = bpy.context.scene
+    sc.cycles.samples = samples
+    sc.render.bake.use_selected_to_active = True
+    sc.render.bake.cage_extrusion = cage
+    sc.render.bake.max_ray_distance = cage * 3
+    sc.render.bake.margin = margin
+    sc.render.bake.use_pass_direct = False
+    sc.render.bake.use_pass_indirect = False
+    sc.render.bake.use_pass_color = True
+    added = []
+    for mat in low.data.materials:
+        node = mat.node_tree.nodes.new('ShaderNodeTexImage')
+        node.image = img
+        mat.node_tree.nodes.active = node
+        added.append((mat, node))
+    bpy.ops.object.select_all(action='DESELECT')
+    for h in high_objs:
+        h.select_set(True)
+    low.select_set(True)
+    bpy.context.view_layer.objects.active = low
+    bpy.ops.object.bake(type=kind)
+    for mat, node in added:
+        mat.node_tree.nodes.remove(node)
+
+
+def bake_pbr(low, high_objs, out_dir, name, size=1024, cage=0.08, margin=6, ao_mix=0.55):
+    """Colour (with AO multiplied in by `ao_mix`), tangent normal, packed
+    ORM (R AO, G roughness, B metalness) and emissive. Returns their paths."""
+    os.makedirs(out_dir, exist_ok=True)
+    high_mats = {s.material for h in high_objs for s in h.material_slots if s.material}
+    imgs = {k: image(f'{name}-{k}' + ('-color' if k == 'emit' else ''), size) for k in ('color', 'rough', 'metal', 'emit', 'normal', 'ao')}
+    for key in ('color', 'rough', 'metal', 'emit'):
+        undo = _swap_to_emission(high_mats, key)
+        _bake_all_slots(low, high_objs, imgs[key], 'EMIT', cage, 4, margin)
+        _restore(undo)
+    _bake_all_slots(low, high_objs, imgs['normal'], 'NORMAL', cage, 4, margin)
+    _bake_all_slots(low, high_objs, imgs['ao'], 'AO', cage, 32, margin)
+
+    def px(img):
+        return np.array(img.pixels[:], dtype=np.float32).reshape(size, size, 4)
+    ao = px(imgs['ao'])[..., 0]
+    col = px(imgs['color'])
+    # Byte images read back display-encoded, so the AO bite is a little firmer than linear.
+    col[..., :3] *= (1 - ao_mix + ao_mix * ao)[..., None]
+    imgs['color'].pixels = col.ravel().tolist()
+    orm = np.ones((size, size, 4), dtype=np.float32)
+    orm[..., 0] = ao
+    orm[..., 1] = px(imgs['rough'])[..., 0]
+    orm[..., 2] = px(imgs['metal'])[..., 0]
+    packed = image(f'{name}-orm', size)
+    packed.pixels = orm.ravel().tolist()
+    paths = {}
+    for key, img in (('color', imgs['color']), ('normal', imgs['normal']), ('orm', packed), ('emit', imgs['emit'])):
+        img.filepath_raw = os.path.join(out_dir, f'{name}-{key}.png')
+        img.file_format = 'PNG'
+        img.save()
+        paths[key] = img.filepath_raw
+    return paths
+
+
+def lamp_material(name, paths):
+    """The second material: same atlas, plus the baked emissive map."""
+    mat = export_material(name, paths)
+    nodes = mat.node_tree.nodes
+    links = mat.node_tree.links
+    bsdf = nodes['Principled BSDF']
+    em = nodes.new('ShaderNodeTexImage')
+    em.image = bpy.data.images.load(paths['emit'])
+    em.image.colorspace_settings.name = 'sRGB'
+    links.new(em.outputs['Color'], bsdf.inputs['Emission Color'])
+    bsdf.inputs['Emission Strength'].default_value = 1.0
+    return mat
