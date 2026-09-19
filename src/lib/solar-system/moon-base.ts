@@ -54,6 +54,18 @@ export interface Doorway {
   yawIn: number;
 }
 
+/** What later missions switch, shown on the base itself rather than written into mission code. */
+export interface BaseState {
+  /** The base's power: lamps, screens, status lights, the habitats' lights. */
+  power: boolean;
+  /** The high-gain dish on Earth, or knocked off it. */
+  dishAligned: boolean;
+  /** The telescope dome's shutters open. */
+  domeOpen: boolean;
+  /** The rover charger live. */
+  charging: boolean;
+}
+
 export interface BaseHandle {
   group: THREE.Group;
   /** Every footprint — what the rover and the meteoroids keep out of. */
@@ -80,6 +92,8 @@ export interface BaseHandle {
   roverCollider: Collider;
   roverParts: RoverParts;
   zones: ZonesHandle;
+  state: Readonly<BaseState>;
+  setState: (s: Partial<BaseState>) => void;
   update: (dt: number, t: number, earthDir: THREE.Vector3, crewX: number, crewZ: number) => void;
   dispose: () => void;
 }
@@ -118,6 +132,9 @@ function georgianFlag(): THREE.CanvasTexture {
 const CYCLE_SECONDS = 1.4;
 const LAMP = { closed: 0xff3b2e, cycling: 0xffb347, open: 0x4dff88 } as const;
 
+/** The mission computer in OPS-B: its bearing from the dome's middle (rad) and radius (m). */
+const TERMINAL = { a: 0.95, r: 3.2 };
+
 /** How far a habitat's door stands in front of the middle of its dome, m. */
 export const DOOR_Z = 6.72;
 
@@ -128,9 +145,13 @@ export function makeMoonBase(
   sunDir: THREE.Vector3,
   lights?: LightPool,
 ): BaseHandle {
-  const m = kit.mat;
   const group = new THREE.Group();
   group.name = 'moon-base';
+  // The base's lamps and screens are its own: its power can fail without the rover's.
+  const baseKit: Kit = { ...kit, mat: { ...kit.mat } };
+  const lampMats = ['amber', 'cool', 'green', 'screen', 'work'] as const;
+  for (const k of lampMats) baseKit.mat[k] = kit.mat[k].clone();
+  const m = baseKit.mat;
   const colliders: Collider[] = [];
   const pois: PointOfInterest[] = [];
   const airlocks: Airlock[] = [];
@@ -315,6 +336,15 @@ export function makeMoonBase(
       at(0, 0, new THREE.CylinderGeometry(0.08, 0.12, 0.76, 10), m.steel, 0.38);
       for (const a of [0.6, 2.7, 4.8]) at(a, 1.35, new THREE.CylinderGeometry(0.2, 0.2, 0.46, 12), lockerDark, 0.23);
     } else if (id === 'habitatB') {
+      // The mission computer: the day's work comes from here, behind the airlock.
+      const pedestal = at(TERMINAL.a, TERMINAL.r, new THREE.CylinderGeometry(0.12, 0.2, 1.05, 12), m.anodised, 0.52);
+      pedestal.castShadow = false;
+      for (const [geometry, mt, dr] of [[new THREE.BoxGeometry(0.82, 0.54, 0.08), m.carbon, 0], [new THREE.PlaneGeometry(0.7, 0.42), m.screen, -0.05]] as const) {
+        const o = at(TERMINAL.a, TERMINAL.r + dr, geometry, mt, 1.22);
+        o.rotation.order = 'YXZ';
+        o.rotation.set(-0.5, TERMINAL.a + Math.PI, 0);
+      }
+      at(TERMINAL.a, TERMINAL.r - 0.21, new THREE.PlaneGeometry(0.7, 0.14), kit.label(['MISSION COMPUTER']), 0.75).rotation.y = TERMINAL.a + Math.PI;
       for (const a of [2.1, -2.1]) {
         at(a, 3.3, new THREE.BoxGeometry(2.4, 0.9, 0.75), locker, 0.45);
         at(a, 3.3, new THREE.BoxGeometry(2.36, 0.04, 0.72), lockerDark, 0.92);
@@ -387,7 +417,15 @@ export function makeMoonBase(
   pois.push({ id: 'greenhouse', x: px + 10.5, z: pz - 10, r: 5 });
 
   // ── The working outpost, and the rover parked in its bay. ──
-  const zones = buildZones(kit, group, heightAt, colliders, pois, sunDir);
+  const zones = buildZones(baseKit, group, heightAt, colliders, pois, sunDir);
+  // Where the crew stands to use the mission computer: in OPS-B, in front of it.
+  {
+    const ops = habs.find((h) => h.id === 'habitatB')!;
+    const r = TERMINAL.r - 0.8;
+    const c = Math.cos(ops.yaw); const s = Math.sin(ops.yaw);
+    const lx = Math.sin(TERMINAL.a) * r; const lz = Math.cos(TERMINAL.a) * r;
+    zones.anchors.scienceTerminal = { x: ops.x + lx * c + lz * s, z: ops.z - lx * s + lz * c, y: ops.cy + FLOOR, yaw: ops.yaw + TERMINAL.a + Math.PI };
+  }
   const builtRover = buildRover(kit, lite);
   const rover = builtRover.group;
   const bay = zones.anchors.serviceBay;
@@ -567,7 +605,22 @@ export function makeMoonBase(
   };
 
   const setLamp = (a: Airlock) => a.lamp.emissive.setHex(LAMP[a.state]);
+  // ── Power: everything that runs off the base scales by one level that
+  // eases (with a stutter on the way back), so a brown-out reads at 50 m. ──
+  const state: BaseState = { power: true, dishAligned: true, domeOpen: false, charging: true };
+  const powered = [m.amber, m.cool, m.green, m.screen, m.work, roomLight].map((mt) => ({ mt, full: mt.emissiveIntensity }));
+  let powerK = 1; let shownK = 1;
+  const DISH_OFF = { yaw: 0.6, pitch: -0.25 };
+
   const handle: BaseHandle = {
+    state,
+    setState(next) {
+      Object.assign(state, next);
+      zones.dishFault.yaw = state.dishAligned ? 0 : DISH_OFF.yaw;
+      zones.dishFault.pitch = state.dishAligned ? 0 : DISH_OFF.pitch;
+      zones.setDome(state.domeOpen);
+      zones.setCharging(state.charging && state.power);
+    },
     group, colliders, walkColliders, pois, spawn, airlocks, rover, roverCollider, roverParts, zones, floorAt, ceilingAt, blocked, doorway, confine, inside: null,
     cycleAirlock(a) {
       if (a.state === 'closed') { a.state = 'cycling'; a.cycle = 0; }
@@ -575,6 +628,14 @@ export function makeMoonBase(
       setLamp(a);
     },
     update(dt, t, earthDir, crewX, crewZ) {
+      const want = state.power ? 1 : 0;
+      powerK += (want - powerK) * (1 - Math.exp(-dt * (state.power ? 2.2 : 6)));
+      const k = state.power && powerK < 0.9 && Math.sin(t * 31) > 0.2 ? powerK * 0.35 : powerK;
+      if (Math.abs(k - shownK) > 1e-3) {
+        shownK = k;
+        for (const p of powered) p.mt.emissiveIntensity = p.full * k;
+        zones.power.k = k;
+      }
       let inside: Inside | null = null;
       for (const h of habs) {
         local(h, crewX, crewZ);
@@ -582,10 +643,10 @@ export function makeMoonBase(
         const here = r < DOME_R || (Math.abs(lp.x) < DOOR_HALF && lp.z >= 4.2 && lp.z < 6.75);
         if (here) inside = { id: h.id, x: h.x, z: h.z, y: h.cy + FLOOR, pressurised: true };
         h.glow += ((here ? 1 : 0) - h.glow) * (1 - Math.exp(-dt * 3));
-        if (h.glow > 0.01) lights?.request(h.x, h.cy + 4.6, h.z, 0xfff1dc, h.glow * 1.9, 22, 1.5);
+        if (h.glow > 0.01 && shownK > 0.02) lights?.request(h.x, h.cy + 4.6, h.z, 0xfff1dc, h.glow * 1.9 * shownK, 22, 1.5);
       }
       handle.inside = inside;
-      beacon.emissiveIntensity = (Math.sin(t * 2.2) > 0.6 ? 1 : 0.15) * 2;
+      beacon.emissiveIntensity = (Math.sin(t * 2.2) > 0.6 ? 1 : 0.15) * 2 * shownK;
       for (const a of airlocks) {
         if (a.state === 'cycling') {
           a.cycle = Math.min(1, a.cycle + dt / CYCLE_SECONDS);
@@ -605,6 +666,7 @@ export function makeMoonBase(
     dispose() {
       for (const g of merged.geometries) g.dispose();
       for (const o of owned) o.dispose();
+      for (const k of lampMats) m[k].dispose();
       for (const tx of textures) tx.dispose();
       zones.dispose();
       builtRover.dispose();

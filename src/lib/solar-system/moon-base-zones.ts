@@ -2,7 +2,7 @@
 // actually does. Power to the east (vertical tracking arrays, batteries, the
 // conditioning cabinet), life support to the west (regolith in, oxygen and
 // water out), comms to the north-east, the geology lab west of the landing
-// zone, the rover bay south-east, and the landing zone itself kept well clear
+// zone (the mission computer is indoors, in OPS-B), the rover bay south-east, and the landing zone itself kept well clear
 // of anything pressurised. Props are few and placed with intent: numbered
 // cargo, worn paths between the places people walk, a crate somebody left
 // open, a tool rack with a gap in it.
@@ -19,6 +19,10 @@ import { acquireModel, firstMesh } from '@/game/models';
 
 /** The supply crate, built in Blender (assets-src/blender/crate.py). */
 const CRATE_MODEL = '/explore/models/crate.glb';
+/** The modular base kit: every piece a named root node (assets-src/blender/base_kit.py). */
+const KIT_MODEL = '/explore/models/base-kit.glb';
+/** The telescope station: up on the western ridge, well away from the landing zone's dust. */
+export const TELESCOPE_SITE = { x: -58, z: -44, yaw: 0.9 };
 const UP = new THREE.Vector3(0, 1, 0);
 
 export interface Anchor { x: number; z: number; y: number; yaw: number }
@@ -26,7 +30,7 @@ export type AnchorId =
   | 'scienceTerminal' | 'sampleStore' | 'workbench'
   | 'powerCabinet' | 'faultyArray'
   | 'isruPanel' | 'commsControl'
-  | 'charger' | 'serviceBay';
+  | 'charger' | 'serviceBay' | 'telescope';
 
 /** A patch of regolith to darken (compacted, k < 0) or brighten (blasted, k > 0). */
 export interface GroundMark { x: number; z: number; r: number; k: number }
@@ -45,6 +49,12 @@ export interface ZonesHandle {
   dishFault: { yaw: number; pitch: number };
   /** Status lamps a job can turn: 'ok' green, 'warn' amber, 'fault' red. */
   setStatus: (which: 'power' | 'comms' | 'isru' | 'charger', state: 'ok' | 'warn' | 'fault') => void;
+  /** The base's power, 0 dark … 1 on: status lamps and the comms light scale by it. Set by moon-base. */
+  power: { k: number };
+  /** The telescope dome's shutters, opened or shut (they swing there). */
+  setDome: (open: boolean) => void;
+  /** The rover charger live: its ring pulses. */
+  setCharging: (on: boolean) => void;
   update: (dt: number, t: number, earthDir: THREE.Vector3) => void;
   dispose: () => void;
 }
@@ -282,18 +292,7 @@ export function buildZones(
   noShadow(kit.box(store, 1.0, 0.16, 0.02, kit.label(['SAMPLE STORE · SEALED']), 0, 1.2, 0.38));
   solid(lab, 3.2, -0.6, 0.9);
   anchors.sampleStore = anchorAt(lab, 2.1, -0.6, 0);
-  // The mission computer on its pedestal.
-  const terminal = new THREE.Group();
-  terminal.position.set(-3.3, 0, 1.0);
-  terminal.rotation.y = Math.PI / 2 + 0.3;
-  lab.add(terminal);
-  kit.cyl(terminal, 0.12, 0.2, 1.1, m.anodised, 0, 0.55, 0, 12);
-  const desk = kit.rbox(terminal, 0.8, 0.52, 0.1, 0.03, m.carbon, 0, 1.25, 0);
-  desk.rotation.x = -0.5;
-  noShadow(kit.mesh(desk, new THREE.PlaneGeometry(0.68, 0.4), m.screen, 0, 0, 0.055));
-  noShadow(kit.box(terminal, 0.7, 0.14, 0.02, kit.label(['MISSION COMPUTER']), 0, 0.72, 0.13));
-  solid(lab, -3.3, 1.0, 0.5);
-  anchors.scienceTerminal = anchorAt(lab, -2.3, 1.4, 0);
+  // The mission computer is in OPS-B, behind the airlock (moon-base sets its anchor).
   anchors.workbench = anchorAt(lab, 0, 1.2, 0);
   // Instrument racks.
   for (let k = 0; k < 2; k++) {
@@ -437,6 +436,23 @@ export function buildZones(
   colliders.push({ x: -9, z: 34, r: 1.4 });
   pois.push({ id: 'landingZone', x: lz.x, z: lz.z, r: 11 });
 
+  // ── The telescope station: a deck on the ridge, its dome, its mount. The
+  // model comes from the base kit; the station's state is kept here. ──
+  const scope = place(TELESCOPE_SITE.x, TELESCOPE_SITE.z, TELESCOPE_SITE.yaw);
+  solid(scope, 0, 0, 3.2);
+  poi('telescope', scope, 0, 4, 8);
+  anchors.telescope = anchorAt(scope, 0, 3.4, Math.PI);
+  const telescope = {
+    open: false,
+    /** 0 shut … 1 open, as drawn. */
+    k: 0,
+    shutters: [] as { node: THREE.Object3D; side: number }[],
+    update(dt: number) {
+      telescope.k += ((telescope.open ? 1 : 0) - telescope.k) * (1 - Math.exp(-dt * 0.9));
+      for (const s of telescope.shutters) s.node.rotation.z = s.side * telescope.k * 1.45;
+    },
+  };
+
   // ── Cables from each zone to the cluster. ──
   groundRun([[33, -8], [26, -12], [21.5, -12.5]], 0.06, m.cable);
   groundRun([[-37, -11], [-30, -12], [-25.5, -14]], 0.06, m.cable);
@@ -462,6 +478,8 @@ export function buildZones(
   const tracks: [number, number][][] = [
     [[22, 13], [16, 22], [2, 32], [-24, 42], [-60, 52], [-90, 60]],
     [[24, 7], [34, 4], [44, 12], [40, 26], [26, 22]],
+    // Out to the telescope: round the south of the habitats and up the ridge.
+    [[20, 6], [8, -2], [-12, 2], [-36, -4], [-50, -24], [-56, -39]],
   ];
 
   let crates: THREE.InstancedMesh | null = null;
@@ -486,16 +504,58 @@ export function buildZones(
     crates = inst;
   }, () => undefined);
 
+  // The kit's pieces, placed once the file is in: each a copy of its named node.
+  const kitSpots: { name: string; parent: THREE.Object3D; onPlaced?: (o: THREE.Object3D) => void }[] = [
+    {
+      name: 'TelescopePlatform', parent: scope,
+      onPlaced(o) {
+        for (const [n, side] of [['Telescope_ShutterL', 1], ['Telescope_ShutterR', -1]] as const) {
+          const node = o.getObjectByName(n);
+          if (node) telescope.shutters.push({ node, side });
+        }
+      },
+    },
+  ];
+  let releaseKit: (() => void) | null = null;
+  const kitPlaced: THREE.Object3D[] = [];
+  acquireModel(KIT_MODEL, true).then(({ scene, release }) => {
+    if (disposed) { release(); return; }
+    releaseKit = release;
+    for (const spot of kitSpots) {
+      const src = scene.getObjectByName(spot.name);
+      if (!src) continue;
+      const o = src.clone(true);
+      o.position.set(0, 0, 0);
+      o.rotation.set(0, 0, 0);
+      o.traverse((c) => { if ((c as THREE.Mesh).isMesh) { c.castShadow = true; c.receiveShadow = true; } });
+      spot.parent.add(o);
+      kitPlaced.push(o);
+      spot.onPlaced?.(o);
+    }
+  }, () => undefined);
+
   const tmp = new THREE.Vector3();
   const aim = new THREE.Vector3();
   const setStatus: ZonesHandle['setStatus'] = (which, state) => status[which].emissive.setHex(STATUS[state]);
+
+  let charging = true;
+  const statusFull = 1.8;
 
   const handle: ZonesHandle = {
     anchors, paths, tracks, groundMarks, arrays,
     arrayFault: { yaw: 0 },
     dishFault: { yaw: 0, pitch: 0 },
     setStatus,
-    update(_dt, t, earthDir) {
+    power: { k: 1 },
+    setDome(open) { telescope.open = open; },
+    setCharging(on) { charging = on; },
+    update(dt, t, earthDir) {
+      const k = handle.power.k;
+      status.power.emissiveIntensity = statusFull * k;
+      status.comms.emissiveIntensity = statusFull * k;
+      status.isru.emissiveIntensity = statusFull * k;
+      status.charger.emissiveIntensity = charging ? statusFull * (0.55 + 0.45 * Math.sin(t * 3.1)) * k : 0.15 * k;
+      telescope.update(dt);
       arrays.forEach((head, i) => { head.rotation.y = sunYaw + (i === 1 ? handle.arrayFault.yaw : 0); });
       // The dish tracks Earth, less whatever the job has knocked it off by.
       const c = Math.cos(handle.dishFault.yaw); const s = Math.sin(handle.dishFault.yaw);
@@ -503,7 +563,7 @@ export function buildZones(
       dishHead.getWorldPosition(tmp).add(aim);
       dishHead.lookAt(tmp);
       const blink = Math.sin(t * 2.6) > 0.55 ? 2.2 : 0.12;
-      blinkRed.emissiveIntensity = blink;
+      blinkRed.emissiveIntensity = blink * k;
       reflector.emissiveIntensity = 0.55 + 0.15 * Math.sin(t * 0.7);
     },
     dispose() {
@@ -512,6 +572,8 @@ export function buildZones(
       crates?.removeFromParent();
       crates?.dispose();
       releaseCrate?.();
+      for (const o of kitPlaced) o.removeFromParent();
+      releaseKit?.();
     },
   };
   return handle;

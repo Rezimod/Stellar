@@ -1518,13 +1518,13 @@
         "t6": "The habitats: up a ramp, cycle the airlock with the amber key, and you are in",
         "r10": "V in the rover: chase, the driver's seat, the mast camera",
         "t7": "Hold the engine key on the way down. Leave it too late and guidance takes over.",
-        "r13": "The mission computer in the geology lab hands out the day’s jobs",
-        "t10": "The mission computer in the geology lab hands out the day’s jobs",
+        "r13": "The mission computer in OPS-B, through the airlock, hands out the day’s jobs",
+        "t10": "The mission computer in OPS-B, through the airlock, hands out the day’s jobs",
         "r16": "The rover: E to climb in · hold E at a roll to bail out · Space is the handbrake"
       },
       "pois": {
         "habitatA": "Habitat A — crew quarters",
-        "habitatB": "Habitat B — lab and galley",
+        "habitatB": "OPS-B — command and the mission computer",
         "habitatC": "Habitat C — medical bay and gym",
         "greenhouse": "Greenhouse tunnel — lettuce, radish, wheat",
         "tanks": "Life support — oxygen out of regolith",
@@ -1536,11 +1536,12 @@
         "seismometer": "Passive seismometer",
         "sign": "Stellar Base — founded by Astroman, Tbilisi",
         "ourLander": "Your descent vehicle",
-        "science": "Geology lab — the mission computer",
+        "science": "Geology lab — bench and sample store",
         "logistics": "Rover bay and charger",
         "landingZone": "Landing zone — keep clear",
         "sinkhole": "Collapsed lava tube — keep back",
-        "hatch": "Maintenance hatch"
+        "hatch": "Maintenance hatch",
+        "telescope": "Telescope station — on the ridge"
       },
       "eva": "EVA",
       "pulse": "Pulse",
@@ -1584,8 +1585,8 @@
       "mission": {
         "title": "Objective",
         "log": "Expedition log",
-        "brief": "The mission computer in the geology lab has a magnetic anomaly on the survey map, a hundred metres out, that has no business being there. Pin it with the scanner, drill it, follow what the core tells you, and find out what is under the regolith.",
-        "none": "Nothing earned yet. The mission computer is in the geology lab, west of the landing zone.",
+        "brief": "The mission computer in OPS-B has a magnetic anomaly on the survey map, a hundred metres out, that has no business being there. Pin it with the scanner, drill it, follow what the core tells you, and find out what is under the regolith.",
+        "none": "Nothing earned yet. The mission computer is in OPS-B, the middle dome, through its airlock.",
         "obj": {
           "survey": "Head for the survey area",
           "drill": "Start the drill",
@@ -1593,7 +1594,7 @@
           "excavate": "Clear the regolith off the hull, patch by patch",
           "contact": "Step through the open seam",
           "done": "First contact. The craft is yours to visit.",
-          "brief": "Collect the survey at the mission computer — geology lab",
+          "brief": "Collect the survey at the mission computer — OPS-B, through the airlock",
           "scan": "Sweep the area — the scanner peaks over the anomaly",
           "drillFeed": "Feed the drill — keep the load in the green",
           "collect": "Take the core from the tray",

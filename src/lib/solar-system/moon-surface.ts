@@ -25,7 +25,7 @@ import { walkTrack } from '@/lib/solar-system/suit-scripted';
 import { headlamp, makeFixedStep, makePressEdge, makeSprintLatch, sprintFrom, walkFromStick, type FootStick } from '@/lib/solar-system/surface-input';
 import { makeAirlockRun, type AirlockContext, type AirlockRun } from '@/lib/solar-system/moon-airlock';
 import { bailVelocity, boardTrack, doorSide, doorSpot, seatSpotInto, type RoverFrame, type Spot } from '@/lib/solar-system/moon-rover-seat';
-import { makeMoonBase, DOOR_Z, type Airlock } from '@/lib/solar-system/moon-base';
+import { makeMoonBase, DOOR_Z, type Airlock, type BaseState } from '@/lib/solar-system/moon-base';
 import { makeMeteors } from '@/lib/solar-system/moon-meteors';
 import { makePrints } from '@/lib/solar-system/moon-prints';
 import { makeSuitAudio } from '@/lib/solar-system/moon-audio';
@@ -202,6 +202,8 @@ export interface MoonSurfaceHandle {
   perf: () => PerfSample;
   /** Development: draw calls per scene layer. */
   probe: (within?: string) => Record<string, number>;
+  /** What the base shows: power, dish, dome, charger (missions flip these; development toggles them). */
+  baseState: (next?: Partial<BaseState>) => Readonly<BaseState>;
   /** The game shell's pause: no frames, no sim, no sound until resumed. */
   setPaused: (on: boolean) => void;
   roverAt: () => { x: number; z: number };
@@ -1182,6 +1184,7 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
     },
     perf: perf.sample,
     probe: host.probe,
+    baseState(next) { if (next) base.setState(next); return base.state; },
     setPaused: host.setPaused,
     roverAt: () => ({ x: base.roverCollider.x, z: base.roverCollider.z }),
     fallIntoBackrooms() {
