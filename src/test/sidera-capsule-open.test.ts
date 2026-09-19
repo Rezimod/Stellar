@@ -2,11 +2,18 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { PgDialect } from 'drizzle-orm/pg-core';
 import type { SQL } from 'drizzle-orm';
-import { beforeAll, describe, expect, it } from 'vitest';
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Db } from '@/lib/sidera/attach';
 import { auditLog, type LogRow } from '@/lib/sidera/audit';
-import { commitmentOf } from '@/lib/sidera/randomness';
-import { listCapsules, openCapsule, sealSecret } from '@/lib/sidera/capsule';
+import { SoldOutError, commitmentOf, purchaseHash } from '@/lib/sidera/randomness';
+
+const payments = vi.hoisted(() => ({ findPayment: vi.fn(), markPaid: vi.fn() }));
+vi.mock('@/lib/sidera/orders', async (actual) => ({
+  ...(await actual<typeof import('@/lib/sidera/orders')>()),
+  findPayment: payments.findPayment,
+  markPaid: payments.markPaid,
+}));
+import { listCapsules, openCapsule, releaseCapsule, sealSecret, settleCapsulePayment, voidCapsule } from '@/lib/sidera/capsule';
 
 /**
  * An in-memory Postgres, just faithful enough to race in.
@@ -24,11 +31,17 @@ type Capsule = {
   id: string; set_id: string; sequence: number; commitment: string; server_secret_sealed: string;
   server_secret: string | null; state: string; price_gel: number; cards_per_capsule: number;
   buyer_wallet: string | null; buyer_nonce: string | null; purchase_hash: string | null; order_id: string | null;
+  demo?: boolean;
 };
+type Order = { id: string; status: string; expiresAt: Date | null; signature: string | null; paidAt: Date | null; amountSol: number; paymentReference: string };
 type Card = { id: string; set_id: string; designation: string; name: string; rarity: string; edition_size: number };
 type Edition = { id: string; card_id: string; edition_number: number; capsule_id: string | null };
 type Pull = { capsule_id: string; draw_index: number; edition_id: string; card_id: string; rarity: string };
-type State = { capsules: Capsule[]; cards: Card[]; editions: Edition[]; pulls: Pull[]; log: LogRow[] };
+type State = {
+  capsules: Capsule[]; cards: Card[]; editions: Edition[]; pulls: Pull[]; log: LogRow[]; orders?: Order[];
+  /** Runs inside a batch after its first statement: another transaction committing mid-batch. */
+  midBatch?: (tx: State) => void;
+};
 
 const pgError = (code: string) => Object.assign(new Error(`pg ${code}`), { code });
 const dialect = new PgDialect();
@@ -37,12 +50,16 @@ const tick = () => new Promise((r) => setTimeout(r, Math.random() * 4));
 function fakePostgres(state: State) {
   let logSeq = 0;
   const stats = { batches: 0, rolledBack: 0 };
-  const clone = (s: State): State => structuredClone(s);
+  const clone = (s: State): State => structuredClone({ ...s, midBatch: undefined });
+  const same = (a: unknown, b: unknown) => String(a).toLowerCase() === String(b).toLowerCase();
   const maxNumber = (s: State, cardId: string) => Math.max(0, ...s.editions.filter((e) => e.card_id === cardId).map((e) => e.edition_number));
 
   function read(sql: string, params: unknown[], s: State): { rows: unknown[] } {
     if (sql.includes('FROM capsule WHERE id =') && sql.includes('server_secret_sealed')) {
-      return { rows: s.capsules.filter((c) => c.id === params[0]) };
+      return { rows: s.capsules.filter((c) => same(c.id, params[0])) };
+    }
+    if (sql.includes('FROM capsule WHERE order_id =')) {
+      return { rows: s.capsules.filter((c) => c.order_id === params[0]) };
     }
     if (sql.includes('SELECT c.id, c.designation')) {
       return {
@@ -85,12 +102,13 @@ function fakePostgres(state: State) {
       return { rows: [{ id }] };
     }
     if (/INSERT INTO edition \(card_id, edition_number, owner_wallet, capsule_id/.test(sql)) {
-      const [cardId, , capsuleId] = p as [string, string, string];
-      const drawIndex = p[7] as number;
-      const rarity = p[9] as string;
+      const [cardId, number, , capsuleId] = p as [string, number, string, string];
+      const expectedMax = p[6] as number;
+      const drawIndex = p[10] as number;
+      const rarity = p[12] as string;
       const card = tx.cards.find((c) => c.id === cardId)!;
-      const next = maxNumber(tx, cardId) + 1;
-      const edition = next <= card.edition_size ? { id: randomUUID(), card_id: cardId, edition_number: next, capsule_id: capsuleId } : null;
+      const fits = maxNumber(tx, cardId) === expectedMax && number <= card.edition_size;
+      const edition = fits ? { id: randomUUID(), card_id: cardId, edition_number: number, capsule_id: capsuleId } : null;
       if (edition) tx.editions.push(edition);
       const opened = tx.capsules.find((c) => c.id === capsuleId && c.state === 'opened');
       if (!edition || !opened) throw pgError('23502');
@@ -115,6 +133,49 @@ function fakePostgres(state: State) {
         seq: 0, capsuleId: id, capsuleSequence: c.sequence, event: 'opened', commitment: c.commitment,
         buyerWallet: c.buyer_wallet, buyerNonce: c.buyer_nonce, purchaseHash: c.purchase_hash,
         outcome: { secret: c.server_secret, draws, oddsBps: JSON.parse(odds), supply: JSON.parse(supply), pulls }, at: '',
+      });
+      return { rows: [{ seq: 0 }] };
+    }
+    if (/^\s*WITH c AS \(\s*UPDATE capsule SET state = /.test(sql)) {
+      const [next, secret, id, prior, event, outcome] = p as [string, string | null, string, string, LogRow['event'], string];
+      const c = tx.capsules.find((x) => x.id === id && x.state === prior);
+      const order = tx.orders?.find((o) => o.id === c?.order_id);
+      const guard = /o\.expires_at < now\(\)/.test(sql)
+        ? order?.status === 'pending' && order.expiresAt!.getTime() < Date.now()
+        : /NOT EXISTS \(SELECT 1 FROM orders o WHERE o\.id = capsule\.order_id AND o\.status = 'paid'\)/.test(sql)
+          ? order?.status !== 'paid'
+          : order?.status === 'paid';
+      if (!c || !guard) return { rows: [] };
+      c.state = next;
+      c.server_secret = secret;
+      tx.log.push({ seq: 0, capsuleId: id, capsuleSequence: c.sequence, event, commitment: c.commitment, buyerWallet: c.buyer_wallet, buyerNonce: c.buyer_nonce, purchaseHash: c.purchase_hash, outcome: JSON.parse(outcome), at: '' });
+      return { rows: [{ seq: 0 }] };
+    }
+    if (/^\s*UPDATE orders SET\s+status = CASE/.test(sql)) {
+      const [late, sig, paidAt, orderId, capsuleId, closed] = p as [boolean, string | null, string | null, string, string, string];
+      const o = tx.orders?.find((x) => x.id === orderId && (x.status === 'pending' || x.status === 'paid'));
+      if (!o || !tx.capsules.some((c) => c.id === capsuleId && c.state === closed)) return { rows: [] };
+      o.status = o.status === 'paid' || late ? 'refund_due' : 'cancelled';
+      o.signature ??= sig;
+      o.paidAt ??= paidAt ? new Date(paidAt) : null;
+      return { rows: [{ status: o.status }] };
+    }
+    if (/^\s*UPDATE orders SET status = 'refund_due'/.test(sql)) {
+      const [sig, paidAt, orderId] = p as [string, string, string];
+      const o = tx.orders?.find((x) => x.id === orderId && (x.status === 'pending' || x.status === 'cancelled'));
+      if (!o) return { rows: [] };
+      Object.assign(o, { status: 'refund_due', signature: o.signature ?? sig, paidAt: o.paidAt ?? new Date(paidAt) });
+      return { rows: [{ status: o.status }] };
+    }
+    if (/INSERT INTO capsule_log[\s\S]*'refund_due'/.test(sql)) {
+      const [reason, capsuleId, ...states] = p as string[];
+      const c = tx.capsules.find((x) => x.id === capsuleId && states.includes(x.state));
+      const o = tx.orders?.find((x) => x.id === c?.order_id && x.status === 'refund_due');
+      if (!c || !o || tx.log.some((r) => r.capsuleId === c.id && r.event === 'refund_due')) return { rows: [] };
+      tx.log.push({
+        seq: 0, capsuleId: c.id, capsuleSequence: c.sequence, event: 'refund_due', commitment: c.commitment, buyerWallet: c.buyer_wallet,
+        buyerNonce: c.buyer_nonce, purchaseHash: c.purchase_hash,
+        outcome: { reason, paidAt: o.paidAt?.toISOString() ?? null, expiresAt: o.expiresAt?.toISOString() ?? null }, at: '',
       });
       return { rows: [{ seq: 0 }] };
     }
@@ -147,6 +208,7 @@ function fakePostgres(state: State) {
     for (const c of tx.capsules.slice(0, start.capsules.length)) {
       if (c.state !== start.capsules.find((x) => x.id === c.id)!.state) Object.assign(state.capsules.find((x) => x.id === c.id)!, c);
     }
+    for (const o of tx.orders ?? []) Object.assign(state.orders!.find((x) => x.id === o.id)!, o);
     for (const row of fresh(tx.log, start.log)) state.log.push({ ...row, seq: ++logSeq, at: new Date().toISOString() });
   }
 
@@ -155,15 +217,27 @@ function fakePostgres(state: State) {
     return { sql, params, then: (ok: (v: unknown) => unknown, fail: (e: unknown) => unknown) => Promise.resolve().then(() => read(sql, params, state)).then(ok, fail) };
   };
 
+  // Orders are read with drizzle's builder; each scenario here has one order.
+  const select = () => {
+    const chain: Record<string, unknown> = {};
+    for (const m of ['from', 'where']) chain[m] = () => chain;
+    chain.limit = async () => structuredClone(state.orders ?? []);
+    return chain;
+  };
+
   const db = {
     execute: statement,
+    select,
     batch: async (items: Array<{ sql: string; params: unknown[] }>) => {
       stats.batches++;
       const start = clone(state);
       const tx = clone(state);
       await tick();
       try {
-        const results = items.map((q) => write(q.sql, q.params, tx));
+        const results = items.map((q, i) => {
+          if (i === 1 && state.midBatch) state.midBatch(tx);
+          return write(q.sql, q.params, tx);
+        });
         await tick();
         commit(start, tx);
         return results;
@@ -187,12 +261,23 @@ function purchased(n: number, from = 1): Capsule[] {
   return Array.from({ length: n }, (_, i) => {
     const id = randomUUID();
     const secret = createHash('sha256').update(`secret-${from + i}`).digest('hex');
+    const commitment = commitmentOf(secret);
+    const wallet = `holder-${from + i}`;
+    const nonce = createHash('sha256').update(`nonce-${from + i}`).digest('hex');
     return {
-      id, set_id: SET, sequence: from + i, commitment: commitmentOf(secret), server_secret_sealed: sealSecret(secret, id),
-      server_secret: null, state: 'purchased', price_gel: 39, cards_per_capsule: 3, buyer_wallet: `holder-${from + i}`,
-      buyer_nonce: createHash('sha256').update(`nonce-${from + i}`).digest('hex'), purchase_hash: null, order_id: randomUUID(),
+      id, set_id: SET, sequence: from + i, commitment, server_secret_sealed: sealSecret(secret, id),
+      server_secret: null, state: 'purchased', price_gel: 39, cards_per_capsule: 3, buyer_wallet: wallet,
+      buyer_nonce: nonce, purchase_hash: purchaseHash({ capsuleId: id, sequence: from + i, commitment, wallet, nonce }), order_id: randomUUID(),
     };
   });
+}
+
+/** The 'listed' and 'purchased' entries the fixtures' capsules would already have. */
+function earlierEntries(capsules: Capsule[]): LogRow[] {
+  return capsules.flatMap((c) => [
+    { seq: -c.sequence * 2 - 1, capsuleId: c.id, capsuleSequence: c.sequence, event: 'listed' as const, commitment: c.commitment, buyerWallet: null, buyerNonce: null, purchaseHash: null, outcome: null, at: '' },
+    { seq: -c.sequence * 2, capsuleId: c.id, capsuleSequence: c.sequence, event: 'purchased' as const, commitment: c.commitment, buyerWallet: c.buyer_wallet, buyerNonce: c.buyer_nonce, purchaseHash: c.purchase_hash, outcome: null, at: '' },
+  ]).sort((a, b) => a.seq - b.seq);
 }
 
 function numbersByCard(state: State) {
@@ -241,11 +326,9 @@ describe('opening capsules at the same moment', () => {
     // Every opened capsule's log entry re-derives to exactly what was allocated.
     const opened = state.log.filter((r) => r.event === 'opened');
     expect(opened).toHaveLength(24);
-    const listedAndPurchased = state.capsules.flatMap((c) => [
-      { ...opened[0], seq: -c.sequence * 2, capsuleId: c.id, capsuleSequence: c.sequence, event: 'listed' as const, commitment: c.commitment, buyerWallet: null, buyerNonce: null, purchaseHash: null, outcome: null },
-    ]);
-    const audit = auditLog([...listedAndPurchased, ...state.log]);
+    const audit = auditLog([...earlierEntries(state.capsules), ...state.log]);
     expect(audit.flags).toEqual([]);
+    expect(audit.notes).toEqual([]);
     expect(audit.verified).toBe(24);
   });
 
@@ -277,6 +360,18 @@ describe('opening capsules at the same moment', () => {
     expect([a, b].filter((r) => r.ok && r.alreadyOpened)).toHaveLength(1);
   });
 
+  it('draws and logs under the capsule row’s own id, whatever case the caller used', async () => {
+    const cards = [card('C1', 'common', 50), card('R1', 'rare', 50), card('E1', 'epic', 50), card('L1', 'legendary', 50)];
+    const state: State = { capsules: purchased(1), cards, editions: [], pulls: [], log: [] };
+    const { db } = fakePostgres(state);
+    const id = state.capsules[0].id;
+
+    expect(await openCapsule(db, id.toUpperCase())).toMatchObject({ ok: true, alreadyOpened: false });
+    expect(state.log.map((r) => r.capsuleId)).toEqual([id]);
+    expect(state.pulls.every((p) => p.capsule_id === id)).toBe(true);
+    expect(auditLog([...earlierEntries(state.capsules), ...state.log]).verified).toBe(1);
+  });
+
   it('refuses a capsule that was never bought', async () => {
     const cards = [card('C1', 'common', 5)];
     const [c] = purchased(1);
@@ -298,7 +393,7 @@ describe('listing capsules at the same moment', () => {
     const sequences = state.capsules.map((c) => c.sequence).sort((a, b) => a - b);
     expect(sequences).toEqual(Array.from({ length: 18 }, (_, i) => i + 1));
     expect(stats.rolledBack).toBeGreaterThan(0);
-    expect(state.log.filter((r) => r.event === 'listed').map((r) => r.capsuleSequence).sort((a, b) => a - b)).toEqual(sequences);
+    expect(state.log.filter((r) => r.event === 'listed').map((r) => Number(r.capsuleSequence)).sort((a, b) => a - b)).toEqual(sequences);
     expect(auditLog(state.log).flags).toEqual([]);
   });
 
@@ -307,5 +402,113 @@ describe('listing capsules at the same moment', () => {
     const { db } = fakePostgres(state);
     await expect(listCapsules(db, { setId: SET, count: 2 })).rejects.toThrow(/Not enough editions/);
     await expect(listCapsules(db, { setId: SET, count: 1 })).resolves.toHaveLength(1);
+  });
+});
+
+describe('closing a capsule without taking a payment silently', () => {
+  const cards = () => [card('C1', 'common', 50), card('R1', 'rare', 50), card('E1', 'epic', 50), card('L1', 'legendary', 50)];
+  function bought(status: string, expiresInMs: number) {
+    const [c] = purchased(1);
+    const order: Order = {
+      id: c.order_id!, status, expiresAt: new Date(Date.now() + expiresInMs), signature: null, paidAt: null, amountSol: 0.1, paymentReference: 'ref',
+    };
+    const state: State = { capsules: [c], cards: cards(), editions: [], pulls: [], log: [], orders: [order] };
+    return { state, c, order: state.orders![0], ...fakePostgres(state) };
+  }
+  const events = (state: State) => state.log.map((r) => r.event);
+  const audit = (state: State) => auditLog([...earlierEntries(state.capsules), ...state.log]);
+
+  beforeEach(() => {
+    payments.findPayment.mockReset().mockResolvedValue({ paid: false });
+    payments.markPaid.mockReset().mockImplementation(async (_db, id: string, signature: string) => ({ id, status: 'paid', signature }));
+  });
+
+  it('refuses to void a bought capsule whose transfer has arrived, and marks it paid instead', async () => {
+    const { db, state, c } = bought('pending', 60_000);
+    payments.findPayment.mockResolvedValue({ paid: true, signature: 'sig', paidAt: new Date(), late: false });
+    expect(await voidCapsule(db, { capsuleId: c.id, reason: 'admin' })).toEqual({ ok: false, reason: 'paid' });
+    expect(payments.markPaid).toHaveBeenCalledWith(db, c.order_id, 'sig', expect.any(Date));
+    expect(state.capsules[0].state).toBe('purchased');
+    expect(state.log).toEqual([]);
+  });
+
+  it('refuses to void when the chain cannot be asked', async () => {
+    const { db, state, c } = bought('pending', 60_000);
+    payments.findPayment.mockResolvedValue({ paid: false, error: 'The Solana network could not be reached', status: 503 });
+    expect(await voidCapsule(db, { capsuleId: c.id, reason: 'admin' })).toEqual({ ok: false, reason: 'payment_unknown' });
+    expect(state.capsules[0].state).toBe('purchased');
+  });
+
+  it('turns a payment that commits in the middle of a void into a refund due, logged', async () => {
+    const { db, state, c } = bought('pending', 60_000);
+    state.midBatch = (tx) => {
+      // The confirmation's pending → paid lands between the capsule's update and the order's.
+      tx.orders![0].status = 'paid';
+      state.orders![0].status = 'paid';
+    };
+    expect(await voidCapsule(db, { capsuleId: c.id, reason: 'admin' })).toEqual({ ok: true });
+    expect(state.capsules[0].state).toBe('void');
+    expect(state.orders![0].status).toBe('refund_due');
+    expect(events(state)).toEqual(['voided', 'refund_due']);
+    expect(audit(state).flags.map((f) => f.kind)).toEqual(['voided_after_purchase']);
+  });
+
+  it('records a payment that arrives for a capsule already voided as a refund due, logged', async () => {
+    const { db, state, c, order } = bought('pending', 60_000);
+    expect(await voidCapsule(db, { capsuleId: c.id, reason: 'admin' })).toEqual({ ok: true });
+    expect(state.orders![0].status).toBe('cancelled');
+
+    payments.markPaid.mockImplementation(async () => ({ ...state.orders![0] }));
+    const after = await settleCapsulePayment(db, { ...order, status: 'cancelled' } as never, { paid: true, signature: 'sig', paidAt: new Date(), late: false });
+    expect(after.status).toBe('refund_due');
+    expect(events(state)).toEqual(['voided', 'refund_due']);
+    expect(state.log[1].outcome).toMatchObject({ reason: 'paid after the capsule was closed' });
+  });
+
+  it('voids a capsule its set cannot fill, marks the payment refund_due and logs both', async () => {
+    const { db, state, c } = bought('paid', 60_000);
+    state.cards = [card('C1', 'common', 1), card('R1', 'rare', 1)];
+    await expect(openCapsule(db, c.id)).rejects.toBeInstanceOf(SoldOutError);
+    expect(state.capsules[0].state).toBe('void');
+    expect(state.orders![0].status).toBe('refund_due');
+    expect(events(state)).toEqual(['voided', 'refund_due']);
+    const a = audit(state);
+    expect(a.flags).toEqual([]);
+    expect(a.notes.map((n) => n.kind).sort()).toEqual(['refund_due', 'voided_sold_out']);
+  });
+
+  it('releases a capsule left unpaid past its window, as released and not voided', async () => {
+    const { db, state, c } = bought('pending', -60_000);
+    expect(await releaseCapsule(db, c.id)).toEqual({ ok: true });
+    expect(state.capsules[0].state).toBe('released');
+    expect(state.orders![0].status).toBe('cancelled');
+    expect(events(state)).toEqual(['released']);
+    expect(state.log[0].buyerNonce).toBe(c.buyer_nonce);
+    const purchasedEntry = earlierEntries(state.capsules).map((r) => (r.event === 'purchased'
+      ? { ...r, outcome: { expiresAt: state.orders![0].expiresAt!.toISOString() } } : r));
+    const a = auditLog([...purchasedEntry, ...state.log.map((r) => ({ ...r, at: new Date().toISOString() }))]);
+    expect(a.flags).toEqual([]);
+    expect(a.notes.map((n) => n.kind)).toEqual(['released_unpaid']);
+  });
+
+  it('does not release inside the window, nor a capsule paid in time', async () => {
+    const early = bought('pending', 60_000);
+    expect(await releaseCapsule(early.db, early.c.id)).toEqual({ ok: false, reason: 'not_expired' });
+
+    const paid = bought('pending', -60_000);
+    payments.findPayment.mockResolvedValue({ paid: true, signature: 'sig', paidAt: new Date(Date.now() - 120_000), late: false });
+    expect(await releaseCapsule(paid.db, paid.c.id)).toEqual({ ok: false, reason: 'paid' });
+    expect(payments.markPaid).toHaveBeenCalled();
+    expect(paid.state.log).toEqual([]);
+  });
+
+  it('releases with a refund due when the payment landed after the window', async () => {
+    const { db, state, c } = bought('pending', -60_000);
+    const paidAt = new Date(Date.now() - 1_000);
+    payments.findPayment.mockResolvedValue({ paid: true, signature: 'late-sig', paidAt, late: true });
+    expect(await releaseCapsule(db, c.id)).toEqual({ ok: true });
+    expect(state.orders![0]).toMatchObject({ status: 'refund_due', signature: 'late-sig' });
+    expect(events(state)).toEqual(['released', 'refund_due']);
+    expect(state.log[1].outcome).toMatchObject({ reason: 'paid after its payment window closed', paidAt: paidAt.toISOString() });
   });
 });

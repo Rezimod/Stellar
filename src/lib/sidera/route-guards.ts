@@ -7,6 +7,13 @@ import { verifyCronSecret } from '@/lib/cron-auth';
 import { getSessionWalletAddresses, verifyPrivy } from '@/lib/api-auth';
 import { checkRateLimit } from '@/lib/rate-limit';
 
+/** A lowercase RFC 4122 UUID, exactly: what every capsule and order id is. */
+export const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
+export function isUuid(value: unknown): value is string {
+  return typeof value === 'string' && UUID.test(value);
+}
+
 type Limiter = { limit: (id: string) => Promise<{ success: boolean; remaining: number; reset: number }> };
 
 /** A 429 when the caller is over the limit, a 503 when the limiter cannot be reached; null to proceed. */

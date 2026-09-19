@@ -146,7 +146,7 @@ describe('allocating an edition', () => {
 
     expect(await allocateEdition(db, CARD, 'holder')).toEqual({ id: 'edition-4', editionNumber: 4 });
     const { sql } = new PgDialect().sqlToQuery(execute.mock.calls[0][0]);
-    expect(sql).toMatch(/INSERT INTO edition \(card_id, edition_number, owner_wallet, order_id, observation_capture_id\)/);
+    expect(sql).toMatch(/INSERT INTO edition \(card_id, edition_number, owner_wallet, observation_capture_id\)/);
     expect(sql).toMatch(/SELECT nt\.capture_id FROM nightly_target nt[\s\S]*ORDER BY nt\.night_date DESC LIMIT 1/);
   });
 });

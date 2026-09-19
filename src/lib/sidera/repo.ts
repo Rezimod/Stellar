@@ -29,20 +29,19 @@ export async function upsertCard(db: Db, seed: typeof card.$inferInsert): Promis
  * (card_id, edition_number) index is what settles two holders arriving at once
  * — the loser collides and asks again. A card photographed before this edition
  * existed hands it that photograph at once. Returns null when the card is sold
- * out; a card that does not exist is an error, not a sold-out card. An edition
- * bought on its own carries its order, and one order can only ever hold one.
+ * out; a card that does not exist is an error, not a sold-out card. Not for
+ * sales: those allocate through orders.ts, which logs each one publicly.
  */
 export async function allocateEdition(
   db: Db,
   cardId: string,
   ownerWallet: string,
-  orderId: string | null = null,
 ): Promise<{ id: string; editionNumber: number } | null> {
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
       const { rows } = await db.execute(sql`
-        INSERT INTO edition (card_id, edition_number, owner_wallet, order_id, observation_capture_id)
-        SELECT ${cardId}::uuid, COALESCE(MAX(e.edition_number), 0) + 1, ${ownerWallet}, ${orderId}::uuid,
+        INSERT INTO edition (card_id, edition_number, owner_wallet, observation_capture_id)
+        SELECT ${cardId}::uuid, COALESCE(MAX(e.edition_number), 0) + 1, ${ownerWallet},
           (SELECT nt.capture_id FROM nightly_target nt
            WHERE nt.card_id = ${cardId}::uuid AND nt.capture_id IS NOT NULL
            ORDER BY nt.night_date DESC LIMIT 1)

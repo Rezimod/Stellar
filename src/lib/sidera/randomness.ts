@@ -104,8 +104,12 @@ function pick(r: bigint, n: number): number {
   return Number((r * BigInt(n)) / TWO_48);
 }
 
-/** One card of a set and how many of its editions are still unallocated. */
-export type SupplyEntry = { designation: string; rarity: Rarity; remaining: number };
+/**
+ * One card of a set and how many of its editions are still unallocated. The
+ * edition size is logged with it (entries logged before it was are without),
+ * so the edition number each draw takes can be checked too.
+ */
+export type SupplyEntry = { designation: string; rarity: Rarity; remaining: number; editionSize?: number };
 
 export type PlannedPull = { drawIndex: number; designation: string; rarity: Rarity };
 
@@ -175,16 +179,18 @@ export type Verification = { ok: boolean; problems: string[] };
 /**
  * Anyone's check of an opened capsule, from what the log publishes.
  *
- * Confirms the revealed secret is the one committed to at listing, and that
- * the secret, the buyer's nonce and the logged supply produce exactly these
- * pulls, in this order, and no others.
+ * Confirms the revealed secret is the one committed to at listing, that the
+ * secret, the buyer's nonce and the logged supply produce exactly these pulls,
+ * in this order, and no others — and, where the supply carries edition sizes,
+ * that each pull took the card's next edition number: editionSize − remaining
+ * + 1, plus one for every earlier pull of the same card in this capsule.
  */
 export function verifyCapsule(input: {
   commitment: string;
   secret: string;
   nonce: string;
   capsuleId: string;
-  pulls: Array<{ drawIndex: number; designation: string; rarity: string }>;
+  pulls: Array<{ drawIndex: number; designation: string; rarity: string; editionNumber?: number }>;
   supply: SupplyEntry[];
   draws?: number;
   oddsBps?: Record<Rarity, number>;
@@ -214,5 +220,18 @@ export function verifyCapsule(input: {
       problems.push(`draw ${e.drawIndex}: expected ${e.designation} (${e.rarity}), the log shows ${g ? `${g.designation} (${g.rarity})` : 'nothing'}`);
     }
   });
+
+  const entry = new Map(input.supply.map((s) => [s.designation, s]));
+  const taken = new Map<string, number>();
+  for (const g of got) {
+    const s = entry.get(g.designation);
+    if (!s || s.editionSize === undefined) continue;
+    const earlier = taken.get(g.designation) ?? 0;
+    taken.set(g.designation, earlier + 1);
+    const next = s.editionSize - s.remaining + 1 + earlier;
+    if (g.editionNumber !== next) {
+      problems.push(`draw ${g.drawIndex}: ${g.designation} should be edition ${next} of ${s.editionSize}, the log shows ${g.editionNumber ?? 'none'}`);
+    }
+  }
   return { ok: problems.length === 0, problems };
 }

@@ -1,22 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { eq, sql } from 'drizzle-orm';
 import { getDb } from '@/lib/db';
-import { card, edition } from '@/lib/schema';
 import { isValidPublicKey } from '@/lib/validate';
 import { assertOwnsWallet, verifyPrivy } from '@/lib/api-auth';
 import { paused } from '@/lib/kill-switch';
 import { sideraBuyRateLimit } from '@/lib/rate-limit';
 import { isRarity } from '@/lib/rarity';
 import { DIRECT_CARD_PRICE_GEL } from '@/lib/sidera/economics';
-import { createCardOrder, gelToSol, merchantWallet, newPaymentReference, paymentUrl } from '@/lib/sidera/orders';
+import { cardAvailability, createCardOrder, gelToSol, merchantWallet, newPaymentReference, paymentUrl } from '@/lib/sidera/orders';
 import { limited } from '@/lib/sidera/route-guards';
+import { SolPriceUnavailableError } from '@/lib/sol-price';
 
 export const runtime = 'nodejs';
 
 /**
  * Buys one card outright — the second way in, besides a capsule. The edition
  * number is allocated when the payment is confirmed, not now, so an unpaid
- * order never holds a number and the numbers stay gapless.
+ * order never holds a number and the numbers stay gapless. Editions owed to
+ * capsules already listed or bought are not for sale on their own. The quote
+ * stands for ORDER_WINDOW_MINUTES, and none is given without a live SOL price.
  */
 export async function POST(req: NextRequest) {
   const p = paused();
@@ -44,22 +45,20 @@ export async function POST(req: NextRequest) {
   const db = getDb();
   if (!db) return NextResponse.json({ error: 'Database not configured' }, { status: 503 });
 
-  const [c] = await db
-    .select({
-      name: card.name,
-      rarity: card.rarity,
-      editionSize: card.editionSize,
-      allocated: sql<number>`COALESCE((SELECT MAX(${edition.editionNumber}) FROM ${edition} WHERE ${edition.cardId} = ${card.id}), 0)`,
-    })
-    .from(card)
-    .where(eq(card.designation, designation))
-    .limit(1);
+  const c = await cardAvailability(db, designation);
   if (!c || !isRarity(c.rarity)) return NextResponse.json({ error: 'Card not found' }, { status: 404 });
-  if (Number(c.allocated) >= c.editionSize) return NextResponse.json({ error: 'Every edition of this card is held' }, { status: 409 });
+  if (!c.available) return NextResponse.json({ error: 'No edition of this card is available on its own' }, { status: 409 });
+
+  const priceGel = DIRECT_CARD_PRICE_GEL[c.rarity];
+  let amountSol: number;
+  try {
+    amountSol = await gelToSol(priceGel);
+  } catch (err) {
+    if (!(err instanceof SolPriceUnavailableError)) console.error('[sidera/cards/buy] quote', err);
+    return NextResponse.json({ error: 'No price can be quoted right now — please retry shortly.' }, { status: 503 });
+  }
 
   try {
-    const priceGel = DIRECT_CARD_PRICE_GEL[c.rarity];
-    const amountSol = await gelToSol(priceGel);
     const reference = newPaymentReference();
     const order = await createCardOrder(db, { privyId, wallet: walletAddress, designation, name: c.name, priceGel, amountSol, reference });
     return NextResponse.json({
@@ -71,6 +70,7 @@ export async function POST(req: NextRequest) {
       amountFiat: priceGel,
       currency: 'GEL',
       status: 'pending',
+      expiresAt: order.expiresAt?.toISOString() ?? null,
     });
   } catch (err) {
     console.error('[sidera/cards/buy]', err);

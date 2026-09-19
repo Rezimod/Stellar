@@ -5,14 +5,28 @@ import { capsule, orders } from '@/lib/schema';
 import { verifyPrivy } from '@/lib/api-auth';
 import { paused } from '@/lib/kill-switch';
 import { sideraConfirmRateLimit } from '@/lib/rate-limit';
-import { CAPSULE_PRODUCT_ID, CARD_PRODUCT_PREFIX, findPayment, fulfilCardOrder, markPaid, type OrderRow } from '@/lib/sidera/orders';
-import { limited } from '@/lib/sidera/route-guards';
+import { settleCapsulePayment } from '@/lib/sidera/capsule';
+import {
+  CAPSULE_PRODUCT_ID,
+  CARD_PRODUCT_PREFIX,
+  findPayment,
+  fulfilCardOrder,
+  markPaid,
+  markRefundDue,
+  type OrderRow,
+} from '@/lib/sidera/orders';
+import { isUuid, limited } from '@/lib/sidera/route-guards';
 
 export const runtime = 'nodejs';
 
 /**
  * Confirms a Sidera order's Solana Pay transfer. A paid capsule is then ready
  * to open; a paid card is allocated its edition here. Safe to call again.
+ *
+ * A transfer is never dropped: one that landed after the order's window
+ * closed, or for an order already cancelled (its capsule voided or released
+ * while the payment was on its way), is recorded as refund_due — and, for a
+ * capsule, logged publicly against it.
  */
 export async function POST(req: NextRequest) {
   const p = paused();
@@ -22,9 +36,7 @@ export async function POST(req: NextRequest) {
 
   const body = (await req.json().catch(() => null)) as { orderId?: unknown } | null;
   const orderId = body?.orderId;
-  if (typeof orderId !== 'string' || !/^[0-9a-f-]{36}$/.test(orderId)) {
-    return NextResponse.json({ confirmed: false, error: 'orderId required' }, { status: 400 });
-  }
+  if (!isUuid(orderId)) return NextResponse.json({ confirmed: false, error: 'orderId required' }, { status: 400 });
   const l = await limited(sideraConfirmRateLimit, privyId);
   if (l) return l;
 
@@ -36,12 +48,27 @@ export async function POST(req: NextRequest) {
   if (!found || !isSidera) return NextResponse.json({ confirmed: false, error: 'Order not found' }, { status: 404 });
 
   let order: OrderRow = found;
-  if (order.status === 'pending') {
+  if (order.status === 'pending' || order.status === 'cancelled') {
     const payment = await findPayment(order);
     if (!payment.paid) {
+      if (order.status === 'cancelled' && !payment.error) {
+        return NextResponse.json({ confirmed: false, status: order.status, error: 'This order is closed' }, { status: 409 });
+      }
       return NextResponse.json({ confirmed: false, ...(payment.error ? { error: payment.error } : {}) }, { status: payment.status ?? 200 });
     }
-    order = await markPaid(db, order.id, payment.signature);
+    if (order.productId === CAPSULE_PRODUCT_ID) {
+      order = await settleCapsulePayment(db, order, payment);
+    } else if (payment.late || order.status === 'cancelled') {
+      order = await markRefundDue(db, order.id, payment.signature, payment.paidAt);
+    } else {
+      order = await markPaid(db, order.id, payment.signature, payment.paidAt);
+    }
+  }
+  if (order.status === 'refund_due') {
+    return NextResponse.json(
+      { confirmed: false, status: order.status, signature: order.signature, error: 'The payment arrived after this order closed. It will be refunded.' },
+      { status: 409 },
+    );
   }
   if (order.status !== 'paid') {
     return NextResponse.json({ confirmed: false, status: order.status, error: 'This order is closed' }, { status: 409 });
@@ -55,7 +82,7 @@ export async function POST(req: NextRequest) {
   const fulfilled = await fulfilCardOrder(db, order);
   if (!fulfilled.ok) {
     const error = fulfilled.reason === 'sold_out'
-      ? 'Every edition of this card was taken before the payment arrived. The order will be refunded.'
+      ? 'No edition of this card could be spared by the time the payment arrived. The order will be refunded.'
       : 'Card not found';
     return NextResponse.json({ confirmed: true, signature: order.signature, error }, { status: 409 });
   }

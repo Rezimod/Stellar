@@ -7,11 +7,10 @@ import { sideraBuyRateLimit } from '@/lib/rate-limit';
 import { purchaseCapsule, readCapsule } from '@/lib/sidera/capsule';
 import { gelToSol, merchantWallet, newPaymentReference, paymentUrl } from '@/lib/sidera/orders';
 import { isHex32, verifyPurchaseSignature } from '@/lib/sidera/randomness';
-import { limited } from '@/lib/sidera/route-guards';
+import { isUuid, limited } from '@/lib/sidera/route-guards';
+import { SolPriceUnavailableError } from '@/lib/sol-price';
 
 export const runtime = 'nodejs';
-
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
 /**
  * Buys one listed capsule.
@@ -22,7 +21,9 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
  * this nonce, and no other, was accepted for this capsule. A signature over
  * that message by the wallet is recorded when sent, and is refused if it does
  * not verify. The capsule is the buyer's, and its nonce fixed, from here; it
- * is opened once the order is paid.
+ * is opened once the order is paid. The quote stands for ORDER_WINDOW_MINUTES:
+ * unpaid by then, the capsule is released. No quote is given without a live
+ * SOL price.
  */
 export async function POST(req: NextRequest) {
   const p = paused();
@@ -35,7 +36,7 @@ export async function POST(req: NextRequest) {
   if (typeof walletAddress !== 'string' || !isValidPublicKey(walletAddress)) {
     return NextResponse.json({ error: 'Valid walletAddress required' }, { status: 400 });
   }
-  if (typeof capsuleId !== 'string' || !UUID.test(capsuleId)) return NextResponse.json({ error: 'capsuleId required' }, { status: 400 });
+  if (!isUuid(capsuleId)) return NextResponse.json({ error: 'capsuleId required' }, { status: 400 });
   if (!isHex32(commitment)) return NextResponse.json({ error: 'commitment must be 64 lowercase hex characters' }, { status: 400 });
   if (!isHex32(nonce)) return NextResponse.json({ error: 'nonce must be 64 lowercase hex characters' }, { status: 400 });
   if (signature !== undefined && typeof signature !== 'string') return NextResponse.json({ error: 'signature must be base58' }, { status: 400 });
@@ -52,7 +53,7 @@ export async function POST(req: NextRequest) {
   if (!db) return NextResponse.json({ error: 'Database not configured' }, { status: 503 });
 
   const listed = await readCapsule(db, capsuleId);
-  if (!listed) return NextResponse.json({ error: 'Capsule not found' }, { status: 404 });
+  if (!listed || listed.demo) return NextResponse.json({ error: 'Capsule not found' }, { status: 404 });
   if (signature) {
     const terms = { capsuleId, sequence: Number(listed.sequence), commitment, wallet: walletAddress, nonce };
     if (!verifyPurchaseSignature(terms, signature)) {
@@ -60,8 +61,15 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  let amountSol: number;
   try {
-    const amountSol = await gelToSol(Number(listed.price_gel));
+    amountSol = await gelToSol(Number(listed.price_gel));
+  } catch (err) {
+    if (!(err instanceof SolPriceUnavailableError)) console.error('[sidera/capsules/buy] quote', err);
+    return NextResponse.json({ error: 'No price can be quoted right now — please retry shortly.' }, { status: 503 });
+  }
+
+  try {
     const reference = newPaymentReference();
     const result = await purchaseCapsule(db, {
       capsuleId,
@@ -94,6 +102,7 @@ export async function POST(req: NextRequest) {
       purchaseMessage: result.message,
       purchaseHash: result.purchaseHash,
       status: 'pending',
+      expiresAt: result.expiresAt,
     });
   } catch (err) {
     console.error('[sidera/capsules/buy]', err);

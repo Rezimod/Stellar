@@ -180,6 +180,8 @@ export const orders = pgTable('orders', {
   shippingNotes: text('shipping_notes'),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
   paidAt: timestamp('paid_at', { withTimezone: true }),
+  /** Sidera orders only: when the quote lapses. A transfer landing later is owed back, not taken. */
+  expiresAt: timestamp('expires_at', { withTimezone: true }),
 }, (table) => [
   uniqueIndex('orders_payment_reference_unique').on(table.paymentReference),
   index('orders_wallet_idx').on(table.walletAddress),
@@ -872,6 +874,26 @@ export const nightlyTarget = pgTable('nightly_target', {
 //   CREATE OR REPLACE TRIGGER capsule_log_no_truncate
 //     BEFORE TRUNCATE ON capsule_log
 //     FOR EACH STATEMENT EXECUTE FUNCTION capsule_log_append_only();
+//
+//   -- Phase 5 review. Orders carry the window their quote stands for; a
+//   -- capsule bought and left unpaid past it is 'released'. Demo capsules are
+//   -- marked, never offered for sale. Direct card sales are logged as
+//   -- 'card_sold' rows, which belong to no capsule. No existing row changes.
+//   ALTER TABLE orders ADD COLUMN IF NOT EXISTS expires_at timestamptz;
+//   ALTER TABLE capsule ADD COLUMN IF NOT EXISTS demo boolean NOT NULL DEFAULT false;
+//   ALTER TABLE capsule ADD COLUMN IF NOT EXISTS released_at timestamptz;
+//   ALTER TABLE capsule_log ALTER COLUMN capsule_id DROP NOT NULL;
+//   ALTER TABLE capsule_log ALTER COLUMN capsule_sequence DROP NOT NULL;
+//   ALTER TABLE capsule_log ALTER COLUMN commitment DROP NOT NULL;
+//   DO $$ BEGIN
+//     ALTER TABLE capsule_log ADD CONSTRAINT capsule_log_capsule_fields CHECK (
+//       event = 'card_sold' OR (capsule_id IS NOT NULL AND capsule_sequence IS NOT NULL AND commitment IS NOT NULL));
+//   EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+//   CREATE UNIQUE INDEX IF NOT EXISTS capsule_log_listed_sequence_unique
+//     ON capsule_log (capsule_sequence) WHERE event = 'listed';
+//   CREATE UNIQUE INDEX IF NOT EXISTS capsule_log_card_sold_unique
+//     ON capsule_log ((outcome->>'orderHash')) WHERE event = 'card_sold';
+//   CREATE INDEX IF NOT EXISTS capsule_log_capsule_idx ON capsule_log (capsule_id, seq);
 export const capsule = pgTable('capsule', {
   /** Chosen by the server before insert: it is part of what the draws are derived from. */
   id: uuid('id').primaryKey(),
@@ -884,8 +906,10 @@ export const capsule = pgTable('capsule', {
   serverSecretSealed: text('server_secret_sealed').notNull(),
   /** The secret in the clear — null until the capsule is opened or voided. */
   serverSecret: text('server_secret'),
-  /** 'listed' | 'purchased' | 'opened' | 'void' */
+  /** 'listed' | 'purchased' | 'opened' | 'void' | 'released' */
   state: text('state').notNull().default('listed'),
+  /** Listed by the demo script: never offered for sale, and marked so in its 'listed' log entry. */
+  demo: boolean('demo').notNull().default(false),
   priceGel: doublePrecision('price_gel').notNull(),
   cardsPerCapsule: integer('cards_per_capsule').notNull(),
   listedAt: timestamp('listed_at', { withTimezone: true }).defaultNow().notNull(),
@@ -899,6 +923,7 @@ export const capsule = pgTable('capsule', {
   purchasedAt: timestamp('purchased_at', { withTimezone: true }),
   openedAt: timestamp('opened_at', { withTimezone: true }),
   voidedAt: timestamp('voided_at', { withTimezone: true }),
+  releasedAt: timestamp('released_at', { withTimezone: true }),
 }, (t) => [
   index('capsule_state_idx').on(t.state, t.sequence),
   index('capsule_buyer_idx').on(t.buyerWallet),
@@ -919,17 +944,26 @@ export const capsulePull = pgTable('capsule_pull', {
 export const capsuleLog = pgTable('capsule_log', {
   /** Orders the log. May skip a number after a rolled-back write; the listing sequence may not. */
   seq: bigserial('seq', { mode: 'number' }).primaryKey(),
-  capsuleId: uuid('capsule_id').notNull(),
-  capsuleSequence: bigint('capsule_sequence', { mode: 'number' }).notNull(),
-  /** 'listed' | 'purchased' | 'opened' | 'voided' */
+  /** Null only for 'card_sold' (a check constraint holds it). */
+  capsuleId: uuid('capsule_id'),
+  capsuleSequence: bigint('capsule_sequence', { mode: 'number' }),
+  /** 'listed' | 'purchased' | 'opened' | 'voided' | 'released' | 'refund_due' | 'card_sold' */
   event: text('event').notNull(),
-  commitment: text('commitment').notNull(),
+  commitment: text('commitment'),
   buyerWallet: text('buyer_wallet'),
   buyerNonce: text('buyer_nonce'),
   purchaseHash: text('purchase_hash'),
-  /** Opened: the secret, odds, supply and pulls. Voided: the secret and the reason. */
+  /**
+   * Listed: the demo mark, if any. Purchased: when the payment window closes.
+   * Opened: the secret, odds, supply and pulls. Voided and released: the
+   * secret and the reason. Refund due: why, and when the payment landed.
+   * Card sold: the card, the edition and SHA-256 of the order id.
+   */
   outcome: jsonb('outcome'),
   at: timestamp('at', { withTimezone: true }).defaultNow().notNull(),
 }, (t) => [
   uniqueIndex('capsule_log_event_unique').on(t.capsuleId, t.event),
+  uniqueIndex('capsule_log_listed_sequence_unique').on(t.capsuleSequence).where(sql`event = 'listed'`),
+  uniqueIndex('capsule_log_card_sold_unique').on(sql`(outcome->>'orderHash')`).where(sql`event = 'card_sold'`),
+  index('capsule_log_capsule_idx').on(t.capsuleId, t.seq),
 ])

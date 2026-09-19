@@ -7,7 +7,7 @@ import { paused } from '@/lib/kill-switch';
 import { sideraOpenRateLimit } from '@/lib/rate-limit';
 import { openCapsule, readCapsule } from '@/lib/sidera/capsule';
 import { SoldOutError } from '@/lib/sidera/randomness';
-import { limited } from '@/lib/sidera/route-guards';
+import { isUuid, limited } from '@/lib/sidera/route-guards';
 
 export const runtime = 'nodejs';
 
@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
 
   const body = (await req.json().catch(() => null)) as { capsuleId?: unknown } | null;
   const capsuleId = body?.capsuleId;
-  if (typeof capsuleId !== 'string' || !/^[0-9a-f-]{36}$/.test(capsuleId)) {
+  if (!isUuid(capsuleId)) {
     return NextResponse.json({ error: 'capsuleId required' }, { status: 400 });
   }
 
@@ -48,10 +48,10 @@ export async function POST(req: NextRequest) {
   if (order.status !== 'paid') return NextResponse.json({ error: 'The capsule’s payment is not confirmed yet' }, { status: 409 });
 
   try {
-    const result = await openCapsule(db, capsuleId);
+    const result = await openCapsule(db, c.id);
     if (!result.ok) return NextResponse.json({ error: 'This capsule cannot be opened' }, { status: 409 });
     return NextResponse.json({
-      capsuleId,
+      capsuleId: c.id,
       sequence: Number(c.sequence),
       commitment: c.commitment,
       nonce: c.buyer_nonce,
@@ -60,7 +60,12 @@ export async function POST(req: NextRequest) {
       cards: result.pulls,
     });
   } catch (err) {
-    if (err instanceof SoldOutError) return NextResponse.json({ error: err.message }, { status: 409 });
+    if (err instanceof SoldOutError) {
+      return NextResponse.json(
+        { error: `${err.message} The capsule is withdrawn, as the public log records, and its payment will be refunded.`, refundDue: true },
+        { status: 409 },
+      );
+    }
     console.error('[sidera/capsules/open]', err);
     return NextResponse.json({ error: 'Could not open the capsule — please retry.' }, { status: 500 });
   }

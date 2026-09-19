@@ -45,6 +45,13 @@ export const RARITY_ODDS: Record<Rarity, number> = {
   legendary: RARITY_ODDS_BPS.legendary / 10_000,
 };
 
+/**
+ * How long a Sidera order's quote stands. A payment whose block time is later
+ * than this is not accepted as payment: it is recorded as a refund due. A
+ * capsule bought and left unpaid this long is released.
+ */
+export const ORDER_WINDOW_MINUTES = 15;
+
 /** PROVISIONAL (Gate 2). What one capsule costs, in lari. */
 export const CAPSULE_PRICE_GEL = 39;
 
