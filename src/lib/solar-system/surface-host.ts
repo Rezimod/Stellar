@@ -40,8 +40,8 @@ export interface SurfaceHost {
   readonly paused: boolean;
   /** Keep the shadow box on the crew, one texel at a time, so its edges never crawl. */
   followShadow: (crew: THREE.Vector3, sunDir: THREE.Vector3) => void;
-  /** Compile every program, then run `frame` once per drawn frame. */
-  start: (frame: (dt: number) => void, onReady: () => void) => void;
+  /** Compile every program (once `after` settles: models still loading), then run `frame` once per drawn frame. */
+  start: (frame: (dt: number) => void, onReady: () => void, after?: Promise<unknown>) => void;
   /** Draw through the post chain, inside the frame accounting. */
   render: (dt: number) => void;
   setPaused: (on: boolean) => void;
@@ -181,23 +181,26 @@ export function makeSurfaceHost(mount: HTMLElement, opts: SurfaceHostOptions): S
       sun.target.position.copy(shadowU).multiplyScalar(su).addScaledVector(shadowV, sv).addScaledVector(sunDir, crew.dot(sunDir));
       sun.position.copy(sun.target.position).addScaledVector(sunDir, 220);
     },
-    start(frame, onReady) {
+    start(frame, onReady, after) {
       frameFn = frame;
       // Compile every program before the first frame — in parallel where the
       // driver allows it — so the descent does not open on a long stall.
       // Hidden props are shown for the compile so they cannot stall later.
-      const hiddenForCompile: THREE.Object3D[] = [];
-      scene.traverse((o) => { if (!o.visible) { hiddenForCompile.push(o); o.visible = true; } });
-      const begin = () => {
-        for (const o of hiddenForCompile) o.visible = false;
-        perf.setBuildMs(performance.now() - buildStart);
-        if (disposed || raf || contextLost) return;
-        ready = true;
-        onReady();
-        resume();
+      const compile = () => {
+        if (disposed || contextLost) return undefined;
+        const hiddenForCompile: THREE.Object3D[] = [];
+        scene.traverse((o) => { if (!o.visible) { hiddenForCompile.push(o); o.visible = true; } });
+        const begin = () => {
+          for (const o of hiddenForCompile) o.visible = false;
+          perf.setBuildMs(performance.now() - buildStart);
+          if (disposed || raf || contextLost) return;
+          ready = true;
+          onReady();
+          resume();
+        };
+        return renderer.compileAsync(scene, camera).then(begin, begin);
       };
-      compiling = renderer.compileAsync(scene, camera);
-      compiling.then(begin, begin);
+      compiling = after ? after.then(compile, compile) : compile() ?? Promise.resolve();
     },
     render(dt) {
       perf.mark();

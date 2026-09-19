@@ -20,6 +20,14 @@ build/              raw exports and baked textures (ignored by git)
 npx --yes @gltf-transform/cli optimize assets-src/build/crate.glb public/explore/models/crate.glb --compress meshopt --texture-compress webp --texture-size 1024
 ```
 
+A skinned or multi-node asset (the cosmonaut) must keep its nodes and meshes
+apart, so the optimiser may not join, flatten or simplify them:
+
+```
+/Applications/Blender.app/Contents/MacOS/Blender -b -P assets-src/blender/cosmonaut.py -- assets-src/build assets-src/renders/cosmonaut
+npx --yes @gltf-transform/cli optimize assets-src/build/cosmonaut.glb public/explore/models/cosmonaut.glb --compress meshopt --texture-compress webp --texture-size 2048 --join false --flatten false --simplify false --instance false --palette false
+```
+
 Blender 4.5 LTS (Intel macOS is supported there; later releases may not be).
 `@gltf-transform/cli` is run as a one-off with `npx` and is not a dependency.
 

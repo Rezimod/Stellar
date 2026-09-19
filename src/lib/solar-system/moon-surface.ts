@@ -949,6 +949,7 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
       if (input.headlamp) {
         input.headlamp = false;
         telemetry.headlamp = !telemetry.headlamp;
+        cosmonaut.lamps(telemetry.headlamp);
         audio.bleep();
       }
       if (input.shoulderSwap) {
@@ -1146,7 +1147,7 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
     if (surfacing > 0) { surfacing = Math.max(0, surfacing - dt * 0.7); post.setBlack(surfacing); }
     host.render(dt);
   };
-  host.start(frame, () => { telemetry.ready = true; });
+  host.start(frame, () => { telemetry.ready = true; }, cosmonaut.ready);
 
   const release = () => {
     sinkhole.dispose();

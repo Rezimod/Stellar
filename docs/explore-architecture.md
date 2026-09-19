@@ -1021,13 +1021,15 @@ Draw calls after this phase (probe, DPR 1, 1280×800): orrery 195 → 153, fligh
 - [ ] Tests for determinism at 30/60/144 fps and keyboard/gamepad parity. These don't exist yet (§4.4).
 
 ### Phase 3 — cosmonaut
-- [ ] D11 (P2): the suit uses 24 materials with draws per joint group and no LOD. The GLB replaces it.
-- [ ] D12 (P2): no reach, kneel, tool, pickup or headlamp states, and first person hides only the helmet.
+- [x] D11 (P2): the suit is `public/explore/models/cosmonaut.glb` (`assets-src/blender/cosmonaut.py`): 23.9k triangles, one 2K atlas (colour, normal, AO/roughness/metalness, emissive) plus the gold visor, 1.46 MB. One skinned body and a 6k-triangle LOD1 beyond 25 m (12 m on lite). The body is bound to the rig's own joints (now `THREE.Bone`s), so moon-suit-pose drives it unchanged. The helmet and visor ride the neck and the visor hinge. Moon probe: the cosmonaut draws in **6 calls** including shadows (was ~114).
+- [x] E21 (P3): `makeCosmonaut(dust, lite, g, suited, bareHead)` unchanged; Earth hangs the pilot's head from the model and folds the pack into its pivot. Mars and Earth captured without errors.
+- [x] D21 (P3): no `Math.random` texture left; the code-built suit and its canvas textures are gone.
+- [x] The surfaces compile after the model is on the rig (`SurfaceHost.start(frame, onReady, cosmonaut.ready)`), so the skinned programs are never a first-sight stall. The headlamp (F) also brightens the helmet lamps and displays (`cosmonaut.lamps`).
+- [ ] D12 (P2): no reach, kneel, tool, pickup or headlamp-toggle poses yet; the plan's full animation list (baked clips for idle breathing, kneel-and-collect, ladder, tool use) is still open.
 - [ ] D13 (P2): lander egress hides and teleports the suit. Use a ladder or exit track (with Phase 9).
-- [ ] B10 (P2): a third suit model is in `ship-mesh.ts` (flight EVA). Fold it in.
-- [ ] E21 (P3): keep `makeCosmonaut(dust, lite, g, suited, bareHead)` working for World.
+- [ ] B10 (P2): the flight EVA suit in `ship-mesh.ts` is still code-built; fold it onto the model once the ships work (branch `explore/ships`) lands in that file.
 - [ ] D20 (P3): reset the pack spring on settle/teleport.
-- [ ] D21 (P3): the suit texture uses `Math.random`.
+- Known: at close range from below, slivers of the gold visor show inside the chin ring. The upper-arm flags, chest roundel, pack flag and wordmark read in the turntable (`assets-src/renders/cosmonaut/sheet.png`, reference on top).
 
 ### Phase 4 — terrain, lighting, sky
 - [ ] D14 (P2): `EARTH_DIR` is hard-coded. Drive Earth's position and terminator from the ephemeris.

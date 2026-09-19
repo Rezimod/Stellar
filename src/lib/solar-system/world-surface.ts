@@ -483,6 +483,7 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
       if (input.headlamp) {
         input.headlamp = false;
         telemetry.headlamp = !telemetry.headlamp;
+        cosmonaut.lamps(telemetry.headlamp);
         audio.bleep();
       }
       if (input.shoulderSwap) {
@@ -586,7 +587,7 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
     lightPool.flush(crew.x, crew.y, crew.z);
     host.render(dt);
   };
-  host.start(frame, () => { telemetry.ready = true; });
+  host.start(frame, () => { telemetry.ready = true; }, cosmonaut.ready);
 
   const release = () => {
     lander.dispose();
