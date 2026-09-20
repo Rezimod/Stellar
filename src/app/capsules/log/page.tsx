@@ -55,11 +55,15 @@ export default async function LogPage() {
     <SideraShell>
       <section className="sd-container sd-page">
         <div className="sd-page__head">
-          <h1 className="sd-page__title">The log</h1>
+          <div>
+            <p className="sd-eyebrow">Append only</p>
+            <h1 className="sd-page__title">The log</h1>
+          </div>
         </div>
         <p className="sd-lede">
-          Every capsule listed, bought, opened, released and withdrawn, numbered in the order it happened and never
-          rewritten. A capsule that vanished would leave its number behind, which is what the reading below looks for.
+          Every capsule listed, bought, opened, released and withdrawn — numbered in the order it happened, never
+          rewritten. A capsule quietly removed would leave its number behind, and the reading below is what goes
+          looking for the hole.
         </p>
 
         {audit && (

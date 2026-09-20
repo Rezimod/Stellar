@@ -26,15 +26,15 @@ export type RarityInfo = {
   glyph: string;
 };
 
-// One brass accent, stepped: common sits nearest the neutrals, legendary is
-// the brightest brass. Glyphs are one family (diamonds, then the star) so they
-// never read as an observation status, which uses circles. Mirrors
-// --sd-rarity-* in src/styles/sidera-tokens.css.
+// Cool to hot, so scarcity reads as heat: a cold grey, the app's seafoam, its
+// terracotta, then a warm white-gold. Glyphs are one family (diamonds, then
+// the star) so a rarity never reads as an observation status, which uses
+// circles. Mirrors --sd-rarity-* in src/styles/sidera-tokens.css.
 const RARITY_MAP: Record<Rarity, Omit<RarityInfo, 'rarity' | 'rank'>> = {
-  common: { color: '#978D72', label: 'Common', glyph: '◇' },
-  rare: { color: '#B09A5F', label: 'Rare', glyph: '◈' },
-  epic: { color: '#C9A84C', label: 'Epic', glyph: '◆' },
-  legendary: { color: '#E2C77A', label: 'Legendary', glyph: '✦' },
+  common: { color: '#9AA7C7', label: 'Common', glyph: '◇' },
+  rare: { color: '#5EEAD4', label: 'Rare', glyph: '◈' },
+  epic: { color: '#FFB347', label: 'Epic', glyph: '◆' },
+  legendary: { color: '#FFE3A3', label: 'Legendary', glyph: '✦' },
 };
 
 export function isRarity(value: string): value is Rarity {

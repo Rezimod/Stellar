@@ -25,9 +25,9 @@ export default function CollectionWallet() {
 
   return (
     <>
-      <p className="sd-lede">Sign in to read your Collection, or name a holder to read theirs.</p>
+      <p className="sd-lede">Sign in to see what you hold — or name any holder and read theirs. A Collection is public, like the log.</p>
       <div className="sd-pay__actions sd-section">
-        <button type="button" className="sd-btn" onClick={() => setAuthOpen(true)} disabled={!ready}>
+        <button type="button" className="sd-btn sd-btn--primary" onClick={() => setAuthOpen(true)} disabled={!ready}>
           {ready ? 'Sign in' : 'Reading the account'}
         </button>
       </div>

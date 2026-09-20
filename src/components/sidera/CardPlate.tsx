@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import CardArt from './CardArt';
 import { rarityInfo, type Rarity } from '@/lib/rarity';
 import type { ObservationStatus } from '@/lib/sidera/observability';
 import DataRow, { type Datum } from './ui/DataRow';
@@ -10,7 +11,8 @@ export type CardPlateProps = {
   name: string;
   rarity: Rarity;
   observationStatus: ObservationStatus;
-  /** The plate image. Null draws the outline plate: an edition nobody holds yet. */
+  /** A real capture. Null draws the outline plate: an edition nobody holds yet.
+   *  The placeholder path means no frame exists, so the plate is drawn instead. */
   artUrl?: string | null;
   /** Metadata beneath the image, in mono. Edition number first, where there is one. */
   data?: Datum[];
@@ -22,8 +24,9 @@ export type CardPlateProps = {
  * One object shot on black, captioned the way a survey captions a detection.
  *
  * Image, then designation, name, the two marks side by side, then the data.
- * Epic and legendary take the rarity colour in the plate's own hairline; the
- * lower two stay neutral, so brass still reads as scarcity and not as chrome.
+ * Until a card has been photographed the plate is drawn from its own record
+ * (CardArt); epic and legendary take their rarity colour in the plate's edge,
+ * so scarcity reads before the words do.
  */
 export default function CardPlate({ designation, name, rarity, observationStatus, artUrl, data, href }: CardPlateProps) {
   const { color } = rarityInfo(rarity);
@@ -34,7 +37,13 @@ export default function CardPlate({ designation, name, rarity, observationStatus
       style={ranked ? { borderColor: color } : undefined}
     >
       <div className="sd-plate__frame">
-        {artUrl ? <img src={artUrl} alt="" loading="lazy" decoding="async" /> : <span className="sd-label">No edition held</span>}
+        {!artUrl ? (
+          <span className="sd-label">Not held</span>
+        ) : artUrl.startsWith('/cards/') ? (
+          <CardArt designation={designation} />
+        ) : (
+          <img src={artUrl} alt="" loading="lazy" decoding="async" />
+        )}
       </div>
       <hr className="sd-rule sd-rule--strong" />
       <div className="sd-plate__body">

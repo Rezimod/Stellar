@@ -1,6 +1,17 @@
 # Sidera design system
 
-The brief for every Sidera page. Read `docs/sidera/RULES.md` (tone and vocabulary) first. If a composition could be the frontispiece of a 1960s observatory annual report, it is on brand.
+The brief for every Sidera page. Read `docs/sidera/RULES.md` (tone and vocabulary) first.
+
+**Superseded 2026-09-21, by the owner.** Sidera now wears the Stellar design
+language — the same cosmic navy canvas, terracotta accent and Geist/JetBrains
+stack that stellarr.club runs on — with the Stellar comet mark beside the
+name. The references are ripcars.io and skymapper.io: a hero that shows the
+product, one hot accent, numbered steps, stat rows. The institutional
+serif-and-brass system described in the rest of this file is **no longer in
+force**; `src/styles/sidera-tokens.css` is the current source of truth, and
+the sections below are kept only for the parts that still hold (the plate
+anatomy, rarity vs observation status, the primitives). Do not restore the
+serif system without asking.
 
 ## Opting in
 

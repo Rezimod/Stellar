@@ -118,7 +118,7 @@ export default function SideraBuyCapsule({
     <div className="sd-section">
       {receipt && (
         <div className="sd-section">
-          <h3 className="sd-section__title">Your receipt</h3>
+          <h3 className="sd-section__title">Your receipt — keep it</h3>
           <DataRow
             layout="stacked"
             items={[
@@ -140,8 +140,8 @@ export default function SideraBuyCapsule({
 
       {paid ? (
         <div className="sd-pay__actions">
-          <button type="button" className="sd-btn" onClick={open} disabled={busy}>
-            {busy ? 'Opening' : 'Open the capsule'}
+          <button type="button" className="sd-btn sd-btn--primary" onClick={open} disabled={busy}>
+            {busy ? 'Opening' : 'Crack it open'}
           </button>
         </div>
       ) : order ? (
@@ -149,11 +149,11 @@ export default function SideraBuyCapsule({
       ) : (
         <div className="sd-pay__actions">
           {ready && authenticated ? (
-            <button type="button" className="sd-btn" onClick={reserve} disabled={busy}>
-              {busy ? 'Reserving' : `Buy capsule ${sequence} · ${priceGel} GEL`}
+            <button type="button" className="sd-btn sd-btn--primary" onClick={reserve} disabled={busy}>
+              {busy ? 'Reserving' : `Take this capsule — ${priceGel} GEL`}
             </button>
           ) : (
-            <button type="button" className="sd-btn" onClick={() => setAuthOpen(true)}>
+            <button type="button" className="sd-btn sd-btn--primary" onClick={() => setAuthOpen(true)}>
               Sign in to buy
             </button>
           )}

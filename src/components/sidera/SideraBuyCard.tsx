@@ -87,11 +87,11 @@ export default function SideraBuyCard({
     <>
       <div className="sd-pay__actions">
         {ready && authenticated ? (
-          <button type="button" className="sd-btn" onClick={place} disabled={placing}>
-            {placing ? 'Placing' : `Buy this card · ${priceGel} GEL`}
+          <button type="button" className="sd-btn sd-btn--primary" onClick={place} disabled={placing}>
+            {placing ? 'Placing' : `Buy this one outright — ${priceGel} GEL`}
           </button>
         ) : (
-          <button type="button" className="sd-btn" onClick={() => setAuthOpen(true)}>
+          <button type="button" className="sd-btn sd-btn--primary" onClick={() => setAuthOpen(true)}>
             Sign in to buy
           </button>
         )}

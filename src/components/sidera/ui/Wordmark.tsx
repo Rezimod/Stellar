@@ -1,7 +1,7 @@
 import Link from 'next/link';
 
 type WordmarkProps = {
-  /** sm for the top bar, md for a plate or share image, lg for a hero. */
+  /** sm for the top bar, md for a panel, lg for a hero. */
   size?: 'sm' | 'md' | 'lg';
   /** When set, the mark is a link (the top bar passes '/'). */
   href?: string;
@@ -10,19 +10,29 @@ type WordmarkProps = {
   className?: string;
 };
 
+const MARK_PX: Record<NonNullable<WordmarkProps['size']>, number> = { sm: 22, md: 28, lg: 44 };
+
 /**
- * The Sidera wordmark: the name set in the serif, in capitals, widely
- * tracked. Text, not an image — no logo file exists yet. The accessible name
- * is "Sidera".
+ * The Sidera lockup: Stellar's comet mark beside the name, set in the display
+ * face. Same mark as the parent product, because Sidera is the same
+ * observatory seen from the collector's side.
  */
 export default function Wordmark({ size = 'sm', href, asHeading = false, className = '' }: WordmarkProps) {
   const cls = `sd-wordmark sd-wordmark--${size} ${className}`.trim();
+  const px = MARK_PX[size];
+  const inner = (
+    <>
+      <img src="/brand/logo-mark.svg" alt="" width={px} height={px} aria-hidden="true" />
+      <span>Sidera</span>
+    </>
+  );
+
   if (href) {
     return (
       <Link href={href} className={cls} aria-label="Sidera, home">
-        Sidera
+        {inner}
       </Link>
     );
   }
-  return asHeading ? <h1 className={cls}>Sidera</h1> : <span className={cls}>Sidera</span>;
+  return asHeading ? <h1 className={cls}>{inner}</h1> : <span className={cls}>{inner}</span>;
 }

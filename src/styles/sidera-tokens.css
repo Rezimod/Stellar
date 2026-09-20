@@ -1,254 +1,333 @@
-/* SIDERA DESIGN TOKENS
-   Dark-only. Everything below is scoped to `.sidera`, the class SideraShell
-   puts on its root, so the legacy Stellar pages keep their own tokens and the
-   light/field theme overrides on <html> never reach a Sidera page.
-   Brief: docs/sidera/design-system.md. */
-
-:root {
-  /* The one warm accent. Rarity only — never a link, a button, a hover, a focus ring. */
-  --brass: #c9a84c;
-}
+/* SIDERA — the Stellar design language, applied to the card product.
+   Scoped to `.sidera`, the class SideraShell puts on its root, so the legacy
+   Stellar chrome stays hidden while a Sidera page is mounted. Tokens mirror
+   src/app/globals.css: the canvas, the terracotta accent and the ink ramp are
+   the same ones stellarr.club runs on. Brief: docs/sidera/design-system.md. */
 
 .sidera {
   color-scheme: dark;
 
-  /* Ground — a considered near-black, faintly cool, never #000 */
-  --sd-ground: #0b0c0e;
-  --sd-plate: #131417;          /* a card plate or a raised panel */
-  --sd-plate-hover: #181a1d;
+  /* Ground — Stellar's cosmic navy, with a deeper band for alternating sections */
+  --sd-canvas: #0a1735;
+  --sd-deep: #070f24;
+  --sd-plate: rgba(255, 255, 255, 0.045);
+  --sd-plate-hover: rgba(255, 255, 255, 0.085);
 
-  /* Text — bone-white ramp. ink, ink-2 and ink-3 pass 4.5:1 on ground and plate; ink-4 does not. */
-  --sd-ink: #ece7da;            /* object names, headings, body */
-  --sd-ink-2: #b3aea1;          /* secondary copy */
-  --sd-ink-3: #8a867c;          /* captions, metadata labels (min for text) */
-  --sd-ink-4: #5f5c55;          /* disabled, placeholder outlines — not for text */
+  /* Ink ramp — white at Stellar's night-mode opacities */
+  --sd-ink: #ffffff;
+  --sd-ink-2: rgba(255, 255, 255, 0.74);
+  --sd-ink-3: rgba(255, 255, 255, 0.54);
+  --sd-ink-4: rgba(255, 255, 255, 0.32);
 
-  /* Rules — hairlines, never shadows */
-  --sd-rule: rgba(236, 231, 218, 0.12);
-  --sd-rule-strong: rgba(236, 231, 218, 0.24);
+  /* Borders — hairlines, and one stronger for panels */
+  --sd-rule: rgba(255, 255, 255, 0.10);
+  --sd-rule-strong: rgba(255, 255, 255, 0.18);
   --sd-hairline: 1px;
 
-  /* Rarity — a ramp from neutral into brass. Mirrors RARITY_MAP in src/lib/rarity.ts. */
-  --brass: #c9a84c;
-  --sd-rarity-common: #978d72;
-  --sd-rarity-rare: #b09a5f;
-  --sd-rarity-epic: var(--brass);
-  --sd-rarity-legendary: #e2c77a;
+  /* The accent. Terracotta, the same one the app uses, for the primary action
+     and for anything live. Sparingly: one hot thing per screen. */
+  --sd-accent: #ffb347;
+  --sd-accent-hi: #ffc46b;
+  --sd-accent-dim: rgba(255, 179, 71, 0.12);
+  --sd-teal: #5eead4;
 
-  /* Observation status — monochrome, circle glyphs, never brass */
-  --sd-status-dedicated: var(--sd-ink);
+  /* Rarity — cool to hot, so scarcity reads as heat */
+  --sd-rarity-common: #9aa7c7;
+  --sd-rarity-rare: #5eead4;
+  --sd-rarity-epic: #ffb347;
+  --sd-rarity-legendary: #ffe3a3;
+
+  /* Observation status — teal for what the node can reach, ink for the rest */
+  --sd-status-dedicated: var(--sd-teal);
   --sd-status-eligible: var(--sd-ink-2);
   --sd-status-not-available: var(--sd-ink-3);
 
-  /* Focus — ink, not brass */
-  --sd-focus: var(--sd-ink);
+  --sd-focus: var(--sd-accent);
 
-  /* Type */
-  --sd-serif: var(--font-sidera-serif), 'Baskerville', 'Times New Roman', serif;
-  --sd-mono: var(--font-sidera-mono), ui-monospace, 'SFMono-Regular', monospace;
+  /* Type — Stellar's stack: Geist for voice, JetBrains for data, Orbitron for the mark */
+  --sd-sans: var(--font-geist), system-ui, sans-serif;
+  --sd-mono: var(--font-mono), ui-monospace, 'SFMono-Regular', monospace;
+  --sd-display: var(--font-orbitron), var(--font-geist), sans-serif;
 
-  /* Layout */
   --sd-gutter: 16px;
-  --sd-max: 1040px;
-  --sd-bar-h: 56px;
+  --sd-max: 1200px;
+  --sd-bar-h: 64px;
+  --sd-radius: 14px;
+  --sd-radius-sm: 10px;
 
-  /* Legacy font tokens re-pointed so Tailwind/global rules inside a Sidera
-     page land on the two Sidera faces. */
-  --font-display: var(--sd-serif);
-  --font-body: var(--sd-serif);
-  --font-cta: var(--sd-serif);
+  --font-display: var(--sd-display);
+  --font-body: var(--sd-sans);
+  --font-cta: var(--sd-sans);
   --font-mono: var(--sd-mono);
 
-  background: var(--sd-ground);
+  background: var(--sd-canvas);
   color: var(--sd-ink);
-  font-family: var(--sd-serif);
-  font-weight: 400;
+  font-family: var(--sd-sans);
+  font-weight: 500;
   font-size: 16px;
-  line-height: 1.55;
+  line-height: 1.6;
   min-height: 100dvh;
 }
 
-.sidera :is(h1, h2, h3, h4, h5, h6, p):not([class*="font-"]) { font-weight: 400; }
-.sidera :focus-visible { outline: 1px solid var(--sd-focus); outline-offset: 3px; }
-.sidera ::selection { background: rgba(236, 231, 218, 0.22); color: var(--sd-ink); }
+.sidera :focus-visible { outline: 2px solid var(--sd-focus); outline-offset: 3px; }
+.sidera ::selection { background: rgba(255, 179, 71, 0.28); color: var(--sd-ink); }
 
-/* Utilities and primitives are unlayered, like globals.css, so they beat the
-   global element rules (p, h1–h6) there. They also beat Tailwind utilities:
-   do not put a Tailwind font/tracking class on an element that has an sd-* class. */
-/* ── Type utilities ───────────────────────────────────────────── */
-.sd-serif { font-family: var(--sd-serif); }
-.sd-mono {
-  font-family: var(--sd-mono);
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0;
+/* ── Type ─────────────────────────────────────────────────────── */
+.sd-display {
+  font-family: var(--sd-sans);
+  font-weight: 600;
+  font-size: clamp(38px, 8.5vw, 76px);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
 }
-/* Object name on a plate or a page title */
-.sd-name { font-family: var(--sd-serif); font-weight: 400; font-size: clamp(22px, 5vw, 30px); line-height: 1.12; }
-.sd-display { font-family: var(--sd-serif); font-weight: 400; font-size: clamp(34px, 9vw, 64px); line-height: 1.02; letter-spacing: -0.01em; }
-/* Mono data at caption size — 12px is the floor */
-.sd-data { font-family: var(--sd-mono); font-size: 12px; line-height: 1.5; font-variant-numeric: tabular-nums; color: var(--sd-ink-2); }
-.sd-label { font-family: var(--sd-mono); font-size: 12px; line-height: 1.4; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sd-ink-3); }
+.sd-name { font-family: var(--sd-sans); font-weight: 600; font-size: clamp(22px, 5vw, 30px); line-height: 1.15; letter-spacing: -0.015em; }
+.sd-mono { font-family: var(--sd-mono); font-variant-numeric: tabular-nums; }
+.sd-data { font-family: var(--sd-mono); font-size: 13px; line-height: 1.5; font-variant-numeric: tabular-nums; color: var(--sd-ink-2); }
+.sd-label { font-family: var(--sd-mono); font-size: 12px; line-height: 1.4; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sd-ink-3); }
+.sd-eyebrow { font-family: var(--sd-mono); font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sd-accent); margin: 0 0 14px; }
 
-/* ── Layout utilities ─────────────────────────────────────────── */
+/* ── Layout ───────────────────────────────────────────────────── */
 .sd-container { width: 100%; max-width: var(--sd-max); margin-inline: auto; padding-inline: var(--sd-gutter); }
+@media (min-width: 768px) { .sidera { --sd-gutter: 32px; } }
 .sd-rule { border: 0; border-top: var(--sd-hairline) solid var(--sd-rule); margin: 0; }
 .sd-rule--strong { border-top-color: var(--sd-rule-strong); }
 
-/* ── Primitives (src/components/sidera/ui) ────────────────────── */
+/* ── Mark ─────────────────────────────────────────────────────── */
 .sd-wordmark {
-  font-family: var(--sd-serif);
-  font-weight: 400;
+  display: inline-flex; align-items: center; gap: 9px;
+  font-family: var(--sd-display);
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.3em;
-  margin-right: -0.3em; /* trailing tracking would push the mark off-centre */
+  letter-spacing: 0.16em;
   line-height: 1;
   color: var(--sd-ink);
   text-decoration: none;
   white-space: nowrap;
 }
+.sd-wordmark img { display: block; }
 .sd-wordmark--sm { font-size: 15px; }
-.sd-wordmark--md { font-size: 22px; }
-.sd-wordmark--lg { font-size: clamp(36px, 10vw, 72px); }
+.sd-wordmark--md { font-size: 20px; }
+.sd-wordmark--lg { font-size: clamp(26px, 5vw, 40px); }
 
-.sd-caption { font-family: var(--sd-mono); font-size: 12px; line-height: 1.55; color: var(--sd-ink-2); font-variant-numeric: tabular-nums; margin: 0; padding-top: 8px; }
-.sd-caption__source { color: var(--sd-ink-3); }
+/* ── Data ─────────────────────────────────────────────────────── */
+.sd-caption { font-family: var(--sd-mono); font-size: 12px; line-height: 1.55; color: var(--sd-ink-3); font-variant-numeric: tabular-nums; margin: 0; padding-top: 10px; }
+.sd-caption__source { color: var(--sd-ink-4); }
 
-.sd-datarow { display: flex; flex-wrap: wrap; column-gap: 20px; row-gap: 6px; margin: 0; font-family: var(--sd-mono); font-size: 12px; line-height: 1.4; font-variant-numeric: tabular-nums; }
-.sd-datarow > div { display: flex; gap: 6px; min-width: 0; }
-.sd-datarow dt { color: var(--sd-ink-3); text-transform: uppercase; letter-spacing: 0.08em; }
+.sd-datarow { display: flex; flex-wrap: wrap; column-gap: 28px; row-gap: 10px; margin: 0; font-family: var(--sd-mono); font-size: 13px; line-height: 1.4; font-variant-numeric: tabular-nums; }
+.sd-datarow > div { display: flex; gap: 8px; min-width: 0; align-items: baseline; }
+.sd-datarow dt { color: var(--sd-ink-3); text-transform: uppercase; letter-spacing: 0.12em; font-size: 11px; }
 .sd-datarow dd { margin: 0; color: var(--sd-ink); overflow-wrap: anywhere; }
-.sd-datarow--stacked { flex-direction: column; }
-.sd-datarow--stacked > div { justify-content: space-between; border-top: 1px solid var(--sd-rule); padding-top: 6px; }
+.sd-datarow--stacked { flex-direction: column; row-gap: 0; }
+.sd-datarow--stacked > div { justify-content: space-between; border-top: 1px solid var(--sd-rule); padding: 11px 0; }
 
-.sd-rarity { display: inline-flex; align-items: center; gap: 6px; font-family: var(--sd-mono); font-size: 12px; line-height: 1; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; }
+/* Chips — rarity is hot, status is cool, both read as data not decoration */
+.sd-rarity, .sd-status {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 5px 10px; border-radius: 999px;
+  font-family: var(--sd-mono); font-size: 11px; line-height: 1;
+  letter-spacing: 0.12em; text-transform: uppercase; white-space: nowrap;
+  border: 1px solid currentColor;
+}
+.sd-rarity { color: var(--sd-rarity-common); background: color-mix(in srgb, currentColor 12%, transparent); }
 .sd-rarity--common { color: var(--sd-rarity-common); }
 .sd-rarity--rare { color: var(--sd-rarity-rare); }
 .sd-rarity--epic { color: var(--sd-rarity-epic); }
 .sd-rarity--legendary { color: var(--sd-rarity-legendary); }
-
-.sd-status { display: inline-flex; align-items: center; gap: 6px; padding: 3px 6px; border: 1px solid var(--sd-rule-strong); font-family: var(--sd-mono); font-size: 12px; line-height: 1; letter-spacing: 0.04em; white-space: nowrap; }
-.sd-status--dedicated { color: var(--sd-status-dedicated); }
+.sd-status { color: var(--sd-ink-3); border-color: var(--sd-rule-strong); background: transparent; }
+.sd-status--dedicated { color: var(--sd-status-dedicated); border-color: color-mix(in srgb, var(--sd-teal) 45%, transparent); }
 .sd-status--eligible { color: var(--sd-status-eligible); }
 .sd-status--not_available { color: var(--sd-status-not-available); border-style: dashed; }
 
-/* ── SideraShell ──────────────────────────────────────────────── */
-.sd-bar { position: sticky; top: 0; z-index: 40; background: var(--sd-ground); border-bottom: 1px solid var(--sd-rule); }
-.sd-bar__inner { display: grid; grid-template-columns: auto 1fr auto; grid-template-areas: "mark links account"; align-items: center; column-gap: 24px; min-height: var(--sd-bar-h); }
+/* ── Shell ────────────────────────────────────────────────────── */
+.sd-bar {
+  position: sticky; top: 0; z-index: 40;
+  background: color-mix(in srgb, var(--sd-canvas) 86%, transparent);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--sd-rule);
+}
+.sd-bar__inner { display: grid; grid-template-columns: auto 1fr auto; grid-template-areas: "mark links account"; align-items: center; column-gap: 32px; min-height: var(--sd-bar-h); }
 .sd-bar__mark { grid-area: mark; }
 .sd-bar__account { grid-area: account; justify-self: end; }
-.sd-bar__links { grid-area: links; display: flex; gap: 20px; margin: 0; padding: 0; list-style: none; }
-.sd-navlink { font-family: var(--sd-mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sd-ink-3); text-decoration: none; padding-block: 10px; white-space: nowrap; }
-.sd-navlink:hover, .sd-navlink[aria-current="page"] { color: var(--sd-ink); }
-.sd-navlink[aria-current="page"] { text-decoration: underline; text-underline-offset: 6px; text-decoration-thickness: 1px; }
-@media (max-width: 639px) {
-  .sd-bar__inner { grid-template-columns: 1fr auto; grid-template-areas: "mark account" "links links"; row-gap: 0; padding-top: 12px; }
-  .sd-bar__links { gap: 18px; border-top: 1px solid var(--sd-rule); margin-top: 12px; }
+.sd-bar__links { grid-area: links; display: flex; gap: 28px; margin: 0; padding: 0; list-style: none; }
+.sd-navlink { font-family: var(--sd-sans); font-weight: 500; font-size: 14px; color: var(--sd-ink-3); text-decoration: none; padding-block: 10px; white-space: nowrap; transition: color 0.18s ease; }
+.sd-navlink:hover { color: var(--sd-ink); }
+.sd-navlink[aria-current="page"] { color: var(--sd-ink); }
+@media (max-width: 719px) {
+  .sd-bar__inner { grid-template-columns: 1fr auto; grid-template-areas: "mark account" "links links"; padding-top: 12px; }
+  .sd-bar__links { gap: 22px; border-top: 1px solid var(--sd-rule); margin-top: 12px; overflow-x: auto; }
 }
-.sd-account-btn { font-family: var(--sd-mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sd-ink); background: transparent; border: 1px solid var(--sd-rule-strong); padding: 8px 12px; min-height: 36px; cursor: pointer; }
-.sd-account-btn:hover { border-color: var(--sd-ink-3); }
-.sd-account-menu { position: absolute; right: 0; top: calc(100% + 8px); z-index: 50; min-width: 200px; background: var(--sd-plate); border: 1px solid var(--sd-rule-strong); padding: 6px 0; }
-.sd-account-menu a, .sd-account-menu button { display: block; width: 100%; text-align: left; padding: 10px 14px; font-family: var(--sd-mono); font-size: 12px; letter-spacing: 0.04em; color: var(--sd-ink); background: none; border: 0; text-decoration: none; cursor: pointer; }
-.sd-account-menu a:hover, .sd-account-menu button:hover { background: var(--sd-plate-hover); }
-.sd-foot { border-top: 1px solid var(--sd-rule); margin-top: 64px; padding-block: 24px 32px; }
-.sd-foot__inner { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px 24px; }
-.sd-foot__links { display: flex; flex-wrap: wrap; gap: 20px; }
+.sd-account-btn {
+  font-family: var(--sd-sans); font-weight: 600; font-size: 14px;
+  color: var(--sd-ink); background: var(--sd-plate);
+  border: 1px solid var(--sd-rule-strong); border-radius: 999px;
+  padding: 9px 18px; min-height: 40px; cursor: pointer; transition: background 0.18s ease, border-color 0.18s ease;
+}
+.sd-account-btn:hover { background: var(--sd-plate-hover); border-color: var(--sd-ink-4); }
+.sd-account-menu { position: absolute; right: 0; top: calc(100% + 10px); z-index: 50; min-width: 210px; background: #101c3c; border: 1px solid var(--sd-rule-strong); border-radius: var(--sd-radius-sm); padding: 6px; box-shadow: 0 18px 50px rgba(0, 0, 0, 0.5); }
+.sd-account-menu a, .sd-account-menu button { display: block; width: 100%; text-align: left; padding: 10px 12px; border-radius: 8px; font-family: var(--sd-sans); font-size: 14px; color: var(--sd-ink-2); background: none; border: 0; text-decoration: none; cursor: pointer; }
+.sd-account-menu a:hover, .sd-account-menu button:hover { background: var(--sd-plate-hover); color: var(--sd-ink); }
+.sd-foot { border-top: 1px solid var(--sd-rule); margin-top: 96px; padding-block: 32px 40px; }
+.sd-foot__inner { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 14px 24px; color: var(--sd-ink-3); }
+.sd-foot__links { display: flex; flex-wrap: wrap; gap: 24px; }
 .sd-foot a { color: var(--sd-ink-3); text-decoration: none; }
 .sd-foot a:hover { color: var(--sd-ink); }
 
-/* ── Opting out of the legacy chrome ──────────────────────────
-   A Sidera page renders SideraShell; while it is on screen the global Stellar
-   nav, footer, bottom tabs and starfield are hidden, and the light theme's
-   body colours are overridden. Field mode (red night-vision) still applies. */
-html:has(.sidera) [data-stellar-chrome] { display: none !important; }
-html:has(.sidera):not([data-field="on"]),
-html:has(.sidera):not([data-field="on"]) body { background: #0b0c0e; }
-html:has(.sidera) body::before,
-html:has(.sidera) body::after { display: none; }
-html:has(.sidera) #stellar-main { padding-top: 0; padding-bottom: 0; }
-
 /* ── Page furniture ───────────────────────────────────────────── */
-.sd-page { padding-block: 32px 8px; }
-.sd-page__head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 24px; }
-.sd-page__title { font-family: var(--sd-serif); font-weight: 400; font-size: clamp(28px, 7vw, 44px); line-height: 1.05; margin: 0; }
-.sd-lede { color: var(--sd-ink-2); max-width: 62ch; margin: 12px 0 0; }
-.sd-note { color: var(--sd-ink-3); max-width: 62ch; margin: 12px 0 0; }
-.sd-section { margin-top: 40px; }
-.sd-section__title { font-family: var(--sd-mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sd-ink-3); margin: 0 0 12px; }
-.sd-back { font-family: var(--sd-mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sd-ink-3); text-decoration: none; display: inline-block; padding-block: 10px; }
-.sd-back:hover { color: var(--sd-ink); }
-.sd-link { color: var(--sd-ink); text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
-.sd-link:hover { color: var(--sd-ink-2); }
-.sd-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 40px; padding: 10px 16px; font-family: var(--sd-mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sd-ink); background: transparent; border: 1px solid var(--sd-rule-strong); text-decoration: none; cursor: pointer; }
-.sd-btn:hover:not(:disabled) { border-color: var(--sd-ink-3); background: var(--sd-plate-hover); }
+.sd-page { padding-block: 48px 8px; }
+.sd-page__head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px; }
+.sd-page__title { font-family: var(--sd-sans); font-weight: 600; font-size: clamp(32px, 6vw, 52px); line-height: 1.05; letter-spacing: -0.025em; margin: 0; }
+.sd-lede { color: var(--sd-ink-2); max-width: 62ch; margin: 14px 0 0; font-size: 17px; }
+.sd-note { color: var(--sd-ink-3); max-width: 64ch; margin: 14px 0 0; font-size: 15px; }
+.sd-section { margin-top: 56px; }
+.sd-section__title { font-family: var(--sd-mono); font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sd-ink-3); margin: 0 0 18px; }
+.sd-back { font-family: var(--sd-mono); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sd-ink-3); text-decoration: none; display: inline-block; padding-block: 10px; }
+.sd-back:hover { color: var(--sd-accent); }
+.sd-link { color: var(--sd-accent); text-decoration: none; border-bottom: 1px solid color-mix(in srgb, var(--sd-accent) 40%, transparent); }
+.sd-link:hover { border-bottom-color: var(--sd-accent); }
+
+/* Buttons — one hot primary, everything else quiet */
+.sd-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  min-height: 48px; padding: 13px 24px; border-radius: 999px;
+  font-family: var(--sd-sans); font-weight: 600; font-size: 15px; letter-spacing: -0.005em;
+  color: var(--sd-ink); background: var(--sd-plate);
+  border: 1px solid var(--sd-rule-strong); text-decoration: none; cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+}
+.sd-btn:hover:not(:disabled) { background: var(--sd-plate-hover); border-color: var(--sd-ink-4); }
+.sd-btn:active:not(:disabled) { transform: translateY(1px); }
 .sd-btn:disabled { color: var(--sd-ink-4); border-color: var(--sd-rule); cursor: not-allowed; }
+.sd-btn--primary {
+  background: linear-gradient(180deg, var(--sd-accent-hi), var(--sd-accent));
+  border-color: transparent; color: #1a1207;
+  box-shadow: 0 10px 30px rgba(255, 179, 71, 0.22);
+}
+.sd-btn--primary:hover:not(:disabled) { background: linear-gradient(180deg, #ffd089, var(--sd-accent-hi)); border-color: transparent; }
+.sd-btn--primary:disabled { background: var(--sd-plate); color: var(--sd-ink-4); box-shadow: none; }
+
+.sd-input {
+  font-family: var(--sd-mono); font-size: 14px; color: var(--sd-ink);
+  background: var(--sd-plate); border: 1px solid var(--sd-rule-strong); border-radius: var(--sd-radius-sm);
+  padding: 12px 16px; min-height: 48px; min-width: 0; flex: 1 1 280px;
+}
+.sd-input::placeholder { color: var(--sd-ink-4); }
+.sd-input:focus { border-color: var(--sd-accent); outline: none; }
 
 /* ── Card plate ───────────────────────────────────────────────── */
-.sd-plate { background: var(--sd-plate); border: 1px solid var(--sd-rule-strong); display: flex; flex-direction: column; height: 100%; }
-.sd-plate--outline { background: transparent; border-color: var(--sd-ink-4); }
-.sd-plate__frame { aspect-ratio: 5 / 7; background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-.sd-plate--outline .sd-plate__frame { background: transparent; }
-.sd-plate__frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.sd-plate__body { padding: 12px; display: flex; flex-direction: column; gap: 8px; }
-.sd-plate__name { font-family: var(--sd-serif); font-weight: 400; font-size: 20px; line-height: 1.15; margin: 0; color: var(--sd-ink); }
-.sd-plate__marks { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin: 0; }
+.sd-plate {
+  background: var(--sd-plate); border: 1px solid var(--sd-rule);
+  border-radius: var(--sd-radius); overflow: hidden;
+  display: flex; flex-direction: column; height: 100%;
+  transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+.sd-plate--outline { background: transparent; border-style: dashed; border-color: var(--sd-ink-4); }
+.sd-plate__frame { aspect-ratio: 5 / 7; background: radial-gradient(120% 90% at 50% 15%, #16254a 0%, #060c1d 70%); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.sd-plate__frame img, .sd-plate__frame svg { width: 100%; height: 100%; object-fit: cover; display: block; }
+.sd-plate__body { padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+.sd-plate__name { font-family: var(--sd-sans); font-weight: 600; font-size: 19px; line-height: 1.2; letter-spacing: -0.015em; margin: 0; color: var(--sd-ink); }
+.sd-plate__marks { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0; }
 .sd-plate__link { display: block; text-decoration: none; color: inherit; height: 100%; }
-.sd-plate__link:hover .sd-plate { background: var(--sd-plate-hover); }
+.sd-plate__link:hover .sd-plate { border-color: var(--sd-rule-strong); background: var(--sd-plate-hover); transform: translateY(-3px); }
 .sd-plate__link:hover .sd-plate--outline { background: var(--sd-plate); }
 
-.sd-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 16px; list-style: none; margin: 0; padding: 0; }
-@media (min-width: 640px) { .sd-grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 24px; } }
+.sd-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; list-style: none; margin: 0; padding: 0; }
+@media (min-width: 640px) { .sd-grid { grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 24px; } }
 
 /* ── Card page ────────────────────────────────────────────────── */
-.sd-card-page { display: grid; gap: 28px; margin-top: 24px; }
-@media (min-width: 880px) { .sd-card-page { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 40px; align-items: start; } }
+.sd-card-page { display: grid; gap: 32px; margin-top: 28px; }
+@media (min-width: 900px) { .sd-card-page { grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 56px; align-items: start; } }
 .sd-figure { margin: 0; }
-.sd-figure__frame { background: #000; border: 1px solid var(--sd-rule-strong); aspect-ratio: 5 / 7; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-.sd-figure__frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.sd-blurb { color: var(--sd-ink-2); margin: 16px 0 0; max-width: 58ch; }
+.sd-figure__frame { background: radial-gradient(120% 90% at 50% 15%, #16254a 0%, #060c1d 70%); border: 1px solid var(--sd-rule); border-radius: var(--sd-radius); aspect-ratio: 5 / 7; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.sd-figure__frame img, .sd-figure__frame svg { width: 100%; height: 100%; object-fit: cover; display: block; }
+.sd-blurb { color: var(--sd-ink-2); margin: 18px 0 0; max-width: 58ch; font-size: 16px; }
+
+/* ── Panels ───────────────────────────────────────────────────── */
+.sd-panel { background: var(--sd-plate); border: 1px solid var(--sd-rule); border-radius: var(--sd-radius); padding: 24px; }
+.sd-band { background: var(--sd-deep); border-block: 1px solid var(--sd-rule); padding-block: 72px; margin-top: 88px; }
 
 /* ── Paying ───────────────────────────────────────────────────── */
-.sd-pay { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; }
-.sd-pay__code { border: 1px solid var(--sd-rule-strong); padding: 12px; background: var(--sd-ground); line-height: 0; }
-.sd-pay__side { flex: 1 1 220px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
-.sd-pay__actions { display: flex; flex-wrap: wrap; gap: 12px; }
+.sd-pay { display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-start; }
+.sd-pay__code { border: 1px solid var(--sd-rule-strong); border-radius: var(--sd-radius-sm); padding: 14px; background: #fff; line-height: 0; }
+.sd-pay__side { flex: 1 1 240px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.sd-pay__actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+
+/* ── Capsules ─────────────────────────────────────────────────── */
+.sd-odds { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 10px; }
+.sd-capsule { border: 1px solid var(--sd-rule); background: var(--sd-plate); border-radius: var(--sd-radius); padding: 22px; margin-bottom: 18px; }
+.sd-capsule:hover { border-color: var(--sd-rule-strong); }
+.sd-log { width: 100%; border-collapse: collapse; font-family: var(--sd-mono); font-size: 13px; font-variant-numeric: tabular-nums; }
+.sd-log th { text-align: left; color: var(--sd-ink-3); text-transform: uppercase; letter-spacing: 0.12em; font-size: 11px; font-weight: 500; padding: 10px 16px 10px 0; border-bottom: 1px solid var(--sd-rule-strong); }
+.sd-log td { padding: 12px 16px 12px 0; border-bottom: 1px solid var(--sd-rule); color: var(--sd-ink-2); vertical-align: top; }
+.sd-log td:first-child, .sd-log th:first-child { color: var(--sd-ink); }
+.sd-scroll { overflow-x: auto; }
+.sd-verdict { display: inline-flex; align-items: center; gap: 8px; border: 1px solid color-mix(in srgb, var(--sd-teal) 45%, transparent); background: color-mix(in srgb, var(--sd-teal) 10%, transparent); color: var(--sd-teal); border-radius: 999px; padding: 8px 16px; font-family: var(--sd-mono); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; }
 
 /* ── The reveal ───────────────────────────────────────────────── */
-.sd-reveal { display: flex; flex-direction: column; gap: 24px; align-items: center; }
-.sd-reveal__stone { animation: sd-fall var(--sd-fall, 0.55s) ease-in both; }
+.sd-reveal { display: flex; flex-direction: column; gap: 32px; align-items: center; }
+.sd-reveal__stone { animation: sd-fall var(--sd-fall, 0.55s) cubic-bezier(0.34, 1.2, 0.64, 1) both; filter: drop-shadow(0 0 24px color-mix(in srgb, currentColor 45%, transparent)); }
 .sd-reveal--rare { --sd-fall: 0.7s; }
 .sd-reveal--epic { --sd-fall: 0.9s; }
 .sd-reveal--legendary { --sd-fall: 1.15s; }
 .sd-reveal__card { opacity: 0; animation: sd-draw 0.5s ease-out both; animation-delay: calc(var(--sd-fall, 0.55s) + var(--sd-i, 0) * 0.35s); }
 @keyframes sd-fall {
-  from { transform: translateY(-48px) rotate(-14deg); opacity: 0; }
+  from { transform: translateY(-64px) rotate(-16deg) scale(0.9); opacity: 0; }
   60% { opacity: 1; }
   to { transform: none; opacity: 1; }
 }
 @keyframes sd-draw {
-  from { opacity: 0; transform: translateY(12px); }
+  from { opacity: 0; transform: translateY(18px) scale(0.98); }
   to { opacity: 1; transform: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   .sd-reveal__stone, .sd-reveal__card { animation: none; opacity: 1; }
 }
 
-/* ── Capsules ─────────────────────────────────────────────────── */
-.sd-odds { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 12px 28px; }
-.sd-odds li { display: flex; align-items: center; gap: 10px; }
-.sd-capsule { border: 1px solid var(--sd-rule-strong); background: var(--sd-plate); padding: 16px; margin-bottom: 16px; }
-.sd-log { width: 100%; border-collapse: collapse; font-family: var(--sd-mono); font-size: 12px; font-variant-numeric: tabular-nums; }
-.sd-log th { text-align: left; color: var(--sd-ink-3); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 400; padding: 8px 12px 8px 0; border-bottom: 1px solid var(--sd-rule-strong); }
-.sd-log td { padding: 8px 12px 8px 0; border-bottom: 1px solid var(--sd-rule); color: var(--sd-ink-2); vertical-align: top; }
-.sd-log td:first-child, .sd-log th:first-child { color: var(--sd-ink); }
-.sd-scroll { overflow-x: auto; }
-.sd-verdict { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--sd-rule-strong); padding: 8px 12px; font-family: var(--sd-mono); font-size: 12px; letter-spacing: 0.04em; }
-
 /* ── Landing ──────────────────────────────────────────────────── */
-.sd-hero { padding-block: 64px 24px; }
-.sd-hero__line { margin: 24px 0 0; max-width: 16ch; }
-.sd-steps { list-style: none; margin: 32px 0 0; padding: 0; display: grid; gap: 32px; }
-@media (min-width: 760px) { .sd-steps { grid-template-columns: repeat(3, 1fr); gap: 32px; } }
-.sd-steps h2 { margin: 6px 0 0; }
-.sd-input { font-family: var(--sd-mono); font-size: 12px; letter-spacing: 0.04em; color: var(--sd-ink); background: var(--sd-plate); border: 1px solid var(--sd-rule-strong); padding: 10px 12px; min-height: 40px; min-width: 0; flex: 1 1 260px; }
-.sd-input::placeholder { color: var(--sd-ink-3); }
-.sd-input:focus { border-color: var(--sd-ink-3); }
+.sd-hero { position: relative; padding-block: 72px 56px; overflow: hidden; }
+.sd-hero__grid { display: grid; gap: 40px; align-items: center; }
+@media (min-width: 900px) { .sd-hero { padding-block: 104px 88px; } .sd-hero__grid { grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr); gap: 64px; } }
+.sd-hero__sub { color: var(--sd-ink-2); font-size: 18px; max-width: 46ch; margin: 22px 0 0; }
+.sd-hero__cta { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 32px; }
+.sd-hero__art { position: relative; }
+/* The fan bleeds past the fold on purpose — a set continues below the crease.
+   Masked so it fades out rather than being chopped. */
+@media (min-width: 900px) {
+  .sd-hero__art { max-height: 74vh; overflow: hidden; -webkit-mask-image: linear-gradient(#000 72%, transparent 100%); mask-image: linear-gradient(#000 72%, transparent 100%); }
+}
+.sd-hero__fan { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; margin: 0; padding: 0; }
+.sd-hero__fan > li:nth-child(even) { transform: translateY(26px); }
+/* The cosmic ground: one deep radial, a faint horizon, no rainbow */
+.sd-sky { position: absolute; inset: 0; pointer-events: none; background:
+  radial-gradient(90% 60% at 72% 8%, rgba(255, 179, 71, 0.13) 0%, transparent 60%),
+  radial-gradient(70% 55% at 12% 22%, rgba(94, 234, 212, 0.08) 0%, transparent 62%); }
+.sd-stats { display: flex; flex-wrap: wrap; gap: 32px 56px; padding-top: 36px; margin-top: 40px; border-top: 1px solid var(--sd-rule); }
+.sd-stat__n { font-family: var(--sd-sans); font-weight: 600; font-size: clamp(26px, 4vw, 36px); line-height: 1; letter-spacing: -0.02em; }
+.sd-stat__l { font-family: var(--sd-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sd-ink-3); margin-top: 10px; }
+.sd-steps { list-style: none; margin: 32px 0 0; padding: 0; display: grid; gap: 20px; }
+@media (min-width: 860px) { .sd-steps { grid-template-columns: repeat(3, 1fr); gap: 24px; } }
+.sd-steps li { background: var(--sd-plate); border: 1px solid var(--sd-rule); border-radius: var(--sd-radius); padding: 26px; }
+.sd-steps h3 { font-family: var(--sd-sans); font-weight: 600; font-size: 21px; letter-spacing: -0.015em; margin: 10px 0 10px; }
+.sd-steps p { color: var(--sd-ink-2); margin: 0; font-size: 15px; }
+.sd-steps .sd-step__n { font-family: var(--sd-mono); font-size: 12px; letter-spacing: 0.18em; color: var(--sd-accent); }
+
+/* ── Opting out of the legacy chrome ──────────────────────────── */
+html:has(.sidera) [data-stellar-chrome] { display: none !important; }
+html:has(.sidera):not([data-field="on"]),
+html:has(.sidera):not([data-field="on"]) body { background: #0a1735; }
+html:has(.sidera) body::before,
+html:has(.sidera) body::after { display: none; }
+html:has(.sidera) #stellar-main { padding-top: 0; padding-bottom: 0; }
+
+/* ── Capsule cards ────────────────────────────────────────────── */
+.sd-capsules { display: grid; gap: 20px; }
+@media (min-width: 880px) { .sd-capsules { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.sd-capsule__head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
+.sd-capsule__n { font-family: var(--sd-sans); font-weight: 600; font-size: 22px; letter-spacing: -0.02em; }
+.sd-rarity-odds { display: inline-flex; align-items: center; gap: 10px; background: var(--sd-plate); border: 1px solid var(--sd-rule); border-radius: 999px; padding: 6px 14px 6px 6px; }
+.sd-odds li { list-style: none; }
+
+/* ── Tap targets ──────────────────────────────────────────────── */
+/* Anything tappable clears 40px, so a thumb on a phone never misses. */
+.sd-wordmark { min-height: 40px; }
+.sd-foot__links a, .sd-foot a { display: inline-flex; align-items: center; min-height: 40px; }
+.sd-log a { display: inline-flex; align-items: center; min-height: 40px; padding-right: 8px; }

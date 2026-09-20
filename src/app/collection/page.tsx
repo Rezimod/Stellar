@@ -58,7 +58,10 @@ export default async function CollectionPage({
     <SideraShell>
       <section className="sd-container sd-page">
         <div className="sd-page__head">
-          <h1 className="sd-page__title">Collection</h1>
+          <div>
+            <p className="sd-eyebrow">Holder</p>
+            <h1 className="sd-page__title">Collection</h1>
+          </div>
         </div>
         {summary && <div className="sd-section">{summary}</div>}
         {body}

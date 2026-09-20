@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import CardArt from '@/components/sidera/CardArt';
 import SideraBuyCard from '@/components/sidera/SideraBuyCard';
 import SideraShell from '@/components/sidera/SideraShell';
 import Caption from '@/components/sidera/ui/Caption';
@@ -81,9 +82,13 @@ export default async function CardPage({ params }: { params: Promise<{ designati
         <div className="sd-card-page">
           <figure className="sd-figure">
             <div className="sd-figure__frame">
-              {seed.artUrl ? <img src={seed.artUrl} alt={`${seed.name}, plate`} /> : <span className="sd-label">Plate in preparation</span>}
+              {seed.artUrl && !seed.artUrl.startsWith('/cards/') ? (
+                <img src={seed.artUrl} alt={`${seed.name}, photographed by Node 01`} />
+              ) : (
+                <CardArt designation={seed.designation} />
+              )}
             </div>
-            <Caption parts={['Set 001', seed.designation, 'Plate in preparation']} />
+            <Caption parts={['Set 001', seed.designation, 'Drawn from the record — awaiting Node 01']} />
           </figure>
 
           <div>

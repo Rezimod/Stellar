@@ -4,7 +4,6 @@ import SideraBuyCapsule from '@/components/sidera/SideraBuyCapsule';
 import SideraShell from '@/components/sidera/SideraShell';
 import DataRow from '@/components/sidera/ui/DataRow';
 import RarityMark from '@/components/sidera/ui/RarityMark';
-import Rule from '@/components/sidera/ui/Rule';
 import { getDb } from '@/lib/db';
 import { RARITIES } from '@/lib/rarity';
 import { CAPSULE_PRICE_GEL, CARDS_PER_CAPSULE, ORDER_WINDOW_MINUTES, RARITY_ODDS_BPS } from '@/lib/sidera/economics';
@@ -13,8 +12,9 @@ import { capsulesOnSale } from '@/lib/sidera/capsule';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'Capsules',
-  description: 'A capsule holds three cards from Set 001. The outcome is fixed before the sale and checkable after it.',
+  title: 'Capsules — three cards, sealed before the sale',
+  description:
+    'A capsule holds three cards from Set 001. The outcome is sealed before it goes on sale and can be checked by anyone after it opens.',
 };
 
 export default async function CapsulesPage() {
@@ -30,48 +30,71 @@ export default async function CapsulesPage() {
 
   return (
     <SideraShell>
-      <section className="sd-container sd-page">
-        <div className="sd-page__head">
-          <h1 className="sd-page__title">Capsules</h1>
-          <p className="sd-label">{CAPSULE_PRICE_GEL} GEL</p>
+      <section className="sd-hero" style={{ paddingBottom: 24 }}>
+        <div className="sd-sky" aria-hidden="true" />
+        <div className="sd-container">
+          <p className="sd-eyebrow">Set 001 · {CAPSULE_PRICE_GEL} GEL a capsule</p>
+          <h1 className="sd-display" style={{ maxWidth: '14ch' }}>
+            Sealed before it is sold.
+          </h1>
+          <p className="sd-hero__sub">
+            Three cards to a capsule. Its outcome is fixed by a secret published the moment it is listed and by a
+            number your own browser makes when you buy — so neither of us can choose what comes out, and the whole
+            draw can be recomputed afterwards by anyone who cares to.
+          </p>
+          <div className="sd-stats" style={{ marginTop: 32 }}>
+            <div>
+              <div className="sd-stat__n">{CARDS_PER_CAPSULE}</div>
+              <div className="sd-stat__l">Cards inside</div>
+            </div>
+            <div>
+              <div className="sd-stat__n">{onSale?.length ?? '—'}</div>
+              <div className="sd-stat__l">On sale now</div>
+            </div>
+            <div>
+              <div className="sd-stat__n">{ORDER_WINDOW_MINUTES}</div>
+              <div className="sd-stat__l">Minutes a quote stands</div>
+            </div>
+          </div>
         </div>
-        <p className="sd-lede">
-          A capsule holds {CARDS_PER_CAPSULE} cards from Set 001. Each one is sealed before it is put on sale: the
-          outcome is decided by a secret committed to at that moment, and by a number your own browser draws when you
-          buy. Neither side can choose what comes out, and every capsule opened can be checked afterwards, by anyone.
-        </p>
+      </section>
 
-        <div className="sd-section">
-          <h2 className="sd-section__title">Odds, per draw</h2>
-          <ul className="sd-odds">
-            {RARITIES.map((r) => (
-              <li key={r}>
+      <section className="sd-container sd-section">
+        <h2 className="sd-section__title">Odds on every single draw</h2>
+        <ul className="sd-odds">
+          {RARITIES.map((r) => (
+            <li key={r}>
+              <span className="sd-rarity-odds">
                 <RarityMark rarity={r} />
                 <span className="sd-data">{(RARITY_ODDS_BPS[r] / 100).toFixed(2)}%</span>
-              </li>
-            ))}
-          </ul>
-          <p className="sd-note">
-            Provisional, and recorded in the log with every capsule opened under them, so changing them later cannot
-            rewrite a capsule already opened. An order stands for {ORDER_WINDOW_MINUTES} minutes; a capsule left unpaid
-            is released back to the sale, and that is logged too.
-          </p>
-        </div>
+              </span>
+            </li>
+          ))}
+        </ul>
+        <p className="sd-note">
+          Provisional, and stamped into the log with every capsule opened under them — so changing them later cannot
+          quietly rewrite a capsule that is already open. Leave a capsule unpaid past the window and it goes back on
+          sale, which is logged too.
+        </p>
+      </section>
 
-        <Rule />
-
-        <div className="sd-section">
-          <h2 className="sd-section__title">On sale</h2>
-          {onSale === null && <p className="sd-note">The sale cannot be read at the moment.</p>}
-          {onSale?.length === 0 && <p className="sd-note">No capsule is on sale right now.</p>}
+      <section className="sd-container sd-section">
+        <h2 className="sd-section__title">On sale</h2>
+        {onSale === null && <p className="sd-note">The sale cannot be read at the moment.</p>}
+        {onSale?.length === 0 && (
+          <p className="sd-note">Nothing is listed right now. Capsules are put up in batches — the log records each one.</p>
+        )}
+        <div className="sd-capsules">
           {onSale?.map((c) => (
             <article key={c.id} className="sd-capsule">
+              <div className="sd-capsule__head">
+                <span className="sd-capsule__n">Capsule {String(c.sequence).padStart(3, '0')}</span>
+                <span className="sd-label">{c.priceGel} GEL</span>
+              </div>
               <DataRow
                 items={[
-                  { label: 'Capsule', value: String(c.sequence) },
                   { label: 'Cards', value: c.cardsPerCapsule },
-                  { label: 'Price', value: `${c.priceGel} GEL` },
-                  { label: 'Commitment', value: `${c.commitment.slice(0, 16)}…` },
+                  { label: 'Commitment', value: `${c.commitment.slice(0, 18)}…` },
                 ]}
               />
               <SideraBuyCapsule
@@ -84,14 +107,28 @@ export default async function CapsulesPage() {
             </article>
           ))}
         </div>
+      </section>
 
-        <Rule />
-        <p className="sd-section sd-data">
-          <Link href="/capsules/log" className="sd-link">
-            The public log
-          </Link>{' '}
-          records every capsule listed, bought, opened, released and withdrawn, in order.
-        </p>
+      <section className="sd-band">
+        <div className="sd-container">
+          <p className="sd-eyebrow">Nothing is taken on trust</p>
+          <h2 className="sd-page__title" style={{ maxWidth: '20ch' }}>
+            Every capsule ever listed is in the log
+          </h2>
+          <p className="sd-lede">
+            Listed, bought, opened, released, withdrawn — in the order it happened, numbered, never rewritten. A
+            capsule that quietly vanished would leave its number behind, and the reading at the top of the page looks
+            for exactly that.
+          </p>
+          <div className="sd-hero__cta">
+            <Link href="/capsules/log" className="sd-btn">
+              Read the log
+            </Link>
+            <Link href="/set/001" className="sd-btn">
+              See what you can pull
+            </Link>
+          </div>
+        </div>
       </section>
     </SideraShell>
   );

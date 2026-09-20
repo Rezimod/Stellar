@@ -113,5 +113,5 @@ it('lists the log newest first, with its audit', async () => {
 it('says so plainly when no capsule is on sale', async () => {
   mocks.capsulesOnSale.mockResolvedValue([]);
   const html = renderToStaticMarkup(await CapsulesPage());
-  expect(html).toContain('No capsule is on sale right now');
+  expect(html).toContain('Nothing is listed right now');
 });

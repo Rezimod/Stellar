@@ -69,7 +69,10 @@ export default async function CapsuleRecordPage({ params }: { params: Promise<{ 
           The log
         </Link>
         <div className="sd-page__head">
-          <h1 className="sd-page__title">Capsule {sequence ?? ''}</h1>
+          <div>
+            <p className="sd-eyebrow">Public record</p>
+            <h1 className="sd-page__title">Capsule {sequence ?? ''}</h1>
+          </div>
           <span className="sd-verdict">
             {verification ? (verification.ok ? 'Checks out' : 'Does not check out') : closed ? (closed.event === 'voided' ? 'Withdrawn' : 'Released') : opened ? 'Opened' : purchased ? 'Bought, not opened' : 'On sale'}
           </span>
@@ -122,8 +125,9 @@ export default async function CapsuleRecordPage({ params }: { params: Promise<{ 
 
         <Rule />
         <p className="sd-note">
-          The secret was committed to before the capsule was on sale; the nonce was drawn by the buyer after it. Anyone
-          can recompute the draws from the two, and check each edition number against the supply logged with them.
+          The secret was locked in before this capsule went on sale; the nonce came from the buyer after it. Anyone
+          holding those two numbers can recompute every draw, and check each edition number against the supply that
+          was logged alongside them.
         </p>
         <SideraVerify capsuleId={id} />
       </section>

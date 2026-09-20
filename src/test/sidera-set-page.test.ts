@@ -59,7 +59,7 @@ it('draws a card the holder does not own as an outline, and their own with its n
   expect(mocks.holderView).toHaveBeenCalledWith({}, 'holder-1');
   expect(html).toContain('004 / 100');
   expect(html).toContain('sd-plate--outline');
-  expect(html).toContain('No edition held');
+  expect(html).toContain('Not held');
 });
 
 it('shows a card’s record, its observation verdict and its rarity', async () => {

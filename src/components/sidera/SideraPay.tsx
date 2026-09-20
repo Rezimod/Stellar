@@ -83,11 +83,11 @@ export default function SideraPay({ order, onConfirmed }: { order: SideraOrder; 
           ]}
         />
         <div className="sd-pay__actions">
-          <a className="sd-btn" href={order.url}>
-            Open in wallet
+          <a className="sd-btn sd-btn--primary" href={order.url}>
+            Pay in your wallet
           </a>
           <button type="button" className="sd-btn" onClick={check} disabled={checking}>
-            {checking ? 'Checking' : 'I have paid'}
+            {checking ? 'Checking the chain' : 'I have paid'}
           </button>
         </div>
         {note && <p className="sd-data">{note}</p>}

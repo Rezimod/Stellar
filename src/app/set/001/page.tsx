@@ -52,15 +52,18 @@ export default async function Set001Page({
     <SideraShell>
       <section className="sd-container sd-page">
         <div className="sd-page__head">
-          <h1 className="sd-page__title">Set 001</h1>
-          <p className="sd-label">{SET_001.status === 'draft' ? 'In preparation' : 'Released'}</p>
+          <div>
+            <p className="sd-eyebrow">The first set</p>
+            <h1 className="sd-page__title">Set 001</h1>
+          </div>
+          <p className="sd-label">{SET_001.status === 'draft' ? 'In preparation' : 'On sale'}</p>
         </div>
         <p className="sd-lede">
-          Twenty objects: the Moon&rsquo;s surface, the planets and one of their moons, three stars and five deep-sky
-          objects. Each card is a numbered edition. Rarity is a decision made when the set was authored; whether Node 01
-          can photograph the object is a separate fact, and seven of the twenty it cannot.
+          Twenty objects: the Moon&rsquo;s surface, the planets and one of their moons, three stars, five deep-sky
+          objects. Every card is a numbered edition. Rarity was decided when the set was written — whether Node 01 can
+          actually photograph the thing is a separate question of aperture and sky, and seven of the twenty it cannot.
         </p>
-        <div className="sd-section">
+        <div className="sd-section" style={{ marginTop: 36 }}>
           <DataRow
             items={[
               { label: 'Cards', value: SET_001_CARDS.length },
@@ -70,9 +73,13 @@ export default async function Set001Page({
             ]}
           />
         </div>
-        <Rule />
+        <div className="sd-section">
+          <Rule />
+        </div>
 
-        <h2 className="sd-section__title sd-section">The twenty</h2>
+        <h2 className="sd-section__title" style={{ marginTop: 40 }}>
+          The twenty
+        </h2>
         <ul className="sd-grid">
           {SET_001_CARDS.map((c) => {
             const s = supply?.get(c.seed.designation);

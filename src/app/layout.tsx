@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import type { Viewport } from 'next';
-import { Orbitron, Geist, JetBrains_Mono, Space_Grotesk, Baskervville, IBM_Plex_Mono } from 'next/font/google';
+import { Orbitron, Geist, JetBrains_Mono, Space_Grotesk } from 'next/font/google';
 import './globals.css';
 import '../styles/design-tokens.css';
 import '../styles/stellar-tokens.css';
@@ -33,22 +33,6 @@ const spaceGrotesk = Space_Grotesk({
   subsets: ['latin'],
   variable: '--font-grotesk',
   weight: ['400', '500', '600', '700'],
-  display: 'swap',
-});
-// Sidera — the only two faces on a Sidera page (docs/sidera/design-system.md).
-// Baskervville: a transitional serif, the face of mid-century institutional print.
-const sideraSerif = Baskervville({
-  subsets: ['latin'],
-  variable: '--font-sidera-serif',
-  weight: 'variable',
-  style: ['normal', 'italic'],
-  display: 'swap',
-});
-// IBM Plex Mono: every number, coordinate, timestamp and edition on a Sidera page.
-const sideraMono = IBM_Plex_Mono({
-  subsets: ['latin'],
-  variable: '--font-sidera-mono',
-  weight: ['400', '500'],
   display: 'swap',
 });
 import { NextIntlClientProvider } from 'next-intl';
@@ -122,7 +106,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const messages = await getMessages();
 
   return (
-    <html lang={locale} className={`${orbitron.variable} ${geist.variable} ${jetbrainsMono.variable} ${spaceGrotesk.variable} ${sideraSerif.variable} ${sideraMono.variable}`}>
+    <html lang={locale} className={`${orbitron.variable} ${geist.variable} ${jetbrainsMono.variable} ${spaceGrotesk.variable}`}>
       <head>
         <link rel="preconnect" href="https://auth.privy.io" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://api.open-meteo.com" />

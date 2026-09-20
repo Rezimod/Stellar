@@ -51,8 +51,8 @@ export default function SideraOpen({ capsuleId }: { capsuleId: string }) {
     <div className="sd-section">
       <div className="sd-pay__actions">
         {ready && authenticated ? (
-          <button type="button" className="sd-btn" onClick={open} disabled={busy}>
-            {busy ? 'Opening' : 'Open the capsule'}
+          <button type="button" className="sd-btn sd-btn--primary" onClick={open} disabled={busy}>
+            {busy ? 'Opening' : 'Crack it open'}
           </button>
         ) : (
           <button type="button" className="sd-btn" onClick={() => setAuthOpen(true)}>
