@@ -1,12 +1,16 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import CardPlate from '@/components/sidera/CardPlate';
 import SideraOpen from '@/components/sidera/SideraOpen';
 import SideraShell from '@/components/sidera/SideraShell';
 import SideraVerify from '@/components/sidera/SideraVerify';
 import DataRow from '@/components/sidera/ui/DataRow';
 import Rule from '@/components/sidera/ui/Rule';
 import { getDb } from '@/lib/db';
+import { isRarity, type Rarity } from '@/lib/rarity';
+import { SET_001_CARD_BY_DESIGNATION } from '@/lib/sets/set-001';
+import type { ObservationStatus } from '@/lib/sidera/observability';
 import type { OpenedOutcome } from '@/lib/sidera/audit';
 import { readFullLog } from '@/lib/sidera/capsule';
 import { verifyCapsule } from '@/lib/sidera/randomness';
@@ -109,13 +113,27 @@ export default async function CapsuleRecordPage({ params }: { params: Promise<{ 
         {outcome && (
           <div className="sd-section">
             <h2 className="sd-section__title">What came out</h2>
-            <DataRow
-              layout="stacked"
-              items={outcome.pulls.map((p) => ({
-                label: `Draw ${p.drawIndex + 1}`,
-                value: `${p.designation} · ${pad(p.editionNumber)} · ${p.rarity}`,
-              }))}
-            />
+            <ul className="sd-grid">
+              {outcome.pulls.map((p) => {
+                const authored = SET_001_CARD_BY_DESIGNATION.get(p.designation);
+                return (
+                  <li key={p.drawIndex}>
+                    <CardPlate
+                      designation={p.designation}
+                      name={authored?.seed.name ?? p.designation}
+                      rarity={isRarity(p.rarity) ? (p.rarity as Rarity) : 'common'}
+                      observationStatus={(authored?.seed.observationStatus ?? 'eligible') as ObservationStatus}
+                      artUrl={authored?.seed.artUrl ?? '/cards/placeholder.svg'}
+                      href={`/card/${p.designation}`}
+                      data={[
+                        { label: 'Draw', value: p.drawIndex + 1 },
+                        { label: 'Ed', value: `${pad(p.editionNumber)} / ${authored?.seed.editionSize ?? '—'}` },
+                      ]}
+                    />
+                  </li>
+                );
+              })}
+            </ul>
           </div>
         )}
 

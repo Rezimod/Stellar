@@ -330,4 +330,5 @@ html:has(.sidera) #stellar-main { padding-top: 0; padding-bottom: 0; }
 /* Anything tappable clears 40px, so a thumb on a phone never misses. */
 .sd-wordmark { min-height: 40px; }
 .sd-foot__links a, .sd-foot a { display: inline-flex; align-items: center; min-height: 40px; }
-.sd-log a { display: inline-flex; align-items: center; min-height: 40px; padding-right: 8px; }
+.sd-log a { display: inline-flex; align-items: center; min-height: 40px; padding-right: 8px; border-bottom: 0; }
+.sd-log a:hover { text-decoration: underline; text-underline-offset: 4px; }
