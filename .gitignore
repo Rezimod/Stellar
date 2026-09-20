@@ -89,3 +89,6 @@ docs/tether-grant-*.md
 # Explore asset pipeline: raw Blender exports and baked textures
 /assets-src/build/
 assets-src/renders/**/view-*.png
+
+# Blender lib bytecode
+assets-src/blender/**/__pycache__/
