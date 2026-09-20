@@ -838,7 +838,9 @@ def preview():
         bpy.data.objects.remove(root, do_unlink=True)
 
 
-if PREVIEW:
-    preview()
-else:
-    main()
+# Run as a script (Blender -P); base_modules.py imports the kit's materials and shorthands.
+if __name__ == '__main__':
+    if PREVIEW:
+        preview()
+    else:
+        main()

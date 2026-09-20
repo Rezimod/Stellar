@@ -3,7 +3,8 @@ of the reference's asset-overview row, and the whole kit lineup over the
 reference row. Plain Python 3 with Pillow (not Blender).
 
 Run:  python3 assets-src/blender/base_kit_sheets.py <renders-dir> [reference.png]
-Reads <renders-dir>/<Module>/view-*.png and lineup.png (from base_kit.py),
+Reads <renders-dir>/<Module>/view-*.png and lineup.png (from base_kit.py or
+base_modules.py; a dir named base-modules is titled for base-modules.glb),
 writes <renders-dir>/<Module>-sheet.png and kit-lineup-sheet.png.
 """
 import os
@@ -18,7 +19,13 @@ INK = (225, 226, 228)
 CROPS = {
     'Garage': (272, 905, 440, 1045), 'CommsMast': (440, 905, 495, 1045), 'Dish': (500, 905, 595, 1045),
     'TelescopePlatform': (595, 905, 660, 1045), 'SolarArray': (660, 905, 760, 1045),
+    # base-modules.glb (base_modules.py)
+    'HabitatModule': (8, 905, 128, 1045), 'Airlock': (124, 905, 190, 1045), 'ScienceLab': (188, 905, 290, 1045),
+    'LandingPad': (1015, 905, 1160, 1045), 'EVARack': (1360, 905, 1445, 1045),
 }
+# The file each renders dir reviews, for the sheet titles.
+FILES = {'base-kit': ('base-kit.glb', '13 pieces, one atlas'), 'base-modules': ('base-modules.glb', '5 pieces, one atlas')}
+FILE, WHAT = FILES.get(os.path.basename(os.path.normpath(RENDERS)), FILES['base-kit'])
 ROW = (0, 900, 1448, 1050)
 
 
@@ -49,7 +56,7 @@ def module_sheet(name, ref):
         sheet.paste(im, (crop.width + 16 + (i % 4) * tile, head + (i // 4) * tile))
     dr = ImageDraw.Draw(sheet)
     dr.text((12, 14), 'REFERENCE', fill=INK, font=font(22))
-    dr.text((crop.width + 28, 14), f'{name}  ·  base-kit.glb  ·  8-angle turntable (moving parts posed open)', fill=INK, font=font(22))
+    dr.text((crop.width + 28, 14), f'{name}  ·  {FILE}  ·  8-angle turntable (moving parts posed open)', fill=INK, font=font(22))
     out = os.path.join(RENDERS, f'{name}-sheet.png')
     sheet.save(out)
     return out
@@ -62,11 +69,11 @@ def lineup_sheet(ref):
     head = 60
     sheet = Image.new('RGB', (line.width, head * 2 + line.height + row.height), BG[:3])
     dr = ImageDraw.Draw(sheet)
-    dr.text((20, 16), 'STELLAR BASE KIT  ·  base-kit.glb  ·  13 pieces, one atlas', fill=INK, font=font(30))
+    dr.text((20, 16), f'STELLAR BASE  ·  {FILE}  ·  {WHAT}', fill=INK, font=font(30))
     sheet.paste(line, (0, head))
     dr.text((20, head + line.height + 16), 'REFERENCE  ·  Moon Base.png, modular asset overviews', fill=INK, font=font(30))
     sheet.paste(row, (0, head * 2 + line.height))
-    out = os.path.join(RENDERS, 'kit-lineup-sheet.png')
+    out = os.path.join(RENDERS, 'kit-lineup-sheet.png' if FILE == 'base-kit.glb' else 'lineup-sheet.png')
     sheet.save(out)
     return out
 

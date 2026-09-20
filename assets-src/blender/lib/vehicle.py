@@ -123,7 +123,26 @@ def build(name, build_fn, out, renders, *, nodes=(), empties_fn=None, budget=250
     """Run the whole loop. `build_fn(parts)` adds meshes to a Parts; `nodes`
     lists (id, name, pivot) for moving parts; `empties_fn(root, objs)` adds
     the attachment empties; `pose_fn(objs)` poses the moving parts for the
-    renders only (after export). Returns the triangle counts."""
+    renders only (after export). Returns the triangle counts.
+    With `out == 'preview'` it skips the bake: the low-poly triangle count,
+    then the high-poly in its procedural paint rendered into `renders`."""
+    if out == 'preview':
+        lo = Parts(False)
+        build_fn(lo)
+        low = join_parts(lo, f'{name}Low')
+        print(f'{name} preview: low-poly {tris(low)} tris', flush=True)
+        bpy.data.objects.remove(low, do_unlink=True)
+        hi = Parts(True)
+        build_fn(hi)
+        high = join_parts(hi, f'{name}High')
+        model.shade_smooth(high, 35)
+        root = bpy.data.objects.new(name, None)
+        bpy.context.collection.objects.link(root)
+        high.parent = root
+        if empties_fn:
+            empties_fn(root, {})
+        render_views(root, renders, views, size=480, samples=16)
+        return {'low': 0}
     hi = Parts(True)
     build_fn(hi)
     high = join_parts(hi, f'{name}High')
