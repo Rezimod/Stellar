@@ -19,7 +19,7 @@ export type RarityInfo = {
   rarity: Rarity;
   /** 0 for common, rising with scarcity — for sorting a Collection. */
   rank: number;
-  /** Hex on the brass ramp, for the plate's rule and the mark. */
+  /** Hex on the cool-to-hot ramp, for the plate's edge, the chip and the drawn plate. */
   color: string;
   label: string;
   /** A single character, never an emoji. */

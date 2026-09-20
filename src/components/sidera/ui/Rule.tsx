@@ -4,7 +4,7 @@ type RuleProps = {
   className?: string;
 };
 
-/** A 1px hairline. Sidera separates things with rules, never with shadows or cards-in-cards. */
+/** A 1px hairline, for separating sections inside a panel. */
 export default function Rule({ strong = false, className = '' }: RuleProps) {
   return <hr className={`sd-rule ${strong ? 'sd-rule--strong' : ''} ${className}`.trim()} />;
 }

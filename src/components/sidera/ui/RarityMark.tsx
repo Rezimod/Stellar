@@ -28,9 +28,9 @@ function Glyph({ rarity }: { rarity: Rarity }) {
 }
 
 /**
- * A card's rarity, in brass — the only place brass appears. Four steps along
- * one ramp (common nearest the neutrals, legendary brightest), a glyph and the
- * word, so it never depends on colour alone.
+ * A card's rarity as a chip. Four steps along one ramp that runs cool to hot
+ * (grey, seafoam, terracotta, white-gold), a glyph and the word, so scarcity
+ * never depends on colour alone.
  */
 export default function RarityMark({ rarity, glyphOnly = false, className = '' }: RarityMarkProps) {
   const { label } = rarityInfo(rarity);

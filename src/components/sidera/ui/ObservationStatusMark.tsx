@@ -11,7 +11,7 @@ const LABEL: Record<ObservationStatus, { short: string; long: string }> = {
   not_available: { short: 'Not observable', long: 'not observable from Node 01' },
 };
 
-/** Circles, in ink: filled, open, open and struck through. Never brass, never a diamond. */
+/** Circles: filled, open, open and struck through. Never a diamond — that family belongs to rarity. */
 function Glyph({ status }: { status: ObservationStatus }) {
   return (
     <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true" focusable="false">
@@ -22,10 +22,10 @@ function Glyph({ status }: { status: ObservationStatus }) {
 }
 
 /**
- * Whether Node 01 can photograph what a card shows. Monochrome with a hairline
- * outline (dashed when not observable) so it stays distinct from the brass
- * RarityMark beside it. Scarcity and observability are unrelated: Europa is
- * epic and not observable.
+ * Whether Node 01 can photograph what a card shows. A quiet chip — teal only
+ * when the node has committed to the target, dashed when the object is out of
+ * its reach — so it never competes with the rarity chip beside it. Scarcity
+ * and observability are unrelated: Europa is epic and not observable.
  */
 export default function ObservationStatusMark({ status, className = '' }: ObservationStatusMarkProps) {
   const { short, long } = LABEL[status];
