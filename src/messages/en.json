@@ -4216,7 +4216,8 @@
       "language": "Language",
       "en": "English",
       "ka": "ქართული",
-      "reset": "Reset to defaults"
+      "reset": "Reset to defaults",
+      "qualityGoverned": "Lowered to {level} to hold the frame rate. Pick a preset to keep your own."
     },
     "controlsPanel": {
       "surface": "On the surface",
@@ -4236,6 +4237,7 @@
       "jobs": "{n} of {total} base jobs done",
       "discoveries": "{n} of {total} discoveries logged",
       "empty": "Nothing logged yet. Land at Stellar Base to begin."
-    }
+    },
+    "qualityDrop": "Detail reduced to hold the frame rate — change it in Settings."
   }
 }

@@ -11,7 +11,7 @@ import { makeMoonPost, type MoonPostHandle } from '@/lib/solar-system/moon-post'
 import { makeMoonPerf, probeCalls, type MoonPerf } from '@/lib/solar-system/moon-perf';
 import { makeLightPool, type LightPool } from '@/lib/solar-system/moon-lights';
 import { getSettings } from '@/game/settings';
-import { currentQuality, onQualityChange, type QualityProfile } from '@/game/quality';
+import { currentQuality, onQualityChange, stepQualityDown, type QualityProfile } from '@/game/quality';
 
 export interface SurfaceHostOptions {
   clearColor: THREE.ColorRepresentation;
@@ -106,6 +106,11 @@ export function makeSurfaceHost(mount: HTMLElement, opts: SurfaceHostOptions): S
     minRatio: pinned ? maxRatio : Math.min(1, maxRatio),
     maxRatio,
     onPixelRatio: (r) => { renderer.setPixelRatio(r); post.setSize(mount.clientWidth, mount.clientHeight); },
+    // A pinned bench must be reproducible, so it keeps the preset it was given.
+    // Everything the renderer owns follows the step at once (below); what was
+    // decided at build time — props, stars, LOD distances — follows on the
+    // next scene, which is where a step down matters least.
+    onOverBudget: pinned ? undefined : () => { stepQualityDown(); },
   });
 
   // ── A new preset, live: the pixel ratio, the shadow map, the post chain. ──

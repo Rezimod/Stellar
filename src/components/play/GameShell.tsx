@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useSyncExternalStore } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { useTranslations } from 'next-intl';
 import { game, STAGE_PROGRESS } from '@/game/state';
 import { isGameScene, type GameScene } from '@/game/save';
@@ -8,6 +8,7 @@ import { attachConsoleGuards, enterFullscreen, exitFullscreen, unlockPointer } f
 import { exitToStellar } from '@/game/platform';
 import { takeEscape } from '@/game/escape';
 import { registerServiceWorker } from '@/game/sw';
+import { currentQuality, governedQuality, onQualityChange, setDetectedQuality, stepQualityDown } from '@/game/quality';
 import { CosmicLoader } from '@/components/solar-system/CosmicLoader';
 import { useLoadingTips } from '@/components/solar-system/useLoadingTips';
 import { GameWorld } from './GameWorld';
@@ -30,6 +31,14 @@ declare global {
   interface Window {
     /** Development only: lets a headless run drive the game's states. */
     __stellarGame?: typeof game;
+    /** Development only: what the quality governor has decided, and a way to make it decide. */
+    __stellarQuality?: {
+      level: () => string;
+      governed: () => string | null;
+      step: () => boolean;
+      /** Pretend the device detected this preset. */
+      pretend: (level: 'performance' | 'balanced' | 'high') => void;
+    };
   }
 }
 
@@ -38,12 +47,23 @@ export default function GameShell() {
   const t = useTranslations('play');
   const tips = useLoadingTips();
   const rootRef = useRef<HTMLDivElement>(null);
+  /** The governor had to take a level off: say so once, then get out of the way. */
+  const [dropped, setDropped] = useState(false);
+  const dropTimer = useRef(0);
   const { state, scene, stage, overlay } = snap;
 
   useEffect(() => {
     document.body.setAttribute('data-solar-immersive', '1');
     game.boot(sceneFromQuery());
-    if (process.env.NODE_ENV !== 'production') window.__stellarGame = game;
+    if (process.env.NODE_ENV !== 'production') {
+      window.__stellarGame = game;
+      window.__stellarQuality = {
+        level: () => currentQuality().level,
+        governed: governedQuality,
+        step: stepQualityDown,
+        pretend: setDetectedQuality,
+      };
+    }
     void registerServiceWorker();
     const root = rootRef.current;
     const detach = root ? attachConsoleGuards(root) : undefined;
@@ -76,6 +96,15 @@ export default function GameShell() {
     };
   }, []);
   useEffect(() => {
+    const off = onQualityChange(() => {
+      if (!governedQuality()) return;
+      setDropped(true);
+      window.clearTimeout(dropTimer.current);
+      dropTimer.current = window.setTimeout(() => setDropped(false), 7000);
+    });
+    return () => { off(); window.clearTimeout(dropTimer.current); };
+  }, []);
+  useEffect(() => {
     if (state === 'paused') unlockPointer();
     if (state === 'exiting') void exitFullscreen().finally(exitToStellar);
   }, [state]);
@@ -97,6 +126,7 @@ export default function GameShell() {
         <CosmicLoader className="game-shell__loader" variant={scene === 'orbit' ? 'orrery' : 'descent'}
           label={t(`loading.scene.${scene}`)} detail={t(`loading.${stage}`)} progress={STAGE_PROGRESS[stage]} tips={tips} />
       )}
+      {dropped && state === 'playing' && <p className="game-shell__notice" role="status">{t('qualityDrop')}</p>}
       {state === 'title' && overlay === 'none' && <TitleScreen onStart={start} />}
       {state === 'paused' && overlay === 'none' && <PauseMenu onResume={resume} />}
       {overlay === 'settings' && <SettingsPanel onClose={game.closeOverlay} />}

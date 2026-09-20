@@ -17,6 +17,7 @@ import type { PointOfInterest } from '@/lib/solar-system/moon-base';
 import { pivot } from '@/lib/solar-system/moon-batch';
 import { acquireModel, firstMesh } from '@/game/models';
 import { TELESCOPE_PAD } from '@/lib/solar-system/moon-terrain';
+import { currentQuality } from '@/game/quality';
 
 /** The supply crate, built in Blender (assets-src/blender/crate.py). */
 const CRATE_MODEL = '/explore/models/crate.glb';
@@ -598,7 +599,7 @@ export function buildZones(
         const lod = new THREE.LOD();
         body.removeFromParent(); far.removeFromParent();
         lod.addLevel(body, 0);
-        lod.addLevel(far, 70);
+        lod.addLevel(far, currentQuality().lodDistance * 1.75);
         o.add(lod);
       }
       spot.parent.add(o);

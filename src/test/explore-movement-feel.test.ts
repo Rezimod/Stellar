@@ -373,6 +373,35 @@ describe('one table, every controller', () => {
     expect(look(144)).toBeCloseTo(look(60), 6);
   });
 
+  it('on a touch screen, only the right of the glass turns the view', () => {
+    const inputs = blank();
+    const mount = document.createElement('div');
+    Object.defineProperty(mount, 'clientWidth', { value: 400, configurable: true });
+    const c = attachSurfaceControls({
+      mount, input: inputs, touch: true, paused: () => false, wake: () => undefined,
+      onCrouch: () => undefined, onPauseRequest: () => undefined, selectable: '.help',
+    });
+    const drag = (fromX: number, toX: number) => {
+      const down = new MouseEvent('pointerdown', { bubbles: true, button: 0, clientX: fromX });
+      Object.defineProperty(down, 'offsetX', { value: fromX });
+      Object.defineProperty(down, 'pointerId', { value: 7 });
+      mount.dispatchEvent(down);
+      const move = new MouseEvent('pointermove', { bubbles: true, clientX: toX });
+      Object.defineProperty(move, 'pointerId', { value: 7 });
+      mount.dispatchEvent(move);
+      const up = new MouseEvent('pointerup', { bubbles: true, clientX: toX });
+      Object.defineProperty(up, 'pointerId', { value: 7 });
+      mount.dispatchEvent(up);
+    };
+    // The thumb's side of the glass: the stick's, not the camera's.
+    drag(40, 140);
+    expect(inputs.orbitDX).toBe(0);
+    // The other side turns it.
+    drag(300, 340);
+    expect(inputs.orbitDX).toBe(40);
+    c.detach();
+  });
+
   it('presses the headlamp, the view and the map from their keys and buttons', () => {
     const inputs = blank();
     const onMap = vi.fn();

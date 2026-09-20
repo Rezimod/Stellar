@@ -130,6 +130,7 @@ export function makeMissionProps(world: MissionPropsWorld): MissionPropsHandle {
   let sampleTaken = false;
   let couplingGone = false;
   let feedGone = false;
+  let suitChecked = false;
 
   const signal = (zone: string, state: string) => world.bus.emit({ type: 'zone:state', zone, state });
   /** A hold that runs on the key and reports its own progress. */
@@ -168,7 +169,19 @@ export function makeMissionProps(world: MissionPropsWorld): MissionPropsHandle {
   };
 
   const interactables: Interactable[] = [
-    tap('suitCheck', () => { const l = world.lander(); return { x: l.x, z: l.z }; }, 'suitCheck', () => { /* the check itself is the beat */ }, { priority: 2 }),
+    // The first beat of the expedition. It has to reach as far as the lander's
+    // own prompt and outrank it (priority 4), or it can never be asked for:
+    // the crew step out four metres from a lander whose radius is five, and
+    // "climb aboard and leave" would win every time. Once the suit has been
+    // checked it drops out and the way home is the prompt again.
+    {
+      id: 'suitCheck',
+      priority: 5,
+      where: () => (suitChecked ? null : { ...world.lander(), r: 5.4 }),
+      kind: () => 'tap',
+      label: () => 'suitCheck',
+      use: () => { suitChecked = true; },
+    },
     hold('earthShot', HOLD.shot, () => RIDGE, 'earthShot', () => { signal('camera', 'earthrise'); }, {
       requires: framed,
       priority: 1,

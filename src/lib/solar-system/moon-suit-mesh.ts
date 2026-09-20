@@ -10,6 +10,7 @@
 
 import * as THREE from 'three';
 import { acquireModel } from '@/game/models';
+import { currentQuality } from '@/game/quality';
 
 export const HIP_H = 0.98;
 export const THIGH = 0.46;
@@ -148,7 +149,10 @@ export function buildSuit(lite: boolean, bareHead = false): SuitRig {
     const lod = new THREE.LOD();
     lod.addLevel(skinned(src), 0);
     const far = find('Body_LOD1') as THREE.SkinnedMesh | undefined;
-    if (far?.isSkinnedMesh) lod.addLevel(skinned(far), lite ? 12 : 25);
+    // The crew are the one thing always in frame, so their switch is the
+    // shortest fraction of the preset's LOD reference: 12 m on a phone,
+    // 25 m on this Mac, 37 m where there is room for it.
+    if (far?.isSkinnedMesh) lod.addLevel(skinned(far), currentQuality().lodDistance * (lite ? 0.5 : 0.62));
     group.add(lod);
     // Rigid pieces are exported in rest-pose space: hang each on its joint.
     const rigid = (name: string, parent: THREE.Object3D, at: string, material: THREE.Material) => {

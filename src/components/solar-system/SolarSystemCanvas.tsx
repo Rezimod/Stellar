@@ -15,6 +15,7 @@ import {
   NASA_PLANET_TEXTURE_URL,
   NASA_TEXTURE_IDS,
 } from '@/lib/solar-system/planet-texture-urls';
+import { disposePlanetTexture, makePlanetTextureLoader } from '@/lib/solar-system/texture-load';
 import { createPlanetMaterial, disposePlanetMaterial, tickPlanetMaterial } from '@/lib/solar-system/planet-textures';
 import { softSpriteTexture } from '@/lib/solar-system/soft-sprite';
 import {
@@ -574,8 +575,8 @@ export function SolarSystemCanvas({
 
     const textureById = new Map<SolarBodyId, THREE.Texture>();
     let textureLoadsCancelled = false;
-    const loader = new THREE.TextureLoader();
-    loader.setCrossOrigin('anonymous');
+    // Off the main thread where the browser allows it: see texture-load.ts.
+    const loader = makePlanetTextureLoader();
     const maxAniso = renderer.capabilities.getMaxAnisotropy();
 
     // NASA Black Marble-derived night lights — the dark side of Earth glows
@@ -590,7 +591,7 @@ export function SolarSystemCanvas({
     };
     loader.load('/solar-system/planets/earth-night.jpg', (tex) => {
       if (textureLoadsCancelled) {
-        tex.dispose();
+        disposePlanetTexture(tex);
         return;
       }
       tex.colorSpace = THREE.SRGBColorSpace;
@@ -612,7 +613,7 @@ export function SolarSystemCanvas({
       textureById.set(id, tex);
       if (id === 'sun') {
         sunSurface.setMap(tex);
-        previous?.dispose();
+        disposePlanetTexture(previous);
         return;
       }
       const mesh = meshById.get(id);
@@ -623,7 +624,7 @@ export function SolarSystemCanvas({
         mesh.material = createPlanetMaterial(id, lite, tex);
         if (id === 'earth') applyEarthNight();
       } else {
-        previous?.dispose();
+        disposePlanetTexture(previous);
       }
     };
 
@@ -633,12 +634,11 @@ export function SolarSystemCanvas({
         url,
         (tex) => {
           if (textureLoadsCancelled || detailLoaded.has(id)) {
-            tex.dispose();
+            disposePlanetTexture(tex);
             return;
           }
           applyLoadedTexture(id, tex);
         },
-        undefined,
         () => {
           if (textureLoadsCancelled || detailLoaded.has(id) || id === 'sun') return;
           const mesh = meshById.get(id);
@@ -655,13 +655,10 @@ export function SolarSystemCanvas({
     const detailRequested = new Set<SolarBodyId>();
     const maybeLoadDetailMap = (id: SolarBodyId, mesh: THREE.Mesh) => {
       if (lowData || detailRequested.has(id)) return;
-      // Not during an arrival: a four-megapixel map decoded and handed to the
-      // GPU is the better part of a second on this hardware, and the crew are
-      // watching a world come up. Whatever they pass on the way keeps its
-      // base map; by the time they ask again they are back at the controls.
-      // TODO(explore-slice): phase 11 — textures are decoded and uploaded on
-      // the main thread, which is where the arrival's long frames come from.
-      // Decode off it (ImageBitmapLoader, or KTX2 for the planet maps).
+      // Not during an arrival: the decode is off the main thread now
+      // (texture-load.ts), but the upload is not, and the crew are watching a
+      // world come up. Whatever they pass on the way keeps its base map; by
+      // the time they ask again they are back at the controls.
       const flying = flightRef.current;
       if (flying && (flying.telemetry.approachPhase || flying.input.approachRequest)) return;
       const url = NASA_PLANET_DETAIL_URL[id];
@@ -673,12 +670,12 @@ export function SolarSystemCanvas({
       detailRequested.add(id);
       loader.load(url, (tex) => {
         if (textureLoadsCancelled) {
-          tex.dispose();
+          disposePlanetTexture(tex);
           return;
         }
         detailLoaded.add(id);
         applyLoadedTexture(id, tex);
-      }, undefined, () => {
+      }, () => {
         // A dropped connection: the body keeps its base map and may ask again.
         detailRequested.delete(id);
       });
@@ -1577,7 +1574,7 @@ export function SolarSystemCanvas({
       teardownShip();
       fleet.dispose();
       textureLoadsCancelled = true;
-      textureById.forEach((tex) => tex.dispose());
+      textureById.forEach(disposePlanetTexture);
       textureById.clear();
 
       if (earthExtras) {

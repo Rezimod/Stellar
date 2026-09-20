@@ -1,10 +1,11 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Camera, ChevronsDown, ChevronsUp, Eye, EyeOff, Flame, Flashlight, Hand, HelpCircle, Menu, Rocket, Volume2, VolumeX, Wind, X } from 'lucide-react';
+import { Camera, ChevronsDown, ChevronsUp, Eye, EyeOff, Flame, Flashlight, Hand, HelpCircle, Menu, Rocket, Trophy, Volume2, VolumeX, Wind, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { makeWorldSurface, type WorldSurfaceHandle } from '@/lib/solar-system/world-surface';
 import { WORLDS, type WorldId } from '@/lib/solar-system/world-profiles';
+import { motionShown, suitLevel, suitShown } from '@/lib/solar-system/moon-hud';
 import { loadTbilisi, type EarthData } from '@/lib/solar-system/world-earth-data';
 import type { SkyTarget } from '@/lib/solar-system/world-earth-tonight';
 import { TelescopeEyepiece } from './TelescopeEyepiece';
@@ -52,6 +53,7 @@ export function WorldSurface({ world, onReturn, room, paused, onProgress, onPaus
   const resumeRef = useRef(false);
   const [help, setHelp] = useState(false);
   const [menu, setMenu] = useState(false);
+  const [log, setLog] = useState(false);
   const [immersive, setImmersive] = useState(false);
   const [run, setRun] = useState(false);
   const [crouch, setCrouch] = useState(false);
@@ -81,6 +83,12 @@ export function WorldSurface({ world, onReturn, room, paused, onProgress, onPaus
   const hintRef = useRef<HTMLParagraphElement>(null);
   const promptRef = useRef<HTMLDivElement>(null);
   const promptTextRef = useRef<HTMLSpanElement>(null);
+  const promptHoldRef = useRef<HTMLElement>(null);
+  const promptWorkRef = useRef<HTMLElement>(null);
+  const motionRef = useRef<HTMLDivElement>(null);
+  const speedRowRef = useRef<HTMLSpanElement>(null);
+  const altRowRef = useRef<HTMLSpanElement>(null);
+  const suitRef = useRef<HTMLDivElement>(null);
   const bannerRef = useRef<HTMLDivElement>(null);
   const readoutRef = useRef<HTMLDivElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -97,7 +105,7 @@ export function WorldSurface({ world, onReturn, room, paused, onProgress, onPaus
   const actionRef = useRef<HTMLButtonElement>(null);
   const actionTextRef = useRef<HTMLSpanElement>(null);
   const stanceRef = useRef<HTMLDivElement>(null);
-  const objRef = useRef<HTMLDivElement>(null);
+  const objRef = useRef<HTMLButtonElement>(null);
   const objTextRef = useRef<HTMLSpanElement>(null);
   const objRangeRef = useRef<HTMLSpanElement>(null);
   const pipRef = useRef<HTMLDivElement>(null);
@@ -180,7 +188,7 @@ export function WorldSurface({ world, onReturn, room, paused, onProgress, onPaus
       wake: handle.startAudio,
       onCrouch: setCrouch,
       onPauseRequest: () => onPauseRequestRef.current?.(),
-      selectable: '.moon-hud__help, .moon-hud__menu',
+      selectable: '.moon-hud__help, .moon-hud__menu, .moon-hud__log',
     });
     controlsRef.current = controls;
 
@@ -224,17 +232,35 @@ export function WorldSurface({ world, onReturn, room, paused, onProgress, onPaus
       }
 
       if (stripRef.current) stripRef.current.style.transform = `translateX(${-(tel.heading + 360) * PPD}px)`;
-      text(altRef.current, `${tel.altitude.toFixed(1)} m`);
-      text(speedRef.current, tel.driving ? `${Math.round(tel.speed * 3.6)} km/h` : `${tel.speed.toFixed(1)} m/s`);
+
+      // ── Speed and height, while there is motion to read. ──
+      const motion = motionShown({ driving: tel.driving, speed: tel.speed, airborne: tel.altitude > 0.4, altitude: tel.altitude });
+      show(motionRef.current, motion.speed || motion.altitude);
+      show(speedRowRef.current, motion.speed);
+      show(altRowRef.current, motion.altitude);
+      if (motion.speed) text(speedRef.current, tel.driving ? `${Math.round(tel.speed * 3.6)} km/h` : `${tel.speed.toFixed(1)} m/s`);
+      if (motion.altitude) text(altRef.current, `${tel.altitude.toFixed(1)} m`);
+
+      // ── The suit, on a world that needs one, when it is low or in front of
+      // the crew. There is no suit power out here, so the oxygen decides. ──
+      const glance = { o2: tel.o2, power: 100, sinceChange: 99, firstPerson: tel.view === 'helmet' };
+      const suit = suitRef.current;
+      const suitOn = !breathable && suitShown(glance);
+      show(suit, suitOn);
+      if (suit && suitOn) {
+        suit.dataset.level = suitLevel(glance);
+        text(o2Ref.current, `${tel.o2.toFixed(1)}%`);
+        if (o2BarRef.current) o2BarRef.current.style.width = `${Math.max(0, Math.min(100, tel.o2))}%`;
+        text(tempRef.current, `${tel.suitTemp.toFixed(1)}°`);
+      }
+      show(lampRef.current, tel.headlamp);
+      // The rest are read rather than watched: these refs are only mounted
+      // while the log is open.
       text(gravRef.current, `${handle.profile.gravity.toFixed(2)} m/s²`);
-      text(o2Ref.current, `${tel.o2.toFixed(1)}%`);
-      if (o2BarRef.current) o2BarRef.current.style.width = `${Math.max(0, Math.min(100, tel.o2))}%`;
       text(hrRef.current, `${Math.round(tel.heartRate)}`);
-      text(tempRef.current, `${tel.suitTemp.toFixed(1)}°`);
       text(outRef.current, tel.earth && tel.earth.outsideC === null ? '—' : `${tel.outsideC}°`);
       text(evaRef.current, fmtTime(tel.evaSeconds));
       text(distRef.current, fmtRange(tel.distanceM));
-      show(lampRef.current, tel.headlamp);
 
       const p = tel.prompt;
       const label = p.active ? ttw(`act.${p.label}`) : '';
@@ -246,7 +272,17 @@ export function WorldSurface({ world, onReturn, room, paused, onProgress, onPaus
       const prompt = promptRef.current;
       if (prompt) {
         show(prompt, p.active);
-        if (p.active) text(promptTextRef.current, label);
+        if (p.active) {
+          text(promptTextRef.current, label);
+          show(promptHoldRef.current, p.kind === 'hold');
+        }
+      }
+      // The prompt carries its own hold progress, as the Moon's does.
+      const promptWork = promptWorkRef.current;
+      if (promptWork) {
+        const busy = p.active && p.progress > 0.001;
+        show(promptWork, busy);
+        if (busy) promptWork.style.setProperty('--work', Math.min(1, p.progress).toFixed(3));
       }
       const stance = stanceRef.current;
       if (stance) {
@@ -399,7 +435,7 @@ export function WorldSurface({ world, onReturn, room, paused, onProgress, onPaus
   const canBuild = useCallback(() => handleRef.current?.telemetry.phase === 'surface', []);
 
   return (
-    <div ref={rootRef} className={`moon-surface moon-surface--${world}`} data-phase="descent" data-ready="false" data-immersive={immersive}>
+    <div ref={rootRef} className={`moon-surface moon-surface--${world}`} data-world={world} data-phase="descent" data-ready="false" data-immersive={immersive}>
       <div ref={mountRef} className="moon-surface__canvas" />
       {(gpuLost || earthError || !onProgress) && <CosmicLoader className={gpuLost || earthError ? 'moon-surface__loader is-forced' : 'moon-surface__loader'} variant="descent"
         label={gpuLost ? tl('gpu') : earthError ? tw('loadError') : tw('loading')} detail={gpuLost || earthError ? undefined : tw('loadingDetail')} tips={tips} />}
@@ -450,31 +486,33 @@ export function WorldSurface({ world, onReturn, room, paused, onProgress, onPaus
           </div>
         )}
 
-        <div className="moon-hud__head">
-          <span className="moon-hud__place">{tw('place')}</span>
-          <div className="moon-hud__head-rows">
-            <span className="moon-hud__reading"><span>{t('altitude')}</span><span ref={altRef} /></span>
-            <span className="moon-hud__reading"><span>{t('speed')}</span><span ref={speedRef} /></span>
-            <span className="moon-hud__reading"><span>{t('gravity')}</span><span ref={gravRef} /></span>
-            {isEarth && <span className="moon-hud__reading"><span>{tw('localTime')}</span><span ref={clockRef} /></span>}
+        {/* ── Top left: where this is, and how fast it is going past. ── */}
+        <div className="moon-hud__topleft">
+          <div className="moon-hud__head">
+            <span className="moon-hud__place">{tw('place')}</span>
+            <div ref={motionRef} className="moon-hud__head-rows" hidden>
+              <span ref={speedRowRef} className="moon-hud__reading" hidden><span>{t('speed')}</span><span ref={speedRef} /></span>
+              <span ref={altRowRef} className="moon-hud__reading" hidden><span>{t('altitude')}</span><span ref={altRef} /></span>
+            </div>
           </div>
+          {isEarth && (
+            <button ref={objRef} type="button" className="moon-hud__objective" onClick={() => setLog(true)} hidden>
+              <span className="moon-hud__objective-tag">{tw('expedition.title')}</span>
+              <span ref={objTextRef} className="moon-hud__objective-text" />
+              <span ref={objRangeRef} className="moon-hud__objective-range" />
+            </button>
+          )}
         </div>
-        {isEarth && (
-          <div ref={objRef} className="moon-hud__objective" hidden>
-            <span className="moon-hud__objective-tag">{tw('expedition.title')}</span>
-            <span ref={objTextRef} className="moon-hud__objective-text" />
-            <span ref={objRangeRef} className="moon-hud__objective-range" />
-          </div>
-        )}
 
-        <div className="moon-hud__vitals">
-          {!breathable && <span className="moon-hud__vital"><i>O₂</i><span ref={o2Ref} /><b className="moon-hud__bar"><i ref={o2BarRef} /></b></span>}
-          <span className="moon-hud__vital"><i>{t('pulse')}</i><span ref={hrRef} /></span>
-          {!breathable && <span className="moon-hud__vital"><i>{t('suitTemp')}</i><span ref={tempRef} /></span>}
-          <span className="moon-hud__vital"><i>{tw('outside')}</i><span ref={outRef} /></span>
-          <span className="moon-hud__vital"><i>{t('eva')}</i><span ref={evaRef} /></span>
-          <span className="moon-hud__vital"><i>{t('distance')}</i><span ref={distRef} /></span>
-          <span ref={lampRef} className="moon-hud__vital moon-hud__lamp" hidden><Flashlight size={13} aria-hidden /><i>{tc('lampOn')}</i></span>
+        {/* ── Bottom left: the suit, on a world that needs one. ── */}
+        <div ref={suitRef} className="moon-hud__suit" data-level="ok" role="status" hidden>
+          <span className="moon-hud__vital"><i>O₂</i><span ref={o2Ref} /><b className="moon-hud__bar"><i ref={o2BarRef} /></b></span>
+          <span className="moon-hud__vital"><i>{t('suitTemp')}</i><span ref={tempRef} /></span>
+        </div>
+
+        {/* ── Bottom right: the lamp. ── */}
+        <div className="moon-hud__hands">
+          <span ref={lampRef} className="moon-hud__carry moon-hud__lamp" hidden><Flashlight size={14} aria-hidden /><i>{tc('lampOn')}</i></span>
         </div>
 
         <button type="button" className="moon-hud__round moon-hud__unhide" onClick={() => setImmersive(false)} aria-label={t('hudShow')} title={t('hudShow')}>
@@ -493,6 +531,9 @@ export function WorldSurface({ world, onReturn, room, paused, onProgress, onPaus
           </button>
           {menu && (
             <div className="moon-hud__menu" role="menu" aria-label={t('menu')}>
+              <button type="button" role="menuitem" onClick={() => { setLog(true); setMenu(false); }}>
+                <Trophy size={16} aria-hidden /><span>{t('mission.log')}</span>
+              </button>
               <button type="button" role="menuitem" onClick={() => { cycleView(); setMenu(false); }}>
                 <Camera size={16} aria-hidden /><span>{t('camera')}</span>
               </button>
@@ -519,6 +560,23 @@ export function WorldSurface({ world, onReturn, room, paused, onProgress, onPaus
           </div>
         )}
 
+        {log && (
+          <div className="moon-hud__log" role="dialog" aria-label={t('mission.log')}>
+            <div className="moon-hud__help-head">
+              <span>{t('mission.log')}</span>
+              <button type="button" onClick={() => setLog(false)} aria-label={t('close')}><X size={14} aria-hidden /></button>
+            </div>
+            <div className="moon-log__suit">
+              <span className="moon-hud__reading"><span>{t('eva')}</span><span ref={evaRef} /></span>
+              <span className="moon-hud__reading"><span>{t('distance')}</span><span ref={distRef} /></span>
+              <span className="moon-hud__reading"><span>{t('pulse')}</span><span ref={hrRef} /></span>
+              <span className="moon-hud__reading"><span>{t('gravity')}</span><span ref={gravRef} /></span>
+              <span className="moon-hud__reading"><span>{tw('outside')}</span><span ref={outRef} /></span>
+              {isEarth && <span className="moon-hud__reading"><span>{tw('localTime')}</span><span ref={clockRef} /></span>}
+            </div>
+          </div>
+        )}
+
         <div ref={bannerRef} className="moon-hud__banner" role="status" hidden><span /></div>
         <div ref={readoutRef} className="moon-hud__readout" role="status" hidden />
         <div ref={dialogRef} className="moon-hud__dialog" role="status" hidden>
@@ -528,7 +586,8 @@ export function WorldSurface({ world, onReturn, room, paused, onProgress, onPaus
 
         <div className="moon-hud__foot">
           <div ref={promptRef} className="moon-hud__prompt" hidden>
-            <kbd>{footBinding('interact').keyLabel}</kbd><span ref={promptTextRef} />
+            <kbd>{footBinding('interact').keyLabel}</kbd><span ref={promptTextRef} /><small ref={promptHoldRef} hidden>{t('hold')}</small>
+            <i ref={promptWorkRef} className="moon-hud__prompt-work" hidden />
           </div>
           <div ref={stanceRef} className="moon-hud__stance" hidden />
           <div ref={poiRef} className="moon-hud__poi" hidden />
@@ -545,7 +604,7 @@ export function WorldSurface({ world, onReturn, room, paused, onProgress, onPaus
             c.sync();
           }} />
           <div className="moon-hud__stance-keys">
-            <button type="button" className="moon-hud__key" data-on={run} {...tapKey(toggleRun)} aria-pressed={run} title={t('run')}>
+            <button type="button" className="moon-hud__key moon-hud__run" data-on={run} {...tapKey(toggleRun)} aria-pressed={run} title={t('run')}>
               <ChevronsUp size={18} aria-hidden /><span>{tw('run')}</span>
             </button>
             <button type="button" className="moon-hud__key" data-on={crouch} {...tapKey(toggleCrouch)} aria-pressed={crouch} title={t('crouch')}>

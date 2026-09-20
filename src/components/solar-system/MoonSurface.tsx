@@ -240,6 +240,7 @@ export function MoonSurface({ onReturn, room, paused, onProgress, onPauseRequest
       root.dataset.phase = tel.phase;
       root.dataset.view = tel.view;
       root.dataset.driving = String(tel.driving);
+      root.dataset.inside = tel.inside;
       const bt = tel.backrooms;
       const under = bt.phase !== '' && bt.phase !== 'fall';
       root.dataset.backrooms = bt.phase;
@@ -754,7 +755,7 @@ export function MoonSurface({ onReturn, room, paused, onProgress, onPauseRequest
             c.sync();
           }} />
           <div className="moon-hud__stance-keys">
-            <button type="button" className="moon-hud__key" data-on={run} {...tapKey(toggleRun)} aria-pressed={run} title={t('run')}>
+            <button type="button" className="moon-hud__key moon-hud__run" data-on={run} {...tapKey(toggleRun)} aria-pressed={run} title={t('run')}>
               <ChevronsUp size={18} aria-hidden /><span>{t('run')}</span>
             </button>
             <button type="button" className="moon-hud__key" data-on={crouch} {...tapKey(toggleCrouch)} aria-pressed={crouch} title={t('crouch')}>

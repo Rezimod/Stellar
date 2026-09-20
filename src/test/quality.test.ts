@@ -1,5 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { currentQuality, detectQuality, onQualityChange, qualityProfile, QUALITY_LEVELS, resetQualityDetection, type DeviceSignals } from '@/game/quality';
+import {
+  clearQualityGovernor, currentQuality, detectQuality, governedQuality, onQualityChange, qualityProfile,
+  QUALITY_LEVELS, resetQualityDetection, stepQualityDown, type DeviceSignals,
+} from '@/game/quality';
 import { resetSettings, updateSettings } from '@/game/settings';
 
 const desktop: DeviceSignals = { gpu: 'ANGLE (Intel, Intel(R) Iris(TM) Plus Graphics 640, OpenGL 4.1)', cores: 4, touch: false, width: 1440, memoryGB: 16 };
@@ -35,6 +38,8 @@ describe('quality presets', () => {
     expect(p.msaa).toBeLessThanOrEqual(h.msaa);
     expect(p.lite).toBe(true);
     expect(b.lite).toBe(false);
+    expect(p.lodDistance).toBeLessThanOrEqual(b.lodDistance);
+    expect(b.lodDistance).toBeLessThanOrEqual(h.lodDistance);
   });
   it('the player\'s choice overrides the device, and listeners hear only real changes', () => {
     const seen: string[] = [];
@@ -50,5 +55,38 @@ describe('quality presets', () => {
     updateSettings({ quality: 'balanced' });
     expect(seen.length).toBe(auto === 'performance' ? 1 : 2);
     vi.restoreAllMocks();
+  });
+
+  describe('the governor', () => {
+    it('takes one level at a time, tells its listeners, and stops at the floor', () => {
+      const seen: string[] = [];
+      const off = onQualityChange((q) => seen.push(q.level));
+      updateSettings({ quality: 'auto' });
+      const from = currentQuality().level;
+      const steps = QUALITY_LEVELS.indexOf(from);
+      for (let i = 0; i < steps; i++) expect(stepQualityDown()).toBe(true);
+      expect(currentQuality().level).toBe('performance');
+      expect(governedQuality()).toBe(steps > 0 ? 'performance' : null);
+      // Nothing below performance, and nothing said about a step that did not happen.
+      expect(stepQualityDown()).toBe(false);
+      expect(seen).toEqual(QUALITY_LEVELS.slice(0, steps).reverse());
+      off();
+    });
+
+    it('never steps back up, and gives way to a preset the player names', () => {
+      updateSettings({ quality: 'auto' });
+      stepQualityDown();
+      // A named preset is the player's, whatever the governor found.
+      updateSettings({ quality: 'high' });
+      expect(currentQuality().level).toBe('high');
+      // ... and the governor will not touch it.
+      expect(stepQualityDown()).toBe(false);
+      expect(currentQuality().level).toBe('high');
+      // Back to automatic with the finding discarded: the device decides again.
+      clearQualityGovernor();
+      updateSettings({ quality: 'auto' });
+      expect(governedQuality()).toBe(null);
+      expect(currentQuality().level).toBe(detectQuality({ gpu: '', cores: navigator.hardwareConcurrency || 4, touch: false, width: window.innerWidth, memoryGB: 0 }));
+    });
   });
 });

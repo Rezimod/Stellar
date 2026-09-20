@@ -1,8 +1,10 @@
 // Frame accounting for Moon Mode, and the governor that keeps the frame
 // inside its budget. Stats are always collected (a few numbers a frame);
 // the overlay that shows them exists only in development, on the backquote
-// key. The governor only ever moves the pixel ratio in quarter steps, with
-// hysteresis and a cooldown, so it can settle but never visibly oscillate.
+// key. The governor moves the pixel ratio in quarter steps, with hysteresis
+// and a cooldown, so it can settle but never visibly oscillate; once the
+// ratio is at its floor and the frame is still badly over budget, it asks
+// its owner to take a whole preset level off instead (`onOverBudget`).
 
 import type * as THREE from 'three';
 
@@ -46,9 +48,22 @@ interface Options {
   minRatio: number;
   maxRatio: number;
   onPixelRatio: (ratio: number) => void;
+  /** The pixel ratio has nothing left to give and the frame is still over
+   *  budget: drop a preset level. A cooldown follows, so one bad stretch
+   *  costs one level and the new preset gets a chance before the next. */
+  onOverBudget?: () => void;
 }
 
 const WINDOW = 120;
+/** The governor's window, in frames, and its two thresholds, ms. */
+const GOV_WINDOW = 90;
+/** Over this mean, the ratio comes down; under the second, it may go back up. */
+const GOV_HIGH = 21;
+const GOV_LOW = 14.5;
+/** Far enough over budget (30 fps) to be worth a whole preset level. */
+const GOV_PRESET = 33;
+/** That many windows in a row before the preset moves. */
+const GOV_PRESET_WINDOWS = 3;
 
 export function makeMoonPerf(renderer: THREE.WebGLRenderer, mount: HTMLElement, opts: Options): MoonPerf {
   renderer.info.autoReset = false;
@@ -76,25 +91,37 @@ export function makeMoonPerf(renderer: THREE.WebGLRenderer, mount: HTMLElement, 
   let calmWindows = 0;
   let cooldown = 0;
   let drops = 0;
+  let overWindows = 0;
   const govern = (interval: number) => {
-    if (minRatio >= cap) return;
     // A stall (tab switch, GC, shader compile) is not a trend.
     if (interval > 250) return;
     govSum += interval;
     govFrames += 1;
     cooldown = Math.max(0, cooldown - interval);
-    if (govFrames < 90) return;
+    if (govFrames < GOV_WINDOW) return;
     const mean = govSum / govFrames;
     govSum = 0;
     govFrames = 0;
-    if (cooldown > 0) return;
-    if (mean > 21 && ratio > minRatio) {
+    // The pixel ratio has nowhere left to go and the frame is still well
+    // outside its budget: the preset itself is too much for this machine.
+    if (opts.onOverBudget && cooldown <= 0 && mean > GOV_PRESET && ratio <= minRatio) {
+      overWindows += 1;
+      if (overWindows >= GOV_PRESET_WINDOWS) {
+        overWindows = 0;
+        cooldown = 6000;
+        opts.onOverBudget?.();
+      }
+    } else if (mean < GOV_PRESET) {
+      overWindows = 0;
+    }
+    if (minRatio >= cap || cooldown > 0) return;
+    if (mean > GOV_HIGH && ratio > minRatio) {
       ratio = Math.max(minRatio, ratio - 0.25);
       drops += 1;
       calmWindows = 0;
       cooldown = 3000;
       opts.onPixelRatio(ratio);
-    } else if (mean < 14.5 && ratio < cap && drops < 2) {
+    } else if (mean < GOV_LOW && ratio < cap && drops < 2) {
       calmWindows += 1;
       if (calmWindows >= 10) {
         ratio = Math.min(cap, ratio + 0.25);
@@ -178,13 +205,14 @@ export function makeMoonPerf(renderer: THREE.WebGLRenderer, mount: HTMLElement, 
       };
     },
     setBuildMs(ms) { buildMs = ms; },
-    resume() { lastNow = 0; govSum = 0; govFrames = 0; },
+    resume() { lastNow = 0; govSum = 0; govFrames = 0; overWindows = 0; },
     setRatioBounds(min, max) {
       minRatio = min;
       cap = max;
       ratio = max;
       drops = 0;
       calmWindows = 0;
+      overWindows = 0;
       cooldown = 3000;
     },
     dispose() {

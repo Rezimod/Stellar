@@ -108,6 +108,8 @@ const PAD_LOOK_X = 840;
 const PAD_LOOK_Y = 600;
 /** The touch stick this far out lopes. */
 const TOUCH_RIM = 0.93;
+/** Left of this fraction of the glass, a touch drag is the stick's, not the view's. */
+const LOOK_SIDE = 0.45;
 /** Actions a gamepad button presses (rather than holds). */
 const PAD_PRESSES = ['interact', 'view', 'shoulder', 'headlamp', 'crouch', 'map', 'gears', 'zoom'] as const;
 
@@ -189,6 +191,11 @@ export function attachSurfaceControls(o: SurfaceControlsOptions): SurfaceControl
   const onDown = (e: PointerEvent) => {
     o.wake();
     if (e.button !== 0 || orbitId >= 0 || o.paused()) return;
+    // Touch: the left of the glass belongs to the movement thumb, and a
+    // finger that slides off the stick must not also swing the view. Only a
+    // drag that starts on the right of the canvas looks around. A mouse owns
+    // the whole thing, because it has the pointer lock.
+    if (o.touch && e.offsetX < mount.clientWidth * LOOK_SIDE) return;
     // A mouse on the desk owns the view outright while play lasts; Esc gives it back.
     if (!o.touch) lockPointer(mount);
     orbitId = e.pointerId;

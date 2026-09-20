@@ -20,6 +20,28 @@
   background: #050812;
 }
 .game-shell__loader { z-index: 180; }
+/* The governor's one line: it has just taken a level off, and the player can
+   put it back in Settings. Seven seconds, top centre, over the glass. */
+.game-shell__notice {
+  position: absolute;
+  z-index: 190;
+  top: max(12px, env(safe-area-inset-top));
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
+  max-width: min(420px, calc(100% - 32px));
+  padding: 8px 14px;
+  border: 1px solid rgba(120, 180, 235, 0.3);
+  border-radius: 8px;
+  background: rgba(6, 14, 28, 0.86);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  font: 400 12px/1.45 var(--font-mono, ui-monospace), monospace;
+  letter-spacing: 0.04em;
+  text-align: center;
+  animation: game-notice 0.3s ease-out both;
+}
+@keyframes game-notice { from { opacity: 0; transform: translate(-50%, -6px); } to { opacity: 1; transform: translate(-50%, 0); } }
 
 /* ── Full-screen menus: title, pause, panels ── */
 .game-menu {

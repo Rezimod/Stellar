@@ -3,7 +3,7 @@
 import { useSyncExternalStore } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { FOV_RANGE, getSettings, onSettingsChange, resetSettings, SENSITIVITY_RANGE, updateSettings, type QualityPreset } from '@/game/settings';
-import { QUALITY_LEVELS, type QualityLevel } from '@/game/quality';
+import { clearQualityGovernor, governedQuality, QUALITY_LEVELS, type QualityLevel } from '@/game/quality';
 import { GamePanel } from './GamePanel';
 
 interface SettingsPanelProps {
@@ -17,6 +17,7 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
   const t = useTranslations('play');
   const locale = useLocale();
   const s = useSyncExternalStore(onSettingsChange, getSettings, getSettings);
+  const governed = governedQuality();
   const setLocale = (next: string) => {
     if (next === locale) return;
     document.cookie = `stellar_locale=${next}; path=/; max-age=${60 * 60 * 24 * 365}`;
@@ -26,11 +27,19 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
     <GamePanel title={t('settings')} onClose={onClose}>
       <div className="game-setting">
         <label htmlFor="gs-quality">{t('settingsPanel.quality')}</label>
-        <select id="gs-quality" value={s.quality} onChange={(e) => updateSettings({ quality: e.target.value as QualityPreset })}>
+        <select id="gs-quality" value={s.quality} onChange={(e) => {
+          // The player has an opinion: the governor's own finding gives way.
+          clearQualityGovernor();
+          updateSettings({ quality: e.target.value as QualityPreset });
+        }}>
           <option value="auto">{t('settingsPanel.qualityAuto')}</option>
           {QUALITY_LEVELS.map((q) => <option key={q} value={q}>{t(`settingsPanel.${QUALITY_LABEL[q]}`)}</option>)}
         </select>
-        <p className="game-setting__note">{t('settingsPanel.qualityNote')}</p>
+        <p className="game-setting__note">
+          {governed && s.quality === 'auto'
+            ? t('settingsPanel.qualityGoverned', { level: t(`settingsPanel.${QUALITY_LABEL[governed]}`) })
+            : t('settingsPanel.qualityNote')}
+        </p>
       </div>
       <div className="game-setting">
         <label htmlFor="gs-sens">{t('settingsPanel.sensitivity')} <b>{s.sensitivity.toFixed(1)}×</b></label>

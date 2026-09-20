@@ -925,7 +925,7 @@
   --hud-radius: 18px;
   --hud-round: 44px;
   --stick: clamp(88px, 26cqw, 116px);
-  --key: clamp(42px, 12cqw, 48px);
+  --key: clamp(44px, 12cqw, 48px);
   --card: clamp(152px, 46cqw, 218px);
   --gutter: 14px;
   /* The four edges, each held off the phone's own hardware — swapped round
@@ -2031,20 +2031,7 @@
 .moon-hud__menu button:hover, .moon-hud__menu button:active { background: rgba(77, 178, 255, 0.14); color: var(--hud-ink); }
 .moon-hud__menu-exit { color: var(--hud-warm) !important; }
 
-/* ── Left edge: the suit, as small as it can be and still be read. ── */
-.moon-hud__vitals {
-  position: absolute;
-  min-width: 112px;
-  left: var(--edge-left);
-  top: 50%;
-  transform: translateY(-50%);
-  display: grid;
-  gap: 6px;
-  padding: 8px 10px;
-  border-radius: 6px;
-  background: var(--hud-glass);
-  font-size: 11px;
-}
+/* ── One reading: a label and its number, wherever they are shown. ── */
 .moon-hud__vital { display: grid; grid-template-columns: auto 1fr; gap: 3px 10px; align-items: baseline; }
 .moon-hud__vital > span { text-align: right; }
 .moon-hud__vital i { font-style: normal; font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--hud-dim); }
@@ -2202,6 +2189,7 @@
 .moon-hud__gear { grid-column: 1; grid-row: 1; }
 .moon-hud__gear[data-gear='ion'] { color: #8ff0ff; border-color: rgba(143, 240, 255, 0.6); }
 .moon-hud__action {
+  position: relative;
   grid-column: 2;
   grid-row: 1;
   display: flex;
@@ -2223,7 +2211,23 @@
 }
 .moon-hud__action[hidden] { display: none; }
 .moon-hud__action:active { background: rgba(255, 194, 102, 0.22); }
-.moon-hud__action span { padding: 0 6px; }
+/* The word for the key stands above it rather than inside it: "Frame the
+   shot" does not fit in a 74 px circle at a size a thumb can read, and the
+   work ring runs around the circle's edge. */
+.moon-hud__action span {
+  position: absolute;
+  bottom: calc(100% + 14px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 116px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 11px;
+  line-height: 1.25;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.9);
+}
 .moon-hud__ico-work, .moon-hud__ico-use { display: none; }
 .moon-hud__action[data-mode='work'] .moon-hud__ico-work { display: block; }
 .moon-hud__action[data-mode='use'] .moon-hud__ico-use { display: block; }
@@ -2471,6 +2475,9 @@
 .moon-surface[data-view='helmet'] .moon-surface__canvas { cursor: crosshair; }
 .moon-surface[data-driving='true'] .moon-hud__hint,
 .moon-surface[data-driving='true'] .moon-hud__stance-keys { display: none; }
+/* Inside the habitat there is neither the room to lope nor the ceiling to
+   hop against: those two keys go, and crouch stays for the hatches. */
+.moon-surface[data-inside]:not([data-inside='']) :is(.moon-hud__jump, .moon-hud__run) { display: none; }
 
 /* ── What each phase shows. ── */
 .moon-surface[data-phase='surface'] .moon-hud__landing,
@@ -2481,7 +2488,6 @@
 .moon-surface:not([data-phase='surface']) .moon-hud__hands,
 .moon-surface:not([data-phase='surface']) .moon-hud__objective,
 .moon-surface:not([data-phase='surface']) .moon-hud__compass,
-.moon-surface:not([data-phase='surface']) .moon-hud__vitals,
 .moon-surface:not([data-phase='surface']) .moon-hud__foot,
 .moon-surface:not([data-phase='surface']) .moon-hud__top,
 .moon-surface:not([data-phase='surface']) .moon-hud__stance-keys,
@@ -2591,14 +2597,11 @@
   .moon-hud__head-rows { grid-auto-flow: column; grid-template-columns: repeat(3, auto); gap: 10px; }
   .moon-hud__head-rows .moon-hud__reading { flex-direction: column; gap: 0; }
   .moon-hud__objective { top: calc(var(--edge-top) + 118px); max-width: min(300px, 70vw); }
-  .moon-hud__vitals { top: auto; bottom: calc(var(--edge-bottom) + 182px); transform: none; grid-template-columns: repeat(3, auto); gap: 2px 14px; padding: 5px 9px; font-size: 10px; }
-  .moon-hud__vitals { min-width: 0; }
   .moon-hud__vital { grid-template-columns: auto auto; justify-content: start; gap: 6px; }
   .moon-hud__vital > span { text-align: left; }
-  .moon-hud__vitals .moon-hud__bar { display: none; }
   .moon-hud__foot { bottom: calc(var(--edge-bottom) + 236px); width: calc(100% - 32px); }
   .moon-hud__move .game-stick { width: 112px; height: 112px; }
-  .moon-hud__key { width: 50px; height: 40px; }
+  .moon-hud__key { width: 50px; height: 44px; }
   .moon-hud__jump, .moon-hud__throttle { width: 78px; height: 78px; }
   .moon-hud__action { width: 66px; height: 66px; }
   .moon-hud__work { width: 82px; height: 82px; -webkit-mask: radial-gradient(circle, transparent 37px, #000 38px); mask: radial-gradient(circle, transparent 37px, #000 38px); }
@@ -2607,7 +2610,6 @@
 }
 @media (max-height: 460px) {
   .moon-hud__objective { display: none; }
-  .moon-hud__vitals { font-size: 10px; }
   .moon-hud__suit { padding: 4px 8px; }
 }
 
@@ -2691,12 +2693,21 @@
 .moon-hud__prompt-work[hidden] { display: none; }
 .moon-surface[data-touch='true'] .moon-hud__prompt { display: none; }
 
-/* ── A keyboard and a mouse need no thumb stations: the keys are the
-      controls and the prompt in the middle of the glass names them. The
-      rover's gear stays, because it is a readout as much as a key. The other
-      worlds keep their decks until phase 11 gives them the same treatment. ── */
-.moon-surface[data-world='moon'][data-touch='false'] .moon-hud__move,
-.moon-surface[data-world='moon'][data-touch='false'] .moon-hud__thumb > :not(.moon-hud__gear) { display: none; }
+/* ── A keyboard and a mouse need no thumb stations, on any world: the keys
+      are the controls and the prompt in the middle of the glass names them.
+      The rover's gear stays, because it is a readout as much as a key. ── */
+.moon-surface[data-touch='false'] .moon-hud__move,
+.moon-surface[data-touch='false'] .moon-hud__thumb > :not(.moon-hud__gear) { display: none; }
+/* ── A thumb is not a cursor: nothing it has to hit is under 44 px. Held to
+      coarse pointers so the desk keeps its tighter chrome. ── */
+@media (pointer: coarse) {
+  .moon-hud__key { min-height: 44px; }
+  .moon-hud__menu button { min-height: 44px; }
+  .moon-hud__help-head button { min-height: 44px; width: 44px; }
+  .flight-hud .flight-hud__menu button,
+  .flight-hud .flight-drive__menu button { min-height: 44px; }
+}
+
 .moon-hud__objective-job { display: grid; gap: 2px; margin-top: 4px; padding-top: 5px; border-top: 1px solid var(--hud-line); font-size: 11px; line-height: 1.35; }
 .moon-hud__objective-job[hidden] { display: none; }
 .moon-hud__pip--job { background: var(--hud-warm); }
@@ -3082,7 +3093,7 @@
 /* Underground, the surface instruments have nothing to say. */
 .moon-surface:not([data-backrooms='']):not([data-backrooms='fall'])[data-backrooms] :is(
   .moon-hud__compass, .moon-hud__meter, .moon-hud__head, .moon-hud__topleft, .moon-hud__suit, .moon-hud__hands,
-  .moon-hud__objective, .moon-hud__vitals,
+  .moon-hud__objective,
   .moon-hud__impact, .moon-hud__banner, .moon-hud__poi, .moon-hud__hint, .moon-hud__airlock, .moon-hud__stance-keys
 ) { display: none; }
 .moon-surface[data-backrooms='fall'] .moon-hud__foot,
@@ -3091,7 +3102,7 @@
 .moon-surface[data-backrooms='wake'] .moon-hud__move,
 .moon-surface[data-backrooms='door'] .moon-hud__move,
 .moon-surface[data-backrooms='climb'] .moon-hud__move,
-.moon-surface[data-backrooms='fall'] :is(.moon-hud__compass, .moon-hud__head, .moon-hud__topleft, .moon-hud__suit, .moon-hud__hands, .moon-hud__objective, .moon-hud__vitals, .moon-hud__radio) { display: none; }
+.moon-surface[data-backrooms='fall'] :is(.moon-hud__compass, .moon-hud__head, .moon-hud__topleft, .moon-hud__suit, .moon-hud__hands, .moon-hud__objective, .moon-hud__radio) { display: none; }
 @media (prefers-reduced-motion: reduce) {
   .moon-hud__br, .moon-hud__br-carrier { animation: none; }
 }
