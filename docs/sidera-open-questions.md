@@ -100,3 +100,11 @@ most reversible option; each needs a yes/no from Rezi.
 19. ~~**`/collection` and the wallet.**~~ **Decided 2026-09-20: keep the
     address in the URL.** A Collection is a public catalogue, like the log:
     readable and linkable by naming its holder.
+
+20. ~~**The merchant wallet.**~~ **Settled 2026-09-21.**
+    `NEXT_PUBLIC_MERCHANT_WALLET` is set on the sidera Vercel project for
+    production, preview and development — the same mainnet address the Stellar
+    project pays to. Until it was set, "Take this capsule" reached the pay step
+    and got a 503: the buy route refuses to quote without a recipient. The
+    remaining part of Gate 3 needs a person, not a value: a signed-in stranger
+    paying real SOL and opening what they bought.
