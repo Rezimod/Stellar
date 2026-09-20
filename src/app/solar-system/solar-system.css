@@ -2346,6 +2346,24 @@
 .moon-log__mark--crew { width: 7px; height: 7px; margin: -3.5px 0 0 -3.5px; background: var(--hud-accent); }
 .moon-log__rewards { display: grid; gap: 8px; padding-top: 8px; border-top: 1px solid var(--hud-line); }
 
+/* ── What the telescope found, while it stands. ── */
+.moon-hud__scope {
+  position: absolute;
+  right: var(--edge-right);
+  bottom: 28%;
+  width: min(280px, 44vw);
+  display: grid;
+  gap: 4px;
+  padding: 10px 12px;
+  border: 1px solid var(--hud-line);
+  border-radius: 8px;
+  background: rgba(6, 14, 28, 0.86);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+.moon-hud__scope strong { font-weight: 500; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--hud-accent); }
+.moon-hud__scope span { font-size: 11px; line-height: 1.5; color: var(--hud-dim); }
+
 /* ── Inside the helmet: the visor's edge, a faint reflection of the crew's
    own face lights, and the sun visor's gold cast at the top of the glass. ── */
 .moon-hud__visor {

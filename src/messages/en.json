@@ -1816,7 +1816,16 @@
           "mars": "Mars has two moons, Phobos and Deimos, both likely captured asteroids.",
           "venus": "Venus turns backwards, and one of its days is longer than its year.",
           "m42": "The Orion Nebula is a nursery 1,344 light-years off, forming stars now.",
-          "m31": "Andromeda is 2.5 million light-years away, and closing on us."
+          "m31": "Andromeda is 2.5 million light-years away, and closing on us.",
+          "names": {
+            "earth": "Earth",
+            "jupiter": "Jupiter",
+            "saturn": "Saturn",
+            "mars": "Mars",
+            "venus": "Venus",
+            "m42": "M42 · Orion Nebula",
+            "m31": "M31 · Andromeda"
+          }
         },
         "firstSteps": {
           "title": "First Steps",

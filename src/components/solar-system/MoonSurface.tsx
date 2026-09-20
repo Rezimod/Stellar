@@ -111,6 +111,7 @@ export function MoonSurface({ onReturn, room, paused, onProgress, onPauseRequest
   const bannerRef = useRef<HTMLDivElement>(null);
   const radioRef = useRef<HTMLDivElement>(null);
   const readoutRef = useRef<HTMLDivElement>(null);
+  const scopeRef = useRef<HTMLDivElement>(null);
   const drillRef = useRef<HTMLDivElement>(null);
   const drillDepthRef = useRef<HTMLSpanElement>(null);
   const drillLoadRef = useRef<HTMLSpanElement>(null);
@@ -416,6 +417,15 @@ export function MoonSurface({ onReturn, room, paused, onProgress, onPauseRequest
         show(readout, !!tel.readout);
         if (tel.readout) text(readout, tel.readout === 'charger' ? tt('readout.charger', { n: Math.round(tel.battery * 100) }) : tt(`readout.${tel.readout}`));
       }
+      const scope = scopeRef.current;
+      if (scope) {
+        const o = tel.props;
+        show(scope, o.observedHold > 0 && !!o.observed);
+        if (o.observedHold > 0 && o.observed) {
+          text(scope.firstElementChild as HTMLElement, tt('missions.observed.line', { target: tt(`missions.observed.names.${o.observed}`), alt: o.observedAlt }));
+          text(scope.lastElementChild as HTMLElement, tt(`missions.observed.${o.observed}`));
+        }
+      }
       const impact = impactRef.current;
       if (impact) {
         impact.hidden = tel.impactHold <= 0;
@@ -670,6 +680,7 @@ export function MoonSurface({ onReturn, room, paused, onProgress, onPauseRequest
         <div ref={impactRef} className="moon-hud__impact" role="status" hidden />
         <div ref={bannerRef} className="moon-hud__banner" role="status" hidden><span /></div>
         <div ref={readoutRef} className="moon-hud__readout" role="status" hidden />
+        <div ref={scopeRef} className="moon-hud__scope" role="status" hidden><strong /><span /></div>
 
         {/* ── The middle of the glass: what is in front of the crew. ── */}
         <div className="moon-hud__foot">

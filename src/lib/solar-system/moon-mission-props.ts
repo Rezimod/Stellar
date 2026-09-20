@@ -46,6 +46,8 @@ export interface MissionPropsTelemetry {
   /** What the platform settled on, and how high it stood. */
   observed: string;
   observedAlt: number;
+  /** Seconds the result stays up on the glass. */
+  observedHold: number;
   /** The scanner's strength on the way to the sample, 0…1, or −1. */
   signal: number;
   /** Something is in the crew's hands. */
@@ -121,7 +123,7 @@ export function makeMissionProps(world: MissionPropsWorld): MissionPropsHandle {
   keep(rock);
   mergeStatic(group);
 
-  const telemetry: MissionPropsTelemetry = { observed: '', observedAlt: 0, signal: -1, carrying: '' };
+  const telemetry: MissionPropsTelemetry = { observed: '', observedAlt: 0, observedHold: 0, signal: -1, carrying: '' };
   const crew = { x: 0, z: 0, yaw: 0 };
   const holds: Record<string, number> = {};
   let sampleFound = false;
@@ -199,6 +201,7 @@ export function makeMissionProps(world: MissionPropsWorld): MissionPropsHandle {
       const up: SkyTarget | undefined = observable(world.now?.() ?? new Date(), 1)[0];
       telemetry.observed = up?.id ?? 'earth';
       telemetry.observedAlt = Math.round(up?.altitude ?? 90);
+      telemetry.observedHold = 14;
       signal('scope', 'observed');
     }, { requires: () => world.state.domeOpen }),
     hold('dishInspect', HOLD.cable, anchor('commsControl'), 'dishInspect', () => { signal('dish', 'inspected'); }),
@@ -244,7 +247,8 @@ export function makeMissionProps(world: MissionPropsWorld): MissionPropsHandle {
     interactables,
     colliders: [],
     telemetry,
-    update(_dt, ctx) {
+    update(dt, ctx) {
+      if (telemetry.observedHold > 0) telemetry.observedHold = Math.max(0, telemetry.observedHold - dt);
       crew.x = ctx.x;
       crew.z = ctx.z;
       crew.yaw = ctx.yaw;
