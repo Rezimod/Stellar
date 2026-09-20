@@ -6,31 +6,55 @@ import { AuthModal } from '@/components/auth/AuthModal'
 import { useStellarUser } from '@/hooks/useStellarUser'
 
 /**
- * The Collection is read by wallet. A signed-in holder should never have to
- * type theirs, so the page sends itself to its own address once Privy is
- * ready; a stranger is offered the sign-in the rest of Sidera uses.
+ * The Collection is read by wallet. A signed-in holder never has to type
+ * theirs — the page sends itself to their address as soon as Privy answers —
+ * and anyone can read a Collection by naming its holder, so the page is never
+ * a dead end while the session is still being read.
  */
 export default function CollectionWallet() {
   const router = useRouter()
   const { ready, authenticated, address } = useStellarUser()
   const [authOpen, setAuthOpen] = useState(false)
+  const [typed, setTyped] = useState('')
 
   useEffect(() => {
     if (ready && authenticated && address) router.replace(`/collection?wallet=${address}`)
   }, [ready, authenticated, address, router])
 
-  if (!ready) return <p className="sd-note">Reading the account.</p>
-
-  if (authenticated && address) return <p className="sd-note">Opening your Collection.</p>
+  if (ready && authenticated && address) return <p className="sd-note">Opening your Collection.</p>
 
   return (
     <>
-      <p className="sd-lede">Sign in to read your Collection, or add a holder address to the address bar to read theirs.</p>
+      <p className="sd-lede">Sign in to read your Collection, or name a holder to read theirs.</p>
       <div className="sd-pay__actions sd-section">
-        <button type="button" className="sd-btn" onClick={() => setAuthOpen(true)}>
-          Sign in
+        <button type="button" className="sd-btn" onClick={() => setAuthOpen(true)} disabled={!ready}>
+          {ready ? 'Sign in' : 'Reading the account'}
         </button>
       </div>
+      <form
+        className="sd-pay__actions sd-section"
+        onSubmit={(e) => {
+          e.preventDefault()
+          const wallet = typed.trim()
+          if (wallet) router.push(`/collection?wallet=${encodeURIComponent(wallet)}`)
+        }}
+      >
+        <label className="sr-only" htmlFor="sd-holder">
+          Holder address
+        </label>
+        <input
+          id="sd-holder"
+          className="sd-input"
+          value={typed}
+          onChange={(e) => setTyped(e.target.value)}
+          placeholder="Holder address"
+          autoComplete="off"
+          spellCheck={false}
+        />
+        <button type="submit" className="sd-btn" disabled={!typed.trim()}>
+          Read it
+        </button>
+      </form>
       <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
     </>
   )

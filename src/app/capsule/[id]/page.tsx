@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import SideraOpen from '@/components/sidera/SideraOpen';
 import SideraShell from '@/components/sidera/SideraShell';
 import SideraVerify from '@/components/sidera/SideraVerify';
 import DataRow from '@/components/sidera/ui/DataRow';
@@ -86,6 +87,8 @@ export default async function CapsuleRecordPage({ params }: { params: Promise<{ 
             ]}
           />
         </div>
+
+        {purchased && !opened && <SideraOpen capsuleId={id} />}
 
         {outcome && (
           <div className="sd-section">

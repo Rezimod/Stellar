@@ -31,28 +31,31 @@ export default function HolderCollection({ editions }: { editions: HolderEdition
   })
 
   return (
-    <ul className="sd-grid sd-section">
-      {ordered.map((e) => (
-        <li key={e.editionId}>
-          <CardPlate
-            designation={e.designation}
-            name={e.name}
-            rarity={e.rarity as Rarity}
-            observationStatus={e.observationStatus as ObservationStatus}
-            artUrl="/cards/placeholder.svg"
-            href={`/card/${e.designation}`}
-            data={[
-              { label: 'Ed', value: `${pad(e.editionNumber)} / ${e.editionSize}` },
-              { label: 'Nights', value: e.history.length },
-            ]}
-          />
-          {e.latest ? (
-            <Caption as="p" parts={captureParts(e.latest)} />
-          ) : (
-            <Caption as="p">Not yet photographed</Caption>
-          )}
-        </li>
-      ))}
-    </ul>
+    <>
+      <h2 className="sd-section__title sd-section">Editions held</h2>
+      <ul className="sd-grid">
+        {ordered.map((e) => (
+          <li key={e.editionId}>
+            <CardPlate
+              designation={e.designation}
+              name={e.name}
+              rarity={e.rarity as Rarity}
+              observationStatus={e.observationStatus as ObservationStatus}
+              artUrl="/cards/placeholder.svg"
+              href={`/card/${e.designation}`}
+              data={[
+                { label: 'Ed', value: `${pad(e.editionNumber)} / ${e.editionSize}` },
+                { label: 'Nights', value: e.history.length },
+              ]}
+            />
+            {e.latest ? (
+              <Caption as="p" parts={captureParts(e.latest)} />
+            ) : (
+              <Caption as="p">Not yet photographed</Caption>
+            )}
+          </li>
+        ))}
+      </ul>
+    </>
   )
 }

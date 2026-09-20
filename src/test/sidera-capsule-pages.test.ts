@@ -18,6 +18,7 @@ vi.mock('@/components/sidera/SideraShell', () => ({
   default: ({ children }: { children: React.ReactNode }) => createElement('div', null, children),
 }));
 vi.mock('@/components/sidera/SideraVerify', () => ({ default: () => createElement('p', null, 'Verify again') }));
+vi.mock('@/components/sidera/SideraOpen', () => ({ default: () => createElement('p', null, 'Open the capsule') }));
 vi.mock('@/components/sidera/SideraBuyCapsule', () => ({ default: () => createElement('p', null, 'Buy capsule') }));
 
 import CapsuleRecordPage from '@/app/capsule/[id]/page';
@@ -60,6 +61,16 @@ it('keeps a sealed capsule sealed on its public record', async () => {
   const html = await render(ID);
   expect(html).toContain('Sealed until it is opened');
   expect(html).not.toContain('Checks out');
+});
+
+it('offers the way back into a capsule bought but never opened', async () => {
+  mocks.readFullLog.mockResolvedValue([listed, purchased]);
+  expect(await render(ID)).toContain('Open the capsule');
+});
+
+it('does not offer to open a capsule that is already open', async () => {
+  mocks.readFullLog.mockResolvedValue([listed, purchased, opened]);
+  expect(await render(ID)).not.toContain('Open the capsule');
 });
 
 it('shows the draws and the verdict once a capsule is opened', async () => {

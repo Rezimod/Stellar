@@ -128,6 +128,13 @@ export default function SideraBuyCapsule({
               { label: 'Purchase hash', value: receipt.purchaseHash },
             ]}
           />
+          <p className="sd-note">
+            This capsule is yours from here. Its{' '}
+            <Link href={`/capsule/${capsuleId}`} className="sd-link">
+              public record
+            </Link>{' '}
+            is the way back to it, and where it can be opened if this page is closed.
+          </p>
         </div>
       )}
 

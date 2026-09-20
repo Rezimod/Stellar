@@ -72,7 +72,8 @@ export default async function Set001Page({
         </div>
         <Rule />
 
-        <ul className="sd-grid sd-section">
+        <h2 className="sd-section__title sd-section">The twenty</h2>
+        <ul className="sd-grid">
           {SET_001_CARDS.map((c) => {
             const s = supply?.get(c.seed.designation);
             const mine = held?.get(c.seed.designation);

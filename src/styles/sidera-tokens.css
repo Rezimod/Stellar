@@ -214,10 +214,14 @@ html:has(.sidera) #stellar-main { padding-top: 0; padding-bottom: 0; }
 
 /* ── The reveal ───────────────────────────────────────────────── */
 .sd-reveal { display: flex; flex-direction: column; gap: 24px; align-items: center; }
-.sd-reveal__stone { animation: sd-fall 0.55s ease-in both; }
-.sd-reveal__card { opacity: 0; animation: sd-draw 0.5s ease-out both; }
+.sd-reveal__stone { animation: sd-fall var(--sd-fall, 0.55s) ease-in both; }
+.sd-reveal--rare { --sd-fall: 0.7s; }
+.sd-reveal--epic { --sd-fall: 0.9s; }
+.sd-reveal--legendary { --sd-fall: 1.15s; }
+.sd-reveal__card { opacity: 0; animation: sd-draw 0.5s ease-out both; animation-delay: calc(var(--sd-fall, 0.55s) + var(--sd-i, 0) * 0.35s); }
 @keyframes sd-fall {
-  from { transform: translateY(-24px) rotate(-8deg); opacity: 0; }
+  from { transform: translateY(-48px) rotate(-14deg); opacity: 0; }
+  60% { opacity: 1; }
   to { transform: none; opacity: 1; }
 }
 @keyframes sd-draw {
@@ -245,3 +249,6 @@ html:has(.sidera) #stellar-main { padding-top: 0; padding-bottom: 0; }
 .sd-steps { list-style: none; margin: 32px 0 0; padding: 0; display: grid; gap: 32px; }
 @media (min-width: 760px) { .sd-steps { grid-template-columns: repeat(3, 1fr); gap: 32px; } }
 .sd-steps h2 { margin: 6px 0 0; }
+.sd-input { font-family: var(--sd-mono); font-size: 12px; letter-spacing: 0.04em; color: var(--sd-ink); background: var(--sd-plate); border: 1px solid var(--sd-rule-strong); padding: 10px 12px; min-height: 40px; min-width: 0; flex: 1 1 260px; }
+.sd-input::placeholder { color: var(--sd-ink-3); }
+.sd-input:focus { border-color: var(--sd-ink-3); }
