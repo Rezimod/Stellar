@@ -15,11 +15,14 @@ export default function SideraBuyCard({
   name,
   priceGel,
   available,
+  released,
 }: {
   designation: string;
   name: string;
   priceGel: number;
   available: boolean;
+  /** A draft set sells nothing. Set 001 is draft until it is released. */
+  released: boolean;
 }) {
   const { getAccessToken } = usePrivy();
   const { authenticated, ready, address } = useStellarUser();
@@ -28,6 +31,10 @@ export default function SideraBuyCard({
   const [done, setDone] = useState<Confirmation | null>(null);
   const [error, setError] = useState('');
   const [placing, setPlacing] = useState(false);
+
+  if (!released) {
+    return <p className="sd-note">Set 001 is not on sale yet. Nothing in it can be bought, by capsule or on its own.</p>;
+  }
 
   if (!available) {
     return (

@@ -14,7 +14,8 @@ vi.mock('@/components/sidera/SideraShell', () => ({
   default: ({ children }: { children: React.ReactNode }) => createElement('div', null, children),
 }));
 vi.mock('@/components/sidera/SideraBuyCard', () => ({
-  default: ({ available }: { available: boolean }) => createElement('p', null, available ? 'Buy this card' : 'Not for sale'),
+  default: ({ available, released }: { available: boolean; released: boolean }) =>
+    createElement('p', null, !released ? 'Set not released' : available ? 'Buy this card' : 'Not for sale'),
 }));
 
 import Set001Page from '@/app/set/001/page';
@@ -74,8 +75,13 @@ it('refuses a designation that is not in the set', async () => {
 });
 
 it('offers a card for sale only when an edition can be spared', async () => {
-  mocks.cardAvailability.mockResolvedValue({ cardId: 'c1', name: 'Tycho', rarity: 'rare', editionSize: 100, allocated: 7, available: true });
+  mocks.cardAvailability.mockResolvedValue({ cardId: 'c1', name: 'Tycho', rarity: 'rare', editionSize: 100, allocated: 7, released: true, available: true });
   expect(await renderCard('TYCHO')).toContain('Buy this card');
-  mocks.cardAvailability.mockResolvedValue({ cardId: 'c1', name: 'Tycho', rarity: 'rare', editionSize: 100, allocated: 100, available: false });
+  mocks.cardAvailability.mockResolvedValue({ cardId: 'c1', name: 'Tycho', rarity: 'rare', editionSize: 100, allocated: 100, released: true, available: false });
   expect(await renderCard('TYCHO')).toContain('Not for sale');
+});
+
+it('sells nothing from a set that is still a draft', async () => {
+  mocks.cardAvailability.mockResolvedValue({ cardId: 'c1', name: 'Tycho', rarity: 'rare', editionSize: 100, allocated: 0, released: false, available: false });
+  expect(await renderCard('TYCHO')).toContain('Set not released');
 });

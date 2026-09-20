@@ -184,23 +184,26 @@ type Rows<T> = { rows: T[] };
  */
 export async function cardAvailability(db: Db, designation: string) {
   const { rows } = (await db.execute(sql`
-    SELECT k.id, k.name, k.rarity, k.edition_size,
+    SELECT k.id, k.name, k.rarity, k.edition_size, cs.status AS set_status,
       (SELECT COUNT(*) FROM edition e WHERE e.card_id = k.id) AS allocated,
       (SELECT SUM(s.edition_size) FROM card s WHERE s.set_id = k.set_id)
         - (SELECT COUNT(*) FROM edition e JOIN card s ON s.id = e.card_id WHERE s.set_id = k.set_id)
         - (SELECT COALESCE(SUM(cards_per_capsule), 0) FROM capsule WHERE set_id = k.set_id AND state IN ('listed', 'purchased'))
         AS spare
-    FROM card k WHERE k.designation = ${designation}
-  `)) as Rows<{ id: string; name: string; rarity: string; edition_size: number; allocated: number | string; spare: number | string }>;
+    FROM card k JOIN card_set cs ON cs.id = k.set_id WHERE k.designation = ${designation}
+  `)) as Rows<{ id: string; name: string; rarity: string; edition_size: number; set_status: string; allocated: number | string; spare: number | string }>;
   const r = rows[0];
   if (!r) return null;
+  const released = r.set_status === 'released';
   return {
     cardId: r.id,
     name: r.name,
     rarity: r.rarity,
     editionSize: Number(r.edition_size),
     allocated: Number(r.allocated),
-    available: Number(r.allocated) < Number(r.edition_size) && Number(r.spare) >= 1,
+    /** A draft set is not on sale. Nothing in it can be bought, by capsule or on its own. */
+    released,
+    available: released && Number(r.allocated) < Number(r.edition_size) && Number(r.spare) >= 1,
   };
 }
 

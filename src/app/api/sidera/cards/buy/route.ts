@@ -15,8 +15,9 @@ export const runtime = 'nodejs';
 /**
  * Buys one card outright — the second way in, besides a capsule. The edition
  * number is allocated when the payment is confirmed, not now, so an unpaid
- * order never holds a number and the numbers stay gapless. Editions owed to
- * capsules already listed or bought are not for sale on their own. The quote
+ * order never holds a number and the numbers stay gapless. A draft set sells
+ * nothing, on its own or by capsule. Editions owed to capsules already listed
+ * or bought are not for sale on their own. The quote
  * stands for ORDER_WINDOW_MINUTES, and none is given without a live SOL price.
  */
 export async function POST(req: NextRequest) {
@@ -47,6 +48,7 @@ export async function POST(req: NextRequest) {
 
   const c = await cardAvailability(db, designation);
   if (!c || !isRarity(c.rarity)) return NextResponse.json({ error: 'Card not found' }, { status: 404 });
+  if (!c.released) return NextResponse.json({ error: 'This set is not on sale yet' }, { status: 409 });
   if (!c.available) return NextResponse.json({ error: 'No edition of this card is available on its own' }, { status: 409 });
 
   const priceGel = DIRECT_CARD_PRICE_GEL[c.rarity];

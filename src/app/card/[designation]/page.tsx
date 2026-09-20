@@ -44,12 +44,14 @@ export default async function CardPage({ params }: { params: Promise<{ designati
   const db = getDb();
   let allocated: number | null = null;
   let available = false;
+  let released = false;
   if (db) {
     try {
       const a = await cardAvailability(db, seed.designation);
       if (a) {
         allocated = a.allocated;
         available = a.available;
+        released = a.released;
       }
     } catch (err) {
       console.error('[sidera] cannot read card availability', err);
@@ -119,7 +121,13 @@ export default async function CardPage({ params }: { params: Promise<{ designati
 
             <Rule />
             <div className="sd-section">
-              <SideraBuyCard designation={seed.designation} name={seed.name} priceGel={priceGel} available={available} />
+              <SideraBuyCard
+                designation={seed.designation}
+                name={seed.name}
+                priceGel={priceGel}
+                available={available}
+                released={released}
+              />
             </div>
           </div>
         </div>

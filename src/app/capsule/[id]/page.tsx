@@ -43,9 +43,11 @@ export default async function CapsuleRecordPage({ params }: { params: Promise<{ 
   const listed = entries.find((e) => e.event === 'listed');
   const purchased = entries.find((e) => e.event === 'purchased');
   const opened = entries.find((e) => e.event === 'opened');
+  const closed = entries.find((e) => e.event === 'voided' || e.event === 'released');
   const sequence = entries.find((e) => e.capsuleSequence !== null)?.capsuleSequence ?? null;
 
   const outcome = opened ? (opened.outcome as OpenedOutcome) : null;
+  const closedOutcome = closed ? (closed.outcome as { secret: string | null; reason: string }) : null;
   const verification =
     outcome && listed && purchased
       ? verifyCapsule({
@@ -68,9 +70,9 @@ export default async function CapsuleRecordPage({ params }: { params: Promise<{ 
         </Link>
         <div className="sd-page__head">
           <h1 className="sd-page__title">Capsule {sequence ?? ''}</h1>
-          {verification && (
-            <span className="sd-verdict">{verification.ok ? 'Checks out' : 'Does not check out'}</span>
-          )}
+          <span className="sd-verdict">
+            {verification ? (verification.ok ? 'Checks out' : 'Does not check out') : closed ? (closed.event === 'voided' ? 'Withdrawn' : 'Released') : opened ? 'Opened' : purchased ? 'Bought, not opened' : 'On sale'}
+          </span>
         </div>
 
         <div className="sd-section">
@@ -82,13 +84,24 @@ export default async function CapsuleRecordPage({ params }: { params: Promise<{ 
               { label: 'Listed', value: listed ? listed.at.replace('T', ' ').slice(0, 19) : '—' },
               { label: 'Buyer nonce', value: purchased?.buyerNonce ?? 'Not bought yet' },
               { label: 'Purchase hash', value: purchased?.purchaseHash ?? '—' },
-              { label: 'Secret', value: outcome?.secret ?? 'Sealed until it is opened' },
+              {
+                label: 'Secret',
+                value: outcome?.secret ?? closedOutcome?.secret ?? 'Sealed until it is opened',
+              },
               { label: 'Draws', value: outcome ? outcome.draws : '—' },
             ]}
           />
         </div>
 
-        {purchased && !opened && <SideraOpen capsuleId={id} />}
+        {closed && (
+          <p className="sd-note">
+            {closed.event === 'voided' ? 'Withdrawn' : 'Released back to the sale'} on{' '}
+            {closed.at.replace('T', ' ').slice(0, 19)} — {closedOutcome?.reason ?? 'no reason logged'}. It can no longer
+            be bought or opened.
+          </p>
+        )}
+
+        {purchased && !opened && !closed && <SideraOpen capsuleId={id} />}
 
         {outcome && (
           <div className="sd-section">

@@ -92,6 +92,15 @@ it('reports a capsule that does not check out, with the reason', async () => {
   expect(html).toContain('the secret does not match the commitment');
 });
 
+it('says on the record when a capsule was withdrawn, and offers no way in', async () => {
+  const voided = { ...listed, seq: 3, event: 'voided', commitment: null, at: '2026-09-19T22:00:00.000Z', outcome: { secret: null, reason: 'its seal key was temporary and is gone', priorState: 'listed' } };
+  mocks.readFullLog.mockResolvedValue([listed, voided]);
+  const html = await render(ID);
+  expect(html).toContain('Withdrawn');
+  expect(html).toContain('its seal key was temporary and is gone');
+  expect(html).not.toContain('Open the capsule');
+});
+
 it('lists the log newest first, with its audit', async () => {
   mocks.readFullLog.mockResolvedValue([listed, purchased, opened]);
   const html = renderToStaticMarkup(await LogPage());

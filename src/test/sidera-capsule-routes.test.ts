@@ -158,6 +158,14 @@ describe('buying a capsule', () => {
     expect(mocks.purchaseCapsule).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ nonce: HEX, wallet: HOLDER, privyId: 'privy-holder' }));
   });
 
+  it('refuses while the set is still a draft', async () => {
+    mocks.cardAvailability.mockResolvedValue({ cardId: 'k', name: 'Tycho', rarity: 'common', editionSize: 300, allocated: 0, released: false, available: false });
+    const res = await buyCard(post('/api/sidera/cards/buy', { walletAddress: HOLDER, designation: 'TYCHO' }));
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({ error: 'This set is not on sale yet' });
+    expect(mocks.createCardOrder).not.toHaveBeenCalled();
+  });
+
   it('gives no quote without a live SOL price', async () => {
     mocks.readCapsule.mockResolvedValue({ ...bought, state: 'listed' });
     mocks.gelToSol.mockRejectedValue(new SolPriceUnavailableError());
@@ -236,14 +244,22 @@ describe('confirming a payment', () => {
 
 describe('buying a card on its own', () => {
   it('refuses an edition owed to capsules already listed', async () => {
-    mocks.cardAvailability.mockResolvedValue({ cardId: 'k', name: 'Tycho', rarity: 'common', editionSize: 300, allocated: 5, available: false });
+    mocks.cardAvailability.mockResolvedValue({ cardId: 'k', name: 'Tycho', rarity: 'common', editionSize: 300, allocated: 5, released: true, available: false });
     const res = await buyCard(post('/api/sidera/cards/buy', { walletAddress: HOLDER, designation: 'TYCHO' }));
     expect(res.status).toBe(409);
     expect(mocks.createCardOrder).not.toHaveBeenCalled();
   });
 
+  it('refuses while the set is still a draft', async () => {
+    mocks.cardAvailability.mockResolvedValue({ cardId: 'k', name: 'Tycho', rarity: 'common', editionSize: 300, allocated: 0, released: false, available: false });
+    const res = await buyCard(post('/api/sidera/cards/buy', { walletAddress: HOLDER, designation: 'TYCHO' }));
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({ error: 'This set is not on sale yet' });
+    expect(mocks.createCardOrder).not.toHaveBeenCalled();
+  });
+
   it('gives no quote without a live SOL price', async () => {
-    mocks.cardAvailability.mockResolvedValue({ cardId: 'k', name: 'Tycho', rarity: 'common', editionSize: 300, allocated: 5, available: true });
+    mocks.cardAvailability.mockResolvedValue({ cardId: 'k', name: 'Tycho', rarity: 'common', editionSize: 300, allocated: 5, released: true, available: true });
     mocks.gelToSol.mockRejectedValue(new SolPriceUnavailableError());
     expect((await buyCard(post('/api/sidera/cards/buy', { walletAddress: HOLDER, designation: 'TYCHO' }))).status).toBe(503);
     expect(mocks.createCardOrder).not.toHaveBeenCalled();

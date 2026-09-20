@@ -75,29 +75,28 @@ most reversible option; each needs a yes/no from Rezi.
     listed capsule was counting on. With Set 001's 3,035 editions this is
     theoretical; at a sold-out set it is not.
 
-15. **Release gating.** Set 001 is `draft`. Nothing in the capsule or card routes
-    checks the set's status — listing is the gate for capsules, but a direct card
-    purchase works on a draft set. Gate on `card_set.status = 'released'`?
+15. ~~**Release gating.**~~ **Decided 2026-09-20: gate on it.** A direct card
+    purchase now refuses unless `card_set.status = 'released'`
+    (`cardAvailability`), so one switch puts Set 001 on sale, capsules and
+    cards alike. The card page says so rather than offering a button.
 
 16. **CAPSULE_SEAL_KEY.** Must be set (32 bytes hex) in any environment that
     lists or opens capsules. Losing it strands every listed-but-unopened
     capsule: its secret can no longer be revealed, so it can be neither opened
     nor voided. Capsule 3 on the sidera branch is one such — listed by a demo
-    run with a temporary key, permanently on sale, and it will show as an
-    unopenable listing.
+    run with a temporary key. It has since been withdrawn, with the reason in
+    the log, and its record now says so.
 
-17. **The homepage.** Phase 6 put the Sidera landing at `/`, replacing the
-    legacy Stellar homepage, which now exists only in git history (its last
-    version is in commit `2a677ba`'s tree). The legacy marketing sections and
-    `src/components/home/*` are still in the repo, unreachable. Delete them in
-    a deletion commit of their own, or keep the old landing reachable at a
-    second path until Phase 9 decides the domain?
+17. ~~**The homepage.**~~ **Decided 2026-09-20: delete them.** The legacy
+    marketing sections went in a deletion commit of their own. The old
+    homepage's last version is in commit `2a677ba`'s tree if Phase 9 wants
+    any of it back.
 
 18. **Tonight.** The design brief's top bar names Set 001, Collection and
     Tonight. `/tonight` arrives with the voting in Phase 8, so the bar links to
     Capsules in its place rather than to a 404. Restore Tonight when it exists.
+    (Standing; nothing to decide until Phase 8.)
 
-19. **`/collection` and the wallet.** The Collection is read by
-    `?wallet=<address>`, and a signed-in holder is redirected to their own
-    address, so the address is in the URL and in any share of it. Acceptable
-    for beta, or should the page read the session server-side instead?
+19. ~~**`/collection` and the wallet.**~~ **Decided 2026-09-20: keep the
+    address in the URL.** A Collection is a public catalogue, like the log:
+    readable and linkable by naming its holder.
