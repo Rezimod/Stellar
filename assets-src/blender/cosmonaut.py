@@ -4,7 +4,7 @@ Run:  Blender -b -P assets-src/blender/cosmonaut.py -- <out-dir> [renders-dir]
 Writes <out-dir>/cosmonaut.glb (raw; optimise it with gltf-transform, keeping
 nodes: see assets-src/README.md) and, with a renders dir, an 8-angle turntable.
 
-Design (references: ~/Desktop/stellar-refs/cosmonaut/, primary `Cosmonaut 2.png`):
+Design (references: ~/Desktop/stellar-explore/refs/cosmonaut/, primary `Cosmonaut 2.png`):
 a near-future lunar suit, white and off-white. A hard upper torso with scye
 bearings, a chest display and control module and two round supply
 connectors under it, the mission roundel (a peak and stars) over them;

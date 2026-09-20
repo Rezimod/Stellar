@@ -8,7 +8,7 @@ Run:
   Blender -b -P assets-src/blender/base_kit.py -- preview <renders-dir> Garage,Dish
       quick look: the high-poly with its procedural paint, no bake.
 
-Spec (from ~/Desktop/stellar-refs/base/: the "modular asset overviews" row
+Spec (from ~/Desktop/stellar-explore/refs/base/: the "modular asset overviews" row
 of `Moon Base.png` is the design for each piece, `Moon base 2.png` the
 secondary; NOTES.md rules): one coherent kit of off-white weathered panels
 over grey machinery and dark hardware, small amber accents (Stellar's

@@ -3,7 +3,7 @@
 Run:  Blender -b -P assets-src/blender/rover.py -- <out-dir> [renders-dir]
 Writes <out-dir>/rover.glb (raw; optimise it with gltf-transform).
 
-Spec (from ~/Desktop/stellar-refs/rover/moon rover 2.png; NOTES.md rules):
+Spec (from ~/Desktop/stellar-explore/refs/rover/moon rover 2.png; NOTES.md rules):
 3.15 × 1.95 × 1.70 m, unpressurised, four wheels. A flat carbon pan between
 two white side panels carrying STELLAR and the full five-cross flag; an open
 two-seat crew station with headrests and harness straps under a tubular roll

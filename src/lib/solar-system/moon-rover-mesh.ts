@@ -1,4 +1,4 @@
-// The rover as the concept sheets draw it (~/Desktop/stellar-refs/rover/):
+// The rover as the concept sheets draw it (~/Desktop/stellar-explore/refs/rover/):
 // an open four-wheel exploration buggy, built in Blender
 // (assets-src/blender/rover.py) and loaded as rover.glb. The file arrives
 // with a node per moving part — a wishbone arm, a steering upright and a

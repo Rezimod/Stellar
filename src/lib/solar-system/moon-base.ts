@@ -1,5 +1,5 @@
 // The outpost's core, built to Stellar's own concept sheets
-// (~/Desktop/stellar-refs/base/): three rigid habitat modules — a faceted
+// (~/Desktop/stellar-explore/refs/base/): three rigid habitat modules — a faceted
 // drum on a skirt, battened down every seam, a shoulder up to a glazed
 // penthouse ring and a shallow cap, the five-cross flag and the wordmark on
 // the flank — each with a hard airlock module at the front, its control panel

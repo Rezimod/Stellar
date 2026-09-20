@@ -97,4 +97,4 @@ it when it is disposed. Repeated props go into an `InstancedMesh`.
 ## Markings
 
 STELLAR wordmark and the full five-cross Georgian flag. Never a lone red cross
-on white, and no NASA, USSR or Star Trek marks. See `~/Desktop/stellar-refs/NOTES.md`.
+on white, and no NASA, USSR or Star Trek marks. See `~/Desktop/stellar-explore/refs/NOTES.md`.

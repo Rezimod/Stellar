@@ -3,7 +3,7 @@
 Run:  Blender -b -P assets-src/blender/lander.py -- <out-dir> [renders-dir]
 Writes <out-dir>/lander.glb (raw; optimise it with gltf-transform).
 
-Spec (from ~/Desktop/stellar-refs/lander/Lunar Lander 2.png; NOTES.md rules):
+Spec (from ~/Desktop/stellar-explore/refs/lander/Lunar Lander 2.png; NOTES.md rules):
 4.8 m tall, 4.1 m across, 6.2 m leg span, four descent engines. A tapered
 octagonal crew module in white panels over a dark equipment deck, four gold
 foil propellant tanks at its corners, a crew hatch with a porch and a ladder

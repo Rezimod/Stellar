@@ -11,7 +11,7 @@ import sys
 from PIL import Image, ImageDraw, ImageFont
 
 RENDERS = sys.argv[1]
-REF = sys.argv[2] if len(sys.argv) > 2 else os.path.expanduser('~/Desktop/stellar-refs/base/Moon Base.png')
+REF = sys.argv[2] if len(sys.argv) > 2 else os.path.expanduser('~/Desktop/stellar-explore/refs/base/Moon Base.png')
 BG = (98, 100, 105, 255)
 INK = (225, 226, 228)
 # Each module's cell in the reference's "modular asset overviews" row (1448 px wide image).
