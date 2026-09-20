@@ -193,7 +193,9 @@ export function attachSurfaceControls(o: SurfaceControlsOptions): SurfaceControl
     if (!o.touch) lockPointer(mount);
     orbitId = e.pointerId;
     lastX = e.clientX; lastY = e.clientY;
-    mount.setPointerCapture(e.pointerId);
+    // A pointer that is already gone (a synthetic click, a lock taken in the
+    // same tick) cannot be captured; the drag still works without it.
+    try { mount.setPointerCapture(e.pointerId); } catch { /* no live pointer */ }
     e.preventDefault();
   };
   const onMove = (e: PointerEvent) => {

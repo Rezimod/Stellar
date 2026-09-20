@@ -3,11 +3,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Camera, ChevronsDown, ChevronsUp, Drill, Eye, EyeOff, Flame, Flashlight, Gauge, HelpCircle,
-  LogIn, Menu, Rocket, Trophy, Volume2, VolumeX, Wind, X,
+  LogIn, Menu, Package, Rocket, Trophy, Volume2, VolumeX, Wind, X,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { makeMoonSurface, type MoonSurfaceHandle } from '@/lib/solar-system/moon-surface';
 import { DRILL_BAND } from '@/lib/solar-system/moon-mission';
+import { motionShown, suitLevel, suitShown } from '@/lib/solar-system/moon-hud';
 import { GameStick, tapKey } from './GameStick';
 import { CosmicLoader } from './CosmicLoader';
 import { ControlsHelp } from './ControlsHelp';
@@ -99,6 +100,9 @@ export function MoonSurface({ onReturn, room, paused, onProgress, onPauseRequest
   const objRangeRef = useRef<HTMLSpanElement>(null);
   const jobRef = useRef<HTMLSpanElement>(null);
   const jobTextRef = useRef<HTMLSpanElement>(null);
+  const motionRef = useRef<HTMLDivElement>(null);
+  const altRowRef = useRef<HTMLSpanElement>(null);
+  const speedRowRef = useRef<HTMLSpanElement>(null);
   const altRef = useRef<HTMLSpanElement>(null);
   const speedRef = useRef<HTMLSpanElement>(null);
   const cratersRef = useRef<HTMLSpanElement>(null);
@@ -107,6 +111,7 @@ export function MoonSurface({ onReturn, room, paused, onProgress, onPauseRequest
   const promptRef = useRef<HTMLDivElement>(null);
   const promptTextRef = useRef<HTMLSpanElement>(null);
   const promptHoldRef = useRef<HTMLElement>(null);
+  const promptWorkRef = useRef<HTMLElement>(null);
   const impactRef = useRef<HTMLDivElement>(null);
   const bannerRef = useRef<HTMLDivElement>(null);
   const radioRef = useRef<HTMLDivElement>(null);
@@ -117,8 +122,13 @@ export function MoonSurface({ onReturn, room, paused, onProgress, onPauseRequest
   const drillLoadRef = useRef<HTMLSpanElement>(null);
   const drillHeatRef = useRef<HTMLSpanElement>(null);
   const drillWarnRef = useRef<HTMLSpanElement>(null);
+  const suitRef = useRef<HTMLDivElement>(null);
   const o2Ref = useRef<HTMLSpanElement>(null);
   const o2BarRef = useRef<HTMLSpanElement>(null);
+  const pwrRef = useRef<HTMLSpanElement>(null);
+  const pwrBarRef = useRef<HTMLSpanElement>(null);
+  const handsRef = useRef<HTMLSpanElement>(null);
+  const handsTextRef = useRef<HTMLSpanElement>(null);
   const hrRef = useRef<HTMLSpanElement>(null);
   const tempRef = useRef<HTMLSpanElement>(null);
   const evaRef = useRef<HTMLSpanElement>(null);
@@ -312,16 +322,38 @@ export function MoonSurface({ onReturn, room, paused, onProgress, onPauseRequest
       show(jobRef.current, j.active !== '');
       if (j.active && j.objective) text(jobTextRef.current, `${tt(`jobs.steps.${j.objective}`)}${j.distance >= 0 && j.distance > 4 ? ` · ${fmtRange(j.distance)}` : ''}`);
 
-      text(altRef.current, `${tel.altitude.toFixed(1)} m`);
-      text(speedRef.current, `${tel.speed.toFixed(1)} m/s`);
-      text(cratersRef.current, String(tel.craters));
-      text(o2Ref.current, `${tel.o2.toFixed(1)}%`);
-      if (o2BarRef.current) o2BarRef.current.style.width = `${Math.max(0, Math.min(100, tel.o2))}%`;
+      // ── Speed and height, while there is motion to read. ──
+      const motion = motionShown(tel);
+      show(motionRef.current, motion.speed || motion.altitude);
+      show(speedRowRef.current, motion.speed);
+      show(altRowRef.current, motion.altitude);
+      if (motion.speed) text(speedRef.current, `${tel.speed.toFixed(1)} m/s`);
+      if (motion.altitude) text(altRef.current, `${tel.altitude.toFixed(1)} m`);
+
+      // ── The suit, when it is low, just changed, or in front of the crew. ──
+      const glance = { o2: tel.o2, power: tel.suitPower, sinceChange: tel.pressureAgo, firstPerson: tel.view === 'helmet' };
+      const suit = suitRef.current;
+      const suitOn = suitShown(glance);
+      show(suit, suitOn);
+      if (suit && suitOn) {
+        suit.dataset.level = suitLevel(glance);
+        text(o2Ref.current, `${tel.o2.toFixed(1)}%`);
+        if (o2BarRef.current) o2BarRef.current.style.width = `${Math.max(0, Math.min(100, tel.o2))}%`;
+        text(pwrRef.current, `${Math.round(tel.suitPower)}%`);
+        if (pwrBarRef.current) pwrBarRef.current.style.width = `${Math.max(0, Math.min(100, tel.suitPower))}%`;
+      }
+      // ── What is in the crew's hands, and whether the lamp is burning. ──
+      const carried = tel.props.carrying;
+      show(handsRef.current, carried !== '');
+      if (carried) text(handsTextRef.current, tt(`items.${carried}`));
+      show(lampRef.current, tel.headlamp);
+      // The rest of the suit's numbers live in the log; these refs are only
+      // mounted while it is open.
       text(hrRef.current, `${Math.round(tel.heartRate)}`);
       text(tempRef.current, `${tel.suitTemp.toFixed(1)}°`);
       text(evaRef.current, fmtTime(tel.evaSeconds));
       text(distRef.current, fmtRange(tel.distanceM));
-      show(lampRef.current, tel.headlamp);
+      text(cratersRef.current, String(tel.craters));
 
       // ── The one key: underground, the Backrooms' own. ──
       const p = under ? bt.prompt : tel.prompt;
@@ -342,11 +374,17 @@ export function MoonSurface({ onReturn, room, paused, onProgress, onPauseRequest
           show(promptHoldRef.current, p.kind === 'hold');
         }
       }
+      const busy = p.active && p.progress > 0.001;
+      const filled = Math.min(1, p.progress).toFixed(3);
       const work = workRef.current;
       if (work) {
-        const busy = p.active && p.progress > 0.001;
         show(work, busy);
-        if (busy) setVar(work, '--work', Math.min(1, p.progress).toFixed(3));
+        if (busy) setVar(work, '--work', filled);
+      }
+      const promptWork = promptWorkRef.current;
+      if (promptWork) {
+        show(promptWork, busy);
+        if (busy) setVar(promptWork, '--work', filled);
       }
       // The drill's own panel, while standing at it.
       const drill = drillRef.current;
@@ -507,10 +545,11 @@ export function MoonSurface({ onReturn, room, paused, onProgress, onPauseRequest
   const jobsDone = handleRef.current?.telemetry.jobs.done ?? [];
   const underground = handleRef.current?.telemetry.backrooms;
   const missions = handleRef.current?.telemetry.missions;
+  const achievements = handleRef.current?.telemetry.achievements ?? [];
   const crewAt = { x: handleRef.current?.telemetry.crewX ?? 0, z: handleRef.current?.telemetry.crewZ ?? 0 };
 
   return (
-    <div ref={rootRef} className="moon-surface" data-phase="descent" data-ready="false" data-immersive={immersive}>
+    <div ref={rootRef} className="moon-surface" data-world="moon" data-phase="descent" data-ready="false" data-immersive={immersive}>
       <div ref={mountRef} className="moon-surface__canvas" />
       {(gpuLost || !onProgress) && <CosmicLoader className={gpuLost ? 'moon-surface__loader is-forced' : 'moon-surface__loader'} variant="descent"
         label={gpuLost ? tl('gpu') : tl('moon')} detail={gpuLost ? undefined : tl('moonDetail')} tips={tips} />}
@@ -571,33 +610,36 @@ export function MoonSurface({ onReturn, room, paused, onProgress, onPauseRequest
         </div>
         <div ref={radioRef} className="moon-hud__radio" role="status" hidden />
 
-        {/* ── Top left: where we are and what we are here for. ── */}
-        <div className="moon-hud__head">
-          <span className="moon-hud__place">{t('place')}</span>
-          <div className="moon-hud__head-rows">
-            <span className="moon-hud__reading"><span>{t('altitude')}</span><span ref={altRef} /></span>
-            <span className="moon-hud__reading"><span>{t('speed')}</span><span ref={speedRef} /></span>
-            <span className="moon-hud__reading"><span>{t('craters')}</span><span ref={cratersRef}>0</span></span>
+        {/* ── Top left: the place, the mission, and one line of what to do. ── */}
+        <div className="moon-hud__topleft">
+          <div className="moon-hud__head">
+            <span className="moon-hud__place">{t('place')}</span>
+            <div ref={motionRef} className="moon-hud__head-rows" hidden>
+              <span ref={speedRowRef} className="moon-hud__reading" hidden><span>{t('speed')}</span><span ref={speedRef} /></span>
+              <span ref={altRowRef} className="moon-hud__reading" hidden><span>{t('altitude')}</span><span ref={altRef} /></span>
+            </div>
           </div>
+          <button ref={objRef} type="button" className="moon-hud__objective" onClick={() => setLog(true)} hidden>
+            <span className="moon-hud__objective-tag">{t('mission.title')}</span>
+            <span ref={objTextRef} className="moon-hud__objective-text" />
+            <span ref={objRangeRef} className="moon-hud__objective-range" />
+            <span ref={jobRef} className="moon-hud__objective-job" hidden>
+              <span className="moon-hud__objective-tag">{t('jobs.title')}</span>
+              <span ref={jobTextRef} />
+            </span>
+          </button>
         </div>
-        <button ref={objRef} type="button" className="moon-hud__objective" onClick={() => setLog(true)} hidden>
-          <span className="moon-hud__objective-tag">{t('mission.title')}</span>
-          <span ref={objTextRef} className="moon-hud__objective-text" />
-          <span ref={objRangeRef} className="moon-hud__objective-range" />
-          <span ref={jobRef} className="moon-hud__objective-job" hidden>
-            <span className="moon-hud__objective-tag">{t('jobs.title')}</span>
-            <span ref={jobTextRef} />
-          </span>
-        </button>
 
-        {/* ── Left rail: the suit. ── */}
-        <div className="moon-hud__vitals">
+        {/* ── Bottom left: the suit, when it has something to say. ── */}
+        <div ref={suitRef} className="moon-hud__suit" data-level="ok" role="status" hidden>
           <span className="moon-hud__vital"><i>O₂</i><span ref={o2Ref} /><b className="moon-hud__bar"><i ref={o2BarRef} /></b></span>
-          <span className="moon-hud__vital"><i>{t('pulse')}</i><span ref={hrRef} /></span>
-          <span className="moon-hud__vital"><i>{t('suitTemp')}</i><span ref={tempRef} /></span>
-          <span className="moon-hud__vital"><i>{t('eva')}</i><span ref={evaRef} /></span>
-          <span className="moon-hud__vital"><i>{t('distance')}</i><span ref={distRef} /></span>
-          <span ref={lampRef} className="moon-hud__vital moon-hud__lamp" hidden><Flashlight size={13} aria-hidden /><i>{tc('lampOn')}</i></span>
+          <span className="moon-hud__vital"><i>{t('suitPower')}</i><span ref={pwrRef} /><b className="moon-hud__bar"><i ref={pwrBarRef} /></b></span>
+        </div>
+
+        {/* ── Bottom right: the hands, and the lamp. ── */}
+        <div className="moon-hud__hands">
+          <span ref={handsRef} className="moon-hud__carry" hidden><Package size={14} aria-hidden /><span ref={handsTextRef} /></span>
+          <span ref={lampRef} className="moon-hud__carry moon-hud__lamp" hidden><Flashlight size={14} aria-hidden /><i>{tc('lampOn')}</i></span>
         </div>
 
         {/* ── Right rail: the drill's instruments while it runs. ── */}
@@ -661,10 +703,18 @@ export function MoonSurface({ onReturn, room, paused, onProgress, onPauseRequest
               <span>{t('missions.title')}</span>
               <button type="button" onClick={() => setLog(false)} aria-label={t('close')}><X size={14} aria-hidden /></button>
             </div>
+            <div className="moon-log__suit">
+              <span className="moon-hud__reading"><span>{t('eva')}</span><span ref={evaRef} /></span>
+              <span className="moon-hud__reading"><span>{t('distance')}</span><span ref={distRef} /></span>
+              <span className="moon-hud__reading"><span>{t('pulse')}</span><span ref={hrRef} /></span>
+              <span className="moon-hud__reading"><span>{t('suitTemp')}</span><span ref={tempRef} /></span>
+              <span className="moon-hud__reading"><span>{t('craters')}</span><span ref={cratersRef}>0</span></span>
+            </div>
             {missions ? (
               <MissionPanel
                 missions={missions}
                 crew={crewAt}
+                achievements={achievements}
                 extras={[
                   ...(underground?.escaped ? [{ key: 'backrooms', label: t('backrooms.log', { time: fmtTime(underground.bestSeconds) }) }] : []),
                   ...rewards.map((r) => ({ key: `old-${r}`, label: t(`mission.rewards.${r}`) })),
@@ -686,6 +736,7 @@ export function MoonSurface({ onReturn, room, paused, onProgress, onPauseRequest
         <div className="moon-hud__foot">
           <div ref={promptRef} className="moon-hud__prompt" hidden>
             <kbd>{footBinding('interact').keyLabel}</kbd><span ref={promptTextRef} /><small ref={promptHoldRef} hidden>{t('hold')}</small>
+            <i ref={promptWorkRef} className="moon-hud__prompt-work" hidden />
           </div>
           <div ref={airlockRef} className="moon-hud__airlock" hidden />
           <div ref={stanceRef} className="moon-hud__stance" hidden />

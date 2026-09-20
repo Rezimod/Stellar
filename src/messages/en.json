@@ -1883,7 +1883,24 @@
           "collect": "Collect the sample",
           "store": "Store it in the lab",
           "done": "Sample stored — the expedition is home"
+        },
+        "records": {
+          "title": "Records",
+          "note": "Kept on this device. Nothing was awarded or minted.",
+          "tonight": "See {target} over your sky tonight",
+          "first_steps": "First bootprints at Stellar Base",
+          "earthrise_photo": "Earthrise photographed from the ridge",
+          "power_restored": "Base power restored",
+          "telescope_calibrated": "Telescope platform calibrated",
+          "comms_restored": "Link to Earth restored",
+          "lunar_geology": "Regolith sample returned from the crater"
         }
+      },
+      "suitPower": "Power",
+      "items": {
+        "coupling": "Cable coupling",
+        "feed": "Feed horn",
+        "sample": "Regolith sample"
       }
     },
     "loading": {

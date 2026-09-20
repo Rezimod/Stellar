@@ -3,10 +3,25 @@
 // support pack, your own breathing (faster when you work), boot strikes
 // and landings carried up through the suit, a comms bleep when the base
 // names something. Synthesised in Web Audio, created on the first gesture.
+//
+// Two rules keep it honest. Anything happening out on the regolith — boots,
+// the rover's motor, the descent engine — reaches the crew as vibration
+// through the suit or the frame they are touching, so it is low-passed to
+// the point of being felt rather than heard. Anything that needs air —
+// the airlock's hiss, a habitat's machinery — sounds only while there is air
+// to carry it, which is to say while the chamber is coming up to pressure or
+// the crew is inside. The radio is the exception: it is carried on a wire.
 
 import { onSoundChange, soundLevel } from '@/lib/solar-system/sound-prefs';
 
 const MASTER_GAIN = 0.22;
+
+/** A voice that runs for as long as the thing making it does. */
+interface Bed {
+  gain: GainNode;
+  /** Follow whatever the frame is doing — a motor's load, a hiss's pressure. */
+  tune?: (k: number) => void;
+}
 
 export interface SuitAudio {
   /** Call from a user gesture; safe to call repeatedly. */
@@ -20,6 +35,16 @@ export interface SuitAudio {
   thump: (distance: number) => void;
   /** The drill through the suit: pitch and weight follow the bit's load. */
   drill: (load: number, running: boolean) => void;
+  /** The rover's motor through the seat: 0…1 of its top speed. Every frame. */
+  motor: (load: number, running: boolean) => void;
+  /** The descent engine through the frame, 0…1 of throttle. Every frame. */
+  engine: (throttle: number) => void;
+  /** Air moving in the chamber, 0 none … 1 a full cycle. Every frame. */
+  hiss: (k: number) => void;
+  /** A habitat's machinery, heard only in air: 0 outside, 1 on a live deck. */
+  hum: (k: number) => void;
+  /** A burst of radio: the base saying something the crew will read on the glass. */
+  chatter: () => void;
   dispose: () => void;
 }
 
@@ -86,6 +111,38 @@ export function makeSuitAudio(open = false): SuitAudio {
   const one = (fn: (c: AudioContext, m: GainNode) => void) => {
     if (!ctx || !master) return;
     try { fn(ctx, master); } catch { /* silent */ }
+  };
+  /** Continuous voices, each built the first time it is actually needed. */
+  const beds = new Map<string, Bed>();
+  const bed = (name: string, live: boolean, build: (c: AudioContext, m: GainNode) => Bed): Bed | null => {
+    const held = beds.get(name);
+    if (held) return held;
+    if (!live || !ctx || !master) return null;
+    try {
+      const made = build(ctx, master);
+      beds.set(name, made);
+      return made;
+    } catch {
+      return null;
+    }
+  };
+  /** A band of noise: the raw material of air moving and of ground rumble. */
+  const noiseBed = (c: AudioContext, type: BiquadFilterType, freq: number, q: number): { gain: GainNode; filter: BiquadFilterNode } => {
+    const src = c.createBufferSource();
+    src.buffer = noise;
+    src.loop = true;
+    const filter = c.createBiquadFilter();
+    filter.type = type;
+    filter.frequency.value = freq;
+    filter.Q.value = q;
+    const gain = c.createGain();
+    gain.gain.value = 0;
+    src.connect(filter); filter.connect(gain);
+    src.start();
+    return { gain, filter };
+  };
+  const ramp = (b: Bed, level: number, seconds: number) => {
+    if (ctx) b.gain.gain.setTargetAtTime(level, ctx.currentTime, seconds);
   };
   return {
     start,
@@ -198,8 +255,120 @@ export function makeSuitAudio(open = false): SuitAudio {
       drillOsc.frequency.setTargetAtTime(62 + load * 70, ctx.currentTime, 0.08);
       drillGain.gain.setTargetAtTime(running ? 0.025 + load * 0.06 : 0, ctx.currentTime, 0.1);
     },
+    motor(load, running) {
+      // Felt through the seat and the suit: a low whine with the ground under
+      // it, never the airborne motor sound a driver on Earth would hear.
+      const b = bed('motor', running, (c, m) => {
+        const osc = c.createOscillator();
+        osc.type = 'triangle';
+        osc.frequency.value = 44;
+        const grind = noiseBed(c, 'lowpass', 150, 0.7);
+        const lp = c.createBiquadFilter();
+        lp.type = 'lowpass';
+        lp.frequency.value = 190;
+        const gain = c.createGain();
+        gain.gain.value = 0;
+        osc.connect(lp); lp.connect(gain); grind.gain.connect(gain); gain.connect(m);
+        grind.gain.gain.value = 0.35;
+        osc.start();
+        return { gain, tune: (k) => { if (ctx) osc.frequency.setTargetAtTime(38 + k * 74, ctx.currentTime, 0.15); } };
+      });
+      if (!b) return;
+      b.tune?.(Math.min(1, Math.max(0, load)));
+      ramp(b, running ? 0.02 + Math.min(1, Math.max(0, load)) * 0.055 : 0, 0.15);
+    },
+    engine(throttle) {
+      // The descent engine has no air to shout through either: what reaches
+      // the crew is the frame shaking under them.
+      const k = Math.min(1, Math.max(0, throttle));
+      const b = bed('engine', k > 0.01, (c, m) => {
+        const low = c.createOscillator();
+        low.type = 'sine';
+        low.frequency.value = 38;
+        const rumble = noiseBed(c, 'lowpass', 220, 0.6);
+        const gain = c.createGain();
+        gain.gain.value = 0;
+        low.connect(gain); rumble.gain.connect(gain); gain.connect(m);
+        rumble.gain.gain.value = 0.5;
+        low.start();
+        return { gain };
+      });
+      if (!b) return;
+      ramp(b, k * 0.09, 0.08);
+    },
+    hiss(k) {
+      // Only while the chamber has air in it: in vacuum this is silence.
+      const level = Math.min(1, Math.max(0, k));
+      const b = bed('hiss', level > 0.01, (c, m) => {
+        const air = noiseBed(c, 'bandpass', 1700, 0.7);
+        air.gain.connect(m);
+        return { gain: air.gain };
+      });
+      if (!b) return;
+      ramp(b, level * 0.06, 0.12);
+    },
+    hum(k) {
+      // A live deck: pumps, fans, a transformer somewhere behind the wall.
+      const level = Math.min(1, Math.max(0, k));
+      const b = bed('hum', level > 0.01, (c, m) => {
+        const gain = c.createGain();
+        gain.gain.value = 0;
+        gain.connect(m);
+        for (const [f, g] of [[58, 0.6], [116, 0.25], [174, 0.12]] as const) {
+          const o = c.createOscillator();
+          o.type = 'sine';
+          o.frequency.value = f;
+          const og = c.createGain();
+          og.gain.value = g;
+          o.connect(og); og.connect(gain);
+          o.start();
+        }
+        const air = noiseBed(c, 'bandpass', 420, 0.4);
+        air.gain.gain.value = 0.18;
+        air.gain.connect(gain);
+        return { gain };
+      });
+      if (!b) return;
+      ramp(b, level * 0.035, 0.4);
+    },
+    chatter() {
+      // Carrier, a couple of syllables in the vocoder band, carrier off.
+      one((c, m) => {
+        const t0 = c.currentTime;
+        const env = c.createGain();
+        env.gain.value = 0;
+        env.connect(m);
+        if (noise) {
+          const n = c.createBufferSource();
+          n.buffer = noise;
+          const bp = c.createBiquadFilter();
+          bp.type = 'bandpass'; bp.frequency.value = 1500; bp.Q.value = 1.1;
+          const ng = c.createGain();
+          ng.gain.setValueAtTime(0.05, t0);
+          ng.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.62);
+          n.connect(bp); bp.connect(ng); ng.connect(m);
+          n.start(t0); n.stop(t0 + 0.7);
+        }
+        const o = c.createOscillator();
+        o.type = 'square';
+        const bp = c.createBiquadFilter();
+        bp.type = 'bandpass'; bp.frequency.value = 1150; bp.Q.value = 2.2;
+        o.connect(bp); bp.connect(env);
+        // Three clipped syllables, each a step apart: speech, not a tune.
+        const syllables = [[0.02, 0.13, 620], [0.2, 0.15, 520], [0.42, 0.12, 700]] as const;
+        for (const [at, len, hz] of syllables) {
+          o.frequency.setValueAtTime(hz, t0 + at);
+          env.gain.setValueAtTime(0.0001, t0 + at);
+          env.gain.exponentialRampToValueAtTime(0.045, t0 + at + 0.02);
+          env.gain.exponentialRampToValueAtTime(0.0001, t0 + at + len);
+        }
+        o.start(t0); o.stop(t0 + 0.62);
+        o.onended = () => { o.disconnect(); bp.disconnect(); env.disconnect(); };
+      });
+    },
     dispose() {
       unsubscribe();
+      beds.clear();
       if (ctx) void ctx.close();
       ctx = null;
     },

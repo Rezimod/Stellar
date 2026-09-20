@@ -1895,9 +1895,8 @@
   left: var(--edge-left);
   display: grid;
   gap: 5px;
-  padding: 8px 12px 8px 10px;
-  border-left: 2px solid var(--hud-accent);
-  border-radius: 0 6px 6px 0;
+  padding: 8px 12px;
+  border-radius: 6px;
   background: var(--hud-glass);
   max-width: 44vw;
 }
@@ -1913,14 +1912,30 @@
   gap: 2px;
   padding: 8px 12px;
   text-align: left;
-  border-left: 2px solid var(--hud-warm) !important;
-  border-radius: 0 6px 6px 0 !important;
+  border-radius: 6px !important;
   max-width: min(320px, 62vw);
 }
 .moon-hud__objective[hidden] { display: none; }
-.moon-hud__objective-tag { font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--hud-warm); }
-.moon-hud__objective-text { font-size: 12px; line-height: 1.35; }
-.moon-hud__objective-range { font-size: 11px; color: var(--hud-dim); }
+.moon-hud__objective-tag { font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--hud-warm); }
+.moon-hud__objective-text { font-size: 13px; line-height: 1.35; }
+.moon-hud__objective-range { font-size: 12px; color: var(--hud-dim); }
+
+/* ── The Moon stacks the place and the objective into one column, so the
+      objective sits under the head however tall the head is. The other
+      worlds still place both cards themselves. ── */
+.moon-hud__topleft {
+  position: absolute;
+  top: var(--edge-top);
+  left: var(--edge-left);
+  display: grid;
+  justify-items: start;
+  gap: 7px;
+  max-width: min(320px, 62vw);
+}
+.moon-hud__topleft > .moon-hud__head,
+.moon-hud__topleft > .moon-hud__objective { position: static; max-width: 100%; }
+.moon-hud__head-rows[hidden] { display: none; }
+.moon-hud__head-rows .moon-hud__reading[hidden] { display: none; }
 
 /* ── The compass ribbon. ── */
 .moon-hud__compass {
@@ -2036,6 +2051,47 @@
 .moon-hud__lamp { align-items: center; color: var(--hud-warm); }
 .moon-hud__lamp i { color: var(--hud-warm); }
 .moon-hud__lamp[hidden] { display: none; }
+
+/* ── The Moon's bottom left: the suit, on the glass only when it is low, has
+      just changed, or the crew is looking out of their own helmet. ── */
+.moon-hud__suit {
+  position: absolute;
+  min-width: 128px;
+  left: var(--edge-left);
+  bottom: calc(var(--edge-bottom) + 56px);
+  display: grid;
+  gap: 7px;
+  padding: 8px 11px;
+  border-radius: 6px;
+  background: var(--hud-glass);
+  font-size: 12px;
+}
+.moon-hud__suit[hidden] { display: none; }
+.moon-hud__suit .moon-hud__vital i { font-size: 12px; letter-spacing: 0.1em; }
+.moon-hud__suit[data-level='low'] .moon-hud__bar i { background: var(--hud-warm); }
+.moon-hud__suit[data-level='critical'] { color: #ffb4a2; }
+.moon-hud__suit[data-level='critical'] .moon-hud__bar i { background: #ff7a5c; }
+
+/* ── And its bottom right: what is in the crew's hands, and the lamp. ── */
+.moon-hud__hands {
+  position: absolute;
+  right: var(--edge-right);
+  bottom: calc(var(--edge-bottom) + 56px);
+  display: grid;
+  justify-items: end;
+  gap: 5px;
+}
+.moon-hud__carry {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: var(--hud-glass);
+  font-size: 12px;
+}
+.moon-hud__carry[hidden] { display: none; }
+.moon-hud__carry i { font-style: normal; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; }
 .moon-hud__bar { grid-column: 1 / -1; display: block; height: 2px; border-radius: 2px; background: rgba(186, 214, 240, 0.2); }
 .moon-hud__bar i { display: block; height: 100%; border-radius: 2px; background: var(--hud-accent); }
 
@@ -2346,6 +2402,33 @@
 .moon-log__mark--crew { width: 7px; height: 7px; margin: -3.5px 0 0 -3.5px; background: var(--hud-accent); }
 .moon-log__rewards { display: grid; gap: 8px; padding-top: 8px; border-top: 1px solid var(--hud-line); }
 
+/* ── The suit's slower numbers: they were on the glass, and they belong here. ── */
+.moon-log__suit {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--hud-line);
+  font-size: 12px;
+}
+
+/* ── What the crew actually did up there. Records, not rewards. ── */
+.moon-log__records { display: grid; gap: 6px; padding-top: 8px; border-top: 1px solid var(--hud-line); }
+.moon-log__records h5 { margin: 0; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--hud-accent); }
+.moon-log__record { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; margin: 0; font-size: 12px; color: var(--hud-ink); }
+.moon-log__record time { color: var(--hud-dim); font-variant-numeric: tabular-nums; }
+.moon-log__record a {
+  grid-column: 1 / -1;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--hud-warm);
+  pointer-events: auto;
+  text-decoration: none;
+}
+.moon-log__record a:hover, .moon-log__record a:focus-visible { text-decoration: underline; }
+.moon-log__records-note { margin: 0; font-size: 12px; color: var(--hud-dim); }
+
 /* ── What the telescope found, while it stands. ── */
 .moon-hud__scope {
   position: absolute;
@@ -2393,6 +2476,9 @@
 .moon-surface[data-phase='surface'] .moon-hud__landing,
 .moon-surface[data-phase='surface'] .moon-hud__throttle { display: none; }
 .moon-surface:not([data-phase='surface']) .moon-hud__head,
+.moon-surface:not([data-phase='surface']) .moon-hud__topleft,
+.moon-surface:not([data-phase='surface']) .moon-hud__suit,
+.moon-surface:not([data-phase='surface']) .moon-hud__hands,
 .moon-surface:not([data-phase='surface']) .moon-hud__objective,
 .moon-surface:not([data-phase='surface']) .moon-hud__compass,
 .moon-surface:not([data-phase='surface']) .moon-hud__vitals,
@@ -2495,7 +2581,12 @@
   /* The top row is the compass and the three keys; the cards run down the
      left under it, and the messages sit clear above the thumbs. */
   .moon-hud__compass { left: var(--edge-left); right: auto; margin-inline: 0; width: calc(100vw - 172px); max-width: 220px; }
-  .moon-hud__head { top: calc(var(--edge-top) + 44px); max-width: 60vw; padding: 7px 10px 7px 8px; }
+  .moon-hud__head { top: calc(var(--edge-top) + 44px); max-width: 60vw; padding: 7px 10px; }
+  .moon-hud__topleft { top: calc(var(--edge-top) + 44px); max-width: min(300px, 70vw); gap: 6px; }
+  .moon-hud__topleft > .moon-hud__head { top: auto; max-width: 100%; }
+  .moon-hud__suit { bottom: calc(var(--edge-bottom) + 182px); grid-auto-flow: column; gap: 2px 14px; padding: 5px 9px; min-width: 0; }
+  .moon-hud__suit .moon-hud__bar { display: none; }
+  .moon-hud__hands { bottom: calc(var(--edge-bottom) + 182px); }
   .moon-hud__place { letter-spacing: 0.12em; }
   .moon-hud__head-rows { grid-auto-flow: column; grid-template-columns: repeat(3, auto); gap: 10px; }
   .moon-hud__head-rows .moon-hud__reading { flex-direction: column; gap: 0; }
@@ -2517,6 +2608,7 @@
 @media (max-height: 460px) {
   .moon-hud__objective { display: none; }
   .moon-hud__vitals { font-size: 10px; }
+  .moon-hud__suit { padding: 4px 8px; }
 }
 
 .game-stick {
@@ -2573,6 +2665,7 @@
   color: #ffe6bd;
 }
 .moon-hud__prompt[hidden] { display: none; }
+.moon-hud__prompt { position: relative; overflow: hidden; }
 .moon-hud__prompt kbd {
   font: inherit;
   font-size: 11px;
@@ -2583,9 +2676,27 @@
   color: var(--hud-warm);
   text-align: center;
 }
-.moon-hud__prompt small { font-size: 10px; color: var(--hud-dim); }
+.moon-hud__prompt small { font-size: 12px; color: var(--hud-dim); }
 .moon-hud__prompt small[hidden] { display: none; }
+/* A hold, filling under the words: the thumb deck's ring is not there to
+   show it on a machine with a keyboard. */
+.moon-hud__prompt-work {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  width: calc(var(--work, 0) * 100%);
+  background: var(--hud-warm);
+}
+.moon-hud__prompt-work[hidden] { display: none; }
 .moon-surface[data-touch='true'] .moon-hud__prompt { display: none; }
+
+/* ── A keyboard and a mouse need no thumb stations: the keys are the
+      controls and the prompt in the middle of the glass names them. The
+      rover's gear stays, because it is a readout as much as a key. The other
+      worlds keep their decks until phase 11 gives them the same treatment. ── */
+.moon-surface[data-world='moon'][data-touch='false'] .moon-hud__move,
+.moon-surface[data-world='moon'][data-touch='false'] .moon-hud__thumb > :not(.moon-hud__gear) { display: none; }
 .moon-hud__objective-job { display: grid; gap: 2px; margin-top: 4px; padding-top: 5px; border-top: 1px solid var(--hud-line); font-size: 11px; line-height: 1.35; }
 .moon-hud__objective-job[hidden] { display: none; }
 .moon-hud__pip--job { background: var(--hud-warm); }
@@ -2970,7 +3081,8 @@
 
 /* Underground, the surface instruments have nothing to say. */
 .moon-surface:not([data-backrooms='']):not([data-backrooms='fall'])[data-backrooms] :is(
-  .moon-hud__compass, .moon-hud__meter, .moon-hud__head, .moon-hud__objective, .moon-hud__vitals,
+  .moon-hud__compass, .moon-hud__meter, .moon-hud__head, .moon-hud__topleft, .moon-hud__suit, .moon-hud__hands,
+  .moon-hud__objective, .moon-hud__vitals,
   .moon-hud__impact, .moon-hud__banner, .moon-hud__poi, .moon-hud__hint, .moon-hud__airlock, .moon-hud__stance-keys
 ) { display: none; }
 .moon-surface[data-backrooms='fall'] .moon-hud__foot,
@@ -2979,7 +3091,7 @@
 .moon-surface[data-backrooms='wake'] .moon-hud__move,
 .moon-surface[data-backrooms='door'] .moon-hud__move,
 .moon-surface[data-backrooms='climb'] .moon-hud__move,
-.moon-surface[data-backrooms='fall'] :is(.moon-hud__compass, .moon-hud__head, .moon-hud__objective, .moon-hud__vitals, .moon-hud__radio) { display: none; }
+.moon-surface[data-backrooms='fall'] :is(.moon-hud__compass, .moon-hud__head, .moon-hud__topleft, .moon-hud__suit, .moon-hud__hands, .moon-hud__objective, .moon-hud__vitals, .moon-hud__radio) { display: none; }
 @media (prefers-reduced-motion: reduce) {
   .moon-hud__br, .moon-hud__br-carrier { animation: none; }
 }

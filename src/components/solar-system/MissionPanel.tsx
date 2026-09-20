@@ -1,11 +1,12 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { Check, Circle, Lock, Trophy } from 'lucide-react';
+import { ArrowUpRight, Check, Circle, Lock, Trophy } from 'lucide-react';
 import { MOON_MISSIONS } from '@/lib/solar-system/moon-missions';
 import { CRATER, RIDGE } from '@/lib/solar-system/moon-mission-props';
 import { TELESCOPE_PAD, TERRAIN_WALK_RADIUS } from '@/lib/solar-system/moon-terrain';
 import type { MissionsTelemetry } from '@/lib/solar-system/missions';
+import type { Achievement } from '@/lib/solar-system/achievements';
 
 interface MissionPanelProps {
   missions: MissionsTelemetry;
@@ -13,9 +14,15 @@ interface MissionPanelProps {
   crew: { x: number; z: number };
   /** Rewards from the old expedition and the side jobs, kept in the same list. */
   extras: { key: string; label: string }[];
+  /** What the crew did, as records: no Stars, nothing minted. */
+  achievements: Achievement[];
 }
 
 const fmtRange = (m: number) => (m >= 1000 ? `${(m / 1000).toFixed(2)} km` : `${Math.round(m)} m`);
+/** The day it happened, the same on every device and in every locale. */
+const fmtDay = (ms: number) => new Date(ms).toISOString().slice(0, 10);
+/** `explore.telescope_calibrated` → `telescope_calibrated`. */
+const slug = (id: string) => id.split('.').pop() ?? id;
 /** World metres → per cent across the map, north up, east right. */
 const mapX = (x: number) => 50 + (x / TERRAIN_WALK_RADIUS) * 46;
 const mapY = (z: number) => 50 + (z / TERRAIN_WALK_RADIUS) * 46;
@@ -28,7 +35,7 @@ const LANDMARKS: { id: string; x: number; z: number }[] = [
   { id: 'crater', ...CRATER },
 ];
 
-export function MissionPanel({ missions, crew, extras }: MissionPanelProps) {
+export function MissionPanel({ missions, crew, extras, achievements }: MissionPanelProps) {
   const t = useTranslations('solarSystem.moon');
   const active = MOON_MISSIONS.find((m) => m.id === missions.active);
   const done = new Set(missions.done);
@@ -90,6 +97,25 @@ export function MissionPanel({ missions, crew, extras }: MissionPanelProps) {
         {target && <i className="moon-log__mark moon-log__mark--target" style={{ left: `${mapX(target.x)}%`, top: `${mapY(target.z)}%` }} />}
         <i className="moon-log__mark moon-log__mark--crew" style={{ left: `${mapX(crew.x)}%`, top: `${mapY(crew.z)}%` }} />
       </div>
+
+      {achievements.length > 0 && (
+        <div className="moon-log__records">
+          <h5>{t('missions.records.title')}</h5>
+          {achievements.map((a) => (
+            <p key={a.id} className="moon-log__record">
+              <span>{t(`missions.records.${slug(a.id)}`)}</span>
+              <time dateTime={fmtDay(a.at)}>{fmtDay(a.at)}</time>
+              {a.detail && (
+                <a href="/sky" target="_blank" rel="noreferrer">
+                  {t('missions.records.tonight', { target: t(`missions.observed.names.${a.detail}`) })}
+                  <ArrowUpRight size={12} aria-hidden />
+                </a>
+              )}
+            </p>
+          ))}
+          <p className="moon-log__records-note">{t('missions.records.note')}</p>
+        </div>
+      )}
 
       <div className="moon-log__rewards">
         {missions.rewards.length === 0 && extras.length === 0 && <p>{t('missions.none')}</p>}

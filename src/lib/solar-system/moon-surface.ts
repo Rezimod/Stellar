@@ -25,7 +25,7 @@ import { seedFromCode, type RoomLink } from '@/lib/multiplayer/room-link';
 import type { Gait, Mode, Track } from '@/lib/solar-system/suit-locomotion';
 import { walkTrack } from '@/lib/solar-system/suit-scripted';
 import { headlamp, makeFixedStep, makePressEdge, makeSprintLatch, sprintFrom, walkFromStick, type FootStick } from '@/lib/solar-system/surface-input';
-import { makeAirlockRun, type AirlockContext, type AirlockRun } from '@/lib/solar-system/moon-airlock';
+import { makeAirlockRun, EQUALISE_SECONDS, type AirlockContext, type AirlockRun } from '@/lib/solar-system/moon-airlock';
 import { bailVelocity, boardTrack, doorSide, doorSpot, seatSpotInto, type RoverFrame, type Spot } from '@/lib/solar-system/moon-rover-seat';
 import { makeMoonBase, DOOR_Z, type Airlock, type BaseState } from '@/lib/solar-system/moon-base';
 import { makeMeteors } from '@/lib/solar-system/moon-meteors';
@@ -36,6 +36,7 @@ import { makeLander, type LanderInput, type LanderTelemetry } from '@/lib/solar-
 import { makeMission, missionComplete, type MissionContext, type MissionTelemetry } from '@/lib/solar-system/moon-mission';
 import { makeJobs, type JobId, type JobsTelemetry } from '@/lib/solar-system/moon-jobs';
 import { makeMoonMissions } from '@/lib/solar-system/moon-missions';
+import { localRewardSink, MISSION_ACHIEVEMENTS, OBJECTIVE_ACHIEVEMENTS, type Achievement } from '@/lib/solar-system/achievements';
 import type { MissionsTelemetry } from '@/lib/solar-system/missions';
 import type { MissionPropsTelemetry } from '@/lib/solar-system/moon-mission-props';
 import type { PerfSample } from '@/lib/solar-system/moon-perf';
@@ -128,6 +129,10 @@ export interface SurfaceTelemetry {
   hint: 'walk' | 'jump' | '';
   craters: number;
   o2: number;
+  /** Per cent left in the suit's battery: the lamp and the cold both cost. */
+  suitPower: number;
+  /** Seconds since the suit was last pressurised or vented. */
+  pressureAgo: number;
   heartRate: number;
   suitTemp: number;
   evaSeconds: number;
@@ -166,6 +171,8 @@ export interface SurfaceTelemetry {
   jobs: JobsTelemetry;
   /** The one thing the action key will do right now. */
   prompt: InteractionPrompt;
+  /** What the crew did up there, in order. Records, not rewards. */
+  achievements: Achievement[];
   airlock: AirlockTelemetry;
   /** A status panel somebody is reading: a key under `moon.readout`, and how long it stays up. */
   readout: string;
@@ -467,6 +474,9 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
     interact: false, use: false, viewToggle: false, viewCycle: false, headlamp: false, throttle: 0, gearRequest: null,
   };
   const interactions = makeInteractions();
+  // What the crew earns up here is a record of what they did, kept on the
+  // device: no Stars are awarded and nothing is minted from the Moon.
+  const sink = localRewardSink();
   // The five missions: their props, their engine, and the world changes they
   // make. They own the base's power, dish, dome and charger from here on.
   const moonMissions = makeMoonMissions({
@@ -487,12 +497,12 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
     ready: false, phase: 'descent', ascended: false, touchdownIn: 0, landing: lander.telemetry, grade: '',
     view: 'chase', driving: false, headlamp: false, poiId: '', poiDist: 0, impactDist: 0, impactHold: 0,
     airborne: false, altitude: 0, speed: 0, hint: 'walk', craters: 0,
-    o2: 97.4, heartRate: 64, suitTemp: 21.5, evaSeconds: 0, distanceM: 0,
+    o2: 97.4, suitPower: 100, pressureAgo: 1e4, heartRate: 64, suitTemp: 21.5, evaSeconds: 0, distanceM: 0,
     roverSpeed: 0, gear: rover.gear, gears: rover.gears, roverTop: rover.top, battery: 1, charging: false, roverFault: false,
     crouched: false, stumbling: false, sliding: false, anim: 'idle', gait: 'stand', mode: 'idle', sprinting: false, stamina: 1, gravity: cosmonaut.state.gravity, stride: 0, cadence: 0,
     grounded: true, fallen: false, heading: 0, crewX: 0, crewZ: 0,
     mission: mission.telemetry, missions: moonMissions.missions.telemetry, props: moonMissions.props.telemetry,
-    jobs: jobs.telemetry, prompt: interactions.prompt,
+    jobs: jobs.telemetry, prompt: interactions.prompt, achievements: sink.list(),
     airlock: { near: false, state: 'closed', cycle: 0 }, readout: '', readoutHold: 0, inside: '',
     backrooms: {
       phase: '', black: 0, crack: false, helmet: true, gravity: MOON_G, prompt: { active: false, label: '', kind: 'tap', progress: -1 },
@@ -636,7 +646,20 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
     if (kind === 'reward' && mission.telemetry.stage === 'done') rover.unlock('ion');
   };
   jobs.onEvent = (kind) => { if (kind === 'reward') audio.milestone(); else audio.bleep(); };
-  moonMissions.missions.onEvent = (kind) => { if (kind === 'mission') audio.milestone(); else audio.bleep(); };
+  moonMissions.missions.onEvent = (kind, id) => {
+    if (kind === 'mission') {
+      audio.milestone();
+      audio.chatter();
+      const key = MISSION_ACHIEVEMENTS[id];
+      // The telescope's record carries what it was pointed at, so the log can
+      // send the crew to that object over their own sky tonight.
+      if (key) sink.record(key, id === 'telescope' ? moonMissions.props.telemetry.observed : undefined);
+    } else {
+      audio.bleep();
+      const key = OBJECTIVE_ACHIEVEMENTS[id];
+      if (key) { sink.record(key); audio.chatter(); }
+    }
+  };
 
   /** The lander is down: a thing to walk around, and a place to find again. */
   const settleLander = () => {
@@ -829,6 +852,8 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
   let walked = false;
   let lastPoi = '';
   let exertion = 0;
+  /** Air moving in the chamber: set when a cycle starts, gone when it ends. */
+  let hissK = 0;
   let egressHold = 0;
   const walk: WalkInput = { moveX: 0, moveZ: 0, jump: false, run: false, crouch: false, work: false };
   const tmp = new THREE.Vector3();
@@ -1035,8 +1060,8 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
         if (ev?.kind === 'track') cosmonaut.script(ev.track, 'idle');
         else if (ev?.kind === 'open') { if (a.state === 'closed') base.cycleAirlock(a); audio.bleep(); }
         else if (ev?.kind === 'close') { if (a.state === 'open') base.cycleAirlock(a); audio.bleep(); }
-        else if (ev?.kind === 'pressurised') { cosmonaut.setGravity(MOON_G, false); cosmonaut.visor(true); audio.bleep(); }
-        else if (ev?.kind === 'depressurised') { cosmonaut.setGravity(MOON_G, true); cosmonaut.visor(false); audio.bleep(); }
+        else if (ev?.kind === 'pressurised') { cosmonaut.setGravity(MOON_G, false); cosmonaut.visor(true); audio.bleep(); hissK = 1; telemetry.pressureAgo = 0; }
+        else if (ev?.kind === 'depressurised') { cosmonaut.setGravity(MOON_G, true); cosmonaut.visor(false); audio.bleep(); hissK = 1; telemetry.pressureAgo = 0; }
         else if (ev?.kind === 'done') { airlockRun = null; airlockDoor = null; cosmonaut.hold(false); }
       }
       if (!driving()) cosmonaut.indoors = !!base.inside;
@@ -1146,14 +1171,27 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
     exertion += (work - exertion) * (1 - Math.exp(-dt * 0.35));
     if (telemetry.phase === 'surface') {
       telemetry.evaSeconds += dt;
+      telemetry.pressureAgo += dt;
       telemetry.distanceM += telemetry.speed * dt;
       telemetry.o2 = Math.max(0, telemetry.o2 - dt * 0.0011 * (1 + exertion * 2.2));
+      // The pack runs the fan, the heaters and — when it is on — the lamp.
+      // Indoors the suit is on the habitat's power and gets some of it back.
+      const draw = base.inside ? -0.004 : 0.0006 * (1 + exertion * 0.8) + (telemetry.headlamp ? 0.0004 : 0);
+      telemetry.suitPower = Math.max(0, Math.min(100, telemetry.suitPower - dt * draw * 100));
       telemetry.heartRate += ((64 + exertion * 68 + (cosmonaut.state.landed ? 6 : 0)) - telemetry.heartRate) * (1 - Math.exp(-dt * 0.6));
       telemetry.suitTemp += ((21.5 + exertion * 1.8) - telemetry.suitTemp) * (1 - Math.exp(-dt * 0.2));
     }
     audio.update(dt, exertion, view === 'helmet' || view === 'cockpit');
     const dr = mission.telemetry.drill;
     audio.drill(dr.load, mission.telemetry.stage === 'drill' && dr.engaged && !dr.stalled && !dr.ready);
+    // The motor through the seat, the descent engine through the frame: both
+    // are felt, not heard. The hiss and the habitat's machinery need air, so
+    // they sound only in a chamber that has some and on a deck that is lit.
+    audio.motor(Math.min(1, Math.abs(rover.speed) / Math.max(1, rover.top)), onRover && Math.abs(rover.speed) > 0.2);
+    audio.engine(telemetry.phase === 'descent' || telemetry.phase === 'ascent' ? lander.telemetry.throttle : 0);
+    hissK = Math.max(0, hissK - dt / EQUALISE_SECONDS);
+    audio.hiss(hissK);
+    audio.hum(base.inside && base.state.power ? 1 : 0);
 
     let best = ''; let bestD = 1e9;
     for (const poi of base.pois) {
