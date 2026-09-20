@@ -1615,7 +1615,12 @@
         "rewards": {
           "core": "Deep Core — a metre of the Moon in a tube, with metal in it",
           "hull": "Excavation — the first hull raised on another world",
-          "contact": "First Contact — the rover’s ion gear is unlocked"
+          "contact": "First Contact — the rover’s ion gear is unlocked",
+          "firstSteps": "First Steps — the first Georgian bootprints on the Moon",
+          "power": "Power Restored — the base has its lights back",
+          "telescope": "First Light — the platform is calibrated and observing",
+          "comms": "Link Restored — Earth is back on the line",
+          "expedition": "Far Side Sample — regolith nobody had walked on"
         },
         "scanner": "Scanner",
         "scanLock": "Locking — {n}%",
@@ -1668,7 +1673,24 @@
         "exitAirlock": "Leave through the airlock",
         "getIn": "Get in",
         "getOut": "Get out",
-        "bailOut": "Hold to bail out"
+        "bailOut": "Hold to bail out",
+        "suitCheck": "Suit check",
+        "earthShot": "Frame the shot",
+        "deadCable": "Inspect cable",
+        "takeCoupling": "Take coupling",
+        "fitCoupling": "Fit coupling",
+        "breaker": "Reset the breaker",
+        "mountPower": "Power the mount",
+        "mountAlign": "Align the mount",
+        "scopeObserve": "Observe",
+        "dishInspect": "Inspect the feed",
+        "takeFeed": "Take feed horn",
+        "fitFeed": "Fit feed horn",
+        "dishAlign": "Realign to Earth",
+        "roverCharge": "Charge the rover",
+        "craterScan": "Sweep the scanner",
+        "takeSample": "Collect sample",
+        "storeSample": "Store the sample"
       },
       "airlock": {
         "cycling": "Equalising — {n}%",
@@ -1772,6 +1794,76 @@
         },
         "wake": "Get up.",
         "crack": "Visor cracked"
+      },
+      "missions": {
+        "title": "Missions",
+        "none": "Nothing in hand",
+        "objective": "Objective",
+        "rewards": "Earned",
+        "map": "Base map",
+        "you": "You",
+        "status": {
+          "done": "Done",
+          "active": "In hand",
+          "open": "Available",
+          "locked": "Locked"
+        },
+        "observed": {
+          "line": "{target} · {alt}° above the horizon",
+          "earth": "Earth never sets over Stellar Base: the near side always faces home.",
+          "jupiter": "Jupiter turns once in under ten hours — the fastest day of any planet.",
+          "saturn": "Saturn's rings are mostly water ice, and only tens of metres thick.",
+          "mars": "Mars has two moons, Phobos and Deimos, both likely captured asteroids.",
+          "venus": "Venus turns backwards, and one of its days is longer than its year.",
+          "m42": "The Orion Nebula is a nursery 1,344 light-years off, forming stars now.",
+          "m31": "Andromeda is 2.5 million light-years away, and closing on us."
+        },
+        "firstSteps": {
+          "title": "First Steps",
+          "brief": "You are down, the lander is cooling, and nobody has walked here. Check the suit, get out to the ridge, take the shot home, and come back in through the airlock.",
+          "suit": "Check the suit at the lander",
+          "ridge": "Walk out to the ridge",
+          "earthrise": "Frame Earth and take the shot",
+          "airlock": "Cycle the airlock",
+          "done": "First Steps — the flag is up"
+        },
+        "power": {
+          "title": "Restore Power",
+          "brief": "The base is dim. The middle array is off the sun and something has cut its feed. Trace it, fetch a coupling from the bench, fit it, and throw the breaker.",
+          "trace": "Inspect the severed cable",
+          "part": "Fetch a coupling from the bench",
+          "fit": "Fit the coupling at the array",
+          "breaker": "Reset the breaker",
+          "done": "Power restored — the lights are back"
+        },
+        "telescope": {
+          "title": "Telescope Calibration",
+          "brief": "The platform on the western ridge has never been calibrated. Power the mount, align it, and observe whatever is really above the horizon tonight.",
+          "power": "Power the mount",
+          "align": "Align the mount",
+          "observe": "Observe what is up",
+          "done": "First light — the platform is calibrated"
+        },
+        "comms": {
+          "title": "Comms Failure",
+          "brief": "Earth has gone quiet. The high-gain dish is off its bearing and its feed is damaged. Inspect it, fit the spare horn, and bring the dish back round to Earth.",
+          "inspect": "Inspect the damaged feed",
+          "feed": "Fetch the spare feed horn",
+          "fit": "Fit the feed horn",
+          "realign": "Realign the dish to Earth",
+          "done": "Link restored — Earth is back"
+        },
+        "expedition": {
+          "title": "Rover Expedition",
+          "brief": "There is a crater to the north-west nobody has walked. Charge the rover, drive out, sweep for the sample, bring it back and store it in the lab.",
+          "charge": "Charge the rover",
+          "board": "Board the rover",
+          "drive": "Drive out to the crater",
+          "scan": "Sweep for the sample",
+          "collect": "Collect the sample",
+          "store": "Store it in the lab",
+          "done": "Sample stored — the expedition is home"
+        }
       }
     },
     "loading": {

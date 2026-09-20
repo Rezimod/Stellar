@@ -18,6 +18,7 @@ import { useLoadingTips } from './useLoadingTips';
 import { useSoundPref } from './useSoundPref';
 import type { RoomLink } from '@/lib/multiplayer/room-link';
 import { BuildHud } from './BuildHud';
+import { MissionPanel } from './MissionPanel';
 
 interface MoonSurfaceProps {
   onReturn: () => void;
@@ -272,7 +273,12 @@ export function MoonSurface({ onReturn, room, paused, onProgress, onPauseRequest
       if (stripRef.current) stripRef.current.style.transform = `translateX(${-(heading + 360) * PPD}px)`;
       const m = tel.mission;
       const j = tel.jobs;
-      pipAt(pipRef.current, m.bearing, heading, m.distance >= 0 && (m.task === '' || !m.atSite));
+      const ms = tel.missions;
+      // The questline takes the compass when it has somewhere to send the
+      // crew; the old expedition keeps it the rest of the time.
+      const onMission = ms.active !== '' && ms.objective !== '';
+      if (onMission && ms.distance >= 0) pipAt(pipRef.current, ms.bearing, heading, true);
+      else pipAt(pipRef.current, m.bearing, heading, m.distance >= 0 && (m.task === '' || !m.atSite));
       pipAt(jobPipRef.current, j.bearing, heading, j.active !== '' && j.distance >= 0);
       // The hum on channel two, once the base has mentioned it.
       pipAt(holePipRef.current, bt.bearing, heading, bt.known && !bt.escaped && bt.distance >= 0 && tel.phase === 'surface');
@@ -281,19 +287,25 @@ export function MoonSurface({ onReturn, room, paused, onProgress, onPauseRequest
       const meter = meterRef.current;
       if (meter) {
         const align = j.meter >= 0;
-        const on = align || m.signal >= 0;
+        const sweep = tel.props.signal;
+        const on = align || m.signal >= 0 || sweep >= 0;
         show(meter, on);
         if (on) {
           meter.dataset.kind = align ? 'align' : 'scan';
-          meter.dataset.ping = String(m.ping);
-          setVar(meter, '--v', (align ? j.meter : m.signal).toFixed(3));
-          text(meterLabelRef.current, align ? tt('jobs.meter') : m.task === 'scan' ? tt('mission.scanLock', { n: Math.round(m.work * 100) }) : tt('mission.scanner'));
+          meter.dataset.ping = String(sweep >= 0 ? false : m.ping);
+          setVar(meter, '--v', (align ? j.meter : sweep >= 0 ? sweep : m.signal).toFixed(3));
+          text(meterLabelRef.current,
+            align ? tt('jobs.meter')
+            : sweep >= 0 ? tt('mission.scanner')
+            : m.task === 'scan' ? tt('mission.scanLock', { n: Math.round(m.work * 100) })
+            : tt('mission.scanner'));
         }
       }
-      show(objRef.current, (m.distance >= 0 || m.complete || j.active !== '') && !m.banner && !j.banner);
-      text(objTextRef.current, tt(`mission.${m.objective || 'obj.done'}`));
+      show(objRef.current, (onMission || m.distance >= 0 || m.complete || j.active !== '') && !m.banner && !j.banner && !ms.banner);
+      text(objTextRef.current, onMission ? tt(`missions.${ms.active}.${ms.objective}`) : tt(`mission.${m.objective || 'obj.done'}`));
       text(objRangeRef.current,
-        m.task === 'drill' && m.atSite ? `${m.drill.depth.toFixed(1)} / ${5.2} m`
+        onMission ? (ms.distance >= 0 ? fmtRange(ms.distance) : '')
+        : m.task === 'drill' && m.atSite ? `${m.drill.depth.toFixed(1)} / ${5.2} m`
         : m.task === 'clear' && m.atSite ? tt('mission.patches', { n: m.cleared, total: m.patches })
         : m.distance >= 0 ? (m.approx ? fmtApprox(m.distance) : fmtRange(m.distance)) : '');
       show(jobRef.current, j.active !== '');
@@ -388,7 +400,7 @@ export function MoonSurface({ onReturn, room, paused, onProgress, onPauseRequest
       }
       const banner = bannerRef.current;
       if (banner) {
-        const key = m.banner ? `mission.${m.banner}` : j.banner ? `jobs.${j.banner}` : '';
+        const key = ms.banner ? `missions.${ms.banner}` : m.banner ? `mission.${m.banner}` : j.banner ? `jobs.${j.banner}` : '';
         show(banner, key !== '');
         if (key) text(banner.firstElementChild as HTMLElement, tt(key));
       }
@@ -484,6 +496,8 @@ export function MoonSurface({ onReturn, room, paused, onProgress, onPauseRequest
   const rewards = handleRef.current?.telemetry.mission.rewards ?? [];
   const jobsDone = handleRef.current?.telemetry.jobs.done ?? [];
   const underground = handleRef.current?.telemetry.backrooms;
+  const missions = handleRef.current?.telemetry.missions;
+  const crewAt = { x: handleRef.current?.telemetry.crewX ?? 0, z: handleRef.current?.telemetry.crewZ ?? 0 };
 
   return (
     <div ref={rootRef} className="moon-surface" data-phase="descent" data-ready="false" data-immersive={immersive}>
@@ -634,22 +648,22 @@ export function MoonSurface({ onReturn, room, paused, onProgress, onPauseRequest
         {log && (
           <div className="moon-hud__log" role="dialog" aria-label={t('mission.log')}>
             <div className="moon-hud__help-head">
-              <span>{t('mission.log')}</span>
+              <span>{t('missions.title')}</span>
               <button type="button" onClick={() => setLog(false)} aria-label={t('close')}><X size={14} aria-hidden /></button>
             </div>
-            <p className="moon-hud__log-brief">{t('mission.brief')}</p>
-            <div className="moon-hud__log-rewards">
-              {rewards.length === 0 && jobsDone.length === 0 && !underground?.escaped && <p>{t('mission.none')}</p>}
-              {underground?.escaped && (
-                <p className="moon-hud__reward"><Trophy size={14} aria-hidden /><span>{t('backrooms.log', { time: fmtTime(underground.bestSeconds) })}</span></p>
-              )}
-              {rewards.map((r) => (
-                <p key={r} className="moon-hud__reward"><Trophy size={14} aria-hidden /><span>{t(`mission.rewards.${r}`)}</span></p>
-              ))}
-              {jobsDone.map((id) => (
-                <p key={id} className="moon-hud__reward"><Trophy size={14} aria-hidden /><span>{t(`jobs.names.${id}`)}</span></p>
-              ))}
-            </div>
+            {missions ? (
+              <MissionPanel
+                missions={missions}
+                crew={crewAt}
+                extras={[
+                  ...(underground?.escaped ? [{ key: 'backrooms', label: t('backrooms.log', { time: fmtTime(underground.bestSeconds) }) }] : []),
+                  ...rewards.map((r) => ({ key: `old-${r}`, label: t(`mission.rewards.${r}`) })),
+                  ...jobsDone.map((id) => ({ key: `job-${id}`, label: t(`jobs.names.${id}`) })),
+                ]}
+              />
+            ) : (
+              <p className="moon-hud__log-brief">{t('mission.brief')}</p>
+            )}
           </div>
         )}
 

@@ -35,6 +35,9 @@ import { makeRover, type RoverGear } from '@/lib/solar-system/moon-rover';
 import { makeLander, type LanderInput, type LanderTelemetry } from '@/lib/solar-system/moon-lander';
 import { makeMission, missionComplete, type MissionContext, type MissionTelemetry } from '@/lib/solar-system/moon-mission';
 import { makeJobs, type JobId, type JobsTelemetry } from '@/lib/solar-system/moon-jobs';
+import { makeMoonMissions } from '@/lib/solar-system/moon-missions';
+import type { MissionsTelemetry } from '@/lib/solar-system/missions';
+import type { MissionPropsTelemetry } from '@/lib/solar-system/moon-mission-props';
 import type { PerfSample } from '@/lib/solar-system/moon-perf';
 import { makeSurfaceHost } from '@/lib/solar-system/surface-host';
 import { onQualityChange } from '@/game/quality';
@@ -149,10 +152,17 @@ export interface SurfaceTelemetry {
   stride: number;
   cadence: number;
   grounded: boolean;
+  /** Where the crew is on the mare, for the base map. */
+  crewX: number;
+  crewZ: number;
   fallen: boolean;
   /** Where the crew is looking, degrees clockwise from north. */
   heading: number;
   mission: MissionTelemetry;
+  /** The five Moon missions: what is in hand and what has been done. */
+  missions: MissionsTelemetry;
+  /** What the mission props have to say: the scanner, the scope, the hands. */
+  props: MissionPropsTelemetry;
   jobs: JobsTelemetry;
   /** The one thing the action key will do right now. */
   prompt: InteractionPrompt;
@@ -204,6 +214,11 @@ export interface MoonSurfaceHandle {
   cameraSpots: () => { id: string; x: number; z: number }[];
   advanceMission: () => void;
   startJob: (id?: JobId) => void;
+  /** Take on one of the five missions; development, and the mission list later. */
+  startMission: (id?: string) => string | null;
+  /** Use the thing with this id, wherever the crew is and whatever it asks
+   *  for first: development only, for scripted runs. */
+  forceInteract: (id: string, seconds?: number) => boolean;
   skipDescent: () => void;
   perf: () => PerfSample;
   /** Development: draw calls per scene layer. */
@@ -452,6 +467,22 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
     interact: false, use: false, viewToggle: false, viewCycle: false, headlamp: false, throttle: 0, gearRequest: null,
   };
   const interactions = makeInteractions();
+  // The five missions: their props, their engine, and the world changes they
+  // make. They own the base's power, dish, dome and charger from here on.
+  const moonMissions = makeMoonMissions({
+    heightAt: terrain.heightAt,
+    anchors: base.zones.anchors,
+    lander: () => ({ x: lander.position.x, z: lander.position.z }),
+    earthDir: sky.earthDir,
+    state: base.state,
+    setState: base.setState,
+    arrayFault: base.zones.arrayFault,
+    dishFault: base.zones.dishFault,
+    setStatus: base.zones.setStatus,
+    carry: interactions.carry,
+    bus: interactions.bus,
+  });
+  scene.add(moonMissions.props.group);
   const telemetry: SurfaceTelemetry = {
     ready: false, phase: 'descent', ascended: false, touchdownIn: 0, landing: lander.telemetry, grade: '',
     view: 'chase', driving: false, headlamp: false, poiId: '', poiDist: 0, impactDist: 0, impactHold: 0,
@@ -459,8 +490,9 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
     o2: 97.4, heartRate: 64, suitTemp: 21.5, evaSeconds: 0, distanceM: 0,
     roverSpeed: 0, gear: rover.gear, gears: rover.gears, roverTop: rover.top, battery: 1, charging: false, roverFault: false,
     crouched: false, stumbling: false, sliding: false, anim: 'idle', gait: 'stand', mode: 'idle', sprinting: false, stamina: 1, gravity: cosmonaut.state.gravity, stride: 0, cadence: 0,
-    grounded: true, fallen: false, heading: 0,
-    mission: mission.telemetry, jobs: jobs.telemetry, prompt: interactions.prompt,
+    grounded: true, fallen: false, heading: 0, crewX: 0, crewZ: 0,
+    mission: mission.telemetry, missions: moonMissions.missions.telemetry, props: moonMissions.props.telemetry,
+    jobs: jobs.telemetry, prompt: interactions.prompt,
     airlock: { near: false, state: 'closed', cycle: 0 }, readout: '', readoutHold: 0, inside: '',
     backrooms: {
       phase: '', black: 0, crack: false, helmet: true, gravity: MOON_G, prompt: { active: false, label: '', kind: 'tap', progress: -1 },
@@ -516,6 +548,7 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
   const readout = (key: string) => { telemetry.readout = key; telemetry.readoutHold = 6; audio.bleep(); };
   for (const i of mission.interactables) interactions.add(i);
   for (const i of jobs.interactables) interactions.add(i);
+  for (const i of moonMissions.props.interactables) interactions.add(i);
   base.airlocks.forEach((a, k) => interactions.add({
     id: `airlock${k}`, priority: 2,
     where: () => {
@@ -603,6 +636,7 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
     if (kind === 'reward' && mission.telemetry.stage === 'done') rover.unlock('ion');
   };
   jobs.onEvent = (kind) => { if (kind === 'reward') audio.milestone(); else audio.bleep(); };
+  moonMissions.missions.onEvent = (kind) => { if (kind === 'mission') audio.milestone(); else audio.bleep(); };
 
   /** The lander is down: a thing to walk around, and a place to find again. */
   const settleLander = () => {
@@ -1033,6 +1067,8 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
       bt.bearing = Math.atan2(SINKHOLE.x - crew.x, crew.z - SINKHOLE.z);
       if (!driving() && !tracking() && sinkhole.onEdge(crew.x, crew.z)) startFall();
       jobs.update(dt, mctx);
+      moonMissions.props.update(dt, { x: crew.x, z: crew.z, yaw: driving() ? rover.yaw : cosmonaut.yaw });
+      moonMissions.missions.update(dt, { x: crew.x, z: crew.z, driving: driving() });
 
       // ── The camera. ──
       if (driving()) {
@@ -1103,6 +1139,8 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
     telemetry.fallen = cosmonaut.state.fallen;
     // A map, not a mirror: north is -Z, east +X (the base's own layout), so what is on your right is right on the ribbon.
     telemetry.heading = (THREE.MathUtils.radToDeg(Math.atan2(-Math.sin(cam.yaw), Math.cos(cam.yaw))) + 360) % 360;
+    telemetry.crewX = crew.x;
+    telemetry.crewZ = crew.z;
 
     const work = onRover ? 0.1 : Math.min(1, cosmonaut.state.effort + (interactions.prompt.holding ? 0.35 : 0));
     exertion += (work - exertion) * (1 - Math.exp(-dt * 0.35));
@@ -1170,6 +1208,7 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
     lander.dispose();
     mission.dispose();
     jobs.dispose();
+    moonMissions.dispose();
     meteors.dispose();
     crowd?.dispose();
     cosmonaut.dispose();
@@ -1228,6 +1267,16 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
     },
     advanceMission: mission.advance,
     startJob: (id) => { jobs.start(id); },
+    startMission: (id) => moonMissions.missions.start(id),
+    forceInteract(id, seconds = 3) {
+      const i = moonMissions.props.interactables.find((p) => p.id === id);
+      if (!i) return false;
+      if (i.kind() === 'tap') { i.use(0); interactions.bus.emit({ type: 'interaction:completed', id }); return true; }
+      // A hold: run it to the end in one go, as holding the key would.
+      for (let k = 0; k < Math.ceil(seconds / 0.05) + 1; k++) i.use(0.05);
+      interactions.bus.emit({ type: 'interaction:completed', id });
+      return true;
+    },
     skipDescent() {
       if (telemetry.phase === 'surface') return;
       lander.position.set(PAD_CENTER.x, terrain.heightAt(PAD_CENTER.x, PAD_CENTER.y + 26) + 0.35, PAD_CENTER.y + 26);

@@ -2313,6 +2313,39 @@
 .moon-hud__log-rewards { display: grid; gap: 8px; padding-top: 6px; border-top: 1px solid var(--hud-line); }
 .moon-hud__reward { display: flex; gap: 8px; align-items: flex-start; color: var(--hud-warm) !important; }
 
+/* ── The mission panel (Tab): the five missions, what is in hand, and a
+   top-down of the mare with the crew and the objective on it. ── */
+.moon-log { display: grid; gap: 10px; }
+.moon-log__list { display: grid; gap: 2px; margin: 0; padding: 0; list-style: none; }
+.moon-log__item { display: grid; grid-template-columns: 16px 1fr auto; align-items: center; gap: 8px; font-size: 11px; color: var(--hud-dim); }
+.moon-log__icon { display: grid; place-items: center; color: inherit; }
+.moon-log__item--done { color: var(--hud-ink); }
+.moon-log__item--active { color: var(--hud-accent); }
+.moon-log__item--locked { opacity: 0.45; }
+.moon-log__status { letter-spacing: 0.12em; text-transform: uppercase; font-size: 9px; }
+.moon-log__active { display: grid; gap: 6px; padding-top: 8px; border-top: 1px solid var(--hud-line); }
+.moon-log__active h4 { margin: 0; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--hud-accent); }
+.moon-log__brief { color: var(--hud-ink) !important; }
+.moon-log__objectives { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; counter-reset: obj; }
+.moon-log__objective { display: flex; justify-content: space-between; gap: 10px; font-size: 11px; color: var(--hud-dim); }
+.moon-log__objective b { font-variant-numeric: tabular-nums; font-weight: 500; }
+.moon-log__objective.is-done { color: var(--hud-ink); opacity: 0.6; text-decoration: line-through; }
+.moon-log__objective.is-open { color: var(--hud-accent); }
+.moon-log__map {
+  position: relative;
+  aspect-ratio: 1;
+  border: 1px solid var(--hud-line);
+  border-radius: 8px;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px) 0 0 / 100% 25%,
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px) 0 0 / 25% 100%,
+    rgba(255, 255, 255, 0.02);
+}
+.moon-log__mark { position: absolute; width: 5px; height: 5px; margin: -2.5px 0 0 -2.5px; border-radius: 50%; background: var(--hud-dim); }
+.moon-log__mark--target { width: 8px; height: 8px; margin: -4px 0 0 -4px; background: transparent; border: 1px solid var(--hud-warm); }
+.moon-log__mark--crew { width: 7px; height: 7px; margin: -3.5px 0 0 -3.5px; background: var(--hud-accent); }
+.moon-log__rewards { display: grid; gap: 8px; padding-top: 8px; border-top: 1px solid var(--hud-line); }
+
 /* ── Inside the helmet: the visor's edge, a faint reflection of the crew's
    own face lights, and the sun visor's gold cast at the top of the glass. ── */
 .moon-hud__visor {
