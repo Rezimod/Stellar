@@ -256,6 +256,12 @@ export function SolarSystemCanvas({
   const onZoomToSunRef = useRef(onZoomToSun);
   const zoomToRef = useRef(zoomTo);
   const onZoomToConsumedRef = useRef(onZoomToConsumed);
+  // Where the ship was when this canvas last went away. A canvas is torn
+  // down and rebuilt whenever a surface takes the screen (and twice on
+  // mount in development's strict mode); the ship belongs where the pilot
+  // left it, not back at the Earth. A launch from the deck itself asks for
+  // the default anchor instead (`input.fromHome`).
+  const parkedRef = useRef<FlightAnchor | null>(null);
   const flightRef = useRef(flight);
 
   epochRef.current = epoch;
@@ -649,6 +655,15 @@ export function SolarSystemCanvas({
     const detailRequested = new Set<SolarBodyId>();
     const maybeLoadDetailMap = (id: SolarBodyId, mesh: THREE.Mesh) => {
       if (lowData || detailRequested.has(id)) return;
+      // Not during an arrival: a four-megapixel map decoded and handed to the
+      // GPU is the better part of a second on this hardware, and the crew are
+      // watching a world come up. Whatever they pass on the way keeps its
+      // base map; by the time they ask again they are back at the controls.
+      // TODO(explore-slice): phase 11 — textures are decoded and uploaded on
+      // the main thread, which is where the arrival's long frames come from.
+      // Decode off it (ImageBitmapLoader, or KTX2 for the planet maps).
+      const flying = flightRef.current;
+      if (flying && (flying.telemetry.approachPhase || flying.input.approachRequest)) return;
       const url = NASA_PLANET_DETAIL_URL[id];
       if (!url) return;
       // Apparent radius as a fraction of the viewport height.
@@ -1098,6 +1113,13 @@ export function SolarSystemCanvas({
     scene.add(fleet.group);
     const teardownShip = () => {
       if (!ship) return;
+      // Where the pilot left it, for the canvas that comes after this one.
+      const at = ship.group.position;
+      parkedRef.current = {
+        position: at.clone(),
+        lookAt: new THREE.Vector3(0, 0, 1).applyQuaternion(ship.group.quaternion).add(at),
+        yaw: 0,
+      };
       aliens.setHostile(null);
       shipFill.intensity = 0;
       scene.add(shipFill);
@@ -1348,7 +1370,9 @@ export function SolarSystemCanvas({
           camera.far = FLIGHT_FAR;
           camera.updateProjectionMatrix();
           syncWorld(null, earthPos, now);
-          ship.spawn(world.home);
+          const fromHome = session.input.fromHome;
+          session.input.fromHome = false;
+          ship.spawn(fromHome || !parkedRef.current ? world.home : parkedRef.current);
           const live = ship;
           aliens.setHostile({ group: live.group, onHit: (dmg) => live.takeDamage(dmg) });
           if (process.env.NODE_ENV !== 'production') window.__stellarFlight = { session, ship: live, world, aliens };

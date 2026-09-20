@@ -250,7 +250,11 @@ export function clearFlightInput(input: FlightInput) {
   input.hudToggle = false;
   input.dockRequest = false;
   input.landRequest = false;
+  input.approachRequest = null;
+  input.approachSkip = false;
+  input.fromHome = false;
   input.relaunch = false;
+  input.relaunchAt = '';
   input.targetStep = 0;
   input.targetClear = false;
   input.targetRequest = null;

@@ -101,3 +101,63 @@ export function firstMesh(root: THREE.Object3D): THREE.Mesh | null {
   root.traverse((o) => { if (!found && (o as THREE.Mesh).isMesh && !/_LOD\d$/.test(o.name)) found = o as THREE.Mesh; });
   return found;
 }
+
+// ── Loading one scene while another is still on the screen ──
+// The arrival flies for eleven seconds; its files can come down during
+// them. A prefetched model is an ordinary user of the cache, so the scene
+// that mounts next shares the decoded copy instead of fetching it again.
+
+export interface PrefetchItem {
+  url: string;
+  /** Must match how the scene itself acquires it, or they miss each other. */
+  keepNodes: boolean;
+  /** Which line of the arrival's checklist this file is behind. */
+  group: string;
+}
+
+interface Held {
+  group: string;
+  release: (() => void) | null;
+  failed: boolean;
+}
+const prefetched = new Map<string, Held>();
+/** The prefetch runs one file at a time; this is the tail of that chain. */
+let queue: Promise<unknown> = Promise.resolve();
+
+/** Start (or keep) a hold on these models. Safe to call repeatedly.
+ *  One at a time, in the order given: decoding a glTF and its textures is
+ *  work on the main thread, and five of them at once is a stall in the
+ *  middle of whatever is still being drawn. */
+export function prefetchModels(items: PrefetchItem[]) {
+  for (const item of items) {
+    const key = item.keepNodes ? `${item.url}#nodes` : item.url;
+    if (prefetched.has(key)) continue;
+    const held: Held = { group: item.group, release: null, failed: false };
+    prefetched.set(key, held);
+    const load = () => acquireModel(item.url, item.keepNodes).then(
+      (h) => { if (prefetched.get(key) === held) held.release = h.release; else h.release(); },
+      () => { held.failed = true; },
+    );
+    queue = queue.then(() => (prefetched.get(key) === held ? load() : undefined), load);
+  }
+}
+
+/** Which checklist groups have every one of their files in hand. A group
+ *  whose file could not be loaded counts as done: the scene will draw
+ *  without it, and the crew should not wait for something that is not coming. */
+export function prefetchDone(): Set<string> {
+  const pending = new Set<string>();
+  const groups = new Set<string>();
+  for (const held of prefetched.values()) {
+    groups.add(held.group);
+    if (!held.release && !held.failed) pending.add(held.group);
+  }
+  for (const g of pending) groups.delete(g);
+  return groups;
+}
+
+/** Let go of the prefetch holds: the scene that wanted them has them now. */
+export function dropPrefetch() {
+  for (const held of prefetched.values()) held.release?.();
+  prefetched.clear();
+}

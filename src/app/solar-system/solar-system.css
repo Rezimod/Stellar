@@ -3205,3 +3205,84 @@
 .solar-system__launch-text { display: grid; gap: 1px; }
 .solar-system__launch-title { font: 600 14px/1.2 var(--font-body, system-ui), sans-serif; }
 .solar-system__launch-sub { font: 500 11px/1.3 var(--font-mono, ui-monospace), monospace; color: rgba(255, 214, 156, 0.85); }
+
+/* ── The arrival ──
+   The ship has the con: the deck's own controls fade out of the way, and
+   what is left is where the crew are in the sequence, what has come down
+   for the surface at the end of it, and the way to skip it. */
+.flight-hud[data-arrival='true'] > :not(.flight-arrival, .flight-hud__warp, .flight-hud__flash, .flight-hud__launching) {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+}
+.flight-arrival {
+  position: absolute;
+  left: 50%;
+  bottom: calc(var(--edge-bottom) + 6px);
+  z-index: 9;
+  display: grid;
+  justify-items: center;
+  gap: 9px;
+  width: min(420px, calc(100% - 2 * var(--edge-right)));
+  transform: translateX(-50%);
+  pointer-events: none;
+  text-align: center;
+  animation: flight-arrival-in 0.6s ease both;
+}
+/* A world in the windscreen is the brightest thing on the screen; the
+   caption needs its own ground to stand on. */
+.flight-arrival::before {
+  content: '';
+  position: absolute;
+  inset: -30px -50vw -60px;
+  z-index: -1;
+  background: linear-gradient(to top, rgba(4, 9, 22, 0.72) 0%, rgba(4, 9, 22, 0.52) 45%, rgba(4, 9, 22, 0) 100%);
+}
+@keyframes flight-arrival-in {
+  from { opacity: 0; transform: translate(-50%, 12px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+.flight-arrival__head { display: grid; gap: 3px; margin: 0; }
+.flight-arrival__phase {
+  font-family: var(--font-display);
+  font-size: 15px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--hud-ink);
+}
+.flight-arrival__place { font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--hud-dim); }
+.flight-arrival__bar {
+  display: block;
+  width: 100%;
+  height: 2px;
+  background: rgba(166, 190, 220, 0.22);
+  overflow: hidden;
+}
+.flight-arrival__bar > i {
+  display: block;
+  width: calc(var(--t, 0) * 100%);
+  height: 100%;
+  background: var(--hud-accent);
+}
+.flight-arrival__list {
+  display: flex;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.flight-arrival__list li {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--hud-dim);
+  opacity: 0.55;
+  transition: opacity 0.3s ease, color 0.3s ease;
+}
+.flight-arrival__list li[data-done='true'] { opacity: 1; color: var(--hud-accent); }
+.flight-arrival__list li svg { opacity: 0; transition: opacity 0.3s ease; }
+.flight-arrival__list li[data-done='true'] svg { opacity: 1; }
+.flight-arrival__skip { margin: 0; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--hud-dim); }

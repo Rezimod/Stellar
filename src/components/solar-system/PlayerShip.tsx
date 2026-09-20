@@ -8,6 +8,9 @@ import {
 import type { LucideIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { attachDesktopControls, clearFlightInput, zoomFlightCamera } from '@/lib/solar-system/flight-input';
+import { APPROACH_SECONDS } from '@/lib/solar-system/flight-approach';
+import { assetsFor, SURFACE_GROUPS } from '@/lib/solar-system/surface-assets';
+import { prefetchModels, prefetchDone } from '@/game/models';
 import { type FlightSession, type ShipKind } from '@/lib/solar-system/player-ship';
 import { LANDING_SITES, type WorldId } from '@/lib/solar-system/world-profiles';
 import { CosmicLoader } from './CosmicLoader';
@@ -30,6 +33,10 @@ interface PlayerShipProps {
   onLand: (site: LandingSite) => void;
   /** A surface has the screen; the deck stays paused underneath. */
   landed: boolean;
+  /** The crew have just come up from this surface: the deck launches into
+   *  a clean orbit over it rather than leaving them in the orrery. */
+  returnedFrom?: LandingSite | null;
+  onReturned?: () => void;
   /** The viewport is drawn a quarter turn clockwise — landscape on a phone. */
   landscape: boolean;
   onLandscape: (on: boolean) => void;
@@ -43,6 +50,10 @@ const BARS = ['shield', 'energy', 'boost'] as const;
 const KEY_ROWS = ['r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r10', 'r12', 'r13', 'r7', 'r15', 'r8', 'r16', 'r11', 'r14', 'r9'] as const;
 const TOUCH_ROWS = ['t1', 't2', 't3', 't11', 't6', 't15', 't13', 't12', 't9', 't14', 't5'] as const;
 const HELP_SEEN = 'stellar_explore_help';
+/** The arrival has been watched once; from now on it can be skipped from the first second. */
+const ARRIVAL_SEEN = 'stellar_explore_arrival';
+/** On the first run the way out opens once the transit is behind them. */
+const ARRIVAL_SKIP_AFTER = 4.5;
 const ICONS = [Shield, Zap, ChevronsUp];
 /** The quick targets in the menu: a named world, or a kind to walk through.
  *  A key only shows when the system it is flown in has one. */
@@ -104,7 +115,7 @@ const saveLayout = (layout: Layout) => {
   }
 };
 
-export function PlayerShip({ session, onActiveChange, onLand, landed, landscape, onLandscape, shellPaused, onPauseRequest }: PlayerShipProps) {
+export function PlayerShip({ session, onActiveChange, onLand, landed, returnedFrom, onReturned, landscape, onLandscape, shellPaused, onPauseRequest }: PlayerShipProps) {
   const t = useTranslations('solarSystem.flight');
   const tb = useTranslations('solarSystem.bodies');
   const tl = useTranslations('solarSystem.loading');
@@ -122,11 +133,21 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, landscape,
   /** The deck hidden for the view alone: only the eye stays, and the pad
    *  keeps working where it was. */
   const [immersive, setImmersive] = useState(false);
+  /** The arrival: the world the ship is flying itself down to, or null. */
+  const [arrival, setArrival] = useState<LandingSite | null>(null);
   /** The layout editor: every control a handle to drag, a size to set. */
   const [editing, setEditing] = useState(false);
   const [layout, setLayout] = useState<Layout>({});
   const [picked, setPicked] = useState<Placeable | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
+  const arrivalRef = useRef<LandingSite | null>(null);
+  const arrivalSkipRef = useRef(false);
+  const arrivalArmedRef = useRef(0);
+  const arrPhaseRef = useRef<HTMLSpanElement>(null);
+  const arrPlaceRef = useRef<HTMLSpanElement>(null);
+  const arrBarRef = useRef<HTMLSpanElement>(null);
+  const arrHintRef = useRef<HTMLParagraphElement>(null);
+  const arrListRef = useRef<HTMLUListElement>(null);
   const radarRef = useRef<HTMLCanvasElement>(null);
   const placeRef = useRef<HTMLSpanElement>(null);
   const subRef = useRef<HTMLSpanElement>(null);
@@ -236,6 +257,7 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, landscape,
   };
   const enter = () => {
     session.shipKind = shipKind;
+    session.input.fromHome = true;
     session.active = true;
     session.paused = false;
     session.telemetry.kills = 0;
@@ -264,9 +286,38 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, landscape,
   const landSiteRef = useRef<LandingSite>('moon');
   /** The site and the state the land key's wording was last painted for. */
   const landLabelRef = useRef('');
+  const onLandRef = useRef(onLand);
+  onLandRef.current = onLand;
+  /** Asked for the ground: the ship flies the arrival itself — transit,
+   *  approach, pitch-over — and the surface's files come down while it does. */
   const land = () => {
+    const site = landSiteRef.current;
+    prefetchModels(assetsFor(site));
+    // Seen once, and it can be skipped from the first second; the first
+    // time, the way out opens when the transit is behind them.
+    try {
+      arrivalSkipRef.current = !!localStorage.getItem(ARRIVAL_SEEN);
+    } catch {
+      arrivalSkipRef.current = false;
+    }
+    arrivalArmedRef.current = performance.now();
+    arrivalRef.current = site;
+    session.input.approachRequest = site;
+    setArrival(site);
+  };
+  /** Down, or skipped: the deck hands the crew over to the surface. */
+  const arrived = () => {
+    const site = arrivalRef.current;
+    if (!site) return;
+    arrivalRef.current = null;
+    try {
+      localStorage.setItem(ARRIVAL_SEEN, '1');
+    } catch {
+      // Private mode — it plays in full every time.
+    }
+    setArrival(null);
     pause();
-    onLand(landSiteRef.current);
+    onLandRef.current(site);
   };
   const exit = () => {
     detachRef.current?.();
@@ -305,22 +356,46 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, landscape,
     shellPausedWas.current = !!shellPaused;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shellPaused]);
+  // Any key, any tap, and the arrival goes straight to the ground — once
+  // the crew have seen it through, or once the transit is behind them.
+  useEffect(() => {
+    if (!arrival) return;
+    // The key or tap that asked for the ground is still coming up: it is not
+    // the crew skipping what they have not seen yet.
+    const skip = () => {
+      if (!arrivalSkipRef.current || performance.now() - arrivalArmedRef.current < 500) return;
+      session.input.approachSkip = true;
+    };
+    window.addEventListener('keydown', skip);
+    window.addEventListener('pointerdown', skip);
+    return () => {
+      window.removeEventListener('keydown', skip);
+      window.removeEventListener('pointerdown', skip);
+    };
+  }, [arrival, session]);
   useEffect(() => {
     if (launch !== 'fading') return;
     const id = window.setTimeout(() => setLaunch('off'), 700);
     return () => window.clearTimeout(id);
   }, [launch]);
-  // Back up from the Moon: the deck was paused for the landing, so it picks
-  // the flight up again rather than leaving the pilot on a paused screen.
-  const wasLanded = useRef(false);
+  // Back up from the surface: the crew came up in the lander, so they come
+  // back to the ship in orbit over the world they left — not to the orrery.
+  // A deck that was only paused for the landing picks the flight up again;
+  // a crew who never flew down (a deep link, a checkpoint) launch into it.
   useEffect(() => {
-    if (wasLanded.current && !landed && active && session.paused) {
+    if (!returnedFrom) return;
+    session.input.relaunchAt = returnedFrom;
+    if (active && session.paused) {
       resume();
       session.input.relaunch = true;
+    } else if (!active) {
+      enter();
+      session.input.fromHome = false;
+      session.input.relaunch = true;
     }
-    wasLanded.current = landed;
+    onReturned?.();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [landed, active]);
+  }, [returnedFrom]);
   useEffect(() => {
     const hidden = () => { if (document.hidden) pause(); };
     window.addEventListener('blur', pause);
@@ -426,7 +501,31 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, landscape,
       // deck can be clicked, so the way down has to be on the keys.
       if (session.input.landRequest) {
         session.input.landRequest = false;
-        if (canLand) land();
+        if (canLand && !arrivalRef.current) land();
+      }
+      // ── The arrival, while the ship flies it: which leg, how far through,
+      // what has come down for the surface, and the way out of it. ──
+      if (arrivalRef.current) {
+        const ph = tel.approachPhase;
+        // Down — or the sim refused the run (a wreck, a jump): either way
+        // the crew go to the surface rather than sit on a dead screen.
+        if (ph === 'done' || (ph === '' && now - arrivalArmedRef.current > 1000)) {
+          arrived();
+          return;
+        }
+        // The sim names the leg from its first frame; until then there is
+        // nothing to say, and nothing to ask the translator for.
+        if (ph !== '') text(arrPhaseRef.current, t(`arrival.${ph}`));
+        text(arrPlaceRef.current, name(arrivalRef.current));
+        arrBarRef.current?.style.setProperty('--t', tel.approachT.toFixed(3));
+        if (!arrivalSkipRef.current && tel.approachT * APPROACH_SECONDS >= ARRIVAL_SKIP_AFTER) arrivalSkipRef.current = true;
+        const hint = arrHintRef.current;
+        if (hint && hint.hidden === arrivalSkipRef.current) hint.hidden = !arrivalSkipRef.current;
+        const ready = prefetchDone();
+        for (const li of Array.from(arrListRef.current?.children ?? []) as HTMLElement[]) {
+          const on = String(ready.has(li.dataset.group ?? ''));
+          if (li.dataset.done !== on) li.dataset.done = on;
+        }
       }
       // A station in reach: the docking computer's key.
       const dockKey = dockRef.current;
@@ -654,7 +753,7 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, landscape,
   const keysOff = (paused && !editing);
 
   return (
-    <div ref={rootRef} className="flight-hud" data-touch={touch} data-phase={active ? 'flying' : 'idle'} data-paused={paused} data-immersive={immersive} data-editing={editing} hidden={landed}>
+    <div ref={rootRef} className="flight-hud" data-touch={touch} data-phase={active ? 'flying' : 'idle'} data-paused={paused} data-immersive={immersive} data-editing={editing} data-arrival={arrival !== null} hidden={landed}>
       {!active ? (
         <div className="flight-hud__launch">
           <button type="button" className="flight-hud__ship" onClick={() => setShipKind(SHIPS[(SHIPS.indexOf(shipKind) + 1) % SHIPS.length])} aria-label={t('hangar')}>
@@ -674,6 +773,28 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, landscape,
               and the flash goes off at both ends of the jump. */}
           <div className="flight-hud__warp" aria-hidden />
           <div className="flight-hud__flash" aria-hidden />
+
+          {/* The arrival: the ship has the con. What it is doing, how far
+              through it is, what has come down for the surface waiting at
+              the end of it, and the way to skip it once it is familiar. */}
+          {arrival !== null && (
+            <div className="flight-arrival" role="status" aria-live="polite">
+              <p className="flight-arrival__head">
+                <span ref={arrPhaseRef} className="flight-arrival__phase" />
+                <span ref={arrPlaceRef} className="flight-arrival__place" />
+              </p>
+              <span ref={arrBarRef} className="flight-arrival__bar" aria-hidden><i /></span>
+              <ul ref={arrListRef} className="flight-arrival__list">
+                {SURFACE_GROUPS.filter((g) => assetsFor(arrival).some((a) => a.group === g)).map((g) => (
+                  <li key={g} data-group={g} data-done="false">
+                    <Check size={13} aria-hidden />
+                    <span>{t(`arrival.load.${g}`)}</span>
+                  </li>
+                ))}
+              </ul>
+              <p ref={arrHintRef} className="flight-arrival__skip" hidden>{t('arrival.skip')}</p>
+            </div>
+          )}
 
           <div className="flight-hud__head" {...placed('head')}>
             <span ref={placeRef} className="flight-hud__title" />

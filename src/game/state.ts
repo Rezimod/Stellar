@@ -4,6 +4,7 @@
 // timers that do not know what the game is doing.
 
 import { setSoundPaused } from '@/lib/solar-system/sound-prefs';
+import { dropPrefetch } from './models';
 import { type GameScene, writeCheckpoint } from './save';
 
 export type GameState = 'boot' | 'title' | 'loading' | 'playing' | 'paused' | 'exiting';
@@ -51,6 +52,8 @@ export const game = {
   progress(stage: LoadStage) {
     if (snap.state !== 'loading') return;
     if (stage === 'ready') {
+      // The scene has its models now; the arrival's hold on them can go.
+      dropPrefetch();
       writeCheckpoint(snap.scene);
       set({ state: 'playing', stage });
       return;

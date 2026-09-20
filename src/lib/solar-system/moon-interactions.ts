@@ -85,6 +85,8 @@ export interface InteractionContext {
 export interface Interactions {
   add: (i: Interactable) => void;
   remove: (id: string) => void;
+  /** The thing registered under this id, whatever registered it. */
+  find: (id: string) => Interactable | null;
   prompt: InteractionPrompt;
   carry: Carry;
   bus: InteractionBus;
@@ -144,6 +146,7 @@ export function makeInteractions(): Interactions {
     carry,
     bus,
     add(i) { list.push(i); },
+    find: (id) => list.find((i) => i.id === id) ?? null,
     remove(id) {
       const k = list.findIndex((i) => i.id === id);
       if (k >= 0) list.splice(k, 1);

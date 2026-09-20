@@ -1487,7 +1487,18 @@
       "soundOn": "Sound on",
       "soundOff": "Sound off",
       "landReady": "Ready to land",
-      "landDescend": "Descend below {n} km"
+      "landDescend": "Descend below {n} km",
+      "arrival": {
+        "transit": "Transit",
+        "approach": "Approach",
+        "pitchover": "Powered descent",
+        "skip": "Press any key to skip",
+        "load": {
+          "habitat": "Habitat",
+          "vehicle": "Vehicles",
+          "crew": "Crew"
+        }
+      }
     },
     "moon": {
       "place": "Stellar Base · Moon",

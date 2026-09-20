@@ -5,7 +5,7 @@ import { Pause, Play, RotateCcw, Users, X } from 'lucide-react';
 import { useFormatter, useTranslations } from 'next-intl';
 import { useLogin, usePrivy } from '@privy-io/react-auth';
 import { SolarSystemCanvas, type EpochRef } from '@/components/solar-system/SolarSystemCanvas';
-import { PlayerShip } from '@/components/solar-system/PlayerShip';
+import { PlayerShip, type LandingSite } from '@/components/solar-system/PlayerShip';
 import { MoonSurface } from '@/components/solar-system/MoonSurface';
 import { WorldSurface } from '@/components/solar-system/WorldSurface';
 import { createFlightSession, type FlightSession } from '@/lib/solar-system/player-ship';
@@ -133,6 +133,14 @@ export function GameWorld({ scene, state }: GameWorldProps) {
     return () => cancelAnimationFrame(raf);
   }, [playing, speedIdx, flightActive, landed, paused, epoch]);
   const returnToOrbit = useCallback(() => game.travel('orbit'), []);
+  // The climb out of a surface ends in the ship, over the world just left.
+  const [returnedFrom, setReturnedFrom] = useState<LandingSite | null>(null);
+  const wasLanded = useRef(landed);
+  useEffect(() => {
+    if (wasLanded.current !== null && landed === null) setReturnedFrom(wasLanded.current);
+    wasLanded.current = landed;
+  }, [landed]);
+  const onReturned = useCallback(() => setReturnedFrom(null), []);
   const showChrome = !flightActive && landed === null;
 
   return (
@@ -153,7 +161,7 @@ export function GameWorld({ scene, state }: GameWorldProps) {
           {landed === null && <SolarSystemCanvas epoch={epoch} scaleMode="orrery" includePluto selectedId={selectedId} focusBodyId={selectedId}
             onSelect={setSelectedId} onZoomToSun={zoomToSun} zoomTo={zoomTo} onZoomToConsumed={consumeZoom} flight={session}
             room={roomLinkRef.current} onReady={onSceneReady} />}
-          <PlayerShip session={session} onActiveChange={setFlightActive} onLand={(site) => { setLandscape(false); game.travel(site); }} landed={landed !== null}
+          <PlayerShip session={session} onActiveChange={setFlightActive} onLand={(site) => { setLandscape(false); game.travel(site); }} landed={landed !== null} returnedFrom={returnedFrom} onReturned={onReturned}
             landscape={landscape} onLandscape={setLandscape} shellPaused={paused} onPauseRequest={game.pause} />
         </>}
         {landed === 'moon' && <MoonSurface onReturn={returnToOrbit} room={roomLinkRef.current} paused={paused} onProgress={game.progress} onPauseRequest={game.pause} />}

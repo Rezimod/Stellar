@@ -1487,7 +1487,18 @@
       "soundOn": "ხმა ჩართულია",
       "soundOff": "ხმა გამორთულია",
       "landReady": "დასაფრენად მზად",
-      "landDescend": "დაეშვით {n} კმ-ზე დაბლა"
+      "landDescend": "დაეშვით {n} კმ-ზე დაბლა",
+      "arrival": {
+        "transit": "ტრანზიტი",
+        "approach": "მიახლოება",
+        "pitchover": "ძრავით დაშვება",
+        "skip": "ნებისმიერი ღილაკი — გამოტოვება",
+        "load": {
+          "habitat": "ბაზა",
+          "vehicle": "ტექნიკა",
+          "crew": "ეკიპაჟი"
+        }
+      }
     },
     "moon": {
       "place": "Stellar Base · მთვარე",

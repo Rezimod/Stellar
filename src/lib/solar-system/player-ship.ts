@@ -23,6 +23,7 @@ import { buildCosmonaut, buildCruiser, buildEndurance, buildKestrel, buildXfoil,
 import { shapeMouse } from '@/lib/solar-system/flight-input';
 import { makeMissionTracker, type MissionContext } from '@/lib/solar-system/flight-missions';
 import { projectTarget, stepTarget, type TargetCandidate, type TargetKind, type TargetScreen } from '@/lib/solar-system/flight-targeting';
+import { approachPose, APPROACH_SECONDS, type ApproachPhase } from '@/lib/solar-system/flight-approach';
 
 export type { ShipKind } from '@/lib/solar-system/ship-mesh';
 export { zoomFlightCamera, clearFlightInput } from '@/lib/solar-system/flight-input';
@@ -266,9 +267,18 @@ export interface FlightInput {
   dockRequest: boolean;
   /** One-shot for the deck: take the ship down to the surface below. */
   landRequest: boolean;
+  /** One-shot: fly the arrival — the ship takes itself in to the world named here. */
+  approachRequest: string | null;
+  /** One-shot: the crew have seen it; put the ship where the arrival ends. */
+  approachSkip: boolean;
+  /** One-shot: this launch starts at the default anchor near the Earth. A
+   *  launch without it picks the ship up where this session parked it. */
+  fromHome: boolean;
   /** One-shot: back from the surface — put the ship in a clean orbit over
-   *  the Moon rather than wherever it was frozen when the crew went down. */
+   *  the world the crew came up from rather than wherever it was frozen.
+   *  `relaunchAt` names that world when the flight never flew there. */
   relaunch: boolean;
+  relaunchAt: string;
   /** One-shot: cycle the navigation target outward (+1) or inward (-1). */
   targetStep: number;
   targetClear: boolean;
@@ -335,6 +345,13 @@ export interface FlightTelemetry {
   jumpPhase: JumpPhase;
   /** 0..1 through the current jump phase. */
   jumpT: number;
+  /** The arrival the ship is flying itself: which leg, how far through the
+   *  leg and through the whole thing, and the world it is going down to.
+   *  '' when the ship is being flown by its pilot. */
+  approachPhase: ApproachPhase | '';
+  approachT: number;
+  approachLegT: number;
+  approachId: string;
   /** White-out at jump entry / exit, decays to 0. */
   jumpFlash: number;
   crashed: boolean;
@@ -457,7 +474,8 @@ export function createFlightSession(opts: { combat?: boolean } = {}): FlightSess
     input: {
       thrust: 0, yaw: 0, lookYaw: 0, pitch: 0, roll: 0,
       boost: false, fire: false, align: false, mouseDX: 0, mouseDY: 0,
-      modeRequest: null, foilsToggle: false, eject: false, viewToggle: false, assistToggle: false, hudToggle: false, dockRequest: false, landRequest: false, relaunch: false,
+      modeRequest: null, foilsToggle: false, eject: false, viewToggle: false, assistToggle: false, hudToggle: false, dockRequest: false, landRequest: false,
+      approachRequest: null, approachSkip: false, fromHome: true, relaunch: false, relaunchAt: '',
       targetStep: 0, targetClear: false, targetRequest: null, targetKind: null,
       camZoom: 1, orbiting: false, orbitYaw: 0, orbitPitch: 0,
     },
@@ -493,6 +511,10 @@ export function createFlightSession(opts: { combat?: boolean } = {}): FlightSess
       region: '',
       jumpPhase: 'none',
       jumpT: 0,
+      approachPhase: '',
+      approachT: 0,
+      approachLegT: 0,
+      approachId: '',
       jumpFlash: 0,
       crashed: false,
       respawnIn: 0,
@@ -1120,10 +1142,23 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
   let vibe = 0;
   let dockedTo: FlightBody | null = null;
   let dockHold = 0;
+  /** Frames the relaunch has waited for the world it is going back to. */
+  let relaunchTries = 0;
   const dockOffset = new THREE.Vector3();
   /** The docking computer's berth: the station and the side it comes in on. */
   let autodock: FlightBody | null = null;
   const berthDir = new THREE.Vector3();
+  /** The arrival: the world being flown down to, how long it has been
+   *  running, how far out it began, and the two directions it swings
+   *  between — the one the ship was in, and the one it lands from. */
+  let arrival: FlightBody | null = null;
+  let arrivalClock = 0;
+  let arrivalRadii = 12;
+  const arrivalFrom = new THREE.Vector3();
+  const arrivalTo = new THREE.Vector3();
+  const arrivalAt = new THREE.Vector3();
+  const arrivalNext = new THREE.Vector3();
+  const arrivalLook = new THREE.Vector3();
   const berth = new THREE.Vector3();
   /** How near a station has to be before its docking computer will answer. */
   const dockReach = (b: FlightBody) => Math.max(b.radius * DOCK_ASSIST_RADII, DOCK_ASSIST_MIN);
@@ -1197,6 +1232,10 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
     crashT = -1;
     dockedTo = null;
     autodock = null;
+    arrival = null;
+    tel.approachPhase = '';
+    tel.approachId = '';
+    tel.approachT = tel.approachLegT = 0;
     audio.stopCharge();
     dockHold = 0;
     mode = 'cruise';
@@ -1503,6 +1542,87 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
     tunnelMat.opacity = 0.55 + 0.4 * Math.sin(s * Math.PI);
   };
 
+  // ── The arrival: the ship flies itself down ──
+  // Asked for with a world under the nose, the ship turns onto it, runs in,
+  // swings around to the side the Earth is on and pitches over with the
+  // ground in the windscreen. The profile is in flight-approach.ts; this
+  // puts the hull on it and keeps the pilot's hands off the controls.
+  const arrivalPointAt = (radii: number, swing: number, body: FlightBody, out: THREE.Vector3) => {
+    out.copy(arrivalFrom).lerp(arrivalTo, swing);
+    if (out.lengthSq() < 1e-12) out.copy(arrivalTo);
+    out.normalize().multiplyScalar(body.radius * radii).add(body.position);
+  };
+  const armApproach = (world: FlightWorld, id: string) => {
+    const body = world.bodies.find((b) => b.id === id && !b.destroyed);
+    if (!body || pilot !== 'ship' || crashT >= 0 || jumpPhase !== 'none') return;
+    arrival = body;
+    arrivalClock = 0;
+    autodock = null;
+    dockedTo = null;
+    arrivalFrom.copy(group.position).sub(body.position);
+    arrivalRadii = arrivalFrom.length() / body.radius;
+    if (arrivalFrom.lengthSq() < 1e-12) arrivalFrom.set(0, 0, 1);
+    arrivalFrom.normalize();
+    // The crew come down on the side home is on, so the Earth stands behind
+    // the mare the whole way in. Around another star, the star does instead.
+    const home = world.bodies.find((b) => b.id === 'earth' && b !== body)
+      ?? world.bodies.find((b) => b.kind === 'star' && b !== body);
+    if (home) arrivalTo.copy(home.position).sub(body.position).normalize();
+    else arrivalTo.copy(arrivalFrom);
+    if (arrivalTo.lengthSq() < 1e-12 || arrivalTo.dot(arrivalFrom) < -0.999) {
+      arrivalTo.set(-arrivalFrom.y, arrivalFrom.x, arrivalFrom.z).normalize();
+    }
+    tel.approachId = body.id;
+    tel.approachPhase = 'transit';
+    tel.approachT = 0;
+    tel.approachLegT = 0;
+  };
+  const stepApproach = (dt: number) => {
+    const body = arrival;
+    if (!body) return;
+    if (input.approachSkip) {
+      input.approachSkip = false;
+      arrivalClock = APPROACH_SECONDS;
+    } else {
+      arrivalClock += dt;
+    }
+    const pose = approachPose(arrivalClock, arrivalRadii);
+    const ahead = approachPose(arrivalClock + Math.max(dt, 1 / 120), arrivalRadii);
+    arrivalPointAt(pose.radii, pose.swing, body, arrivalAt);
+    arrivalPointAt(ahead.radii, ahead.swing, body, arrivalNext);
+    // The integrator does the move; this is the velocity that lands on it.
+    vel.copy(arrivalNext).sub(group.position).divideScalar(Math.max(dt, 1e-4));
+    // Nose along the track, coming down onto the ground as the profile asks.
+    arrivalLook.copy(arrivalNext).sub(arrivalAt);
+    if (arrivalLook.lengthSq() < 1e-12) arrivalLook.copy(arrivalTo).multiplyScalar(-1);
+    arrivalLook.normalize();
+    tmp2.copy(body.position).sub(arrivalAt).normalize();
+    arrivalLook.lerp(tmp2, pose.pitch);
+    if (arrivalLook.lengthSq() < 1e-12) arrivalLook.copy(tmp2);
+    arrivalLook.normalize();
+    qA.copy(group.quaternion);
+    group.lookAt(tmp.copy(group.position).add(arrivalLook));
+    qB.copy(group.quaternion);
+    group.quaternion.copy(qA).slerp(qB, 1 - Math.exp(-dt * 2.6));
+    angVel.set(0, 0, 0);
+    // The camera walks around to the nose through the approach, so the Earth
+    // they came from stands behind the ship over the mare, then falls back
+    // onto the tail for the pitch-over and the way down.
+    const around = pose.phase === 'approach' ? THREE.MathUtils.smoothstep(pose.legT, 0, 1)
+      : pose.phase === 'pitchover' ? 1 - THREE.MathUtils.smoothstep(pose.legT, 0, 1) : 0;
+    input.orbitYaw = around * Math.PI * 0.86;
+    input.orbitPitch = around * 0.22;
+    tel.approachPhase = pose.phase;
+    tel.approachT = pose.t;
+    tel.approachLegT = pose.legT;
+    // Down: the deck takes the con from here and opens the surface.
+    if (pose.done) {
+      arrival = null;
+      input.orbitYaw = 0;
+      input.orbitPitch = 0;
+    }
+  };
+
   const holdTelemetry = (camera: THREE.PerspectiveCamera, dt: number) => {
     tel.speed = tel.speedKmS = tel.speedC = tel.speedFrac = 0;
     tel.throttle = 0;
@@ -1544,13 +1664,41 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
       // caller was doing between frames.
       dt = Math.min(0.1, Math.max(0, dt));
       tel.frame += 1;
+      if (input.approachRequest) {
+        const id = input.approachRequest;
+        input.approachRequest = null;
+        armApproach(world, id);
+      }
+      // Hands off the controls while the ship flies its own arrival: the one
+      // thing the pilot can still do is skip it, and that is read in the step.
+      if (arrival) {
+        input.thrust = 0;
+        input.yaw = input.lookYaw = input.pitch = input.roll = 0;
+        input.mouseDX = input.mouseDY = 0;
+        input.boost = input.fire = input.align = false;
+        input.dockRequest = input.landRequest = input.eject = input.foilsToggle = false;
+        input.modeRequest = null;
+      }
       if (input.relaunch) {
-        input.relaunch = false;
         // The world the crew went down to is still the nearest one on the
-        // telemetry — the deck was paused the whole time they were away.
-        const from = world.bodies.find((b) => b.id === tel.nearId && !b.destroyed)
+        // telemetry — the deck was paused the whole time they were away —
+        // unless they never flew down at all, and the deck names it instead.
+        const came = input.relaunchAt || tel.nearId;
+        const from = world.bodies.find((b) => b.id === came && !b.destroyed)
           ?? world.bodies.find((b) => b.id === 'moon' && !b.destroyed);
-        if (from) {
+        // A canvas that has only just been built has the planets, but its
+        // moons are still at their parents' centres for a frame or two.
+        // Spawning into that puts the crew back at the Earth, so the climb
+        // out waits for a world that has settled — and gives up eventually
+        // rather than leaving the ship in limbo.
+        relaunchTries += 1;
+        const settled = !!from && relaunchTries > 3;
+        if (settled || relaunchTries > 240) {
+          input.relaunch = false;
+          input.relaunchAt = '';
+          relaunchTries = 0;
+        }
+        if (from && settled) {
           // Up from the base: a couple of radii out along the line the ship
           // went down, nose away from the surface, a little way on.
           tmp.copy(group.position).sub(from.position);
@@ -1863,7 +2011,7 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
         const decay = -60 * Math.log(drag);
         const damping = Math.exp(-decay * dt);
         vel.multiplyScalar(damping);
-        if (!autodock) vel.addScaledVector(fwd, input.thrust * eff.accel * (boost ? 2 : 1) * (1 - damping) / decay);
+        if (!autodock && !arrival) vel.addScaledVector(fwd, input.thrust * eff.accel * (boost ? 2 : 1) * (1 - damping) / decay);
         rcsBrake = input.thrust < 0 ? -input.thrust : 0;
         for (const b of world.bodies) {
           if (b.destroyed || b.kind === 'station') continue;
@@ -1894,10 +2042,11 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
           // ends the approach, and so does a station that has drawn out of reach.
           if (Math.abs(input.thrust) > 0.5 || dist > dockReach(autodock) * 1.5) autodock = null;
         }
+        if (arrival) stepApproach(dt);
         let max = boost ? eff.boost : eff.max;
         if (isDrive(mode) && pilot === 'ship') max = Math.max(regimes.cruise.max, max * wellK);
         speed = vel.length();
-        if (speed > max) {
+        if (speed > max && !arrival) {
           vel.multiplyScalar(max / speed);
           speed = max;
         }
@@ -2054,7 +2203,7 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
       regionHold -= dt;
       tel.region = regionHold > 0 ? region : '';
       heat += (heatTarget - heat) * (1 - Math.exp(-dt * 4));
-      if (heat > 0.05) {
+      if (heat > 0.05 && !arrival) {
         damage(18 * heat * dt, true);
         if (crashT >= 0) {
           tel.respawnIn = RESPAWN_DELAY;

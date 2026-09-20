@@ -1269,7 +1269,7 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
     startJob: (id) => { jobs.start(id); },
     startMission: (id) => moonMissions.missions.start(id),
     forceInteract(id, seconds = 3) {
-      const i = moonMissions.props.interactables.find((p) => p.id === id);
+      const i = moonMissions.props.interactables.find((p) => p.id === id) ?? interactions.find(id);
       if (!i) return false;
       if (i.kind() === 'tap') { i.use(0); interactions.bus.emit({ type: 'interaction:completed', id }); return true; }
       // A hold: run it to the end in one go, as holding the key would.
