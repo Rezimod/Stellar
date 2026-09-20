@@ -132,10 +132,18 @@ export function makeLander(
   }, () => undefined);
   mesh(group, new THREE.SphereGeometry(0.1, 8, 6), lampMat, 0, 2.95, 2.6);
 
-  // The plume: a cone of light under the bell, plus the light it throws.
-  const plume = keep(mesh(group, new THREE.ConeGeometry(0.8, 5.0, seg, 1, true), plumeMat, 0, -2.4));
-  plume.rotation.x = Math.PI;
-  plume.castShadow = false;
+  // The plumes: a cone of light under each of the four bells, and the light
+  // they throw together. The model's engines stand at 0.88 m, on the
+  // diagonals (assets-src/blender/lander.py).
+  const plumes: THREE.Mesh[] = [];
+  for (let i = 0; i < 4; i++) {
+    const a = i * Math.PI / 2 + Math.PI / 4;
+    const p = keep(mesh(group, new THREE.ConeGeometry(0.34, 4.2, seg, 1, true), plumeMat, Math.sin(a) * 0.62, -1.9, Math.cos(a) * 0.62));
+    p.rotation.x = Math.PI;
+    p.castShadow = false;
+    plumes.push(p);
+  }
+  const plumeScale = (x: number, y: number, z: number) => { for (const p of plumes) p.scale.set(x, y, z); };
 
   const position = group.position;
   const vel = new THREE.Vector3(start.driftX, -start.descent, start.driftZ);
@@ -230,7 +238,7 @@ export function makeLander(
         flicker += dt * 30;
         const t = telemetry.throttle;
         plumeMat.opacity = t * (0.5 + 0.1 * Math.sin(flicker));
-        plume.scale.set(0.85 + t * 0.35, 0.6 + t * 0.9 + 0.08 * Math.sin(flicker * 1.7), 0.85 + t * 0.35);
+        plumeScale(0.85 + t * 0.35, 0.6 + t * 0.9 + 0.08 * Math.sin(flicker * 1.7), 0.85 + t * 0.35);
         const g2 = height(position.x, position.z);
         const alt = position.y - g2;
         lights?.request(position.x, position.y - 1.2, position.z, 0xaad6ff, t * 30, 24 + alt * 0.6, 2);
@@ -267,7 +275,7 @@ export function makeLander(
       flicker += dt * 30;
       const t = telemetry.throttle;
       plumeMat.opacity = t * (0.45 + 0.1 * Math.sin(flicker));
-      plume.scale.set(0.85 + t * 0.3, 0.5 + t * 0.7 + 0.06 * Math.sin(flicker * 1.7), 0.85 + t * 0.3);
+      plumeScale(0.85 + t * 0.3, 0.5 + t * 0.7 + 0.06 * Math.sin(flicker * 1.7), 0.85 + t * 0.3);
       lights?.request(position.x, position.y - 1.2, position.z, 0xaad6ff, t * 26, 20 + alt * 0.6, 2);
       // Below thirty metres the blast starts to move regolith; by ten it is
       // a sheet of it going sideways faster than the vehicle is coming down.

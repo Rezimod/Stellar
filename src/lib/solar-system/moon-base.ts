@@ -23,6 +23,10 @@ import type { LightPool } from '@/lib/solar-system/moon-lights';
 import type { Kit } from '@/lib/solar-system/moon-kit';
 import { buildRover } from '@/lib/solar-system/moon-rover-mesh';
 import { buildZones, type ZonesHandle } from '@/lib/solar-system/moon-base-zones';
+import { acquireModel } from '@/game/models';
+
+/** The lander the first crew came down in, built in Blender (assets-src/blender/lander.py). */
+const LANDER_MODEL = '/explore/models/lander.glb';
 
 export interface PointOfInterest {
   id: string;
@@ -160,6 +164,8 @@ export function makeMoonBase(
   const m = baseKit.mat;
   const colliders: Collider[] = [];
   const pois: PointOfInterest[] = [];
+  let releaseLander: (() => void) | null = null;
+  let disposed = false;
   const airlocks: Airlock[] = [];
   const textures: THREE.Texture[] = [];
   const std = (p: THREE.MeshStandardMaterialParameters) => { const x = new THREE.MeshStandardMaterial(p); owned.push(x); return x; };
@@ -538,26 +544,24 @@ export function makeMoonBase(
   pois.push({ id: 'rover', x: bay.x, z: bay.z, r: 5.5 });
   const roverParts = builtRover.parts;
 
-  // ── The first crew's descent stage, out past the landing zone. ──
+  // ── The first crew's lander, out past the landing zone where it came
+  // down: the same vehicle the crew flies, left standing, with its plaque. ──
   {
     const g = place(px - 22, pz + 36, 0.4);
-    kit.cyl(g, 2.4, 2.6, 1.7, m.gold, 0, 1.9, 0, 8);
-    kit.cyl(g, 2.42, 2.42, 0.1, m.carbon, 0, 2.78, 0, 8);
-    kit.cyl(g, 1.1, 1.6, 1.1, m.carbon, 0, 0.5, 0, 12);
-    kit.cyl(g, 0.9, 0.9, 0.5, m.silver, 0, 2.95, 0, 12);
     for (let i = 0; i < 4; i++) {
       const a = i * Math.PI / 2 + Math.PI / 4;
-      const lx = Math.sin(a) * 3.6; const lz = Math.cos(a) * 3.6;
-      const leg = mesh(g, new THREE.CylinderGeometry(0.08, 0.1, 3.6, 8), m.gold, lx * 0.65, 1.3, lz * 0.65);
-      leg.rotation.z = -Math.sin(a) * 0.6;
-      leg.rotation.x = Math.cos(a) * 0.6;
-      kit.cyl(g, 0.7, 0.55, 0.14, m.gold, lx, 0.07, lz, 12);
+      const lx = Math.sin(a) * 3.1; const lz = Math.cos(a) * 3.1;
       noShadow(mesh(g, new THREE.SphereGeometry(1.0, 10, 5, 0, Math.PI * 2, 0, Math.PI / 2), m.regolith, lx, -0.05, lz)).scale.set(1, 0.22, 1);
     }
-    for (let i = 0; i < 6; i++) kit.box(g, 0.5, 0.05, 0.05, m.steel, 0, 0.5 + i * 0.45, 2.55);
-    for (const s of [-1, 1]) kit.cyl(g, 0.03, 0.03, 2.8, m.steel, s * 0.25, 1.75, 2.55, 6);
-    noShadow(mesh(g, new THREE.PlaneGeometry(1.3, 0.34), kit.label(['STELLAR I · 2031'], { w: 256, h: 64 }), 0, 2.2, 2.62));
-    colliders.push({ x: px - 22, z: pz + 36, r: 3.8 });
+    noShadow(mesh(g, new THREE.PlaneGeometry(1.3, 0.34), kit.label(['STELLAR I · 2031'], { w: 256, h: 64 }), 0, 1.7, 1.96));
+    acquireModel(LANDER_MODEL, true).then((handle) => {
+      if (disposed) { handle.release(); return; }
+      releaseLander = handle.release;
+      const shell = handle.scene.clone(true);
+      shell.traverse((o) => { const mm = o as THREE.Mesh; if (mm.isMesh) { mm.castShadow = true; mm.receiveShadow = !lite; } });
+      g.add(shell);
+    }, () => undefined);
+    colliders.push({ x: px - 22, z: pz + 36, r: 3.4 });
     pois.push({ id: 'lander', x: px - 22, z: pz + 36, r: 7 });
   }
 
@@ -763,6 +767,8 @@ export function makeMoonBase(
       roverPoi.z = roverCollider.z;
     },
     dispose() {
+      disposed = true;
+      releaseLander?.();
       for (const g of merged.geometries) g.dispose();
       for (const o of owned) o.dispose();
       for (const k of lampMats) m[k].dispose();
