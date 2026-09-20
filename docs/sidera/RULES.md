@@ -5,7 +5,7 @@ stellarr.club at all times. Repository: Rezimod/Stellar only. The Darkview
 platform (Bekatsertsvadzee/Online-Observatory) is consumed over its HTTP
 contract; nothing is pushed there and no Darkview source is copied here.
 
-Source plan: `Stellar Folder/sidera-rebrand-migration-plan.md`.
+Source plan: `~/Desktop/Sidera/plans/sidera-rebrand-migration-plan.md`.
 Execution plan with corrections: `docs/sidera/EXECUTION.md`.
 
 ## Never
