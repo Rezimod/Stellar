@@ -207,10 +207,12 @@ def _dust(nodes, links, coord, colour, rough, amount, height, seed):
 
 
 def paint(name, colour, seed=1.0, wear=0.35, grime=0.3, panel=(1.6, 1.1, 0.9), seam=0.035,
-          rough=0.55, metal=0.05, streak_axis='Y', scorch=0.0, patches=0.0, dust=0.0, dust_height=0.6, seam_ink=0.75):
+          rough=0.55, metal=0.05, streak_axis='Y', scorch=0.0, patches=0.0, dust=0.0, dust_height=0.6, seam_ink=0.75,
+          pits=0.0, pit_scale=1.6):
     """Weathered paint over hull plating: per-panel tone variation, panel
     seams (bump + dark line), grime streaked along the flow, lighter chipped
-    edges from the pointiness pass and optional carbon scoring."""
+    edges from the pointiness pass and optional carbon scoring. `pits` scatters
+    bolt holes and rust spots (dark and orange dots, sunk in the bump)."""
     mat, nodes, links, bsdf = _nodes(name)
     coord = nodes.new('ShaderNodeTexCoord').outputs['Object']
     # Panel grid: seams along each axis; the plate between gets its own tone.
@@ -322,6 +324,43 @@ def paint(name, colour, seed=1.0, wear=0.35, grime=0.3, panel=(1.6, 1.1, 0.9), s
     links.new(ewear.outputs[0], worn.inputs['Fac'])
     links.new(out, worn.inputs['Color1'])
     worn.inputs['Color2'].default_value = (0.5, 0.5, 0.5, 1)
+    pit = None
+    if pits > 0:
+        # Bolt holes and rust: a dot in some Voronoi cells, dark or orange by the cell's colour.
+        vo = nodes.new('ShaderNodeTexVoronoi')
+        vo.inputs['Scale'].default_value = pit_scale
+        vo.inputs['Randomness'].default_value = 1.0
+        links.new(coord, vo.inputs['Vector'])
+        dot = nodes.new('ShaderNodeMath')
+        dot.operation = 'LESS_THAN'
+        dot.inputs[1].default_value = 0.11
+        links.new(vo.outputs['Distance'], dot.inputs[0])
+        csep = nodes.new('ShaderNodeSeparateColor')
+        links.new(vo.outputs['Color'], csep.inputs['Color'])
+        some = nodes.new('ShaderNodeMath')
+        some.operation = 'LESS_THAN'
+        some.inputs[1].default_value = pits
+        links.new(csep.outputs['Green'], some.inputs[0])
+        pit = nodes.new('ShaderNodeMath')
+        pit.operation = 'MULTIPLY'
+        links.new(dot.outputs[0], pit.inputs[0])
+        links.new(some.outputs[0], pit.inputs[1])
+        pit = pit.outputs[0]
+        rust = nodes.new('ShaderNodeMixRGB')
+        rust.blend_type = 'MIX'
+        rust.inputs['Color1'].default_value = (0.035, 0.03, 0.028, 1)
+        rust.inputs['Color2'].default_value = (0.55, 0.24, 0.06, 1)
+        orange = nodes.new('ShaderNodeMath')
+        orange.operation = 'GREATER_THAN'
+        orange.inputs[1].default_value = 0.55
+        links.new(csep.outputs['Blue'], orange.inputs[0])
+        links.new(orange.outputs[0], rust.inputs['Fac'])
+        spot = nodes.new('ShaderNodeMixRGB')
+        spot.blend_type = 'MIX'
+        links.new(pit, spot.inputs['Fac'])
+        links.new(worn.outputs[0], spot.inputs['Color1'])
+        links.new(rust.outputs[0], spot.inputs['Color2'])
+        worn = spot
     # Seams: a dark line in the colour, a groove in the bump.
     line = nodes.new('ShaderNodeMixRGB')
     line.blend_type = 'MULTIPLY'
@@ -340,6 +379,12 @@ def paint(name, colour, seed=1.0, wear=0.35, grime=0.3, panel=(1.6, 1.1, 0.9), s
     inv.operation = 'SUBTRACT'
     inv.inputs[0].default_value = 1.0
     links.new(seams, inv.inputs[1])
+    if pit is not None:
+        sink = nodes.new('ShaderNodeMath')
+        sink.operation = 'SUBTRACT'
+        links.new(inv.outputs[0], sink.inputs[0])
+        links.new(pit, sink.inputs[1])
+        inv = sink
     links.new(inv.outputs[0], bump.inputs['Height'])
     links.new(bump.outputs['Normal'], bsdf.inputs['Normal'])
     r = nodes.new('ShaderNodeMath')
