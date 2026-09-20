@@ -1,0 +1,200 @@
+/* ── Stellar Explore: the game's own document ──
+   No scroll, no site chrome; every screen sits in the fixed shell. Colours
+   come from the global tokens and the HUD's own set in solar-system.css. */
+.game-body {
+  margin: 0;
+  height: 100dvh;
+  overflow: hidden;
+  overscroll-behavior: none;
+  background: #050812;
+  color: var(--text, #e8ecf4);
+  font-family: var(--font-body, system-ui), sans-serif;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+.game-shell {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: #050812;
+}
+.game-shell__loader { z-index: 180; }
+
+/* ── Full-screen menus: title, pause, panels ── */
+.game-menu {
+  position: absolute;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: #050812;
+  padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+}
+.game-pause { background: rgba(5, 8, 18, 0.72); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+.game-menu__orrery {
+  position: absolute;
+  left: 50%;
+  top: 10%;
+  margin-left: -74px;
+  opacity: 0.55;
+}
+.game-menu__panel {
+  position: relative;
+  width: min(100%, 360px);
+  display: grid;
+  gap: 22px;
+  justify-items: center;
+}
+.game-title__mark { text-align: center; margin-top: 150px; }
+.game-title__brand {
+  margin: 0;
+  font: 500 12px/1 var(--font-mono, ui-monospace), monospace;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--seafoam, #5eead4);
+}
+.game-title__name {
+  margin: 8px 0 0;
+  font-size: clamp(26px, 6vw, 38px);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #eef2fb;
+}
+.game-title__tagline {
+  margin: 8px 0 0;
+  font: 500 13px/1.5 var(--font-body, system-ui), sans-serif;
+  color: rgba(168, 180, 200, 0.85);
+}
+.game-pause__title {
+  margin: 0;
+  font-size: 20px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #eef2fb;
+}
+.game-menu__list {
+  width: 100%;
+  display: grid;
+  gap: 8px;
+}
+.game-menu__item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 48px;
+  padding: 8px 16px;
+  border: 1px solid rgba(122, 162, 216, 0.22);
+  border-radius: 12px;
+  background: rgba(6, 12, 24, 0.82);
+  color: #eaf2fd;
+  font: 500 15px/1.2 var(--font-body, system-ui), sans-serif;
+  text-align: left;
+  cursor: pointer;
+}
+.game-menu__item::before { content: none; }
+.game-menu__item:hover, .game-menu__item:focus-visible { border-color: rgba(77, 178, 255, 0.6); background: rgba(12, 22, 40, 0.92); outline: none; }
+.game-menu__item--primary { border-color: var(--terracotta, #ffb347); }
+.game-menu__item--primary:hover, .game-menu__item--primary:focus-visible { border-color: var(--terracotta, #ffb347); background: rgba(48, 32, 12, 0.7); }
+.game-menu__item--exit { color: rgba(186, 214, 240, 0.72); }
+.game-menu__text { display: grid; gap: 2px; }
+.game-menu__text small { font: 500 12px/1.3 var(--font-mono, ui-monospace), monospace; color: rgba(166, 190, 220, 0.74); }
+
+/* ── Sheets: settings, controls, missions ── */
+.game-panel__sheet {
+  width: min(100%, 440px);
+  max-height: 100%;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 0;
+  justify-items: stretch;
+  border: 1px solid rgba(122, 162, 216, 0.22);
+  border-radius: 14px;
+  background: rgba(5, 11, 22, 0.94);
+  overflow: hidden;
+}
+.game-panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(122, 162, 216, 0.22);
+}
+.game-panel__title { margin: 0; font-size: 15px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: #eef2fb; }
+.game-panel__close {
+  width: 36px;
+  height: 36px;
+  min-height: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(122, 162, 216, 0.22);
+  border-radius: 50%;
+  background: transparent;
+  color: #eaf2fd;
+  cursor: pointer;
+}
+.game-panel__close::before { content: none; }
+.game-panel__body {
+  padding: 16px;
+  overflow-y: auto;
+  display: grid;
+  gap: 16px;
+  -webkit-user-select: text;
+  user-select: text;
+}
+.game-setting { display: grid; gap: 8px; }
+.game-setting--row { grid-template-columns: 1fr auto; align-items: center; }
+.game-setting label, .game-setting__label { font: 500 13px/1.3 var(--font-body, system-ui), sans-serif; color: rgba(186, 214, 240, 0.9); display: flex; justify-content: space-between; }
+.game-setting label b { font: 500 12px/1.3 var(--font-mono, ui-monospace), monospace; color: var(--terracotta, #ffb347); }
+.game-setting input[type='range'] { width: 100%; accent-color: var(--terracotta, #ffb347); }
+.game-setting input[type='checkbox'] { width: 20px; height: 20px; accent-color: var(--terracotta, #ffb347); }
+.game-setting select {
+  min-height: 40px;
+  padding: 0 10px;
+  border: 1px solid rgba(122, 162, 216, 0.22);
+  border-radius: 8px;
+  background: rgba(6, 12, 24, 0.82);
+  color: #eaf2fd;
+  font: inherit;
+}
+.game-setting__note { margin: 0; font: 500 12px/1.4 var(--font-body, system-ui), sans-serif; color: rgba(166, 190, 220, 0.74); }
+.game-setting__choices { display: flex; gap: 8px; }
+.game-setting__choice {
+  flex: 1;
+  min-height: 40px;
+  border: 1px solid rgba(122, 162, 216, 0.22);
+  border-radius: 8px;
+  background: rgba(6, 12, 24, 0.82);
+  color: #eaf2fd;
+  font: 500 13px/1 var(--font-body, system-ui), sans-serif;
+  cursor: pointer;
+}
+.game-setting__choice::before { content: none; }
+.game-setting__choice[aria-pressed='true'] { border-color: var(--terracotta, #ffb347); color: var(--terracotta, #ffb347); }
+.game-setting__reset {
+  justify-self: start;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: rgba(166, 190, 220, 0.74);
+  font: 500 13px/1 var(--font-body, system-ui), sans-serif;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.game-setting__reset::before { content: none; }
+.game-controls__shell { margin: 0; font: 500 12px/1.4 var(--font-mono, ui-monospace), monospace; color: var(--seafoam, #5eead4); }
+.game-controls__head { margin: 8px 0 0; font-size: 12px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(166, 190, 220, 0.74); }
+.game-controls__row { margin: 0; font: 500 13px/1.45 var(--font-body, system-ui), sans-serif; color: rgba(186, 214, 240, 0.9); }
+.game-missions { margin: 0; display: grid; gap: 6px; }
+.game-missions dt { font: 500 13px/1.3 var(--font-body, system-ui), sans-serif; color: rgba(186, 214, 240, 0.9); }
+.game-missions dd { margin: 0 0 10px; font: 500 12px/1.3 var(--font-mono, ui-monospace), monospace; color: var(--terracotta, #ffb347); }
+.game-missions dd[data-done='true'] { color: var(--seafoam, #5eead4); }
+.game-missions__track { display: block; height: 4px; border-radius: 2px; background: rgba(168, 180, 200, 0.18); overflow: hidden; }
+.game-missions__track i { display: block; height: 100%; background: var(--terracotta, #ffb347); }
+.game-missions__empty { margin: 0; font: 500 13px/1.5 var(--font-body, system-ui), sans-serif; color: rgba(186, 214, 240, 0.9); }

@@ -43,6 +43,7 @@ const notoGeorgian = Noto_Sans_Georgian({
 });
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages } from 'next-intl/server';
+import { headers } from 'next/headers';
 import { SolanaWalletProvider } from '@/components/providers/PrivyProvider';
 import { WalletAdapterProvider } from '@/components/providers/WalletAdapterProvider';
 import ThemeProvider from '@/components/providers/ThemeProvider';
@@ -110,9 +111,28 @@ export const metadata: Metadata = {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const locale = await getLocale();
   const messages = await getMessages();
+  const fonts = `${orbitron.variable} ${geist.variable} ${jetbrainsMono.variable} ${spaceGrotesk.variable} ${notoGeorgian.variable}`;
+
+  // The game (/play, flagged by the middleware) is its own document: no site
+  // chrome, no scroll, and only the providers it uses — auth and messages.
+  if ((await headers()).get('x-stellar-game') === '1') {
+    return (
+      <html lang={locale} className={fonts}>
+        <body className="game-body">
+          <ErrorBoundary>
+            <NextIntlClientProvider locale={locale} messages={messages}>
+              <ThemeProvider>
+                <SolanaWalletProvider>{children}</SolanaWalletProvider>
+              </ThemeProvider>
+            </NextIntlClientProvider>
+          </ErrorBoundary>
+        </body>
+      </html>
+    );
+  }
 
   return (
-    <html lang={locale} className={`${orbitron.variable} ${geist.variable} ${jetbrainsMono.variable} ${spaceGrotesk.variable} ${notoGeorgian.variable}`}>
+    <html lang={locale} className={fonts}>
       <head>
         <link rel="preconnect" href="https://auth.privy.io" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://api.open-meteo.com" />

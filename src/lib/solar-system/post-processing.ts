@@ -21,8 +21,15 @@ export function makePostFx(
   camera: THREE.Camera,
   lite: boolean,
 ): PostFxHandle {
-  const composer = new EffectComposer(renderer);
   const size = renderer.getSize(new THREE.Vector2());
+  const pr0 = renderer.getPixelRatio();
+  // The scene is drawn into the composer's target, never the canvas, so the
+  // anti-aliasing has to live here: a multisampled target on desktop.
+  const target = new THREE.WebGLRenderTarget(size.x * pr0, size.y * pr0, {
+    type: THREE.HalfFloatType,
+    samples: lite ? 0 : 4,
+  });
+  const composer = new EffectComposer(renderer, target);
   const bloomScale = lite ? 0.5 : 1;
   const renderPass = new RenderPass(scene, camera);
   const bloom = new UnrealBloomPass(

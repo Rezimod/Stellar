@@ -34,6 +34,10 @@ export interface MoonPerf {
   end: () => void;
   sample: () => PerfSample;
   setBuildMs: (ms: number) => void;
+  /** The loop is starting again after a pause or a hidden tab: the gap is not a frame. */
+  resume: () => void;
+  /** A new preset: the governor's floor and ceiling. */
+  setRatioBounds: (min: number, max: number) => void;
   dispose: () => void;
 }
 
@@ -61,7 +65,8 @@ export function makeMoonPerf(renderer: THREE.WebGLRenderer, mount: HTMLElement, 
   let long30 = 0;
   let long50 = 0;
   let ratio = renderer.getPixelRatio();
-  const cap = Math.min(ratio, opts.maxRatio);
+  let minRatio = opts.minRatio;
+  let cap = Math.min(ratio, opts.maxRatio);
 
   // ── The governor: a 90-frame mean, down a step when the frame is
   // sustained over budget, back up only after a long stretch well inside it,
@@ -72,7 +77,7 @@ export function makeMoonPerf(renderer: THREE.WebGLRenderer, mount: HTMLElement, 
   let cooldown = 0;
   let drops = 0;
   const govern = (interval: number) => {
-    if (opts.minRatio >= cap) return;
+    if (minRatio >= cap) return;
     // A stall (tab switch, GC, shader compile) is not a trend.
     if (interval > 250) return;
     govSum += interval;
@@ -83,8 +88,8 @@ export function makeMoonPerf(renderer: THREE.WebGLRenderer, mount: HTMLElement, 
     govSum = 0;
     govFrames = 0;
     if (cooldown > 0) return;
-    if (mean > 21 && ratio > opts.minRatio) {
-      ratio = Math.max(opts.minRatio, ratio - 0.25);
+    if (mean > 21 && ratio > minRatio) {
+      ratio = Math.max(minRatio, ratio - 0.25);
       drops += 1;
       calmWindows = 0;
       cooldown = 3000;
@@ -173,10 +178,43 @@ export function makeMoonPerf(renderer: THREE.WebGLRenderer, mount: HTMLElement, 
       };
     },
     setBuildMs(ms) { buildMs = ms; },
+    resume() { lastNow = 0; govSum = 0; govFrames = 0; },
+    setRatioBounds(min, max) {
+      minRatio = min;
+      cap = max;
+      ratio = max;
+      drops = 0;
+      calmWindows = 0;
+      cooldown = 3000;
+    },
     dispose() {
       if (dev) window.removeEventListener('keydown', onKey);
       overlay?.remove();
     },
   };
   return handle;
+}
+
+/** Development only: what each top-level object in the scene, the shadow
+ *  pass and the post chain cost in draw calls, by hiding each in turn. */
+export function probeCalls(renderer: THREE.WebGLRenderer, scene: THREE.Scene, render: () => void, within?: string): Record<string, number> {
+  const was = renderer.info.autoReset;
+  renderer.info.autoReset = false;
+  const count = () => { renderer.info.reset(); render(); return renderer.info.render.calls; };
+  const out: Record<string, number> = {};
+  const total = count();
+  out.total = total;
+  const root = within ? scene.getObjectByName(within) ?? scene : scene;
+  root.children.forEach((o, i) => {
+    if (!o.visible) return;
+    o.visible = false;
+    const d = total - count();
+    o.visible = true;
+    if (d > 0) out[`${o.name || o.type}#${i}`] = d;
+  });
+  renderer.shadowMap.enabled = false;
+  out.shadowPass = total - count();
+  renderer.shadowMap.enabled = true;
+  renderer.info.autoReset = was;
+  return out;
 }

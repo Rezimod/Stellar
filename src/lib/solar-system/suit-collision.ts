@@ -70,13 +70,16 @@ export function stepGround(p: Vec3, v: Vec3, prevX: number, prevZ: number, groun
  * kerb or a cliff edge is not a slope — one side of it is flat — so the
  * steepness is the gentler of the two one-sided gradients.
  */
-export function slopeAt(heightAt: (x: number, z: number) => number, x: number, z: number): { sx: number; sz: number; steep: number } {
+export interface Slope { sx: number; sz: number; steep: number }
+const slopeScratch: Slope = { sx: 0, sz: 0, steep: 0 };
+const gentle = (a: number, b: number) => (Math.sign(a) !== Math.sign(b) ? 0 : Math.min(Math.abs(a), Math.abs(b)));
+export function slopeAt(heightAt: (x: number, z: number) => number, x: number, z: number, out: Slope = slopeScratch): Slope {
   const h = heightAt(x, z);
   const xa = (h - heightAt(x - 0.5, z)) * 2; const xb = (heightAt(x + 0.5, z) - h) * 2;
   const za = (h - heightAt(x, z - 0.5)) * 2; const zb = (heightAt(x, z + 0.5) - h) * 2;
-  const sx = (xa + xb) / 4; const sz = (za + zb) / 4;
-  const gentle = (a: number, b: number) => (Math.sign(a) !== Math.sign(b) ? 0 : Math.min(Math.abs(a), Math.abs(b)));
-  return { sx, sz, steep: Math.hypot(gentle(xa, xb), gentle(za, zb)) };
+  out.sx = (xa + xb) / 4; out.sz = (za + zb) / 4;
+  out.steep = Math.hypot(gentle(xa, xb), gentle(za, zb));
+  return out;
 }
 
 export interface Vault {

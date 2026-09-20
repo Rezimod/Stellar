@@ -3,9 +3,11 @@
 // fraction of a second, not by a leash. The focus point is sprung toward the
 // target — tight horizontally, softer vertically so a lunar bound does not
 // yank the horizon — and led slightly by velocity so the crew runs into the
-// frame rather than out of it. The view sits over one shoulder (swappable)
-// and, a second and a half after the last look input, eases round behind
-// the direction of travel. A marched ray
+// frame rather than out of it. On the move the view sits over one shoulder
+// (swappable), standing it drifts halfway back to the middle, and a second
+// and a half after the last look input it eases round behind the direction
+// of travel. The springs are solved exactly, so a long frame lands them
+// closer and never throws them past their mark. A marched ray
 // pulls the camera in front of anything between it and the crew, at once,
 // and lets it back out gently. Speed widens the lens a little; shake is a
 // smooth decaying wobble rather than per-frame noise. Weight comes from the
@@ -14,6 +16,7 @@
 
 import * as THREE from 'three';
 import type { Collider } from '@/lib/solar-system/moon-cosmonaut';
+import { getSettings } from '@/game/settings';
 
 export interface ChaseTarget {
   position: THREE.Vector3;
@@ -63,7 +66,10 @@ export interface CameraRig {
   swapShoulder: () => void;
   /** Mouse, touch drag and right stick all come through here. */
   orbit: (dx: number, dy: number, firstPerson: boolean) => void;
-  zoom: (steps: number) => void;
+  /** Wheel steps, + out; returns true when pushed out past the far stop. */
+  zoom: (steps: number) => boolean;
+  /** The player changed the lens in the settings. */
+  setBaseFov: (deg: number) => void;
   chase: (dt: number, target: ChaseTarget, tune: ChaseTuning) => void;
   /** Look from a point along camera yaw and look pitch (helmet, seat, mast). */
   firstPerson: (dt: number, eye: THREE.Vector3, smooth: number) => void;
@@ -82,6 +88,25 @@ export interface CameraRig {
 
 const CAM_MIN = 2.6;
 const CAM_MAX = 10;
+/** The footfall spring's stiffness and damping, and the longest step it is integrated in, s. */
+const BOB_K = 110;
+const BOB_C = 13;
+const BOB_STEP = 1 / 120;
+const AXES = ['x', 'y', 'z'] as const;
+
+/** A critically damped spring toward `goal`, solved exactly over `dt`
+ *  rather than stepped: a long frame lands it closer, never past. Stiffness
+ *  `horizontal` on x and z, `vertical` on y (rad/s). */
+export function springTo(pos: THREE.Vector3, vel: THREE.Vector3, goal: THREE.Vector3, horizontal: number, vertical: number, dt: number) {
+  for (const axis of AXES) {
+    const omega = axis === 'y' ? vertical : horizontal;
+    const d = pos[axis] - goal[axis];
+    const e = Math.exp(-omega * dt);
+    const k = (vel[axis] + omega * d) * dt;
+    pos[axis] = goal[axis] + (d + k) * e;
+    vel[axis] = (vel[axis] - omega * k) * e;
+  }
+}
 /** Seconds after the last look input before the view recentres behind the movement. */
 const RECENTER_AFTER = 1.5;
 
@@ -89,7 +114,7 @@ export function makeCameraRig(
   camera: THREE.PerspectiveCamera,
   floorAt: (x: number, z: number) => number,
   colliders: () => Collider[],
-  baseFov: number,
+  baseFovIn: number,
 ): CameraRig {
   const focus = new THREE.Vector3();
   const focusVel = new THREE.Vector3();
@@ -100,12 +125,15 @@ export function makeCameraRig(
   let snapNext = true;
   let actualDist = 5;
   let drag = 99;
+  let baseFov = baseFovIn;
   let fov = baseFov;
   let shakeAmp = 0;
   let shakeT = 0;
   let bob = 0;
   let bobVel = 0;
   let shoulderK = 1;
+  /** How far over the shoulder the view sits: all the way on the move, half standing. */
+  let framing = 0.5;
   let desiredNow = -1;
   const wrap = (a: number) => { while (a > Math.PI) a -= Math.PI * 2; while (a < -Math.PI) a += Math.PI * 2; return a; };
 
@@ -143,13 +171,20 @@ export function makeCameraRig(
     swapShoulder() { rig.shoulderSide = -rig.shoulderSide; },
     orbit(dx, dy, firstPerson) {
       if (dx === 0 && dy === 0) return;
+      const s = getSettings();
+      dx *= s.sensitivity;
+      dy *= s.invertY ? -s.sensitivity : s.sensitivity;
       rig.yaw -= dx * (firstPerson ? 0.0036 : 0.0052);
       if (firstPerson) rig.lookPitch = THREE.MathUtils.clamp(rig.lookPitch - dy * 0.0032, -1.2, 1.1);
       else rig.pitch = THREE.MathUtils.clamp(rig.pitch + dy * 0.004, -0.12, 1.15);
       drag = 0;
     },
+    setBaseFov(deg) { baseFov = deg; },
     zoom(steps) {
-      if (steps) rig.distance = THREE.MathUtils.clamp(rig.distance * Math.pow(1.12, steps), CAM_MIN, CAM_MAX);
+      if (!steps) return false;
+      const past = steps > 0 && rig.distance >= CAM_MAX - 1e-6;
+      rig.distance = THREE.MathUtils.clamp(rig.distance * Math.pow(1.12, steps), CAM_MIN, CAM_MAX);
+      return past;
     },
     snap() { snapNext = true; },
     shake(amount) { shakeAmp = Math.max(shakeAmp, amount); },
@@ -160,8 +195,12 @@ export function makeCameraRig(
       drag += dt;
       shakeAmp *= Math.exp(-dt * 3.2);
       shakeT += dt;
-      bobVel += (-bob * 110 - bobVel * 13) * dt;
-      bob += bobVel * dt;
+      // Underdamped, so it is stepped finely: a hitch must not throw the view.
+      for (let left = dt; left > 1e-6; left -= BOB_STEP) {
+        const h = Math.min(BOB_STEP, left);
+        bobVel += (-bob * BOB_K - bobVel * BOB_C) * h;
+        bob += bobVel * h;
+      }
       shoulderK += (rig.shoulderSide - shoulderK) * (1 - Math.exp(-dt * 6));
     },
     chase(dt, target, tune) {
@@ -179,17 +218,16 @@ export function makeCameraRig(
       const leadX = THREE.MathUtils.clamp(vx * tune.lead, -tune.leadMax, tune.leadMax);
       const leadZ = THREE.MathUtils.clamp(vz * tune.lead, -tune.leadMax, tune.leadMax);
       goal.set(target.position.x + leadX, target.position.y + target.height, target.position.z + leadZ);
-      if (tune.shoulder) { goal.x += Math.cos(rig.yaw) * tune.shoulder * shoulderK; goal.z -= Math.sin(rig.yaw) * tune.shoulder * shoulderK; }
+      framing += ((sp > 0.6 ? 1 : 0.5) - framing) * (1 - Math.exp(-dt * 1.8));
+      if (tune.shoulder) {
+        const side = tune.shoulder * shoulderK * framing;
+        goal.x += Math.cos(rig.yaw) * side; goal.z -= Math.sin(rig.yaw) * side;
+      }
       if (snapNext) {
         focus.copy(goal);
         focusVel.set(0, 0, 0);
       } else {
-        // A critically damped spring per axis.
-        const wh = tune.horizontal; const wv = tune.vertical;
-        focusVel.x += ((goal.x - focus.x) * wh * wh - focusVel.x * 2 * wh) * dt;
-        focusVel.z += ((goal.z - focus.z) * wh * wh - focusVel.z * 2 * wh) * dt;
-        focusVel.y += ((goal.y - focus.y) * wv * wv - focusVel.y * 2 * wv) * dt;
-        focus.addScaledVector(focusVel, dt);
+        springTo(focus, focusVel, goal, tune.horizontal, tune.vertical, dt);
       }
       // The preferred distance itself eases — into a tighter interior framing, back out through a door.
       const wantDist = target.distance * (1 + 0.14 * target.speedFrac);

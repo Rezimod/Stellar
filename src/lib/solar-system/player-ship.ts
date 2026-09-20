@@ -19,7 +19,7 @@ import type { AlienHandle } from '@/lib/solar-system/aliens';
 import { softSpriteTexture } from '@/lib/solar-system/soft-sprite';
 import { makeFlightAudio } from '@/lib/solar-system/flight-audio';
 import { makeCameraRig, type CameraFrame } from '@/lib/solar-system/flight-camera';
-import { buildCosmonaut, buildEndurance, buildKestrel, buildXfoil, type ShipKind, type ShipParts } from '@/lib/solar-system/ship-mesh';
+import { buildCosmonaut, buildCruiser, buildEndurance, buildKestrel, buildXfoil, type ShipKind, type ShipParts } from '@/lib/solar-system/ship-mesh';
 import { shapeMouse } from '@/lib/solar-system/flight-input';
 import { makeMissionTracker, type MissionContext } from '@/lib/solar-system/flight-missions';
 import { projectTarget, stepTarget, type TargetCandidate, type TargetKind, type TargetScreen } from '@/lib/solar-system/flight-targeting';
@@ -402,6 +402,8 @@ export interface FlightSession {
   paused: boolean;
   /** Chosen in the hangar before launch. */
   shipKind: ShipKind;
+  /** Cannons, standing orders and hostile waves. The game runs without them. */
+  combat: boolean;
   /** The system the hyperdrive is set for; the canvas resolves it against
    *  the one the ship is in. */
   destination: string;
@@ -445,11 +447,12 @@ export interface FlightWorld {
   systemName: string;
 }
 
-export function createFlightSession(): FlightSession {
+export function createFlightSession(opts: { combat?: boolean } = {}): FlightSession {
   return {
     active: false,
     paused: false,
     shipKind: 'kestrel',
+    combat: opts.combat ?? true,
     destination: 'alphaCentauri',
     input: {
       thrust: 0, yaw: 0, lookYaw: 0, pitch: 0, roll: 0,
@@ -787,6 +790,10 @@ function makeCrashFx(): CrashFx {
 
 export interface PlayerShipHandle {
   group: THREE.Group;
+  /** Where the scene's fill light rides: above and behind the hull, where the
+   *  chase camera sits, so the airframe reads as a machine against black. */
+  fillAnchor: THREE.Object3D;
+  fillDistance: number;
   /** Bolts fly in world space — add this to the scene beside `group`. */
   boltGroup: THREE.Group;
   /** World-space effects: speed streaks, the hyperspace glow, crash debris, the suit. */
@@ -813,11 +820,19 @@ interface Bolt {
 }
 
 /** The starfighter trades armour for pace: faster, and it turns harder. The
- *  Endurance is a long-haul explorer: slower off the mark, slow to turn. */
+ *  Endurance is a long-haul explorer: slower off the mark, slow to turn. The
+ *  Meridian cruises a little faster than the survey ship but turns like the
+ *  big hull it is, and the chase camera stands further back from it. */
+const SHIP_TUNING: Record<Exclude<ShipKind, 'kestrel'>, { speed: number; accel: number; turn: number; cam: number }> = {
+  xfoil: { speed: 1.2, accel: 1.3, turn: 1.15, cam: 1 },
+  cruiser: { speed: 1.08, accel: 0.9, turn: 0.72, cam: 1.25 },
+  endurance: { speed: 0.9, accel: 0.8, turn: 0.75, cam: 1 },
+};
+
 function shipRegimes(kind: ShipKind): Record<Exclude<SpeedMode, 'jump'>, Regime> {
   if (kind === 'kestrel') return REGIMES;
-  const k = kind === 'xfoil' ? { speed: 1.2, accel: 1.3, turn: 1.15 } : { speed: 0.9, accel: 0.8, turn: 0.75 };
-  const tune = (r: Regime): Regime => ({ ...r, max: r.max * k.speed, boost: r.boost * k.speed, accel: r.accel * k.accel, turn: r.turn * k.turn });
+  const k = SHIP_TUNING[kind] ?? SHIP_TUNING.endurance;
+  const tune = (r: Regime): Regime => ({ ...r, max: r.max * k.speed, boost: r.boost * k.speed, accel: r.accel * k.accel, turn: r.turn * k.turn, camBack: r.camBack * k.cam });
   return { cruise: tune(REGIMES.cruise), fast: tune(REGIMES.fast), ultra: tune(REGIMES.ultra) };
 }
 
@@ -826,6 +841,7 @@ function shipRegimes(kind: ShipKind): Record<Exclude<SpeedMode, 'jump'>, Regime>
 const BUILDERS: Record<ShipKind, (h: number) => ShipParts> = {
   kestrel: buildKestrel,
   xfoil: buildXfoil,
+  cruiser: buildCruiser,
   endurance: (h) => buildEndurance(h * 0.6),
 };
 
@@ -849,6 +865,10 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
   tel.discoveryTotal = missions.total;
   tel.discoveryCount = missions.count();
   audio.launch();
+
+  const fillAnchor = new THREE.Object3D();
+  fillAnchor.position.set(0, 7 * H, -9 * H);
+  group.add(fillAnchor);
 
   const fxGroup = new THREE.Group();
   fxGroup.name = 'playerFx';
@@ -1508,6 +1528,8 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
 
   return {
     group,
+    fillAnchor,
+    fillDistance: 80 * H,
     boltGroup,
     fxGroup,
     eva: evaG,
@@ -1753,8 +1775,8 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
           const am = angVel.length();
           if (am > FREE_ANG_MAX) angVel.multiplyScalar(FREE_ANG_MAX / am);
         }
-        pendYaw += shapeMouse(-input.mouseDX, turn);
-        pendPitch += shapeMouse(input.mouseDY, turn);
+        pendYaw += shapeMouse(-input.mouseDX, turn, dt);
+        pendPitch += shapeMouse(input.mouseDY, turn, dt);
         input.mouseDX = 0;
         input.mouseDY = 0;
         const mk = 1 - Math.exp(-dt * 9);
@@ -1963,7 +1985,7 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
         }
 
         fireAcc -= dt;
-        if (input.fire && fireAcc <= 0 && pilot === 'ship' && cannonTips.length > 0 && energy >= ENERGY_PER_SHOT) {
+        if (input.fire && session.combat && fireAcc <= 0 && pilot === 'ship' && cannonTips.length > 0 && energy >= ENERGY_PER_SHOT) {
           fireAcc = FIRE_INTERVAL;
           energy -= ENERGY_PER_SHOT;
           fire(enemies);
@@ -2052,7 +2074,7 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
 
       // ── Wings: spread for a fight (firing, or contacts on the radar),
       // swept flat for speed. F overrides until the next regime change. ──
-      const foilsAuto = jumpPhase === 'none' && !isDrive(mode) && (input.fire || aliens.contactState === 'hostile');
+      const foilsAuto = jumpPhase === 'none' && !isDrive(mode) && ((input.fire && session.combat) || aliens.contactState === 'hostile');
       const foilsOpen = pilot === 'ship' && jumpPhase === 'none' && (foilsForced ?? foilsAuto);
       foilT += ((foilsOpen ? 1 : 0) - foilT) * (1 - Math.exp(-dt * 3.2));
       for (const w of shipParts.wings) {
@@ -2090,6 +2112,8 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
         const k = Math.max(0, j.yaw * rcsYaw + j.pitch * rcsPitch + j.roll * rcsRoll + j.brake * rcsBrake);
         const target = Math.min(1, k) * (pilot === 'ship' && jumpPhase === 'none' ? 0.9 : 0);
         j.mat.opacity += (target - j.mat.opacity) * (1 - Math.exp(-dt * (target > j.mat.opacity ? 30 : 12)));
+        // An invisible puff is still a transparent draw unless it is hidden.
+        j.sprite.visible = j.mat.opacity > 0.01;
       }
       vibe = tel.boost ? 1 : thrusting ? 0.35 : 0;
       const shiver = vibe * 0.05 * H;
@@ -2345,7 +2369,7 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
         const target = world.bodies.find((b) => b.id === orderId);
         if (!target || target.destroyed || me.position.distanceTo(target.position) > SYSTEM_REACH) orderId = '';
       }
-      if (!orderId && orderDoneHold <= 0 && jumpPhase === 'none' && crashT < 0) pickOrder(world, me.position);
+      if (!orderId && session.combat && orderDoneHold <= 0 && jumpPhase === 'none' && crashT < 0) pickOrder(world, me.position);
       tel.orderId = orderId;
       tel.orderIntegrity = orderId ? Math.max(0, orderHits / ORDER_HITS) : 0;
       tel.orderDone = orderDoneHold > 0;
@@ -2435,6 +2459,7 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
       }
     },
     dispose() {
+      shipParts.release?.();
       audio.dispose();
       crash.dispose();
       boltGeom.dispose();

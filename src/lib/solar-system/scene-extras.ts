@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { getSaturnRingStripTexture } from '@/lib/solar-system/saturn-ring-strip';
 import { GeoMoon } from 'astronomy-engine';
 import {
@@ -34,27 +35,35 @@ export function makeOrbitRings(mode: ScaleMode, includePluto: boolean): THREE.Gr
   ];
   if (includePluto) ids.push('pluto');
 
-  for (const id of ids) {
-    const pts = sampleOrbitPath(id, mode);
-    const pos = new Float32Array(pts.length * 3);
-    for (let i = 0; i < pts.length; i++) {
-      pos[i * 3] = pts[i].x;
-      pos[i * 3 + 1] = pts[i].y;
-      pos[i * 3 + 2] = pts[i].z;
+  // Every path in one line-segment buffer: nine draws become one. Pluto's
+  // ring is fainter, carried as a darker vertex colour under the shared opacity.
+  const paths = ids.map((id) => sampleOrbitPath(id, mode));
+  const segs = paths.reduce((n, pts) => n + pts.length, 0);
+  const pos = new Float32Array(segs * 6);
+  const col = new Float32Array(segs * 6);
+  let k = 0;
+  paths.forEach((pts, i) => {
+    const shade = ids[i] === 'pluto' ? 0.1 / 0.13 : 1;
+    for (let j = 0; j < pts.length; j++) {
+      const a = pts[j];
+      const b = pts[(j + 1) % pts.length];
+      pos[k] = a.x; pos[k + 1] = a.y; pos[k + 2] = a.z;
+      pos[k + 3] = b.x; pos[k + 4] = b.y; pos[k + 5] = b.z;
+      for (let c = 0; c < 6; c++) col[k + c] = shade;
+      k += 6;
     }
-    const geom = new THREE.BufferGeometry();
-    geom.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-    const opacity = id === 'pluto' ? 0.1 : 0.13;
-    const mat = new THREE.LineBasicMaterial({
-      color: 0x6b86c8,
-      transparent: true,
-      opacity,
-      depthWrite: false,
-    });
-    const line = new THREE.LineLoop(geom, mat);
-    line.userData.orbitFor = id;
-    group.add(line);
-  }
+  });
+  const geom = new THREE.BufferGeometry();
+  geom.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  geom.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  const mat = new THREE.LineBasicMaterial({
+    color: 0x6b86c8,
+    vertexColors: true,
+    transparent: true,
+    opacity: 0.13,
+    depthWrite: false,
+  });
+  group.add(new THREE.LineSegments(geom, mat));
   return group;
 }
 
@@ -64,11 +73,10 @@ export function setOrbitRingsFade(group: THREE.Group, k: number) {
   group.visible = k > 0.02;
   if (!group.visible) return;
   for (const child of group.children) {
-    const line = child as THREE.LineLoop;
-    const base = (line.userData.baseOpacity as number | undefined) ??
-      ((line.material as THREE.LineBasicMaterial).opacity);
-    line.userData.baseOpacity = base;
-    (line.material as THREE.LineBasicMaterial).opacity = base * k;
+    const mat = (child as THREE.LineSegments).material as THREE.LineBasicMaterial;
+    const base = (child.userData.baseOpacity as number | undefined) ?? mat.opacity;
+    child.userData.baseOpacity = base;
+    mat.opacity = base * k;
   }
 }
 
@@ -232,15 +240,19 @@ export function makeAsteroidBelt(mode: ScaleMode, lite: boolean): BeltHandle {
 
   // A few resolvable boulders among the dust — lumpy displaced icosahedra
   // (Ceres/Vesta-class stand-ins) on their own Keplerian orbits, tumbling
-  // slowly. Everything else in the belt stays a point sprite.
-  const boulders: {
-    mesh: THREE.Mesh;
+  // slowly. One instanced mesh per material: the ten boulders share three
+  // shapes and get their size and stretch from the instance scale.
+  interface Boulder {
+    slot: number;
+    mesh: THREE.InstancedMesh;
     r: number;
     y: number;
     angle0: number;
     rate: number;
     spinRate: number;
-  }[] = [];
+    scale: THREE.Vector3;
+  }
+  const boulders: Boulder[] = [];
   // Match the point-sprite taxonomy: dark C, reddish S, brighter stony.
   const boulderMats = [
     new THREE.MeshStandardMaterial({ color: 0x5d564e, roughness: 0.97, metalness: 0.02 }),
@@ -248,43 +260,61 @@ export function makeAsteroidBelt(mode: ScaleMode, lite: boolean): BeltHandle {
     new THREE.MeshStandardMaterial({ color: 0x92897c, roughness: 0.92, metalness: 0.05 }),
   ];
   const BOULDER_N = lite ? 5 : 10;
+  // Gently lumpy unit silhouettes — potato, not shrapnel.
+  const boulderGeoms = boulderMats.map((_, k) => {
+    const g = new THREE.IcosahedronGeometry(1, k === 0 ? 2 : 1);
+    const rough = 0.14;
+    const bp = g.getAttribute('position') as THREE.BufferAttribute;
+    for (let v = 0; v < bp.count; v++) {
+      const kk = 1 - rough + Math.random() * rough * 2;
+      bp.setXYZ(v, bp.getX(v) * kk, bp.getY(v) * (1 - rough + Math.random() * rough * 2), bp.getZ(v) * kk);
+    }
+    g.computeVertexNormals();
+    return g;
+  });
+  const boulderMeshes = boulderMats.map((m, k) => {
+    const n = Math.ceil((BOULDER_N - k) / boulderMats.length);
+    const im = new THREE.InstancedMesh(boulderGeoms[k], m, Math.max(1, n));
+    im.count = n;
+    im.frustumCulled = false;
+    group.add(im);
+    return im;
+  });
+  const slots = [0, 0, 0];
   for (let i = 0; i < BOULDER_N; i++) {
     const big = i < 2; // a couple of Ceres/Vesta-class bodies
     // True rock scale — far smaller than any planet (Earth renders at 0.028
     // scene units). Earlier sizes made boulders read as extra planets.
-    const bGeom = new THREE.IcosahedronGeometry(
-      big ? 0.0035 + Math.random() * 0.0015 : 0.0015 + Math.random() * 0.0015,
-      big ? 2 : 1,
-    );
-    // Gently lumpy silhouette — potato, not shrapnel. The big ones stay
-    // rounder (self-gravity), the small ones get more elongated.
-    const rough = big ? 0.08 : 0.16;
+    const size = big ? 0.0035 + Math.random() * 0.0015 : 0.0015 + Math.random() * 0.0015;
     const stretch = big ? 1 : 1 + Math.random() * 0.45;
-    const bp = bGeom.getAttribute('position') as THREE.BufferAttribute;
-    for (let v = 0; v < bp.count; v++) {
-      const k = 1 - rough + Math.random() * rough * 2;
-      bp.setXYZ(v, bp.getX(v) * k * stretch, bp.getY(v) * (1 - rough + Math.random() * rough * 2), bp.getZ(v) * k);
-    }
-    bGeom.computeVertexNormals();
-    const bMesh = new THREE.Mesh(bGeom, boulderMats[i % boulderMats.length]);
     const au = sampleBeltAu();
     const rr = sceneRadiusFromAu(au, mode);
+    const k = i % boulderMats.length;
     boulders.push({
-      mesh: bMesh,
+      slot: slots[k]++,
+      mesh: boulderMeshes[k],
       r: rr,
       y: ((Math.random() + Math.random()) - 1) * rr * 0.05,
       angle0: Math.random() * Math.PI * 2,
       rate: meanMotionRadPerMs(au),
       spinRate: (0.5 + Math.random()) * 2e-5, // rad/ms of sim time
+      scale: new THREE.Vector3(size * stretch, size, size),
     });
-    group.add(bMesh);
   }
+  const bm = new THREE.Matrix4();
+  const bq = new THREE.Quaternion();
+  const be = new THREE.Euler();
+  const bpos = new THREE.Vector3();
 
   const posAttr = geo.getAttribute('position') as THREE.BufferAttribute;
+  let lastEpoch = NaN;
 
   return {
     group,
     update(epochMs: number) {
+      // Every position is a pure function of the epoch: nothing to do while it stands still.
+      if (epochMs === lastEpoch) return;
+      lastEpoch = epochMs;
       const arr = posAttr.array as Float32Array;
       for (let i = 0; i < count; i++) {
         const a = angles[i] + driftRates[i] * epochMs;
@@ -296,16 +326,19 @@ export function makeAsteroidBelt(mode: ScaleMode, lite: boolean): BeltHandle {
       posAttr.needsUpdate = true;
       for (const b of boulders) {
         const a = b.angle0 + b.rate * epochMs;
-        b.mesh.position.set(Math.cos(a) * b.r, b.y, Math.sin(a) * b.r);
-        b.mesh.rotation.y = b.spinRate * epochMs;
-        b.mesh.rotation.x = b.spinRate * 0.6 * epochMs;
+        bpos.set(Math.cos(a) * b.r, b.y, Math.sin(a) * b.r);
+        be.set(b.spinRate * 0.6 * epochMs, b.spinRate * epochMs, 0);
+        bq.setFromEuler(be);
+        b.mesh.setMatrixAt(b.slot, bm.compose(bpos, bq, b.scale));
       }
+      for (const im of boulderMeshes) im.instanceMatrix.needsUpdate = true;
     },
     dispose() {
       geo.dispose();
       mat.dispose();
       sprite.dispose();
-      for (const b of boulders) b.mesh.geometry.dispose();
+      for (const g of boulderGeoms) g.dispose();
+      for (const im of boulderMeshes) im.dispose();
       for (const m of boulderMats) m.dispose();
     },
   };
@@ -370,10 +403,13 @@ export function makeKuiperBelt(mode: ScaleMode, lite: boolean): BeltHandle {
   group.add(points);
 
   const posAttr = geo.getAttribute('position') as THREE.BufferAttribute;
+  let lastEpoch = NaN;
 
   return {
     group,
     update(epochMs: number) {
+      if (epochMs === lastEpoch) return;
+      lastEpoch = epochMs;
       const arr = posAttr.array as Float32Array;
       for (let i = 0; i < count; i++) {
         const a = angles[i] + driftRates[i] * epochMs;
@@ -645,6 +681,7 @@ export function makeEarthExtras(earthRadius: number, lite: boolean): EarthExtras
   moonGroup.add(moonMesh);
 
   const moonDir = new THREE.Vector3();
+  let lastEpoch = NaN;
 
   return {
     cloudMesh,
@@ -652,16 +689,19 @@ export function makeEarthExtras(earthRadius: number, lite: boolean): EarthExtras
     moonGroup,
     moonMesh,
     update(epochMs: number, dtSec: number) {
-      // Cloud is a child of spinning Earth; set local rotation to a small drift
-      // so world-space cloud motion = earth spin + slight delta (visual drift).
-      cloudMesh.rotation.y = (epochMs / (86400 * 1000)) * Math.PI * 2 * 0.04;
-      // Real geocentric Moon direction from the lunar ephemeris — phase,
-      // 5.1° inclination, and node regression all come along for free.
-      // Only the distance is compressed for visibility.
-      moonDir.copy(helioEqjToThree(GeoMoon(new Date(epochMs)))).normalize();
-      moonMesh.position.copy(moonDir).multiplyScalar(moonDist);
-      // Tidally locked — keep the same hemisphere pointed at Earth.
-      moonMesh.rotation.y = Math.atan2(-moonDir.z, -moonDir.x);
+      if (epochMs !== lastEpoch) {
+        lastEpoch = epochMs;
+        // Cloud is a child of spinning Earth; set local rotation to a small drift
+        // so world-space cloud motion = earth spin + slight delta (visual drift).
+        cloudMesh.rotation.y = (epochMs / (86400 * 1000)) * Math.PI * 2 * 0.04;
+        // Real geocentric Moon direction from the lunar ephemeris — phase,
+        // 5.1° inclination, and node regression all come along for free.
+        // Only the distance is compressed for visibility.
+        moonDir.copy(helioEqjToThree(GeoMoon(new Date(epochMs)))).normalize();
+        moonMesh.position.copy(moonDir).multiplyScalar(moonDist);
+        // Tidally locked — keep the same hemisphere pointed at Earth.
+        moonMesh.rotation.y = Math.atan2(-moonDir.z, -moonDir.x);
+      }
 
       // Lightning — quick double/triple flickers, then a long dark rearm.
       for (const s of storms) {
@@ -1760,16 +1800,20 @@ export function makeEarthRocket(earthRadius: number): EarthRocketHandle {
   return {
     group,
     update(dtSec: number) {
-      // Age the trail regardless of flight state so smoke keeps dissolving.
+      // Age the trail regardless of flight state so smoke keeps dissolving —
+      // but once every point has faded there is nothing left to upload.
+      let live = false;
       for (let i = 0; i < TRAIL_N; i++) {
         trailAge[i] += dtSec;
+        if (trailAge[i] > 3.2 + dtSec) continue;
+        live = true;
         const fade = Math.max(0, 1 - trailAge[i] / 3.2);
         const warm = Math.min(1, trailAge[i] * 2); // orange → gray smoke
         trailCol[i * 3] = fade * (1 - warm * 0.45);
         trailCol[i * 3 + 1] = fade * (0.78 - warm * 0.3);
         trailCol[i * 3 + 2] = fade * (0.55 - warm * 0.1);
       }
-      (trailGeo.getAttribute('color') as THREE.BufferAttribute).needsUpdate = true;
+      if (live) (trailGeo.getAttribute('color') as THREE.BufferAttribute).needsUpdate = true;
 
       if (flightT < 0) {
         idleClock -= dtSec;
@@ -1967,6 +2011,31 @@ function satLabelSprite(text: string, earthRadius: number): {
   return { sprite, mat, tex };
 }
 
+/** Fold every mesh under `node` into one mesh per material, in `node`'s
+ *  frame: a spacecraft of twenty primitives becomes two or three draws. */
+function bakeByMaterial(node: THREE.Group) {
+  node.updateMatrixWorld(true);
+  const inv = new THREE.Matrix4().copy(node.matrixWorld).invert();
+  const parts = new Map<THREE.Material, THREE.BufferGeometry[]>();
+  const meshes: THREE.Mesh[] = [];
+  node.traverse((o) => { if (o instanceof THREE.Mesh) meshes.push(o); });
+  for (const m of meshes) {
+    const g = m.geometry.clone().applyMatrix4(new THREE.Matrix4().multiplyMatrices(inv, m.matrixWorld));
+    const mat = m.material as THREE.Material;
+    const list = parts.get(mat) ?? [];
+    list.push(g);
+    parts.set(mat, list);
+    m.removeFromParent();
+    m.geometry.dispose();
+  }
+  for (const [mat, list] of parts) {
+    const merged = list.length === 1 ? list[0] : mergeGeometries(list, false);
+    if (!merged) continue;
+    if (merged !== list[0]) for (const g of list) g.dispose();
+    node.add(new THREE.Mesh(merged, mat));
+  }
+}
+
 export function makeEarthSatellites(earthRadius: number, lite: boolean): EarthSatellitesHandle {
   const group = new THREE.Group();
   group.name = 'earthSatellites';
@@ -2105,15 +2174,17 @@ export function makeEarthSatellites(earthRadius: number, lite: boolean): EarthSa
     ? SAT_SPECS.filter((s) => s.label || s.kind === 'geo')
     : SAT_SPECS;
   const recs: { node: THREE.Group; spec: SatSpec }[] = [];
-  const ringGeos: THREE.BufferGeometry[] = [];
   const labelTextures: THREE.CanvasTexture[] = [];
   const labelMats: THREE.SpriteMaterial[] = [];
   const ringMat = new THREE.LineBasicMaterial({
     color: 0x8fa8d8, transparent: true, opacity: 0.07, depthWrite: false,
   });
+  // Every orbit ring in one line-segment buffer.
+  const ringPts: number[] = [];
 
   for (const spec of specs) {
     const node = buildSat(spec.kind);
+    bakeByMaterial(node);
     group.add(node);
     recs.push({ node, spec });
 
@@ -2129,27 +2200,27 @@ export function makeEarthSatellites(earthRadius: number, lite: boolean): EarthSa
 
     // Faint orbit ring — instantly says "spacecraft", not "moon".
     const SEG = 72;
-    const pts = new Float32Array(SEG * 3);
     const r = earthRadius * spec.distMul;
     const sinI = Math.sin(spec.incl);
     const cosI = Math.cos(spec.incl);
     const sinN = Math.sin(spec.node);
     const cosN = Math.cos(spec.node);
-    for (let i = 0; i < SEG; i++) {
+    for (let i = 0; i <= SEG; i++) {
       const a = (i / SEG) * Math.PI * 2;
       const x = Math.cos(a) * r;
       const z = Math.sin(a) * r;
       const y2 = -z * sinI;
       const z2 = z * cosI;
-      pts[i * 3] = x * cosN - z2 * sinN;
-      pts[i * 3 + 1] = y2;
-      pts[i * 3 + 2] = x * sinN + z2 * cosN;
+      const px = x * cosN - z2 * sinN;
+      const pz = x * sinN + z2 * cosN;
+      // Each point but the first closes the previous segment and opens the next.
+      if (i > 0) ringPts.push(px, y2, pz);
+      if (i < SEG) ringPts.push(px, y2, pz);
     }
-    const rg = new THREE.BufferGeometry();
-    rg.setAttribute('position', new THREE.BufferAttribute(pts, 3));
-    ringGeos.push(rg);
-    group.add(new THREE.LineLoop(rg, ringMat));
   }
+  const ringGeo = new THREE.BufferGeometry();
+  ringGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(ringPts), 3));
+  group.add(new THREE.LineSegments(ringGeo, ringMat));
 
   const antiSun = new THREE.Vector3();
   const haloA = new THREE.Vector3();
@@ -2205,7 +2276,7 @@ export function makeEarthSatellites(earthRadius: number, lite: boolean): EarthSa
           else (m as THREE.Material).dispose();
         }
       });
-      ringGeos.forEach((g) => g.dispose());
+      ringGeo.dispose();
       ringMat.dispose();
       bodyMat.dispose();
       foilMat.dispose();
@@ -2303,13 +2374,16 @@ export function makeMeteors(earthRadius: number): MeteorsHandle {
         // Trail cools white → orange → gone in ~0.45 s.
         const tp = m.trailGeo.getAttribute('position') as THREE.BufferAttribute;
         const tc = m.trailGeo.getAttribute('color') as THREE.BufferAttribute;
+        let live = false;
         for (let i = 0; i < TRAIL_N; i++) {
           m.trailAges[i] += dtSec;
+          if (m.trailAges[i] > 0.45 + dtSec) continue;
+          live = true;
           const fade = Math.max(0, 1 - m.trailAges[i] / 0.45);
           const cool = Math.min(1, m.trailAges[i] * 4);
           tc.setXYZ(i, fade, fade * (0.95 - cool * 0.4), fade * (0.85 - cool * 0.6));
         }
-        tc.needsUpdate = true;
+        if (live) tc.needsUpdate = true;
 
         if (m.age < 0) {
           m.wait -= dtSec;

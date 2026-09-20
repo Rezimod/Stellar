@@ -123,13 +123,15 @@ export function makeTraffic(data: EarthData, lite: boolean): TrafficHandle {
   const lampMat = new THREE.MeshBasicMaterial({ vertexColors: true, color: 0x111111 });
   const bodies = kinds.map((k) => {
     const m = new THREE.InstancedMesh(k.body, bodyMat, CARS);
-    m.castShadow = !lite; m.receiveShadow = true; m.frustumCulled = false; m.count = 0;
+    m.castShadow = !lite; m.receiveShadow = true; m.count = 0;
+    m.boundingSphere = new THREE.Sphere();
     group.add(m);
     return m;
   });
   const lamps = kinds.map((k) => {
     const m = new THREE.InstancedMesh(k.lamps, lampMat, CARS);
-    m.frustumCulled = false; m.count = 0;
+    m.count = 0;
+    m.boundingSphere = new THREE.Sphere();
     group.add(m);
     return m;
   });
@@ -140,7 +142,7 @@ export function makeTraffic(data: EarthData, lite: boolean): TrafficHandle {
   }));
 
   const limit = (cls: number) => (cls <= ROAD.primary ? 15 : cls <= ROAD.tertiary ? 12 : cls === ROAD.residential ? 8 : 5);
-  const pose = (c: Car) => {
+  const pose = (c: Car, dt: number) => {
     const e = edges[c.edge];
     const A = nodes[e.a]; const B = nodes[e.b];
     const t = Math.min(1, c.s / (e.len || 1));
@@ -150,7 +152,8 @@ export function makeTraffic(data: EarthData, lite: boolean): TrafficHandle {
     c.z = A.z + (B.z - A.z) * t + dx * e.lane;
     const want = Math.atan2(dx, dz);
     let d = want - c.yaw; while (d > Math.PI) d -= Math.PI * 2; while (d < -Math.PI) d += Math.PI * 2;
-    c.yaw += d * 0.25;
+    // Fresh off a spawn the nose snaps to the road; on the move it comes round at a fixed rate in time, not frames.
+    c.yaw += d * (dt < 0 ? 1 : 1 - Math.exp(-dt * 17));
   };
   const spawn = (c: Car, cx: number, cz: number) => {
     for (let tries = 0; tries < 12; tries++) {
@@ -161,7 +164,7 @@ export function makeTraffic(data: EarthData, lite: boolean): TrafficHandle {
       c.edge = edge; c.s = 0; c.speed = limit(edges[edge].cls) * 0.7; c.active = true;
       const e = edges[edge];
       c.yaw = Math.atan2(nodes[e.b].x - A.x, nodes[e.b].z - A.z);
-      pose(c);
+      pose(c, -1);
       return;
     }
   };
@@ -186,13 +189,18 @@ export function makeTraffic(data: EarthData, lite: boolean): TrafficHandle {
 
   const m4 = new THREE.Matrix4(); const q = new THREE.Quaternion(); const p = new THREE.Vector3(); const one = new THREE.Vector3(1, 1, 1);
   const up = new THREE.Vector3(0, 1, 0);
+  // One circle per car, written in place: a query hands back the same objects every frame.
+  const moverPool: Mover[] = cars.map(() => ({ x: 0, z: 0, vx: 0, vz: 0, r: 1.9 }));
   return {
     group,
     movers(x, z, r, out) {
       out.length = 0;
-      for (const c of cars) {
+      for (let i = 0; i < cars.length; i++) {
+        const c = cars[i];
         if (!c.active || Math.abs(c.x - x) > r || Math.abs(c.z - z) > r) continue;
-        out.push({ x: c.x, z: c.z, vx: Math.sin(c.yaw) * c.speed, vz: Math.cos(c.yaw) * c.speed, r: c.variant === 2 ? 2.4 : 1.9 });
+        const m = moverPool[i];
+        m.x = c.x; m.z = c.z; m.vx = Math.sin(c.yaw) * c.speed; m.vz = Math.cos(c.yaw) * c.speed; m.r = c.variant === 2 ? 2.4 : 1.9;
+        out.push(m);
       }
       return out;
     },
@@ -225,7 +233,7 @@ export function makeTraffic(data: EarthData, lite: boolean): TrafficHandle {
         c.s += c.speed * dt;
         while (c.active && c.s >= edges[c.edge].len) next(c);
         if (!c.active) continue;
-        pose(c);
+        pose(c, dt);
         c.y = floorAt(c.x, c.z);
         const k = counts[c.variant]++;
         q.setFromAxisAngle(up, c.yaw);
@@ -234,7 +242,10 @@ export function makeTraffic(data: EarthData, lite: boolean): TrafficHandle {
         bodies[c.variant].setColorAt(k, c.colour);
         lamps[c.variant].setMatrixAt(k, m4);
       }
+      // Every live car is within NEAR of the crew: one sphere there is the mesh's bound, and it culls.
       for (let v = 0; v < 3; v++) {
+        bodies[v].boundingSphere!.set(p.set(cx, floorAt(cx, cz), cz), NEAR + 8);
+        lamps[v].boundingSphere!.copy(bodies[v].boundingSphere!);
         bodies[v].count = counts[v]; lamps[v].count = counts[v];
         bodies[v].instanceMatrix.needsUpdate = true; lamps[v].instanceMatrix.needsUpdate = true;
         const colours = bodies[v].instanceColor;

@@ -148,6 +148,10 @@ function save(s: Saved) {
 export function missionComplete(): boolean {
   return load().stage === 'done';
 }
+/** Where the expedition stands, for the mission list outside the scene. */
+export function readExpeditionStage(): MissionStage {
+  return load().stage;
+}
 
 const ease = (rate: number, dt: number) => 1 - Math.exp(-dt * rate);
 
@@ -432,7 +436,7 @@ export function makeMission(
   const point = (x: number, z: number, ctx: MissionContext) => {
     const dx = x - ctx.crewX; const dz = z - ctx.crewZ;
     telemetry.distance = Math.hypot(dx, dz);
-    telemetry.bearing = Math.atan2(dx, dz);
+    telemetry.bearing = Math.atan2(dx, -dz);
   };
 
   handle.update = (dt, t, ctx) => {

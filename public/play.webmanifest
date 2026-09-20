@@ -1,0 +1,17 @@
+{
+  "name": "Stellar Explore",
+  "short_name": "Explore",
+  "description": "Land at Stellar Base on the Moon. A lunar expedition from Georgia.",
+  "id": "/play",
+  "start_url": "/play",
+  "scope": "/play",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#050812",
+  "theme_color": "#050812",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" },
+    { "src": "/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" }
+  ]
+}

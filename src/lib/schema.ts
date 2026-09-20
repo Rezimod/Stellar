@@ -661,3 +661,22 @@ export const firstLightOrder = pgTable('first_light_order', {
 }, (t) => [
   index('first_light_order_privy_idx').on(t.privyId, t.createdAt),
 ])
+
+// Player base building on the Moon and Mars (Explore). A piece is private
+// (only its owner sees it) or part of the one shared colony per world. The
+// table is created by scripts/sql/base-pieces.sql (applied by hand, never by
+// drizzle-kit push). `yaw` is always a whole quarter turn, in radians.
+export const basePieces = pgTable('base_pieces', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  world: text('world').notNull(),
+  scope: text('scope').notNull(),
+  ownerPrivyId: text('owner_privy_id').notNull(),
+  module: text('module').notNull(),
+  x: doublePrecision('x').notNull(),
+  z: doublePrecision('z').notNull(),
+  yaw: doublePrecision('yaw').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+}, (t) => [
+  index('base_pieces_world_scope_idx').on(t.world, t.scope),
+  index('base_pieces_owner_idx').on(t.ownerPrivyId),
+])

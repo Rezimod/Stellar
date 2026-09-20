@@ -14,12 +14,12 @@
 // walls, steps over small rises and falls off big drops (suit-collision);
 // root motion is a track it is carried along (suit-scripted).
 
-import { classifyLanding, gaitProfile, PIVOT_ANGLE, turnRate, type GaitProfile, type Landing } from '@/lib/solar-system/gait-profile';
+import { classifyLanding, gaitProfile, landRecovery, PIVOT_ANGLE, turnRate, type GaitProfile, type Landing } from '@/lib/solar-system/gait-profile';
 import { makeFeet, type Foot, type FootMode, type StepEvent } from '@/lib/solar-system/suit-feet';
 import { slideColliders, slopeAt, stepGround, vaultProbe, SLOPE_LIMIT, VAULT_MAX, type Collider, type Vec3 } from '@/lib/solar-system/suit-collision';
 import { poseAt, vaultTrack, type Track, type TrackPose } from '@/lib/solar-system/suit-scripted';
 
-export { gaitProfile, EARTH_G, LUNAR_G, MARS_G, JUMP_MIN_APEX, classifyLanding, turnRate, type GaitProfile, type Landing } from '@/lib/solar-system/gait-profile';
+export { gaitProfile, EARTH_G, LUNAR_G, MARS_G, JUMP_MIN_APEX, classifyLanding, landRecovery, turnRate, type GaitProfile, type Landing } from '@/lib/solar-system/gait-profile';
 export type { Collider, Vec3 } from '@/lib/solar-system/suit-collision';
 export type { Foot, StepEvent } from '@/lib/solar-system/suit-feet';
 export type { Track } from '@/lib/solar-system/suit-scripted';
@@ -80,6 +80,8 @@ export interface LocoState {
   jumping: boolean;
   /** A running stride's flight is under way (not a jump). */
   striding: boolean;
+  /** The stride is a two-footed bound (a low-gravity sprint). */
+  bounding: boolean;
   /** The body has just stepped up (+) or down (−) this much and the hips are catching up, m. */
   stepUp: number;
   /** 0…1 through a scripted track. */
@@ -122,7 +124,7 @@ export function makeLocomotion(position: Vec3, velocity: Vec3, initial: GaitProf
   const state: LocoState = {
     mode: 'idle', gait: 'stand', grounded: true, airborne: false, speed: 0, speedFrac: 0, altitude: 0, landed: false, impact: 0, landing: '', landT: 9,
     crouched: false, sprinting: false, stamina: 1, stumble: 0, fallen: false, getUp: 0, grade: 0, sliding: false, lean: 0, leanSide: 0,
-    stride: 0, cadence: 0, stepPhase: 0, stepSide: 1, effort: 0, turning: false, jumping: false, striding: false, stepUp: 0, scriptK: 0,
+    stride: 0, cadence: 0, stepPhase: 0, stepSide: 1, effort: 0, turning: false, jumping: false, striding: false, bounding: false, stepUp: 0, scriptK: 0,
   };
   let coyote = 0;
   let jumpBuffer = 0;
@@ -136,6 +138,8 @@ export function makeLocomotion(position: Vec3, velocity: Vec3, initial: GaitProf
   let lastSpeed = 0;
   let winded = false;
   let lastLanding: Landing = 'soft';
+  /** How long this landing takes to soak up, s. */
+  let recoverFor = 0.25;
 
   feet.onStep = (e) => {
     if (stepClock > 0.05 && stepClock < 3) state.cadence = 1 / stepClock;
@@ -206,8 +210,12 @@ export function makeLocomotion(position: Vec3, velocity: Vec3, initial: GaitProf
         return;
       }
 
-      const rolling = state.mode === 'land' && state.landT < 0.7 && lastLanding === 'roll';
-      const auth = authority * (state.fallen ? 0 : state.stumble > 0 ? 0.25 : rolling ? 0.4 : 1);
+      // Still coming out of a landing: a roll, or legs soaking up a soft one
+      // and giving control back as they straighten.
+      const landing = state.mode === 'land' && state.landT < landFor();
+      const rolling = landing && lastLanding === 'roll';
+      const soaking = landing && lastLanding === 'soft';
+      const auth = authority * (state.fallen ? 0 : state.stumble > 0 ? 0.25 : rolling ? 0.4 : soaking ? 0.35 + 0.65 * state.landT / recoverFor : 1);
       const wantX = input.moveX * auth; const wantZ = input.moveZ * auth;
       const want = Math.min(1, Math.hypot(wantX, wantZ));
       const dirX = want > 1e-6 ? wantX / want : 0; const dirZ = want > 1e-6 ? wantZ / want : 0;
@@ -254,6 +262,12 @@ export function makeLocomotion(position: Vec3, velocity: Vec3, initial: GaitProf
       if (wasGrounded && !state.fallen) {
         state.sliding = steep > SLOPE_LIMIT;
         const control = state.sliding ? 0.3 : 1;
+        // Slow enough to walk, a foot goes down where it is needed: quick off
+        // the mark. Letting go of the stick is a stop, planted step by step at
+        // any speed; only a change of direction at speed is left to the grip.
+        const slow = speed0 < P.walkLimit;
+        const accel = slow ? Math.max(P.accel, P.catchStep) : P.accel;
+        const brake = slow || want < 0.05 ? Math.max(P.brake, P.catchStep) : P.brake;
         let cx = 0; let cz = 0;
         if (state.mode === 'pivot') {
           // A plant: the body stops hard and comes round to face the new way.
@@ -270,7 +284,7 @@ export function makeLocomotion(position: Vec3, velocity: Vec3, initial: GaitProf
           if (speed0 > 0.3) {
             const ux = velocity.x / speed0; const uz = velocity.z / speed0;
             const along = dvx * ux + dvz * uz;
-            const a = clamp(along / TAU, -P.brake, want < 0.05 ? 0 : P.accel) * control;
+            const a = clamp(along / TAU, -brake, want < 0.05 ? 0 : accel) * control;
             let px = dvx - ux * along; let pz = dvz - uz * along;
             const pl = Math.hypot(px, pz) / TAU;
             const latCap = (P.grip * g + P.lateral) * control;
@@ -278,10 +292,10 @@ export function makeLocomotion(position: Vec3, velocity: Vec3, initial: GaitProf
             cx = ux * a + px; cz = uz * a + pz;
           } else {
             const dv = Math.hypot(dvx, dvz);
-            const a = dv > 1e-6 ? Math.min(dv / TAU, P.accel * control) : 0;
+            const a = dv > 1e-6 ? Math.min(dv / TAU, (want < 0.05 ? brake : accel) * control) : 0;
             if (dv > 1e-6) { cx = dvx / dv * a; cz = dvz / dv * a; }
           }
-          if (state.mode !== 'pivot') {
+          if (state.mode !== 'pivot' && !landing) {
             const rising = speed0 > lastSpeed;
             state.mode = want < 0.05 ? (speed0 > 0.15 ? 'stop' : 'idle') : speed0 < 0.4 * top && rising ? 'start' : 'move';
           }
@@ -292,17 +306,20 @@ export function makeLocomotion(position: Vec3, velocity: Vec3, initial: GaitProf
         const fx = Math.sin(loco.yaw); const fz = Math.cos(loco.yaw);
         leanWant = Math.atan2(cx * fx + cz * fz, g);
         leanSide = Math.atan2(cx * fz - cz * fx, g) * 0.5;
-        effort = Math.min(1, Math.hypot(cx, cz) / P.accel * 0.4 + speed0 / P.sprint * 0.6);
+        effort = Math.min(1, Math.hypot(cx, cz) / accel * 0.4 + speed0 / P.sprint * 0.6);
         // ── A running stride: the boots leave the ground between steps. ──
         if (striding) {
           stanceT += dt;
           if (stanceT >= P.stance) {
             const align = want > 0.1 ? Math.max(0, (dirX * velocity.x + dirZ * velocity.z) / Math.max(0.01, speed0)) : 1;
-            const flight = Math.max(0.04, P.flight * (0.45 + 0.55 * align));
+            // Sprinting in low gravity, both boots push together: the kangaroo hop.
+            const bound = P.bound && sprinting && speed0 > P.run * 0.95;
+            const flight = Math.max(0.04, (bound ? P.boundFlight : P.flight) * (0.45 + 0.55 * align));
             velocity.y = g * flight / 2;
             stanceT = 0;
             launched = true;
             state.striding = true;
+            state.bounding = bound;
             feet.launchStride();
             effort = Math.max(effort, 0.5);
           }
@@ -353,6 +370,11 @@ export function makeLocomotion(position: Vec3, velocity: Vec3, initial: GaitProf
       const roof = loco.ceilingAt?.(position.x, position.z) ?? null;
       if (roof !== null && position.y + HEAD > roof) { position.y = roof - HEAD; if (velocity.y > 0) velocity.y = 0; }
       const g2 = heightAt(position.x, position.z);
+      // Into a crate mid-stride, low over the ground: a runner vaults it off the stride too.
+      if (touched && !wasGrounded && state.striding && !state.jumping && position.y - g2 < 0.35 && want > 0.5 && !crouched && state.stumble <= 0) {
+        const over = vaultProbe(position, dirX, dirZ, colliders, heightAt, P.suited ? VAULT_MAX.suited : VAULT_MAX.soft);
+        if (over) { loco.script(vaultTrack({ x: position.x, y: position.y, z: position.z, yaw: loco.yaw }, over.top, over.toX, over.toY, over.toZ, speed0, g < 5), 'move'); finish(1, g2, heightAt); return; }
+      }
       if (wasGrounded && !launched && !state.jumping) {
         const before = position.y;
         const contact = stepGround(position, velocity, prevX, prevZ, g2);
@@ -386,7 +408,8 @@ export function makeLocomotion(position: Vec3, velocity: Vec3, initial: GaitProf
             else { state.landed = true; fall(); }
           }
           const hard = fromStride ? Math.min(1, 0.2 + speed0 / P.run * 0.5) : Math.min(1, 0.5 + impact / (P.hardLand * 1.5));
-          feet.land(hard, fromStride);
+          feet.land(hard, fromStride && !state.bounding);
+          if (kind === 'soft') recoverFor = landRecovery(P, impact);
           if (fromStride) { state.mode = want < 0.05 ? 'stop' : 'move'; }
         }
         position.y = g2; velocity.y = 0;
@@ -397,6 +420,7 @@ export function makeLocomotion(position: Vec3, velocity: Vec3, initial: GaitProf
 
       finish(effort, g2, heightAt);
       if (wasGrounded) state.striding = striding && state.mode !== 'pivot' && state.mode !== 'land';
+      if (!state.striding) state.bounding = false;
 
       // ── Facing. ──
       state.turning = false;
@@ -426,6 +450,8 @@ export function makeLocomotion(position: Vec3, velocity: Vec3, initial: GaitProf
       state.cadence += (0 - state.cadence) * (1 - Math.exp(-dt * 0.4));
     },
   };
+  /** How long the last landing keeps the body in it, s. */
+  function landFor() { return lastLanding === 'roll' ? 0.7 : lastLanding === 'soft' ? recoverFor : 0.25; }
   /** The readouts every path ends on. */
   function finish(effort: number, groundY: number, heightAt: (x: number, z: number) => number) {
     const speed = Math.hypot(velocity.x, velocity.z);
@@ -435,7 +461,7 @@ export function makeLocomotion(position: Vec3, velocity: Vec3, initial: GaitProf
     state.speedFrac = clamp(speed / P.sprint, 0, 1);
     state.altitude = position.y - heightAt(position.x, position.z);
     state.effort = effort;
-    if (state.mode === 'land' && state.landT > (lastLanding === 'roll' ? 0.7 : 0.25)) state.mode = speed > 0.15 ? 'move' : 'idle';
+    if (state.mode === 'land' && state.landT > landFor()) state.mode = speed > 0.15 ? 'move' : 'idle';
     state.gait = state.fallen ? 'fallen' : airborne && !state.striding ? 'air'
       : speed < 0.1 ? 'stand' : state.sprinting && speed > P.run ? 'sprint' : speed > (P.jog + P.run) / 2 ? 'run' : speed > (P.walk + P.jog) / 2 ? 'jog' : 'walk';
   }

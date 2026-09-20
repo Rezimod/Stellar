@@ -3,7 +3,7 @@
 // crickets after dark, and wind that picks up on the walls of Narikala.
 // Synthesised in Web Audio, nothing sampled; started on the first gesture.
 
-import { onSoundChange, soundOn } from '@/lib/solar-system/sound-prefs';
+import { onSoundChange, soundLevel } from '@/lib/solar-system/sound-prefs';
 
 const MASTER_GAIN = 0.16;
 
@@ -32,8 +32,8 @@ export function makeCityAmbience(): CityAmbience {
   let motor: { osc: OscillatorNode; sub: OscillatorNode; filter: BiquadFilterNode; gain: GainNode } | null = null;
   let clapK = 0;
   let clapT = 0;
-  const unsubscribe = onSoundChange((on) => {
-    if (master && ctx) master.gain.setTargetAtTime(on ? MASTER_GAIN : 0, ctx.currentTime, 0.05);
+  const unsubscribe = onSoundChange((_on, level) => {
+    if (master && ctx) master.gain.setTargetAtTime(level * MASTER_GAIN, ctx.currentTime, 0.05);
   });
   const loop = (c: AudioContext, type: BiquadFilterType, f: number, q: number, level: number, out: AudioNode) => {
     const src = c.createBufferSource();
@@ -53,7 +53,7 @@ export function makeCityAmbience(): CityAmbience {
         if (!ctx) {
           ctx = new AudioContext();
           master = ctx.createGain();
-          master.gain.value = soundOn() ? MASTER_GAIN : 0;
+          master.gain.value = soundLevel() * MASTER_GAIN;
           master.connect(ctx.destination);
           noise = ctx.createBuffer(1, ctx.sampleRate * 3, ctx.sampleRate);
           const d = noise.getChannelData(0);

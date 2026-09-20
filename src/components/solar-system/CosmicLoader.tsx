@@ -13,6 +13,8 @@ interface CosmicLoaderProps {
   variant?: LoaderVariant;
   /** Lines to hand the reader while they wait; one at a time, in order. */
   tips?: string[];
+  /** 0..1 when the caller knows how far along it is; otherwise the bar just moves. */
+  progress?: number;
 }
 
 /** Deterministic pseudo-random stars, so the server and the client draw the same sky. */
@@ -39,7 +41,7 @@ const TIP_MS = 3800;
 
 /** The wait before a 3D scene: a starfield, something turning in the
  *  middle of it, and a line worth reading while the scene comes up. */
-export function CosmicLoader({ label, detail, className, variant = 'orrery', tips }: CosmicLoaderProps) {
+export function CosmicLoader({ label, detail, className, variant = 'orrery', tips, progress }: CosmicLoaderProps) {
   const [tip, setTip] = useState(0);
   const count = tips?.length ?? 0;
   useEffect(() => {
@@ -73,7 +75,9 @@ export function CosmicLoader({ label, detail, className, variant = 'orrery', tip
       )}
       <p className="cosmic-loader__label">{label}</p>
       {detail && <p className="cosmic-loader__detail">{detail}</p>}
-      <span className="cosmic-loader__bar" aria-hidden><i /></span>
+      <span className="cosmic-loader__bar" data-determinate={progress !== undefined ? '' : undefined} aria-hidden>
+        <i style={progress !== undefined ? { width: `${Math.round(Math.min(1, Math.max(0, progress)) * 100)}%` } : undefined} />
+      </span>
       {count > 0 && tips && <p key={tip} className="cosmic-loader__tip">{tips[tip]}</p>}
     </div>
   );

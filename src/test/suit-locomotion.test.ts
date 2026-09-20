@@ -72,13 +72,15 @@ describe('the gait profile, from gravity', () => {
   });
 
   it('jumps by the legs and gravity: the Moon hangs, Mars hops, Proxima b barely leaves the ground', () => {
+    // Under the felt gravity (gait-profile's header): lunar, but not wading.
     const apex = (p: GaitProfile) => (p.hop * p.hop) / (2 * p.g);
     const air = (p: GaitProfile) => (2 * p.hop) / p.g;
-    expect(apex(moon)).toBeGreaterThan(1.1);
-    expect(apex(moon)).toBeLessThan(1.5);
-    expect(air(moon)).toBeGreaterThan(2.2);
-    expect(apex(mars)).toBeGreaterThan(0.35);
-    expect(apex(mars)).toBeLessThan(0.6);
+    expect(apex(moon)).toBeGreaterThan(0.6);
+    expect(apex(moon)).toBeLessThan(0.9);
+    expect(air(moon)).toBeGreaterThan(1.2);
+    expect(air(moon)).toBeLessThan(1.6);
+    expect(apex(mars)).toBeGreaterThan(0.25);
+    expect(apex(mars)).toBeLessThan(0.45);
     expect(apex(proxima)).toBeCloseTo(JUMP_MIN_APEX, 3);
     expect(air(proxima)).toBeLessThan(0.4);
     expect(apex(earth)).toBeGreaterThan(0.3);
@@ -100,7 +102,7 @@ describe('the gait profile, from gravity', () => {
   it('runs at the cadence of its gravity: the lunar lope is slow and long in the air', () => {
     expect(moon.cadenceRun).toBeLessThan(mars.cadenceRun);
     expect(mars.cadenceRun).toBeLessThan(proxima.cadenceRun);
-    expect(moon.flight).toBeGreaterThan(0.5);
+    expect(moon.flight).toBeGreaterThan(0.4);
     expect(proxima.flight).toBeLessThan(0.25);
   });
 
@@ -114,21 +116,21 @@ describe('the gait profile, from gravity', () => {
       expect(classifyLanding(p, p.hardLand * 0.99)).toBe('hard');
       expect(classifyLanding(p, p.hardLand * 1.5)).toBe('fall');
     }
-    // A two-metre drop is soft on the Moon, a roll on Mars and a hard landing on Proxima b.
+    // An 80 cm drop is soft on the Moon, a roll on Mars and a hard landing on Proxima b.
     const drop = (p: GaitProfile, h: number) => classifyLanding(p, Math.sqrt(2 * p.g * h));
-    expect(drop(moon, 1.8)).toBe('soft');
-    expect(drop(mars, 1.2)).toBe('roll');
-    expect(drop(proxima, 1.2)).toBe('hard');
+    expect(drop(moon, 0.8)).toBe('soft');
+    expect(drop(mars, 0.8)).toBe('roll');
+    expect(drop(proxima, 0.8)).toBe('hard');
   });
 });
 
 describe('the suit in one-sixth g', () => {
-  it('hops more than a metre and hangs over two seconds, on the ballistic arc', () => {
+  it('hops most of a metre and hangs over a second, on the ballistic arc', () => {
     const w = walker(moon);
     const { air, apex } = hop(w);
     expect(air).toBeCloseTo((2 * moon.hop) / moon.g, 1);
     expect(apex).toBeCloseTo((moon.hop * moon.hop) / (2 * moon.g), 1);
-    expect(apex).toBeGreaterThan(1.1);
+    expect(apex).toBeGreaterThan(0.6);
   });
 
   it('lopes at a jog: real flights between strides, a foot at a time', () => {
@@ -152,10 +154,11 @@ describe('the suit in one-sixth g', () => {
     w.run(4, { moveZ: 1, sprint: true });
     expect(w.loco.state.speed).toBeGreaterThan(moon.run);
     expect(w.loco.state.sprinting).toBe(true);
-    let t = 0;
+    // The whole sprint, from the key going down, lasts about the profile's stamina.
+    let t = 4;
     while (w.loco.state.sprinting && t < 30) { w.run(DT, { moveZ: 1, sprint: true }); t += DT; }
-    expect(t).toBeGreaterThan(moon.stamina * 0.5);
-    expect(t).toBeLessThan(moon.stamina);
+    expect(t).toBeGreaterThan(moon.stamina * 0.8);
+    expect(t).toBeLessThan(moon.stamina * 1.1);
     expect(w.loco.state.stamina).toBeLessThan(0.05);
     // Winded: the key does nothing until the legs have some of their wind back.
     w.run(0.3, { moveZ: 1, sprint: true });
@@ -175,7 +178,7 @@ describe('the suit in one-sixth g', () => {
     let t = 0;
     while ((w.loco.state.speed > 0.05 || w.loco.state.airborne) && t < 10) { w.run(DT); t += DT; }
     expect(w.position.z - z0).toBeGreaterThan(0.5);
-    expect(w.position.z - z0).toBeLessThan(moon.jog * moon.jog / (2 * moon.brake) + 1.2);
+    expect(w.position.z - z0).toBeLessThan(moon.jog * moon.jog / (2 * moon.brake) + 1.6);
     expect(w.loco.state.mode).toBe('idle');
   });
 
@@ -264,18 +267,24 @@ describe('jumping like a game', () => {
     const far = (p: GaitProfile) => {
       const w = walker(p);
       w.run(4, { moveZ: 1 });
+      // Asked mid-stride, the jump waits for the boots to come down.
+      const takeOff = () => {
+        w.loco.update(DT, input({ moveZ: 1, jump: true }), flat, [], 999);
+        for (let i = 0; i < 240 && !w.loco.state.jumping; i++) w.run(DT, { moveZ: 1 });
+        expect(w.loco.state.jumping).toBe(true);
+      };
+      takeOff();
       const z0 = w.position.z;
-      w.loco.update(DT, input({ moveZ: 1, jump: true }), flat, [], 999);
       while (w.loco.state.jumping) w.run(DT, { moveZ: 1 });
       const length = w.position.z - z0;
       w.run(1, { moveZ: 1 });
-      w.loco.update(DT, input({ moveZ: 1, jump: true }), flat, [], 999);
+      takeOff();
       let drift = 0;
       while (w.loco.state.jumping) { w.run(DT, { moveX: 1, moveZ: 1 }); drift = w.position.x; }
       return { length, drift };
     };
     const m = far(moon); const e = far(earth);
-    expect(m.length).toBeGreaterThan(8);
+    expect(m.length).toBeGreaterThan(e.length * 1.6);
     expect(e.length).toBeLessThan(4);
     expect(m.drift).toBeGreaterThan(e.drift * 2);
   });
@@ -295,11 +304,11 @@ describe('jumping like a game', () => {
     let landing = '';
     while (!landing) { w.run(DT, { moveZ: 1 }); landing = w.loco.state.landing; }
     expect(landing).toBe('soft');
-    expect(drop(mars, 1.2)).toBe('roll');
+    expect(drop(mars, 0.8)).toBe('roll');
     expect(drop(mars, 3.5)).toBe('hard');
     expect(drop(mars, 12)).toBe('fall');
     expect(drop(proxima, 1.2)).toBe('hard');
-    expect(drop(moon, 1.5)).toBe('soft');
+    expect(drop(moon, 0.6)).toBe('soft');
   });
 });
 
@@ -350,7 +359,9 @@ describe('the capsule against the world', () => {
     w.run(4, { moveZ: 1 }, () => { vaulted ||= w.loco.state.mode === 'vault'; });
     expect(vaulted).toBe(true);
     expect(w.position.z).toBeGreaterThan(crate.z + crate.r);
-    expect(w.loco.state.grounded).toBe(true);
+    // On its feet, still loping (a stride's flight is not a fall).
+    expect(w.loco.state.fallen).toBe(false);
+    expect(w.loco.state.mode).not.toBe('fall');
   });
 
   it('stops at a roof', () => {
@@ -371,13 +382,13 @@ describe('Earth gravity, helmet off', () => {
     const e = hop(walker(earth));
     const m = hop(walker(moon));
     expect(e.air).toBeLessThan(0.7);
-    expect(m.air / e.air).toBeGreaterThan(3);
+    expect(m.air / e.air).toBeGreaterThan(2.2);
   });
 });
 
 describe('the suit on the mesh', () => {
   const ctx = new Proxy({}, { get: (_t, k) => (k === 'createImageData' ? (w: number, h: number) => ({ data: new Uint8ClampedArray(w * h * 4) }) : () => {}) });
-  const dust: DustHandle = { points: new THREE.Points(), burst: vi.fn(), update: vi.fn(), dispose: vi.fn() };
+  const dust: DustHandle = { points: new THREE.Points(), burst: vi.fn(), setCap: vi.fn(), update: vi.fn(), dispose: vi.fn() };
 
   it('puts the boot soles on the planted feet: no skating', async () => {
     const getContext = HTMLCanvasElement.prototype.getContext;
@@ -417,7 +428,8 @@ describe('the suit on the mesh', () => {
     expect(c.state.gravity).toBeCloseTo(EARTH_G);
     expect(c.profile.suited).toBe(false);
     c.setGravity(LUNAR_G, true);
-    expect(c.profile.g).toBeCloseTo(LUNAR_G);
+    expect(c.profile.worldG).toBeCloseTo(LUNAR_G);
+    expect(c.state.gravity).toBeCloseTo(LUNAR_G);
     c.dispose();
     HTMLCanvasElement.prototype.getContext = getContext;
   });

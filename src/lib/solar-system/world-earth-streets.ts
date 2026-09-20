@@ -11,6 +11,7 @@ import {
   COVER, ROAD, centroid, coverAt, makeRiverLevel, type EarthData, type HeightGrid, type Pt,
 } from '@/lib/solar-system/world-earth-data';
 import { withHaze } from '@/lib/solar-system/world-earth-haze';
+import { cellKey } from '@/lib/solar-system/world-earth-city';
 import { mergeGeometries, mergeVertices } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
 export interface StreetsHandle {
@@ -51,7 +52,7 @@ export function makeStreets(data: EarthData, heightAt: (x: number, z: number) =>
   // ── Bridges: level from one bank to the other. ──
   interface Deck { pts: Pt[]; y0: number; y1: number; len: number; half: number }
   const decks: Deck[] = [];
-  const deckHash = new Map<string, Deck[]>();
+  const deckHash = new Map<number, Deck[]>();
   for (const r of data.roads) {
     if (!r.bridge || r.pts.length < 2) continue;
     let len = 0;
@@ -64,16 +65,19 @@ export function makeStreets(data: EarthData, heightAt: (x: number, z: number) =>
     if (Math.max(d.y0, d.y1) < floor) { d.y0 = Math.max(d.y0, floor); d.y1 = Math.max(d.y1, floor); }
     decks.push(d);
     for (const [x, z] of r.pts) {
-      const key = `${Math.floor(x / 50)},${Math.floor(z / 50)}`;
-      if (!deckHash.has(key)) deckHash.set(key, []);
-      if (!deckHash.get(key)!.includes(d)) deckHash.get(key)!.push(d);
+      const key = cellKey(Math.floor(x / 50), Math.floor(z / 50));
+      let list = deckHash.get(key);
+      if (!list) { list = []; deckHash.set(key, list); }
+      if (!list.includes(d)) list.push(d);
     }
   }
   const deckAt = (x: number, z: number): number => {
     let best = NaN;
     const i = Math.floor(x / 50); const j = Math.floor(z / 50);
     for (let dj = -2; dj <= 2; dj++) for (let di = -2; di <= 2; di++) {
-      for (const d of deckHash.get(`${i + di},${j + dj}`) ?? []) {
+      const list = deckHash.get(cellKey(i + di, j + dj));
+      if (!list) continue;
+      for (const d of list) {
         let run = 0;
         for (let k = 0; k + 1 < d.pts.length; k++) {
           const [ax, az] = d.pts[k]; const [bx, bz] = d.pts[k + 1];
@@ -387,8 +391,8 @@ export function makeStreets(data: EarthData, heightAt: (x: number, z: number) =>
     transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
   });
   materials.push(lampMat);
+  lampGeom.computeBoundingSphere();
   const lamps = new THREE.Points(lampGeom, lampMat);
-  lamps.frustumCulled = false;
   lamps.name = 'lamps';
   group.add(lamps);
 

@@ -79,6 +79,7 @@ export function makeDeepSpaceProbes(mode: ScaleMode): ProbesHandle {
     lastDrawnAu: number;
     trailGeo: THREE.BufferGeometry;
     trailMat: THREE.LineBasicMaterial;
+    trail: THREE.Line;
   }
 
   const recs: ProbeRec[] = [];
@@ -130,11 +131,12 @@ export function makeDeepSpaceProbes(mode: ScaleMode): ProbesHandle {
     const trailMat = new THREE.LineBasicMaterial({
       color: 0x9fc0e8, transparent: true, opacity: 0, depthWrite: false,
     });
-    group.add(new THREE.Line(trailGeo, trailMat));
+    const trail = new THREE.Line(trailGeo, trailMat);
+    group.add(trail);
 
     recs.push({
       spec, dir, dot, dotMat, label, labelMat, labelTex, labelCtx: ctx,
-      lastDrawnAu: -1, trailGeo, trailMat,
+      lastDrawnAu: -1, trailGeo, trailMat, trail,
     });
   }
 
@@ -155,11 +157,17 @@ export function makeDeepSpaceProbes(mode: ScaleMode): ProbesHandle {
   const pos = new THREE.Vector3();
   const past = new THREE.Vector3();
   const targets: TargetCandidate[] = recs.map((rec) => ({ id: rec.spec.id, kind: 'probe', position: new THREE.Vector3() }));
+  let lastEpoch = NaN;
+  let lastRadius = NaN;
 
   return {
     group,
     targets,
     update(epochMs: number, cameraRadius: number) {
+      // Every value here is a function of the epoch and the camera radius.
+      if (epochMs === lastEpoch && cameraRadius === lastRadius) return;
+      lastEpoch = epochMs;
+      lastRadius = cameraRadius;
       // Labels live in the outer-system band: fade in once the camera leaves
       // the inner planets, fade out again as the stellar tier takes over.
       const camR = cameraRadius;
@@ -190,6 +198,9 @@ export function makeDeepSpaceProbes(mode: ScaleMode): ProbesHandle {
         rec.dotMat.opacity = camR <= 0 ? 0.35 : 0.6 + fade * 0.35;
         rec.labelMat.opacity = fade * 0.95;
         rec.trailMat.opacity = fade * 0.3;
+        // A faded label or trail is still a draw call unless it is hidden.
+        rec.label.visible = fade > 0.01;
+        rec.trail.visible = fade > 0.01;
         if (Math.abs(au - rec.lastDrawnAu) > 0.2) drawLabel(rec, au);
       }
     },

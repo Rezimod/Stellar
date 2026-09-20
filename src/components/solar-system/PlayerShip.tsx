@@ -17,6 +17,7 @@ export type LandingSite = 'moon' | WorldId;
 import { GameStick, tapKey } from './GameStick';
 import { useLoadingTips } from './useLoadingTips';
 import { useSoundPref } from './useSoundPref';
+import { settle } from '@/game/settle';
 
 /** The launch screen stays at least this long, and until the ship has flown a few frames. */
 const LAUNCH_MIN_MS = 1500;
@@ -32,8 +33,12 @@ interface PlayerShipProps {
   /** The viewport is drawn a quarter turn clockwise — landscape on a phone. */
   landscape: boolean;
   onLandscape: (on: boolean) => void;
+  /** The game shell's pause holds the deck too. */
+  shellPaused?: boolean;
+  /** The deck paused itself (Esc, a lost pointer lock): the shell should show its menu. */
+  onPauseRequest?: () => void;
 }
-const SHIPS: ShipKind[] = ['kestrel', 'xfoil', 'endurance'];
+const SHIPS: ShipKind[] = ['kestrel', 'xfoil', 'cruiser', 'endurance'];
 const BARS = ['shield', 'energy', 'boost'] as const;
 const KEY_ROWS = ['r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r10', 'r12', 'r13', 'r7', 'r15', 'r8', 'r16', 'r11', 'r14', 'r9'] as const;
 const TOUCH_ROWS = ['t1', 't2', 't3', 't11', 't6', 't15', 't13', 't12', 't9', 't14', 't5'] as const;
@@ -99,7 +104,7 @@ const saveLayout = (layout: Layout) => {
   }
 };
 
-export function PlayerShip({ session, onActiveChange, onLand, landed, landscape, onLandscape }: PlayerShipProps) {
+export function PlayerShip({ session, onActiveChange, onLand, landed, landscape, onLandscape, shellPaused, onPauseRequest }: PlayerShipProps) {
   const t = useTranslations('solarSystem.flight');
   const tb = useTranslations('solarSystem.bodies');
   const tl = useTranslations('solarSystem.loading');
@@ -221,8 +226,11 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, landscape,
     heldRef.current = {};
     lookRef.current = null;
     setPaused(true);
+    onPauseRequestRef.current?.();
   }, [session]);
   pauseRef.current = pause;
+  const onPauseRequestRef = useRef(onPauseRequest);
+  onPauseRequestRef.current = onPauseRequest;
   const attach = () => {
     if (!touch && rootRef.current) detachRef.current = attachDesktopControls(session, rootRef.current, () => pauseRef.current());
   };
@@ -277,23 +285,26 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, landscape,
   };
   // The launch screen comes down once the ship has actually flown a few
   // frames — the first ones are slow, every planet material recompiles for
-  // the flight lights — and never before it has had its moment.
+  // the flight lights — and never before it has had its moment. Paused (the
+  // window lost focus) the ship flies no frames: the screen comes down
+  // anyway rather than sit over a paused deck.
   useEffect(() => {
     if (launch !== 'on') return;
-    const tel = session.telemetry;
-    const from = tel.frame;
-    const t0 = performance.now();
-    let raf = 0;
-    const wait = () => {
-      // Paused (the window lost focus) the ship flies no frames: the screen
-      // comes down anyway rather than sit over a paused deck.
-      const flown = tel.frame - from >= LAUNCH_FRAMES || !session.active || session.paused;
-      if (flown && performance.now() - t0 >= LAUNCH_MIN_MS) setLaunch('fading');
-      else raf = requestAnimationFrame(wait);
-    };
-    raf = requestAnimationFrame(wait);
-    return () => cancelAnimationFrame(raf);
+    return settle({
+      minMs: LAUNCH_MIN_MS, frames: LAUNCH_FRAMES,
+      frame: () => session.telemetry.frame,
+      idle: () => !session.active || session.paused,
+      onSettled: () => setLaunch('fading'),
+    });
   }, [launch, session]);
+  // The shell's pause menu holds the deck, and letting go of it flies on.
+  const shellPausedWas = useRef(false);
+  useEffect(() => {
+    if (shellPaused && active && !session.paused) pause();
+    else if (!shellPaused && shellPausedWas.current && active && session.paused && !editing) resume();
+    shellPausedWas.current = !!shellPaused;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shellPaused]);
   useEffect(() => {
     if (launch !== 'fading') return;
     const id = window.setTimeout(() => setLaunch('off'), 700);
@@ -455,7 +466,7 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, landscape,
       // Standing order: the world the deck wants taken apart.
       const order = orderRef.current;
       if (order) {
-        const on = !!tel.orderId || tel.orderDone;
+        const on = session.combat && (!!tel.orderId || tel.orderDone);
         order.hidden = !on;
         order.dataset.done = String(tel.orderDone);
         if (on) {
@@ -787,7 +798,7 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, landscape,
             <div className="flight-hud__keys">
               {touch ? (
                 <>
-                  <button type="button" className="flight-hud__key flight-hud__key--fire" {...placed('fire')} {...hold('fire')} disabled={keysOff} aria-label={t('fire')} title={t('fire')}><Crosshair size={26} aria-hidden /><span>{t('fire')}</span></button>
+                  {session.combat && <button type="button" className="flight-hud__key flight-hud__key--fire" {...placed('fire')} {...hold('fire')} disabled={keysOff} aria-label={t('fire')} title={t('fire')}><Crosshair size={26} aria-hidden /><span>{t('fire')}</span></button>}
                   <button type="button" className="flight-hud__key" {...placed('boost')} {...hold('boost')} disabled={keysOff} aria-label={t('boost')} title={t('boost')}><ChevronsUp size={20} aria-hidden /><span>{t('boost')}</span></button>
                   <button type="button" className="flight-hud__key" {...placed('brake')} {...hold('brake')} disabled={keysOff} aria-label={t('brake')} title={t('brake')}><Pause size={16} aria-hidden /><span>{t('brake')}</span></button>
                   <div className="flight-hud__gear-slot" {...placed('gear')}><FlightGear session={session} paused={keysOff} touch={touch} /></div>

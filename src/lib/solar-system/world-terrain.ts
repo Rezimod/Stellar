@@ -134,7 +134,8 @@ function rockGeometry(seed: number, detail: number): THREE.BufferGeometry {
   return g;
 }
 
-export function makeWorldTerrain(profile: WorldProfile, lite: boolean): WorldTerrain {
+/** `density` scales the rock count (the preset's prop density). */
+export function makeWorldTerrain(profile: WorldProfile, lite: boolean, density = 1): WorldTerrain {
   const N = lite ? 160 : 320;
   const size = WORLD_SIZE;
   const half = size / 2;
@@ -300,20 +301,20 @@ export function makeWorldTerrain(profile: WorldProfile, lite: boolean): WorldTer
 
   // ── Rocks: three cuts in two stones, chunked so the camera culls them. ──
   const rockGeoms = [rockGeometry(1, 1), rockGeometry(2, lite ? 1 : 2), rockGeometry(3, lite ? 1 : 2)];
-  const rockMats = [
-    new THREE.MeshStandardMaterial({ color: G.rockA, roughness: 0.9, metalness: 0.02, normalMap: maps.normal, normalScale: new THREE.Vector2(0.5, 0.5) }),
-    new THREE.MeshStandardMaterial({ color: G.rockB, roughness: 0.85, metalness: 0.02, normalMap: maps.normal, normalScale: new THREE.Vector2(0.5, 0.5) }),
-  ];
-  const perCut = lite ? 80 : 160;
+  // Two stones in one material: the colour rides on the instance.
+  const rockMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.88, metalness: 0.02, normalMap: maps.normal, normalScale: new THREE.Vector2(0.5, 0.5) });
+  const stones = [new THREE.Color(G.rockA), new THREE.Color(G.rockB)];
+  const perCut = Math.round((lite ? 80 : 160) * density);
   const rocks = new THREE.Group();
+  rocks.name = 'world-rocks';
   const instanced: THREE.InstancedMesh[] = [];
   const m = new THREE.Matrix4(); const q = new THREE.Quaternion(); const spin = new THREE.Quaternion();
   const s = new THREE.Vector3(); const p = new THREE.Vector3();
   const nrm = new THREE.Vector3(); const up = new THREE.Vector3(0, 1, 0);
-  const CH = 4;
+  const CH = 3;
   const chunkOf = (v: number) => THREE.MathUtils.clamp(Math.floor((v + half) / size * CH), 0, CH - 1);
   rockGeoms.forEach((rg, cut) => {
-    const buckets: THREE.Matrix4[][][] = [0, 1].map(() => Array.from({ length: CH * CH }, () => []));
+    const buckets: { m: THREE.Matrix4; stone: number }[][] = Array.from({ length: CH * CH }, () => []);
     let placed = 0;
     for (let i = 0; i < perCut * 5 && placed < perCut; i++) {
       const k = i + cut * 1000;
@@ -330,22 +331,21 @@ export function makeWorldTerrain(profile: WorldProfile, lite: boolean): WorldTer
       q.multiply(spin);
       s.set(scale * (0.8 + hash(k, 55, seed) * 0.5), scale * (0.7 + hash(k, 56, seed) * 0.5), scale * (0.8 + hash(k, 57, seed) * 0.5));
       m.compose(p, q, s);
-      buckets[hash(k, 58, seed) < 0.7 ? 0 : 1][chunkOf(z) * CH + chunkOf(x)].push(m.clone());
+      buckets[chunkOf(z) * CH + chunkOf(x)].push({ m: m.clone(), stone: hash(k, 58, seed) < 0.7 ? 0 : 1 });
       placed += 1;
     }
-    buckets.forEach((set, stone) => {
-      for (const bucket of set) {
-        if (bucket.length === 0) continue;
-        const im = new THREE.InstancedMesh(rg, rockMats[stone], bucket.length);
-        im.castShadow = true;
-        im.receiveShadow = true;
-        bucket.forEach((mat4, k) => im.setMatrixAt(k, mat4));
-        im.instanceMatrix.needsUpdate = true;
-        im.computeBoundingSphere();
-        rocks.add(im);
-        instanced.push(im);
-      }
-    });
+    for (const bucket of buckets) {
+      if (bucket.length === 0) continue;
+      const im = new THREE.InstancedMesh(rg, rockMat, bucket.length);
+      im.castShadow = true;
+      im.receiveShadow = true;
+      bucket.forEach((r, k) => { im.setMatrixAt(k, r.m); im.setColorAt(k, stones[r.stone]); });
+      im.instanceMatrix.needsUpdate = true;
+      if (im.instanceColor) im.instanceColor.needsUpdate = true;
+      im.computeBoundingSphere();
+      rocks.add(im);
+      instanced.push(im);
+    }
   });
 
   return {
@@ -354,7 +354,7 @@ export function makeWorldTerrain(profile: WorldProfile, lite: boolean): WorldTer
       geom.dispose(); hGeom.dispose(); mat.dispose();
       maps.map.dispose(); maps.normal.dispose(); maps.rough.dispose();
       for (const g of rockGeoms) g.dispose();
-      for (const rm of rockMats) rm.dispose();
+      rockMat.dispose();
       for (const im of instanced) im.dispose();
     },
   };

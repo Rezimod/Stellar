@@ -23,11 +23,14 @@ export interface DustHandle {
   points: THREE.Points;
   burst: (b: DustBurst) => void;
   update: (dt: number, heightAt: (x: number, z: number) => number) => void;
+  /** How many grains may be in the air at once (the preset's cap, live). */
+  setCap: (n: number) => void;
   dispose: () => void;
 }
 
-/** `g` is the surface gravity the grains fall under; `tint` the colour of the ground they came off. */
-export function makeMoonDust(max: number, g = MOON_G, tint: [number, number, number] = [0.62, 0.61, 0.59]): DustHandle {
+/** `max` grains are allocated and `cap` of them used; `g` is the surface gravity the
+ *  grains fall under; `tint` the colour of the ground they came off. */
+export function makeMoonDust(max: number, cap = max, g = MOON_G, tint: [number, number, number] = [0.62, 0.61, 0.59]): DustHandle {
   const pos = new Float32Array(max * 3);
   const vel = new Float32Array(max * 3);
   const life = new Float32Array(max);
@@ -64,16 +67,20 @@ export function makeMoonDust(max: number, g = MOON_G, tint: [number, number, num
     depthWrite: false,
   });
   const points = new THREE.Points(geom, mat);
-  points.frustumCulled = false;
+  // Grains are wherever the last burst put them: the bounds follow the live ones.
+  geom.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 1);
   points.name = 'moon-dust';
+  const scratch = new THREE.Vector3();
   let head = 0;
   let alive = 0;
+  let limit = Math.max(1, Math.min(max, cap));
+  const bounds = new THREE.Box3();
 
   const burst = (b: DustBurst) => {
     const bias = b.bias ?? 0;
     for (let n = 0; n < b.count; n++) {
       const i = head;
-      head = (head + 1) % max;
+      head = (head + 1) % limit;
       const theta = Math.random() * Math.PI * 2;
       const phi = Math.random() * b.cone;
       const sp = b.speedMin + Math.random() * (b.speedMax - b.speedMin);
@@ -99,6 +106,7 @@ export function makeMoonDust(max: number, g = MOON_G, tint: [number, number, num
     update(dt, heightAt) {
       if (alive === 0) return;
       let any = false;
+      bounds.makeEmpty();
       for (let i = 0; i < max; i++) {
         if (life[i] <= 0) continue;
         any = true;
@@ -112,11 +120,18 @@ export function makeMoonDust(max: number, g = MOON_G, tint: [number, number, num
           life[i] = 0;
           shade[i] = 0;
           pos[i * 3 + 1] = ground - 1;
+        } else {
+          bounds.expandByPoint(scratch.set(pos[i * 3], pos[i * 3 + 1], pos[i * 3 + 2]));
         }
       }
       if (!any) { alive = 0; return; }
+      if (!bounds.isEmpty()) bounds.getBoundingSphere(geom.boundingSphere!).radius += 1;
       posAttr.needsUpdate = true;
       shadeAttr.needsUpdate = true;
+    },
+    setCap(n) {
+      limit = Math.max(1, Math.min(max, Math.round(n)));
+      if (head >= limit) head = 0;
     },
     dispose() {
       geom.dispose();

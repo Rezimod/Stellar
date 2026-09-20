@@ -19,9 +19,26 @@ import {
   type ExpeditionEvent, type ExpeditionSites,
 } from '@/lib/solar-system/world-earth-expedition';
 import { DUSK_ALT, bodyAzAlt, duskFor, pickTarget, tbilisiClock } from '@/lib/solar-system/world-earth-tonight';
+import { cellKey } from '@/lib/solar-system/world-earth-city';
+
+describe('the city\'s spatial hash', () => {
+  it('gives every cell in the walkable grid its own integer key', () => {
+    const seen = new Set<number>();
+    let integers = 0;
+    for (let i = -200; i <= 200; i++) for (let j = -200; j <= 200; j++) {
+      const k = cellKey(i, j);
+      if (Number.isInteger(k)) integers += 1;
+      seen.add(k);
+    }
+    expect(integers).toBe(401 * 401);
+    expect(seen.size).toBe(401 * 401);
+    expect(cellKey(3, 4)).toBe(cellKey(3, 4));
+    expect(cellKey(3, 4)).not.toBe(cellKey(4, 3));
+  });
+});
 
 const flat = () => 0;
-const dust: DustHandle = { points: new THREE.Points(), burst: vi.fn(), update: vi.fn(), dispose: vi.fn() };
+const dust: DustHandle = { points: new THREE.Points(), burst: vi.fn(), setCap: vi.fn(), update: vi.fn(), dispose: vi.fn() };
 const DT = 1 / 60;
 
 describe('the descent into Tbilisi', () => {

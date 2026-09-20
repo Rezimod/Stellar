@@ -90,6 +90,10 @@ function loadDone(): JobId[] {
     return [];
   }
 }
+/** Which side jobs are finished, for the mission list outside the scene. */
+export function readJobsDone(): JobId[] {
+  return loadDone();
+}
 function saveDone(done: JobId[]) {
   try { localStorage.setItem(STORE, JSON.stringify({ done })); } catch { /* keep playing */ }
 }
@@ -335,7 +339,7 @@ export function makeJobs(world: JobWorld): JobsHandle {
         const tg = cur.target();
         const dx = tg.x - ctx.crewX; const dz = tg.z - ctx.crewZ;
         telemetry.distance = Math.hypot(dx, dz);
-        telemetry.bearing = Math.atan2(dx, dz);
+        telemetry.bearing = Math.atan2(dx, -dz);
         telemetry.objective = cur.objective;
         telemetry.meter = cur.kind === 'align' && cur.offset ? Math.max(0, 1 - Math.abs(cur.offset.get()) / 0.35) : -1;
         if (cur.kind === 'go' && !ctx.driving && telemetry.distance < tg.r) advance();

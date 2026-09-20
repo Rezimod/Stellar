@@ -47,6 +47,9 @@ export const firstLightPosterRateLimit = { limit: (id: string) => makeLimit('60 
 // A mailing-list signup is one row per person. 10/hour/IP stops a script from
 // filling the table with addresses that never asked.
 export const subscribeRateLimit = { limit: (id: string) => makeLimit('3600 s', 10, 'rl:subscribe').limit(id) };
+// Placing a base piece in Explore writes one row. 30/min/account is a fast
+// builder's pace and stops a script from carpeting the colony.
+export const basePlaceRateLimit = { limit: (id: string) => makeLimit('60 s', 30, 'rl:base:place').limit(id) };
 export const clubActivateRateLimit = { limit: (id: string) => makeLimit('3600 s', 5, 'rl:club').limit(id) };
 
 // Daily ceilings (24h sliding) — bound the worst-case AI cost / token

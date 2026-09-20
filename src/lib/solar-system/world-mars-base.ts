@@ -23,6 +23,9 @@ export interface MarsBase {
   dispose: () => void;
 }
 
+/** How close the crew must be for the per-frame work — the flag's cloth, the greenhouse light — to run, m. */
+const NEAR_WORK = 60;
+
 function flagTexture(): THREE.CanvasTexture {
   const c = document.createElement('canvas');
   c.width = 192; c.height = 128;
@@ -51,7 +54,7 @@ export function makeMarsBase(kit: Kit, heightAt: (x: number, z: number) => numbe
   const at = (x: number, z: number) => heightAt(x, z);
   const berm = new THREE.MeshStandardMaterial({ color: 0x9a5a34, roughness: 1, metalness: 0, normalMap: M.regolith.normalMap, normalScale: new THREE.Vector2(0.6, 0.6) });
   owned.push(berm);
-  let flagCloth: { pos: THREE.BufferAttribute; geom: THREE.PlaneGeometry } | null = null;
+  let flagCloth: { pos: THREE.BufferAttribute; geom: THREE.PlaneGeometry; x: number; z: number } | null = null;
   const collide = (x: number, z: number, r: number) => colliders.push({ x, z, r });
   const poi = (id: string, x: number, z: number, r: number) => pois.push({ id, x, z, r });
 
@@ -219,7 +222,7 @@ export function makeMarsBase(kit: Kit, heightAt: (x: number, z: number) => numbe
     keep(sign);
     poi('sign', sx, sz, 4);
     const clothPos = (cloth.geometry as THREE.PlaneGeometry).attributes.position as THREE.BufferAttribute;
-    flagCloth = { pos: clothPos, geom: cloth.geometry as THREE.PlaneGeometry };
+    flagCloth = { pos: clothPos, geom: cloth.geometry as THREE.PlaneGeometry, x: fx, z: fz };
   }
 
   // ── The cargo ship on the pad's far side: stainless, fins, legs, a hatch open. ──
@@ -312,8 +315,8 @@ export function makeMarsBase(kit: Kit, heightAt: (x: number, z: number) => numbe
     update(dt, t, crewX, crewZ, lights) {
       blink += dt;
       redMat.emissiveIntensity = 0.5 + 1.4 * (Math.sin(blink * 2.4) > 0.5 ? 1 : 0);
-      // The greenhouse glows from inside; it lights the ground round it at dusk.
-      lights.request(gh.x, at(gh.x, gh.z) + 2.5, gh.z, 0xbfffb0, 18, 22, 1.6);
+      // The greenhouse glows from inside; it lights the ground round it at dusk — when the crew is near enough to see it.
+      if (Math.hypot(gh.x - crewX, gh.z - crewZ) < NEAR_WORK) lights.request(gh.x, at(gh.x, gh.z) + 2.5, gh.z, 0xbfffb0, 18, 22, 1.6);
       for (const d of devils) {
         d.x += d.vx * dt; d.z += d.vz * dt;
         d.spin += dt * 1.8;
@@ -327,7 +330,8 @@ export function makeMarsBase(kit: Kit, heightAt: (x: number, z: number) => numbe
         d.mesh.rotation.y = d.spin;
         d.mesh.rotation.z = Math.sin(t * 0.7) * 0.06;
       }
-      if (flagCloth) {
+      // The cloth is a few pixels past sixty metres: it holds still out there.
+      if (flagCloth && Math.hypot(flagCloth.x - crewX, flagCloth.z - crewZ) < NEAR_WORK) {
         const { pos, geom } = flagCloth;
         for (let i = 0; i < pos.count; i++) {
           tmpV.fromBufferAttribute(pos, i);

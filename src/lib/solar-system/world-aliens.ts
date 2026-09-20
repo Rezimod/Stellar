@@ -68,10 +68,10 @@ interface Villager {
   fore: [THREE.Group, THREE.Group];
   legs: [THREE.Group, THREE.Group];
   shins: [THREE.Group, THREE.Group];
-  skin: THREE.MeshPhysicalMaterial;
+  /** This villager's slot in the shared skin's uniform arrays. */
+  slot: number;
   glow: { value: number };
   ripple: { value: number };
-  tint: THREE.Color;
   x: number; z: number; yaw: number;
   state: AlienState;
   timer: number;
@@ -83,41 +83,68 @@ interface Villager {
 }
 
 const wrap = (a: number) => { while (a > Math.PI) a -= Math.PI * 2; while (a < -Math.PI) a += Math.PI * 2; return a; };
+const COUNT = 6;
 
-function buildVillager(i: number, lite: boolean, geoms: THREE.BufferGeometry[], mats: THREE.Material[]): Villager {
-  const tint = new THREE.Color(SKINS[i % SKINS.length]);
-  const glow = { value: 0.6 };
-  const ripple = { value: 0 };
-  const skin = new THREE.MeshPhysicalMaterial({
-    color: new THREE.Color(0x2a1f3a).lerp(tint, 0.18), roughness: 0.42, metalness: 0.02,
-    clearcoat: 0.6, clearcoatRoughness: 0.3, sheen: 0.8, sheenColor: tint.clone().multiplyScalar(0.6),
+/** One skin for all six. Each villager's tint, glow, ripple and clock sit in
+ *  uniform arrays, and every vertex carries its villager's slot in `uv1.x`
+ *  (and whether it is an eye in `uv1.y`), so the six read as six through one
+ *  material and one program. */
+function makeSkin(): { material: THREE.MeshPhysicalMaterial; glow: { value: number }[]; ripple: { value: number }[]; time: Float32Array } {
+  const glowArr = new Float32Array(COUNT).fill(0.6);
+  const rippleArr = new Float32Array(COUNT);
+  const time = new Float32Array(COUNT);
+  const tints = SKINS.map((h) => new THREE.Color(h));
+  const material = new THREE.MeshPhysicalMaterial({
+    color: 0xffffff, roughness: 0.42, metalness: 0.02,
+    clearcoat: 0.6, clearcoatRoughness: 0.3, sheen: 0.8, sheenColor: new THREE.Color(0x6a5a80),
     emissive: 0xffffff, emissiveIntensity: 1,
   });
-  skin.onBeforeCompile = (shader) => {
-    shader.uniforms.uTint = { value: tint };
-    shader.uniforms.uGlow = glow;
-    shader.uniforms.uRipple = ripple;
-    shader.uniforms.uTime = { value: 0 };
-    skin.userData.time = shader.uniforms.uTime;
+  material.onBeforeCompile = (shader) => {
+    shader.uniforms.uTints = { value: tints };
+    shader.uniforms.uGlow = { value: glowArr };
+    shader.uniforms.uRipple = { value: rippleArr };
+    shader.uniforms.uTime = { value: time };
     shader.vertexShader = shader.vertexShader
-      .replace('#include <common>', '#include <common>\nvarying vec3 vLocal;')
-      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvLocal = position;');
+      .replace('#include <common>', `#include <common>
+        #ifndef USE_UV1
+        attribute vec2 uv1;
+        #endif
+        varying vec3 vLocal; varying float vWho; varying float vEye;`)
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvLocal = position; vWho = uv1.x; vEye = uv1.y;');
     shader.fragmentShader = shader.fragmentShader
-      .replace('#include <common>', '#include <common>\nuniform vec3 uTint; uniform float uGlow; uniform float uRipple; uniform float uTime; varying vec3 vLocal;')
+      .replace('#include <common>', `#include <common>
+        uniform vec3 uTints[${COUNT}]; uniform float uGlow[${COUNT}]; uniform float uRipple[${COUNT}]; uniform float uTime[${COUNT}];
+        varying vec3 vLocal; varying float vWho; varying float vEye;`)
+      .replace('#include <color_fragment>', `#include <color_fragment>
+        int who = int(vWho + 0.5);
+        vec3 tint = uTints[who];
+        // The old skin's 0x2a1f3a and the eyes' 0x08060c, in linear light.
+        diffuseColor.rgb = mix(mix(vec3(0.0232, 0.0137, 0.0423), tint, 0.18), vec3(0.0024, 0.0018, 0.0037), vEye);`)
+      .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\nroughnessFactor = mix(roughnessFactor, 0.1, vEye);')
       .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
         // Bands of the skin's own colour roll down the body; a greeting sends every colour through at once.
-        float band = 0.5 + 0.5 * sin(vLocal.y * 9.0 - uTime * 2.2 + vLocal.x * 3.0);
+        float t = uTime[who];
+        float band = 0.5 + 0.5 * sin(vLocal.y * 9.0 - t * 2.2 + vLocal.x * 3.0);
         band = smoothstep(0.55, 0.95, band);
-        vec3 rainbow = 0.5 + 0.5 * cos(6.2831 * (vLocal.y * 1.2 - uTime * 1.5 + vec3(0.0, 0.33, 0.67)));
-        vec3 col = mix(uTint * band * uGlow, rainbow * 2.2, uRipple);
-        totalEmissiveRadiance = col;`);
+        vec3 rainbow = 0.5 + 0.5 * cos(6.2831 * (vLocal.y * 1.2 - t * 1.5 + vec3(0.0, 0.33, 0.67)));
+        vec3 col = mix(tint * band * uGlow[who], rainbow * 2.2, uRipple[who]);
+        totalEmissiveRadiance = mix(col, tint * 0.15, vEye);`);
   };
-  mats.push(skin);
-  const eyeMat = new THREE.MeshStandardMaterial({ color: 0x08060c, roughness: 0.1, metalness: 0.2, emissive: tint, emissiveIntensity: 0.15 });
-  mats.push(eyeMat);
+  material.customProgramCacheKey = () => 'proxima-villager-skin';
+  const view = (arr: Float32Array) => Array.from({ length: COUNT }, (_, i) => ({ get value() { return arr[i]; }, set value(v: number) { arr[i] = v; } }));
+  return { material, glow: view(glowArr), ripple: view(rippleArr), time };
+}
+
+function buildVillager(i: number, lite: boolean, geoms: THREE.BufferGeometry[], skin: THREE.Material, glow: { value: number }, ripple: { value: number }): Villager {
+  const eyeMat = skin;
   const seg = lite ? 8 : 12;
   const mesh = (parent: THREE.Object3D, g: THREE.BufferGeometry, m: THREE.Material, x = 0, y = 0, z = 0) => {
     geoms.push(g);
+    // The villager's slot and the eye flag ride along on uv1, which the merge keeps.
+    const n = g.attributes.position.count;
+    const who = new Float32Array(n * 2);
+    for (let k = 0; k < n; k++) { who[k * 2] = i; who[k * 2 + 1] = m === eyeMat && g.userData.eye ? 1 : 0; }
+    g.setAttribute('uv1', new THREE.BufferAttribute(who, 2));
     const o = new THREE.Mesh(g, m);
     o.position.set(x, y, z);
     o.castShadow = true;
@@ -139,7 +166,11 @@ function buildVillager(i: number, lite: boolean, geoms: THREE.BufferGeometry[], 
   body.add(head);
   const skull = mesh(head, new THREE.SphereGeometry(0.2, seg, seg), skin, 0, 0.16, 0);
   skull.scale.set(0.85, 1.25, 1.0);
-  for (const s of [-1, 1]) mesh(head, new THREE.SphereGeometry(0.06, 8, 6), eyeMat, s * 0.11, 0.2, 0.14).scale.set(1, 1.4, 0.6);
+  for (const s of [-1, 1]) {
+    const eye = new THREE.SphereGeometry(0.06, 8, 6);
+    eye.userData.eye = true;
+    mesh(head, eye, eyeMat, s * 0.11, 0.2, 0.14).scale.set(1, 1.4, 0.6);
+  }
   for (let k = 0; k < 3; k++) {
     const fin = mesh(head, new THREE.ConeGeometry(0.035, 0.28, 4), skin, (k - 1) * 0.06, 0.42 + (1 - Math.abs(k - 1)) * 0.06, -0.06 - Math.abs(k - 1) * 0.04);
     fin.rotation.x = -0.5 - Math.abs(k - 1) * 0.3;
@@ -171,7 +202,7 @@ function buildVillager(i: number, lite: boolean, geoms: THREE.BufferGeometry[], 
   geoms.push(...mergeStatic(root, { isPivot: (o) => (o as THREE.Group).isGroup === true, minCaster: 0.03 }).geometries);
   return {
     root, body, head, arms: [arms[0], arms[1]], fore: [fore[0], fore[1]], legs: [legs[0], legs[1]], shins: [shins[0], shins[1]],
-    skin, glow, ripple, tint, x: 0, z: 0, yaw: 0, state: 'wander', timer: 1 + i, tx: 0, tz: 0, phase: i * 1.3, speed: 0,
+    slot: i, glow, ripple, x: 0, z: 0, yaw: 0, state: 'wander', timer: 1 + i, tx: 0, tz: 0, phase: i * 1.3, speed: 0,
     home: { x: 0, z: 0 }, nextChat: 10 + i * 4,
   };
 }
@@ -180,13 +211,14 @@ export function makeAliens(opts: AlienOptions): AliensHandle {
   const group = new THREE.Group();
   group.name = 'villagers';
   const geoms: THREE.BufferGeometry[] = [];
-  const mats: THREE.Material[] = [];
+  const skin = makeSkin();
   const { heightAt, village } = opts;
-  const count = 6;
+  const count = COUNT;
   const villagers: Villager[] = [];
   const colliders: Collider[] = [];
+  let noticed = false;
   for (let i = 0; i < count; i++) {
-    const v = buildVillager(i, opts.lite, geoms, mats);
+    const v = buildVillager(i, opts.lite, geoms, skin.material, skin.glow[i], skin.ripple[i]);
     const a = (i / count) * Math.PI * 2 + 1.1;
     v.home = { x: village.x + Math.cos(a) * 8, z: village.z + Math.sin(a) * 8 };
     v.x = v.tx = v.home.x; v.z = v.tz = v.home.z;
@@ -266,8 +298,7 @@ export function makeAliens(opts: AlienOptions): AliensHandle {
     v.ripple.value = Math.max(0, v.ripple.value - dt * 0.7);
     const wantGlow = v.state === 'notice' ? 1.6 : greeting ? 1.4 : v.state === 'follow' || v.state === 'lead' ? 0.9 : 0.55;
     v.glow.value += (wantGlow - v.glow.value) * (1 - Math.exp(-dt * 3));
-    const time = v.skin.userData.time as { value: number } | undefined;
-    if (time) time.value = t + v.phase;
+    skin.time[v.slot] = t + v.phase;
     v.root.position.set(v.x, heightAt(v.x, v.z), v.z);
     v.root.rotation.y = v.yaw;
   };
@@ -345,7 +376,8 @@ export function makeAliens(opts: AlienOptions): AliensHandle {
         if ((v.state === 'wander' || v.state === 'wait' || v.state === 'home') && d < NOTICE_RANGE && (!met || d < 12)) {
           v.state = 'notice';
           v.timer = met ? 0.4 : 1.2 + Math.random() * 0.8;
-          if (!met) opts.onEvent('notice');
+          // Six of them look up on different frames: the banner and the bleep go once.
+          if (!met && !noticed) { noticed = true; opts.onEvent('notice'); }
         }
         pose(v, dt, t);
         colliders[villagers.indexOf(v)].x = v.x;
@@ -360,7 +392,7 @@ export function makeAliens(opts: AlienOptions): AliensHandle {
     },
     dispose() {
       for (const g of geoms) g.dispose();
-      for (const m of mats) m.dispose();
+      skin.material.dispose();
     },
   };
 }

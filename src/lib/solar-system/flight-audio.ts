@@ -6,7 +6,7 @@
 // synthesised in Web Audio, built lazily after the first user gesture, and
 // silent if the browser refuses or the pilot turned the sound off.
 
-import { onSoundChange, soundOn } from '@/lib/solar-system/sound-prefs';
+import { onSoundChange, soundLevel } from '@/lib/solar-system/sound-prefs';
 
 export interface FlightAudio {
   /** The flight begins: a slow organ swell out of nothing. */
@@ -58,15 +58,15 @@ export function makeFlightAudio(): FlightAudio {
   let lastHit = -1;
   let paused = false;
   let disposed = false;
-  const unsubscribe = onSoundChange((on) => {
-    if (master && ctx) master.gain.setTargetAtTime(on ? MASTER_GAIN : 0, ctx.currentTime, 0.05);
+  const unsubscribe = onSoundChange((_on, level) => {
+    if (master && ctx) master.gain.setTargetAtTime(level * MASTER_GAIN, ctx.currentTime, 0.05);
   });
 
   const ready = (): AudioContext => {
     if (!ctx) {
       ctx = new AudioContext();
       master = ctx.createGain();
-      master.gain.value = soundOn() ? MASTER_GAIN : 0;
+      master.gain.value = soundLevel() * MASTER_GAIN;
       master.connect(ctx.destination);
     }
     if (ctx.state === 'suspended' && !paused) void ctx.resume();

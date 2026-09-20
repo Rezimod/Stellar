@@ -55,6 +55,7 @@ import {
 } from '@/lib/solar-system/scene-extras';
 import { makeSunSurface } from '@/lib/solar-system/sun-surface';
 import { makePostFx } from '@/lib/solar-system/post-processing';
+import { probeCalls } from '@/lib/solar-system/moon-perf';
 import {
   createPlayerShip,
   FLIGHT_FAR,
@@ -87,6 +88,7 @@ declare global {
   interface Window {
     /** Development only: lets a headless capture teleport the ship and read the session. */
     __stellarFlight?: { session: FlightSession; ship: PlayerShipHandle; world: FlightWorld; aliens: AlienHandle };
+    __stellarOrrery?: { probe: (within?: string) => Record<string, number> };
   }
 }
 
@@ -112,8 +114,14 @@ export interface CosmicView {
   selectedScreen: { x: number; y: number; rPx: number } | null;
 }
 
+/** The simulation clock, owned by the page and read by the canvas every
+ *  frame — a mutable cell, so ticking it never re-renders anything. */
+export interface EpochRef {
+  current: number;
+}
+
 export interface SolarSystemCanvasProps {
-  epochMs: number;
+  epoch: EpochRef;
   scaleMode: ScaleMode;
   includePluto: boolean;
   selectedId: SolarBodyId | null;
@@ -132,8 +140,6 @@ export interface SolarSystemCanvasProps {
    *  ship, hands the camera to it and turns the alien encounters hostile;
    *  the orbit camera state is left untouched and resumes on exit. */
   flight?: FlightSession;
-  /** Moon Mode has the screen: keep the scene but skip the frames. */
-  suspended?: boolean;
   /** A multiplayer room: the ship's pose goes out through it, the others' come in. */
   room?: RoomLink;
   /** Called once, after the first frame has been drawn. */
@@ -142,19 +148,28 @@ export interface SolarSystemCanvasProps {
 
 /** Project a world-space point onto CSS pixel coords. Returns null when the
  *  point is behind the camera so the overlay can hide its anchor. */
+interface ScreenPoint { x: number; y: number; depth: number }
+const projScratch = new THREE.Vector3();
+
+/** Project a world-space point into `out` (CSS pixels). False when the point
+ *  is behind the camera, so the caller can hide its anchor. Allocation-free. */
+function projectInto(worldPos: THREE.Vector3, camera: THREE.Camera, cssWidth: number, cssHeight: number, out: ScreenPoint): boolean {
+  const v = projScratch.copy(worldPos).project(camera);
+  if (v.z > 1 || v.z < -1) return false;
+  out.x = (v.x * 0.5 + 0.5) * cssWidth;
+  out.y = (-v.y * 0.5 + 0.5) * cssHeight;
+  out.depth = v.z;
+  return true;
+}
+
 function projectToScreen(
   worldPos: THREE.Vector3,
   camera: THREE.Camera,
   cssWidth: number,
   cssHeight: number,
-): { x: number; y: number; depth: number } | null {
-  const v = worldPos.clone().project(camera);
-  if (v.z > 1 || v.z < -1) return null;
-  return {
-    x: (v.x * 0.5 + 0.5) * cssWidth,
-    y: (-v.y * 0.5 + 0.5) * cssHeight,
-    depth: v.z,
-  };
+): ScreenPoint | null {
+  const out = { x: 0, y: 0, depth: 0 };
+  return projectInto(worldPos, camera, cssWidth, cssHeight, out) ? out : null;
 }
 
 function localToScreen(
@@ -164,7 +179,7 @@ function localToScreen(
   cssWidth: number,
   cssHeight: number,
 ): { x: number; y: number; depth: number } | null {
-  const world = local.clone();
+  const world = projScratch.copy(local);
   parent.updateMatrixWorld();
   world.applyMatrix4(parent.matrixWorld);
   return projectToScreen(world, camera, cssWidth, cssHeight);
@@ -216,7 +231,7 @@ function disposeMeshTree(root: THREE.Object3D) {
  * low-orbit camera around `focusBodyId`, hero equirectangular textures when available.
  */
 export function SolarSystemCanvas({
-  epochMs,
+  epoch,
   scaleMode,
   includePluto,
   selectedId,
@@ -227,12 +242,11 @@ export function SolarSystemCanvas({
   zoomTo,
   onZoomToConsumed,
   flight,
-  suspended = false,
   room,
   onReady,
 }: SolarSystemCanvasProps) {
   const mountRef = useRef<HTMLDivElement>(null);
-  const epochRef = useRef(epochMs);
+  const epochRef = useRef(epoch);
   const scaleRef = useRef(scaleMode);
   const plutoRef = useRef(includePluto);
   const selectedRef = useRef(selectedId);
@@ -244,7 +258,7 @@ export function SolarSystemCanvas({
   const onZoomToConsumedRef = useRef(onZoomToConsumed);
   const flightRef = useRef(flight);
 
-  epochRef.current = epochMs;
+  epochRef.current = epoch;
   scaleRef.current = scaleMode;
   plutoRef.current = includePluto;
   selectedRef.current = selectedId;
@@ -255,8 +269,6 @@ export function SolarSystemCanvas({
   zoomToRef.current = zoomTo;
   onZoomToConsumedRef.current = onZoomToConsumed;
   flightRef.current = flight;
-  const suspendedRef = useRef(suspended);
-  suspendedRef.current = suspended;
   const roomRef = useRef(room);
   roomRef.current = room;
   const onReadyRef = useRef(onReady);
@@ -278,7 +290,9 @@ export function SolarSystemCanvas({
     let renderer: THREE.WebGLRenderer;
     try {
       renderer = new THREE.WebGLRenderer({
-        antialias: !lite,
+        // The scene is drawn into the composer's multisampled target; the
+        // canvas itself only receives the final blit.
+        antialias: false,
         alpha: false,
         // 'default' avoids pinning the discrete GPU on for the tab's lifetime on
         // dual-GPU laptops (macOS), which keeps the machine hot/slow.
@@ -378,15 +392,15 @@ export function SolarSystemCanvas({
     // showing us its dark side render as anonymous black balls (users read
     // night-side Mercury near Earth as "a second moon").
     scene.add(new THREE.AmbientLight(0x33405e, 0.8));
-    const key = new THREE.DirectionalLight(0xfff0dd, 0.06);
-    key.position.set(12, 8, 18);
-    scene.add(key);
-    const fill = new THREE.DirectionalLight(0x6a8cc8, 0.04);
-    fill.position.set(-18, -6, -10);
-    scene.add(fill);
     const sunLight = new THREE.PointLight(0xfff4e0, 5.4, 380, 1.1);
     sunLight.name = 'sunLight';
     scene.add(sunLight);
+    // The ship's fill light lives in the scene from the start, dark, and rides
+    // the ship while flying: the light count never changes, so no material
+    // recompiles when the deck launches.
+    const shipFill = new THREE.PointLight(0xdfe9ff, 0, 1, 1.4);
+    shipFill.name = 'shipFill';
+    scene.add(shipFill);
 
     const starSprite = softSpriteTexture();
 
@@ -543,6 +557,7 @@ export function SolarSystemCanvas({
     const atmosphereShells = new Map<SolarBodyId, THREE.Mesh>();
 
     const bodies = new THREE.Group();
+    bodies.name = 'bodies';
     scene.add(bodies);
 
     const planetMoons: PlanetMoonsHandle = makePlanetMoons(lite);
@@ -699,19 +714,21 @@ export function SolarSystemCanvas({
 
     let sampledEpoch = NaN;
     let samples: ReturnType<typeof sampleSolarSystem> = [];
-    const syncMeshes = () => {
-      if (sampledEpoch !== epochRef.current) {
-        sampledEpoch = epochRef.current;
+    const sampledIds = new Set<SolarBodyId>();
+    const syncMeshes = (epochMs: number) => {
+      if (sampledEpoch !== epochMs) {
+        sampledEpoch = epochMs;
         samples = sampleSolarSystem(
-          new Date(epochRef.current),
+          new Date(epochMs),
           scaleRef.current,
           plutoRef.current,
         );
+        sampledIds.clear();
+        for (const smp of samples) sampledIds.add(smp.id);
       }
-      const ids = new Set(samples.map((s) => s.id));
 
-      for (const id of Array.from(meshById.keys())) {
-        if (!ids.has(id)) {
+      for (const id of meshById.keys()) {
+        if (!sampledIds.has(id)) {
           const m = meshById.get(id);
           const h = hitById.get(id);
           if (m) {
@@ -770,6 +787,8 @@ export function SolarSystemCanvas({
             depthWrite: false,
           });
           hit = new THREE.Mesh(hGeom, hMat);
+          // Picking only: the camera never draws layer 1.
+          hit.layers.set(1);
           hit.userData.bodyId = s.id;
           hitById.set(s.id, hit);
           bodies.add(hit);
@@ -869,6 +888,7 @@ export function SolarSystemCanvas({
     };
 
     const raycaster = new THREE.Raycaster();
+    const planetPosOf = (id: SolarBodyId) => meshById.get(id)?.position ?? null;
     const ndc = new THREE.Vector2();
     // Cosmic tier blend, updated each frame from the camera's sysRadius.
     // Used both for fading the galactic layers and for gating picking.
@@ -884,12 +904,14 @@ export function SolarSystemCanvas({
       // We use the live tier blend so the disk isn't pickable when it's
       // still mostly faded out.
       if (galaxyDisk.group.visible && currentTier.galactic > 0.5) {
+        raycaster.layers.set(0);
         const galaxyHit = raycaster.intersectObject(galaxyDisk.pickTarget, false);
         if (galaxyHit.length > 0) {
           onZoomToSunRef.current?.();
           return;
         }
       }
+      raycaster.layers.set(1);
       const hits = raycaster.intersectObjects([...hitById.values()], false);
       const first = hits[0]?.object as THREE.Mesh | undefined;
       const id = (first?.userData.bodyId as SolarBodyId | undefined) ?? null;
@@ -1056,13 +1078,6 @@ export function SolarSystemCanvas({
       if (!mount) return;
       camera.aspect = Math.max(1, mount.clientWidth) / Math.max(1, mount.clientHeight);
       camera.updateProjectionMatrix();
-      // While the Moon has the screen the buffers stay small; the loop
-      // refits them when this scene comes back.
-      if (suspendedRef.current) {
-        renderer.setSize(2, 2, false);
-        postFx.setSize(2, 2);
-        return;
-      }
       renderer.setSize(mount.clientWidth, mount.clientHeight);
       postFx.setSize(mount.clientWidth, mount.clientHeight);
     };
@@ -1084,6 +1099,8 @@ export function SolarSystemCanvas({
     const teardownShip = () => {
       if (!ship) return;
       aliens.setHostile(null);
+      shipFill.intensity = 0;
+      scene.add(shipFill);
       scene.remove(ship.group);
       scene.remove(ship.boltGroup);
       scene.remove(ship.fxGroup);
@@ -1144,15 +1161,21 @@ export function SolarSystemCanvas({
       to.lookAt.copy(from.lookAt);
       to.yaw = from.yaw;
     };
+    let syncEarth: THREE.Vector3 | null = null;
+    const arrivalOf = (name: string, out: FlightAnchor) => {
+      if (name === 'sol') solAnchor(syncEarth, out);
+      else copyAnchor(name === 'gargantua' ? gargantua.arrival : alphaCen.arrival, out);
+    };
     const syncWorld = (shipPos: THREE.Vector3 | null, earth: THREE.Vector3 | null, nowMs: number) => {
+      syncEarth = earth;
       world.bodies.length = 0;
-      meshById.forEach((mesh, id) => {
+      for (const [id, mesh] of meshById) {
         const b = bodyFor(id, id === 'sun' ? 'star' : 'planet', worldRadiusForBody(id), MEAN_RADIUS_KM[id], SURFACE_G[id], ATMOSPHERE[id]);
         b.position.copy(mesh.position);
         // A world taken apart under a standing order stays gone.
         if (b.destroyed) mesh.visible = false;
         world.bodies.push(b);
-      });
+      }
       // The Moon, every planet's moons, the belt's dwarf planets, the station.
       if (earthExtras && earth) {
         const er = worldRadiusForBody('earth');
@@ -1195,10 +1218,6 @@ export function SolarSystemCanvas({
         }
         if (shipPos.distanceTo(gargantua.center) < best) current = 'gargantua';
       }
-      const arrivalOf = (name: string, out: FlightAnchor) => {
-        if (name === 'sol') solAnchor(earth, out);
-        else copyAnchor(name === 'gargantua' ? gargantua.arrival : alphaCen.arrival, out);
-      };
       const dest = resolveDestination(current, flightRef.current?.destination ?? '');
       world.systemName = current;
       arrivalOf(current, world.home);
@@ -1210,6 +1229,7 @@ export function SolarSystemCanvas({
      *  ahead of the ship, close enough to matter, and small enough on screen
      *  that a label tells you something. Anything that already fills the
      *  frame is obvious without a tag. */
+    const markPt: ScreenPoint = { x: 0, y: 0, depth: 0 };
     const markTargets = (
       tel: FlightSession['telemetry'],
       w: FlightWorld,
@@ -1219,6 +1239,7 @@ export function SolarSystemCanvas({
       const height = mount.clientHeight;
       let n = 0;
       tel.markerIds.length = 0;
+      const halfFov = Math.tan(THREE.MathUtils.degToRad(cam.fov) / 2);
       for (const b of w.bodies) {
         if (n >= MARKER_MAX || b.destroyed) continue;
         const dist = cam.position.distanceTo(b.position);
@@ -1227,13 +1248,12 @@ export function SolarSystemCanvas({
         if (b.id === tel.navId) continue;
         // How much of the frame height the body covers. Anything filling
         // more than a small part of it needs no name — you are looking at it.
-        const halfFov = Math.tan(THREE.MathUtils.degToRad(cam.fov) / 2);
         const screenFrac = b.radius / Math.max(dist, 1e-9) / halfFov;
         if (screenFrac > 0.13) continue;
-        const p = projectToScreen(b.position, cam, width, height);
+        const p = markPt;
         // The name runs to the right of the bracket, so the right margin has
         // to be wide enough to hold it rather than clip it at the edge.
-        if (!p || p.x < 40 || p.x > width - 150 || p.y < 40 || p.y > height - 120) continue;
+        if (!projectInto(b.position, cam, width, height, p) || p.x < 40 || p.x > width - 150 || p.y < 40 || p.y > height - 120) continue;
         // Two names on the same spot read as neither; keep the first.
         let crowded = false;
         for (let k = 0; k < n && !crowded; k++) {
@@ -1251,7 +1271,10 @@ export function SolarSystemCanvas({
 
     // Epoch anchor for shader time uniforms — keeps the float32 value the GPU
     // sees small enough to stay precise across the ±2 year scrub range.
-    const baseEpochMs = epochRef.current;
+    const baseEpochMs = epochRef.current.current;
+    // Everything that is a pure function of the epoch is only moved when the
+    // epoch moves: paused, in flight or out at the galaxy nothing is recomputed.
+    let movedEpoch = NaN;
 
     const stopLoop = () => {
       if (raf) {
@@ -1285,32 +1308,20 @@ export function SolarSystemCanvas({
         raf = 0;
         return;
       }
-      if (suspendedRef.current) {
-        // Moon Mode has the screen and a renderer of its own: give back the
-        // GPU memory of the full-size buffers while this scene waits.
-        if (!shrunk) {
-          shrunk = true;
-          renderer.setSize(2, 2, false);
-          postFx.setSize(2, 2);
-        }
-        raf = requestAnimationFrame(loop);
-        return;
-      }
-      if (shrunk) {
-        shrunk = false;
-        onResize();
-      }
       // Wall-clock seconds for shader animation (convection, cloud bands).
       const sceneTime = reduceMotion ? 0 : (now - t0) / 1000;
+      const epochNow = epochRef.current.current;
+      const epochMoved = epochNow !== movedEpoch;
+      movedEpoch = epochNow;
 
-      syncMeshes();
+      syncMeshes(epochNow);
       // Spin phase is a pure function of the simulation epoch — bodies hold
       // still while time is paused and track playback/scrubbing exactly.
-      meshById.forEach((mesh, id) => {
-        mesh.rotation.y = siderealSpinY(id, epochRef.current);
+      for (const [id, mesh] of meshById) {
+        if (epochMoved) mesh.rotation.y = siderealSpinY(id, epochNow);
         tickPlanetMaterial(mesh.material as THREE.Material, sceneTime);
         maybeLoadDetailMap(id, mesh);
-      });
+      }
       sunSurface.setTime(sceneTime);
 
       const sunMesh = meshById.get('sun');
@@ -1325,8 +1336,11 @@ export function SolarSystemCanvas({
           scene.add(ship.group);
           scene.add(ship.boltGroup);
           scene.add(ship.fxGroup);
-          alphaCen.group.visible = true;
-          gargantua.group.visible = true;
+          // Which star system is drawn follows the ship; see below.
+          ship.fillAnchor.add(shipFill);
+          shipFill.position.set(0, 0, 0);
+          shipFill.distance = ship.fillDistance;
+          shipFill.intensity = 0.05;
           // A ship is a fraction of a planet's radius across and the camera
           // rides just behind it, so the near plane comes in. Nothing beyond
           // the star shell is drawn in flight, so the far plane comes in too.
@@ -1351,15 +1365,23 @@ export function SolarSystemCanvas({
       if (ship) {
         syncWorld(ship.group.position, earthPos, now);
         ship.update(dtSec, (now - t0) / 1000, camera, aliens, world);
-        alphaCen.update(session?.paused ? 0 : dtSec, camera.position, camera);
-        gargantua.update(session?.paused ? 0 : dtSec, camera.position, camera);
-        markTargets(session!.telemetry, world, camera);
+        // Only the system the ship is in — or is jumping to — is drawn: the
+        // other stars are light-years away, and their lights would cost every
+        // lit fragment here. During a jump both ends are up so arrival is seamless.
+        const tel = session!.telemetry;
+        const jumping = tel.jumpPhase !== 'none';
+        const inSystem = (name: string) => tel.systemName === name || (jumping && tel.targetName === name);
+        alphaCen.group.visible = inSystem('alphaCentauri');
+        gargantua.group.visible = inSystem('gargantua');
+        if (alphaCen.group.visible) alphaCen.update(session?.paused ? 0 : dtSec, camera.position, camera);
+        if (gargantua.group.visible) gargantua.update(session?.paused ? 0 : dtSec, camera.position, camera);
         const link = roomRef.current;
         fleet.group.visible = !!link;
         if (link) {
-          writeFlightPose(link.self, ship.group, session!.telemetry.pilot === 'eva' ? ship.eva : null, session!.shipKind, world.bodies);
+          writeFlightPose(link.self, ship.group, tel.pilot === 'eva' ? ship.eva : null, session!.shipKind, world.bodies);
           fleet.update(link, world.bodies, camera, now);
         }
+        markTargets(tel, world, camera);
         // Exposure adapts against the Sun: the closer and the more the nose
         // is on it, the further the iris closes, so the disc keeps a
         // surface and the rest of the frame goes dark and dangerous.
@@ -1374,9 +1396,10 @@ export function SolarSystemCanvas({
       if (!reduceMotion) {
         // Ambient background drift + decorative real-time layers: rocket
         // launches, aurora shimmer.
-        stars.rotation.y += 0.000055;
-        milkyWay.rotation.y += 0.000022;
-        milkyGlow.group.rotation.y += 0.000022;
+        // Tuned at 60 Hz: the same drift at any refresh rate.
+        stars.rotation.y += 0.0033 * dtSec;
+        milkyWay.rotation.y += 0.00132 * dtSec;
+        milkyGlow.group.rotation.y += 0.00132 * dtSec;
         earthRocket?.update(dtSec);
         earthMeteors?.update(dtSec);
         for (const a of auroraHandles) a.update(dtSec);
@@ -1387,13 +1410,13 @@ export function SolarSystemCanvas({
       // Epoch-accurate motion — belts, clouds, the real Moon, and Saturn's
       // ring particles all track simulation time (Kepler rates), so they
       // respond to play/scrub/speed exactly like the planets do.
-      asteroidBelt.update(epochRef.current);
-      kuiperBelt.update(epochRef.current);
-      smallBodies.update(epochRef.current, scaleRef.current);
-      earthExtras?.update(epochRef.current, reduceMotion ? 0 : dtSec);
+      asteroidBelt.update(epochNow);
+      kuiperBelt.update(epochNow);
+      if (epochMoved) smallBodies.update(epochNow, scaleRef.current);
+      earthExtras?.update(epochNow, reduceMotion ? 0 : dtSec);
       // Probe labels are system-view furniture — hidden in low orbit and in flight.
-      probes.update(epochRef.current, focusRef.current || ship ? 0 : sysRadius);
-      saturnRings?.update((epochRef.current - baseEpochMs) / 1000);
+      probes.update(epochNow, focusRef.current || ship ? 0 : sysRadius);
+      if (epochMoved) saturnRings?.update((epochNow - baseEpochMs) / 1000);
       if (earthExtras) {
         const earthMesh = meshById.get('earth');
         if (earthMesh) {
@@ -1402,7 +1425,7 @@ export function SolarSystemCanvas({
           if (earthMeteors) earthMeteors.group.position.copy(earthMesh.position);
           if (earthSats) {
             earthSats.group.position.copy(earthMesh.position);
-            earthSats.update(epochRef.current, earthMesh.position);
+            if (epochMoved) earthSats.update(epochNow, earthMesh.position);
             // In flight the deck brackets everything worth naming; the
             // sprite labels would double up on them.
             earthSats.setLabels(!ship);
@@ -1416,8 +1439,10 @@ export function SolarSystemCanvas({
       sunExtras.update(camera.position, sunMesh?.position ?? vZero, dtSec, camera);
 
       // Moons + comet at their epoch-accurate orbital phases (real periods).
-      planetMoons.update(epochRef.current, (id) => meshById.get(id)?.position ?? null);
-      comet.update(epochRef.current, sunMesh?.position ?? vZero);
+      if (epochMoved) {
+        planetMoons.update(epochNow, planetPosOf);
+        comet.update(epochNow, sunMesh?.position ?? vZero);
+      }
 
       // Imperative zoom (e.g. "zoom into Sun" from the galactic tier) —
       // ease sysRadius toward the requested target, then clear the request.
@@ -1505,12 +1530,13 @@ export function SolarSystemCanvas({
       }
       raf = requestAnimationFrame(loop);
     };
-    let shrunk = false;
     let readyFired = false;
     startLoop();
+    if (process.env.NODE_ENV !== 'production') window.__stellarOrrery = { probe: (within) => probeCalls(renderer, scene, () => postFx.render(0), within) };
 
     return () => {
       stopLoop();
+      delete window.__stellarOrrery;
       window.clearTimeout(rebuildTimer);
       renderer.domElement.removeEventListener('webglcontextlost', onContextLost);
       document.removeEventListener('visibilitychange', onVis);

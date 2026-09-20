@@ -16,8 +16,7 @@
 // glass run once per drawn frame.
 
 import * as THREE from 'three';
-import { makeMoonPost } from '@/lib/solar-system/moon-post';
-import { softSpriteTexture } from '@/lib/solar-system/soft-sprite';
+import { makeMoonSky } from '@/lib/solar-system/moon-sky';
 import { makeMoonTerrain, makeMoonHorizon, TERRAIN_WALK_RADIUS, PAD_CENTER } from '@/lib/solar-system/moon-terrain';
 import { makeMoonDust } from '@/lib/solar-system/moon-fx';
 import { makeCosmonaut, type SuitAnim, type WalkInput } from '@/lib/solar-system/moon-cosmonaut';
@@ -25,27 +24,31 @@ import { makeRemoteCrew, writeSurfacePose, type RemoteCrew } from '@/lib/multipl
 import { seedFromCode, type RoomLink } from '@/lib/multiplayer/room-link';
 import type { Gait, Mode, Track } from '@/lib/solar-system/suit-locomotion';
 import { walkTrack } from '@/lib/solar-system/suit-scripted';
-import { makeSprintLatch, sprintFrom, walkFromStick } from '@/lib/solar-system/surface-input';
-import { makeAirlockRun, type AirlockRun } from '@/lib/solar-system/moon-airlock';
-import { bailVelocity, boardTrack, doorSide, doorSpot, seatSpot } from '@/lib/solar-system/moon-rover-seat';
-import { makeMoonBase, type Airlock } from '@/lib/solar-system/moon-base';
+import { headlamp, makeFixedStep, makePressEdge, makeSprintLatch, sprintFrom, walkFromStick, type FootStick } from '@/lib/solar-system/surface-input';
+import { makeAirlockRun, type AirlockContext, type AirlockRun } from '@/lib/solar-system/moon-airlock';
+import { bailVelocity, boardTrack, doorSide, doorSpot, seatSpotInto, type RoverFrame, type Spot } from '@/lib/solar-system/moon-rover-seat';
+import { makeMoonBase, DOOR_Z, type Airlock, type BaseState } from '@/lib/solar-system/moon-base';
 import { makeMeteors } from '@/lib/solar-system/moon-meteors';
 import { makePrints } from '@/lib/solar-system/moon-prints';
 import { makeSuitAudio } from '@/lib/solar-system/moon-audio';
 import { makeRover, type RoverGear } from '@/lib/solar-system/moon-rover';
-import { makeLander, type LanderTelemetry } from '@/lib/solar-system/moon-lander';
-import { makeMission, missionComplete, type MissionTelemetry } from '@/lib/solar-system/moon-mission';
+import { makeLander, type LanderInput, type LanderTelemetry } from '@/lib/solar-system/moon-lander';
+import { makeMission, missionComplete, type MissionContext, type MissionTelemetry } from '@/lib/solar-system/moon-mission';
 import { makeJobs, type JobId, type JobsTelemetry } from '@/lib/solar-system/moon-jobs';
-import { makeMoonPerf, type PerfSample } from '@/lib/solar-system/moon-perf';
-import { makeLightPool } from '@/lib/solar-system/moon-lights';
+import type { PerfSample } from '@/lib/solar-system/moon-perf';
+import { makeSurfaceHost } from '@/lib/solar-system/surface-host';
+import { onQualityChange } from '@/game/quality';
 import { makeKit } from '@/lib/solar-system/moon-kit';
-import { makeCameraRig } from '@/lib/solar-system/moon-camera';
-import { makeInteractions, type InteractionPrompt } from '@/lib/solar-system/moon-interactions';
+import { makeCameraRig, type ChaseTarget, type ChaseTuning } from '@/lib/solar-system/moon-camera';
+import { getSettings, onSettingsChange } from '@/game/settings';
+import { makeInteractions, type InteractionContext, type InteractionPrompt } from '@/lib/solar-system/moon-interactions';
 import { makeSinkhole, makeFall, SINKHOLE, HATCH, HINT_RANGE } from '@/lib/solar-system/moon-sinkhole';
 import { makeBackrooms, type BackroomsHandle, type BackroomsTelemetry } from '@/lib/solar-system/backrooms-scene';
 import { makeBackroomsAudio } from '@/lib/solar-system/backrooms-audio';
 import { loadBackrooms, recordEntry, recordEscape } from '@/lib/solar-system/backrooms-save';
 import { MOON_G } from '@/lib/solar-system/moon-fx';
+import { makeBuildMode, type BuildHandle } from '@/lib/solar-system/build-mode';
+import { BUILD_SITES } from '@/lib/solar-system/build-rules';
 
 /** Three ways to watch the crew, three to ride the rover. */
 export type SurfaceView = 'chase' | 'helmet' | 'wide' | 'rover' | 'cockpit' | 'mast';
@@ -73,8 +76,12 @@ export interface SurfaceInput {
   interact: boolean;
   /** The action key (or the tool key) is held. */
   use: boolean;
-  /** Edge-triggered: walk the camera round. Consumed. */
+  /** Edge-triggered: in and out of the helmet on foot; round the rover's views in it. Consumed. */
   viewToggle: boolean;
+  /** Edge-triggered: walk the camera round every view (the touch camera key). Consumed. */
+  viewCycle: boolean;
+  /** Edge-triggered: the headlamp on or off. Consumed. */
+  headlamp: boolean;
   /** Held: the descent engine, 0…1, while there is still a vehicle to fly. */
   throttle: number;
   /** Edge-triggered: the gear to put the rover in, by its place in `telemetry.gears`. Consumed. */
@@ -107,6 +114,7 @@ export interface SurfaceTelemetry {
   grade: string;
   view: SurfaceView;
   driving: boolean;
+  headlamp: boolean;
   poiId: string;
   poiDist: number;
   impactDist: number;
@@ -190,12 +198,22 @@ export interface MoonSurfaceHandle {
   /** Point the camera so that "forward" is this world direction. */
   face: (dx: number, dz: number) => void;
   where: () => { x: number; z: number; y: number };
-  /** Where the camera is, and whether the base says it may be there. */
-  cameraAt: () => { x: number; y: number; z: number; blocked: boolean; view: SurfaceView };
+  /** Where the camera is, whether the base says it may be there, and its height over the ground. */
+  cameraAt: () => { x: number; y: number; z: number; blocked: boolean; clearance: number; view: SurfaceView };
+  /** Places the camera is hardest to keep clear: a door ramp, inside a dome, against a hull, by the rover, on the steepest ground. */
+  cameraSpots: () => { id: string; x: number; z: number }[];
   advanceMission: () => void;
   startJob: (id?: JobId) => void;
   skipDescent: () => void;
   perf: () => PerfSample;
+  /** Development: draw calls per scene layer. */
+  probe: (within?: string) => Record<string, number>;
+  /** What the base shows: power, dish, dome, charger (missions flip these; development toggles them). */
+  baseState: (next?: Partial<BaseState>) => Readonly<BaseState>;
+  /** Development: hold the camera at this offset from the crew (world metres), looking at them; null lets it go. */
+  devCamera: (offset: [number, number, number] | null) => void;
+  /** The game shell's pause: no frames, no sim, no sound until resumed. */
+  setPaused: (on: boolean) => void;
   roverAt: () => { x: number; z: number };
   /** Walk onto the sinkhole's edge. */
   fallIntoBackrooms: () => void;
@@ -205,6 +223,8 @@ export interface MoonSurfaceHandle {
   escapeBackrooms: () => void;
   /** The Backrooms while the crew is in them. */
   backrooms: () => BackroomsHandle | null;
+  /** Player base building: the pieces, the ghost, the catalogue. */
+  build: BuildHandle;
   dispose: () => void;
 }
 
@@ -222,8 +242,9 @@ const EGRESS_HOLD = 4.2;
 const HOLE_CALL_AFTER = 75;
 const STEP = 1 / 120;
 const MAX_STEPS = 12;
-const SUN_DIR = new THREE.Vector3(-0.62, 0.46, 0.64).normalize();
-const EARTH_DIR = new THREE.Vector3(0.28, 0.6, -0.75).normalize();
+// Near the south pole the Sun never climbs far: a low sun out of the south-west,
+// long shadows across the base. Earth's direction is real, from moon-sky.
+const SUN_DIR = new THREE.Vector3(-0.62, 0.3, 0.72).normalize();
 
 export function starfield(count: number, band: number): THREE.Points {
   const total = count + band;
@@ -259,7 +280,7 @@ export function starfield(count: number, band: number): THREE.Points {
 }
 
 /** A tiny environment for the visor and the metal: black sky, bright regolith below, one sun. */
-function makeEnvironment(renderer: THREE.WebGLRenderer): THREE.Texture {
+function makeEnvironment(renderer: THREE.WebGLRenderer): THREE.WebGLRenderTarget {
   const scene = new THREE.Scene();
   const sky = new THREE.Mesh(new THREE.SphereGeometry(50, 16, 8), new THREE.MeshBasicMaterial({ color: 0x000000, side: THREE.BackSide }));
   scene.add(sky);
@@ -271,121 +292,42 @@ function makeEnvironment(renderer: THREE.WebGLRenderer): THREE.Texture {
   sun.position.copy(SUN_DIR).multiplyScalar(40);
   scene.add(sun);
   const pmrem = new THREE.PMREMGenerator(renderer);
-  const tex = pmrem.fromScene(scene, 0.03).texture;
+  const target = pmrem.fromScene(scene, 0.03);
   pmrem.dispose();
   sky.geometry.dispose(); (sky.material as THREE.Material).dispose();
   ground.geometry.dispose(); (ground.material as THREE.Material).dispose();
   sun.geometry.dispose(); (sun.material as THREE.Material).dispose();
-  return tex;
+  return target;
 }
 
-const AtmosphereShader = {
-  uniforms: { uSun: { value: new THREE.Vector3() } },
-  vertexShader: `varying vec3 vN; varying vec3 vV; void main() { vN = normalize(normalMatrix * normal); vec4 mv = modelViewMatrix * vec4(position, 1.0); vV = normalize(-mv.xyz); gl_Position = projectionMatrix * mv; }`,
-  fragmentShader: `uniform vec3 uSun; varying vec3 vN; varying vec3 vV;
-    void main() { float rim = pow(1.0 - max(dot(vN, vV), 0.0), 3.2); float lit = clamp(dot(vN, uSun) * 1.4 + 0.35, 0.0, 1.0);
-      gl_FragColor = vec4(vec3(0.42, 0.66, 1.0) * rim * lit * 1.6, rim * lit); }`,
-};
-
 export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): MoonSurfaceHandle {
-  const buildStart = performance.now();
   const isMobile = window.matchMedia('(max-width: 768px)').matches;
-  const lite = isMobile;
-  const renderer = new THREE.WebGLRenderer({ antialias: !lite, alpha: false, powerPreference: 'high-performance' });
-  const maxRatio = Math.min(window.devicePixelRatio, lite ? 1.5 : 2);
-  renderer.setPixelRatio(maxRatio);
-  renderer.setSize(mount.clientWidth, mount.clientHeight);
-  renderer.outputColorSpace = THREE.SRGBColorSpace;
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.08;
-  renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFShadowMap;
-  renderer.setClearColor(0x000000, 1);
-  mount.appendChild(renderer.domElement);
-  renderer.domElement.style.cssText = 'display:block;width:100%;height:100%;touch-action:none;';
-
-  const scene = new THREE.Scene();
-  scene.environment = makeEnvironment(renderer);
+  // One hard sun; the host owns it, its shadow box and the light pool.
+  const host = makeSurfaceHost(mount, { clearColor: 0x000000, exposure: 1.08, sun: { color: 0xfff8ee, intensity: 3.6 }, near: 0.05, far: 4000, onContextLost: opts.onContextLost });
+  const { renderer, scene, camera, lightPool, post, perf, lite, quality } = host;
+  const envTarget = makeEnvironment(renderer);
+  scene.environment = envTarget.texture;
   scene.environmentIntensity = 0.45;
-  const baseFov = isMobile ? 62 : 52;
-  const camera = new THREE.PerspectiveCamera(baseFov, mount.clientWidth / mount.clientHeight, 0.05, 4000);
+  let baseFov = getSettings().fov;
 
-  // ── Light: one hard sun; a faint bounce off the regolith from below; earthshine. ──
-  const sun = new THREE.DirectionalLight(0xfff8ee, 3.6);
-  sun.castShadow = true;
-  sun.shadow.mapSize.set(lite ? 1024 : 2048, lite ? 1024 : 2048);
-  sun.shadow.camera.near = 1;
-  sun.shadow.camera.far = 420;
-  const sr = lite ? 42 : 60;
-  sun.shadow.camera.left = -sr; sun.shadow.camera.right = sr; sun.shadow.camera.top = sr; sun.shadow.camera.bottom = -sr;
-  sun.shadow.bias = -0.0004;
-  sun.shadow.normalBias = 0.22;
-  scene.add(sun);
-  scene.add(sun.target);
-  // No sky to scatter light, but the sunlit ground bounces a warm grey up
-  // into every shadow: that is what keeps a shaded suit readable.
-  scene.add(new THREE.HemisphereLight(0x11141b, 0x6f6b65, 0.55));
-  const earthFill = new THREE.DirectionalLight(0xa9bde0, 0.16);
-  earthFill.position.copy(EARTH_DIR);
+  // ── A faint bounce off the regolith from below, and earthshine. No sky to
+  // scatter light, but the sunlit ground bounces a warm grey up into every
+  // shadow: that is what keeps a shaded suit readable. ──
+  scene.add(new THREE.HemisphereLight(0x11141b, 0x6f6b65, 0.4));
+  const sky = makeMoonSky(SUN_DIR, { faint: quality.stars, band: quality.band });
+  scene.add(sky.group);
+  const earthFill = new THREE.DirectionalLight(0xa9bde0, 0.12);
+  earthFill.position.copy(sky.earthDir);
   scene.add(earthFill);
-  const lightPool = makeLightPool(2);
-  for (const l of lightPool.lights) scene.add(l);
-  const shadowU = new THREE.Vector3().crossVectors(new THREE.Vector3(0, 1, 0), SUN_DIR).normalize();
-  const shadowV = new THREE.Vector3().crossVectors(SUN_DIR, shadowU);
-  const shadowTexel = (sr * 2) / sun.shadow.mapSize.x;
 
-  const stars = starfield(lite ? 2200 : 4200, lite ? 4000 : 9000);
-  scene.add(stars);
-  const glowTex = softSpriteTexture();
-  const sunSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: new THREE.Color(6, 5.7, 5.2), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
-  sunSprite.position.copy(SUN_DIR).multiplyScalar(1700);
-  sunSprite.scale.setScalar(90);
-  scene.add(sunSprite);
-  const sunHalo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: 0xfff1d6, transparent: true, opacity: 0.22, depthWrite: false, blending: THREE.AdditiveBlending }));
-  sunHalo.position.copy(sunSprite.position);
-  sunHalo.scale.setScalar(420);
-  scene.add(sunHalo);
-
-  const earthGeom = new THREE.SphereGeometry(52, 64, 40);
-  const earthMat = new THREE.MeshStandardMaterial({ color: 0x8fb7ff, roughness: 0.9, metalness: 0 });
-  const earth = new THREE.Mesh(earthGeom, earthMat);
-  earth.position.copy(EARTH_DIR).multiplyScalar(1250);
-  earth.rotation.z = 0.41;
-  scene.add(earth);
-  const cloudGeom = new THREE.SphereGeometry(52.7, 64, 40);
-  const cloudMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 1, transparent: true, opacity: 0, depthWrite: false });
-  const clouds = new THREE.Mesh(cloudGeom, cloudMat);
-  earth.add(clouds);
-  const atmoGeom = new THREE.SphereGeometry(54.5, 64, 40);
-  const atmoMat = new THREE.ShaderMaterial({ ...AtmosphereShader, uniforms: { uSun: { value: new THREE.Vector3() } }, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false });
-  earth.add(new THREE.Mesh(atmoGeom, atmoMat));
-  let earthTexCancelled = false;
-  const loader = new THREE.TextureLoader();
-  loader.load('/solar-system/planets/earth.jpg', (tex) => {
-    if (earthTexCancelled) { tex.dispose(); return; }
-    tex.colorSpace = THREE.SRGBColorSpace;
-    tex.anisotropy = 4;
-    earthMat.map = tex;
-    earthMat.color.set(0xffffff);
-    earthMat.needsUpdate = true;
-  });
-  loader.load('/solar-system/planets/earth-clouds.jpg', (tex) => {
-    if (earthTexCancelled) { tex.dispose(); return; }
-    tex.colorSpace = THREE.SRGBColorSpace;
-    cloudMat.map = tex;
-    cloudMat.alphaMap = tex;
-    cloudMat.opacity = 0.9;
-    cloudMat.needsUpdate = true;
-  });
-
-  const terrain = makeMoonTerrain(lite);
+  const terrain = makeMoonTerrain(lite, quality.propDensity);
   scene.add(terrain.mesh);
   scene.add(terrain.rocks);
   const sinkhole = makeSinkhole(terrain, lite);
   scene.add(sinkhole.group);
-  const dust = makeMoonDust(lite ? 900 : 1600);
+  const dust = makeMoonDust(1600, quality.dustMax);
   scene.add(dust.points);
-  const prints = makePrints(lite ? 400 : 900);
+  const prints = makePrints(900, quality.printsMax);
   scene.add(prints.mesh);
   const kit = makeKit(lite);
   const base = makeMoonBase(terrain.heightAt, lite, kit, SUN_DIR, lightPool);
@@ -396,8 +338,9 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
   for (const g of base.zones.groundMarks) terrain.tint(g.x, g.z, g.r, g.k);
   for (const p of base.zones.paths) terrain.tintPath(p, 1.1, -0.07);
   for (const tr of base.zones.tracks) terrain.tintPath(tr, 1.9, -0.035);
-  const history = makePrints(lite ? 500 : 1200);
+  const history = makePrints(1200, quality.historyMax);
   scene.add(history.mesh);
+  const unsubQuality = onQualityChange((q) => { dust.setCap(q.dustMax); prints.setCap(q.printsMax); history.setCap(q.historyMax); });
   {
     let side = 1;
     for (const path of base.zones.paths) {
@@ -429,6 +372,14 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
       }
     }
   }
+  for (const path of base.zones.paths) terrain.clearRocks(path, 1.4);
+  for (const tr of base.zones.tracks) terrain.clearRocks(tr, 2.2);
+  /** A crater dug now: the ground, its rocks and the prints on it all agree. */
+  const dig = (x: number, z: number, r: number, depth: number) => {
+    terrain.stampCrater(x, z, r, depth);
+    prints.clear(x, z, r * 1.2);
+    history.clear(x, z, r * 1.2);
+  };
   const horizon = makeMoonHorizon(terrain, lite);
   scene.add(horizon);
 
@@ -454,15 +405,23 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
   const rover = makeRover(base.rover, base.roverCollider, base.roverParts, terrain, dust, prints, gears);
   const lander = makeLander(PAD_CENTER.x, PAD_CENTER.y + 26, terrain.heightAt, dust, lite, lightPool);
   scene.add(lander.group);
-  const mission = makeMission(terrain.heightAt, terrain.stampCrater, dust, lite, lightPool, base.zones.anchors.scienceTerminal);
+  const mission = makeMission(terrain.heightAt, dig, dust, lite, lightPool, base.zones.anchors.scienceTerminal);
   scene.add(mission.group);
   base.colliders.push(...mission.colliders);
   base.walkColliders.push(...mission.colliders);
   const meteors = makeMeteors({
-    heightAt: terrain.heightAt, stampCrater: terrain.stampCrater, dust, colliders: base.colliders,
+    heightAt: terrain.heightAt, stampCrater: dig, dust, colliders: base.colliders,
     walkRadius: TERRAIN_WALK_RADIUS, first: 24, every: 58, lights: lightPool,
   });
   scene.add(meteors.group);
+  // Player-built pieces: private ones round the outpost, the shared colony to the east.
+  const build = makeBuildMode({
+    world: 'moon', kit, scene, heightAt: terrain.heightAt,
+    blockers: base.colliders.filter((c) => c !== base.roverCollider),
+    colliderSets: [base.colliders, base.walkColliders],
+    movers: () => [base.roverCollider],
+  });
+  base.pois.push({ id: 'colonySite', ...BUILD_SITES.moon.colony });
   let roverFault = false;
   const jobs = makeJobs({
     anchors: base.zones.anchors, heightAt: terrain.heightAt,
@@ -478,14 +437,6 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
   sinkhole.setHatchOpen(saved.escaped);
   scene.add(jobs.group);
 
-  const post = makeMoonPost(renderer, scene, camera, lite);
-  const pinned = process.env.NODE_ENV !== 'production' && new URLSearchParams(window.location.search).has('fixedpx');
-  const perf = makeMoonPerf(renderer, mount, {
-    minRatio: pinned ? maxRatio : Math.min(1, maxRatio),
-    maxRatio,
-    onPixelRatio: (r) => { renderer.setPixelRatio(r); post.setSize(mount.clientWidth, mount.clientHeight); },
-  });
-
   /** The ground under the crew: the base's own floors where it has them. */
   const floorHeight = (x: number, z: number) => {
     const ground = terrain.heightAt(x, z);
@@ -493,16 +444,17 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
     return floor === null ? ground : Math.max(floor, ground);
   };
   const cam = makeCameraRig(camera, floorHeight, () => base.colliders, baseFov);
+  const unsubSettings = onSettingsChange((s) => { baseFov = s.fov; cam.setBaseFov(s.fov); });
   cam.distance = isMobile ? 5.6 : 5.2;
 
   const input: SurfaceInput = {
     moveX: 0, moveY: 0, jump: false, run: false, sprint: false, walk: false, crouch: false, shoulderSwap: false, orbitDX: 0, orbitDY: 0, zoom: 0,
-    interact: false, use: false, viewToggle: false, throttle: 0, gearRequest: null,
+    interact: false, use: false, viewToggle: false, viewCycle: false, headlamp: false, throttle: 0, gearRequest: null,
   };
   const interactions = makeInteractions();
   const telemetry: SurfaceTelemetry = {
     ready: false, phase: 'descent', ascended: false, touchdownIn: 0, landing: lander.telemetry, grade: '',
-    view: 'chase', driving: false, poiId: '', poiDist: 0, impactDist: 0, impactHold: 0,
+    view: 'chase', driving: false, headlamp: false, poiId: '', poiDist: 0, impactDist: 0, impactHold: 0,
     airborne: false, altitude: 0, speed: 0, hint: 'walk', craters: 0,
     o2: 97.4, heartRate: 64, suitTemp: 21.5, evaSeconds: 0, distanceM: 0,
     roverSpeed: 0, gear: rover.gear, gears: rover.gears, roverTop: rover.top, battery: 1, charging: false, roverFault: false,
@@ -531,7 +483,7 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
     if (next === 'cockpit' || next === 'mast') { cam.yaw = rover.yaw + Math.PI; cam.lookPitch = next === 'mast' ? -0.08 : -0.05; }
     if (next === 'rover' && snap) { cam.yaw = rover.yaw + Math.PI; cam.pitch = 0.3; }
     if (next === 'chase' && snap) cam.pitch = 0.3;
-    if (next === 'wide') cam.pitch = 0.5;
+    if (next === 'wide' && snap) cam.pitch = 0.5;
     if (snap) cam.snap();
   };
   /** The crew is being carried along a track (a vault, a door, a climb). */
@@ -543,7 +495,9 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
     tracks.forEach((track, i) => queue.push({ track, then: i === tracks.length - 1 ? then : 'idle' }));
     cosmonaut.hold(true);
   };
-  const roverFrame = () => ({ x: rover.position.x, y: rover.position.y, z: rover.position.z, yaw: rover.yaw });
+  const rframe: RoverFrame = { x: 0, y: 0, z: 0, yaw: 0 };
+  const roverFrame = () => { rframe.x = rover.position.x; rframe.y = rover.position.y; rframe.z = rover.position.z; rframe.yaw = rover.yaw; return rframe; };
+  const seat: Spot = { x: 0, y: 0, z: 0, yaw: 0 };
   const clearSpot = (x: number, z: number) => !base.walkColliders.some((col) => col !== base.roverCollider && Math.hypot(x - col.x, z - col.z) < col.r + 0.6);
   let airlockRun: AirlockRun | null = null;
   let airlockDoor: Airlock | null = null;
@@ -551,6 +505,13 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
   const cycleView = () => {
     const set = driving() ? ROVER_VIEWS : FOOT_VIEWS;
     setView(set[(set.indexOf(view) + 1) % set.length]);
+  };
+  /** Into the helmet and back out to whichever outside view it was. */
+  let outside: SurfaceView = 'chase';
+  const toggleHelmet = () => {
+    if (driving()) { cycleView(); return; }
+    if (view === 'helmet') setView(outside);
+    else { outside = view; setView('helmet'); }
   };
   const readout = (key: string) => { telemetry.readout = key; telemetry.readoutHold = 6; audio.bleep(); };
   for (const i of mission.interactables) interactions.add(i);
@@ -759,40 +720,34 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
     const press = input.interact;
     input.interact = false;
     input.viewToggle = false;
+    input.viewCycle = false;
+    input.headlamp = false;
     input.gearRequest = null;
-    jumpEdge = input.jump && !jumpLatch;
-    jumpLatch = input.jump;
+    jumpPress.see(input.jump);
     if (fall.active) {
       fall.update(dt);
       bt.black = fall.black;
       bt.crack = fall.crack;
       post.setBlack(fall.black);
       if (fall.done) enterBackrooms();
-      perf.mark();
-      post.render(dt);
-      perf.end();
+      host.render(dt);
       return;
     }
     if (!br) return;
     const b = br;
     if (brReady) {
-      acc += dt;
-      let steps = 0;
-      while (acc >= STEP && steps < MAX_STEPS) {
+      const alpha = clock.advance(dt, (h) => {
         const fx = -Math.sin(cam.yaw); const fz = -Math.cos(cam.yaw);
         walk.moveX = fx * input.moveY - fz * input.moveX;
         walk.moveZ = fz * input.moveY + fx * input.moveX;
         walk.run = input.run && !input.crouch;
         walk.sprint = input.sprint && !input.crouch;
         walk.crouch = input.crouch;
-        walk.jump = steps === 0 && jumpEdge;
+        walk.jump = jumpPress.take();
         walk.work = false;
-        b.step(STEP, walk);
-        acc -= STEP;
-        steps += 1;
-      }
-      if (steps === MAX_STEPS) acc = 0;
-      cosmonaut.present(acc / STEP);
+        b.step(h, walk);
+      });
+      cosmonaut.present(alpha);
       b.frame(dt, press, input.use || press);
     }
     const bb = b.telemetry;
@@ -829,21 +784,18 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
     audio.update(dt, cosmonaut.state.effort, bb.helmet);
     if (b.done) { leaveBackrooms(); return; }
     if (!brReady) return;
-    perf.mark();
-    post.render(dt);
-    perf.end();
+    host.render(dt);
   };
 
   // ── Frame state. ──
   let t = 0;
-  let acc = 0;
+  const clock = makeFixedStep(STEP, MAX_STEPS);
+  const jumpPress = makePressEdge();
   let jumped = false;
   let walked = false;
   let lastPoi = '';
   let exertion = 0;
   let egressHold = 0;
-  let jumpLatch = false;
-  let jumpEdge = false;
   const walk: WalkInput = { moveX: 0, moveZ: 0, jump: false, run: false, crouch: false, work: false };
   const tmp = new THREE.Vector3();
   const roverVel = new THREE.Vector3();
@@ -852,11 +804,13 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
   const wrap = (a: number) => { while (a > Math.PI) a -= Math.PI * 2; while (a < -Math.PI) a += Math.PI * 2; return a; };
 
   const sprintLatch = makeSprintLatch();
-  const simStep = (h: number, firstStep: boolean) => {
+  const stick: FootStick = { moveX: 0, moveY: 0, jump: false, run: false, sprint: false, walk: false, crouch: false };
+  const simStep = (h: number) => {
+    const jump = jumpPress.take();
     if (driving()) {
       rover.update(h, input.moveY, input.moveX, base.colliders, TERRAIN_WALK_RADIUS, input.jump);
       // In the saddle: the crew sits where the seat is, facing the way the rover does.
-      const seat = seatSpot(roverFrame());
+      seatSpotInto(roverFrame(), seat);
       cosmonaut.update(h, walk, floorHeight, base.walkColliders, TERRAIN_WALK_RADIUS);
       cosmonaut.position.set(seat.x, seat.y, seat.z);
       cosmonaut.yaw = rover.yaw;
@@ -864,8 +818,9 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
     }
     rover.update(h, 0, 0, base.colliders, TERRAIN_WALK_RADIUS);
     const moving = Math.hypot(input.moveX, input.moveY) > 0.2;
-    const sprint = sprintFrom(sprintLatch, input.sprint, moving, h);
-    walkFromStick(walk, { moveX: input.moveX, moveY: input.moveY, jump: false, run: input.run, sprint, walk: input.walk, crouch: input.crouch }, cam.yaw, firstStep && jumpEdge, interactions.prompt.holding);
+    stick.moveX = input.moveX; stick.moveY = input.moveY; stick.run = input.run; stick.walk = input.walk; stick.crouch = input.crouch;
+    stick.sprint = sprintFrom(sprintLatch, input.sprint, moving, h);
+    walkFromStick(walk, stick, cam.yaw, jump, interactions.prompt.holding);
     const wasTracking = tracking();
     cosmonaut.update(h, walk, floorHeight, base.walkColliders, TERRAIN_WALK_RADIUS);
     if (!wasTracking && !tracking()) base.confine(cosmonaut.position);
@@ -873,36 +828,22 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
     if (cosmonaut.state.landing === 'hard' || cosmonaut.state.landing === 'fall') cam.shake(0.5);
   };
 
-  let raf = 0;
-  let last = performance.now();
-  let docVisible = !document.hidden;
-  let contextLost = false;
-  const onVis = () => {
-    docVisible = !document.hidden;
-    last = performance.now();
-    if (docVisible && !raf && telemetry.ready && !contextLost) raf = requestAnimationFrame(loop);
-  };
-  const onContextLost = (e: Event) => {
-    e.preventDefault();
-    contextLost = true;
-    if (raf) cancelAnimationFrame(raf);
-    raf = 0;
-    opts.onContextLost?.();
-  };
-  renderer.domElement.addEventListener('webglcontextlost', onContextLost);
-  const loop = () => {
-    raf = 0;
-    if (!docVisible) return;
-    raf = requestAnimationFrame(loop);
-    const now = performance.now();
-    const dt = Math.min(0.1, (now - last) / 1000);
-    last = now;
-    perf.begin(now);
+  const landerIn: LanderInput = { throttle: 0, moveX: 0, moveY: 0 };
+  const ictx: InteractionContext = { x: 0, z: 0, yaw: 0, driving: false, press: false, held: false };
+  const mctx: MissionContext = { crewX: 0, crewZ: 0, driving: false };
+  const actx: AirlockContext = { doorOpen: 0, cycling: false, tracking: false, from: { x: 0, y: 0, z: 0, yaw: 0 } };
+  const chaseTarget: ChaseTarget = { position: cosmonaut.group.position, velocity: cosmonaut.velocity, yaw: 0, height: 1.35, distance: 5, speedFrac: 0, fovExtra: 0 };
+  const ROVER_CHASE: ChaseTuning = { follow: 3.5, lead: 0.2, leadMax: 3, fovKick: 9, horizontal: 11, vertical: 4.5 };
+  const WIDE_CHASE: ChaseTuning = { follow: 1, lead: 0, leadMax: 0, fovKick: 0, horizontal: 4, vertical: 3 };
+  const FOOT_CHASE: ChaseTuning = { follow: 2.4, lead: 0.3, leadMax: 0.8, fovKick: 4, horizontal: 9, vertical: 4, shoulder: 0.4, blocked: null };
+  let devCam: [number, number, number] | null = null;
+  const frame = (dt: number) => {
     t += dt;
     cam.update(dt);
     cam.orbit(input.orbitDX, input.orbitDY, view === 'helmet' || view === 'cockpit' || view === 'mast');
     input.orbitDX = input.orbitDY = 0;
-    cam.zoom(input.zoom);
+    const zoomIn = input.zoom < 0;
+    const zoomPast = cam.zoom(input.zoom);
     input.zoom = 0;
     const crew = cosmonaut.position;
     if (opts.room) {
@@ -915,8 +856,8 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
         const out = telemetry.phase === 'surface' && !fall.active && cosmonaut.group.visible;
         writeSurfacePose(opts.room.self, 'moon', out, crew, cosmonaut.yaw, cosmonaut.state.speed);
       }
-      crowd?.update(dt, opts.room, now);
-      brCrowd?.update(dt, opts.room, now);
+      crowd?.update(dt, opts.room, performance.now());
+      brCrowd?.update(dt, opts.room, performance.now());
     }
 
     if (telemetry.phase === 'surface' && (fall.active || br)) {
@@ -925,7 +866,8 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
     }
     if (telemetry.phase === 'ascent') {
       // ── Going home: the camera stays on the ground a moment, then follows the vehicle up. ──
-      lander.update(dt, { throttle: 0, moveX: 0, moveY: 0 }, terrain.heightAt);
+      landerIn.throttle = 0; landerIn.moveX = 0; landerIn.moveY = 0;
+      lander.update(dt, landerIn, terrain.heightAt);
       input.interact = false;
       const climb = lander.telemetry.climb;
       tmp.copy(lander.position).y += 2.5;
@@ -941,7 +883,8 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
       // quarter, so it looms, and it sways with the engine. ──
       const lt = lander.telemetry;
       if (!lt.landed) {
-        lander.update(dt, { throttle: input.throttle, moveX: input.moveX, moveY: input.moveY }, terrain.heightAt);
+        landerIn.throttle = input.throttle; landerIn.moveX = input.moveX; landerIn.moveY = input.moveY;
+        lander.update(dt, landerIn, terrain.heightAt);
         if (lt.landed) {
           telemetry.phase = 'touchdown';
           telemetry.grade = lt.touchdown < 0.9 ? 'feather' : lt.touchdown < 1.9 ? 'good' : lt.touchdown < 3.2 ? 'firm' : 'hard';
@@ -951,7 +894,8 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
           settleLander();
         }
       } else {
-        lander.update(dt, { throttle: 0, moveX: 0, moveY: 0 }, terrain.heightAt);
+        landerIn.throttle = 0; landerIn.moveX = 0; landerIn.moveY = 0;
+        lander.update(dt, landerIn, terrain.heightAt);
       }
       input.interact = false;
       telemetry.touchdownIn = lt.descent > 0.2 ? lt.altitude / lt.descent : 0;
@@ -995,13 +939,30 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
       }
     } else {
       // ── Edges and the keys that are not movement. ──
-      const press = input.interact;
+      // Building: the action key puts the piece down instead, and the number keys pick modules, not gears.
+      if (build.telemetry.active && (driving() || tracking() || base.inside)) build.setActive(false);
+      const building = build.telemetry.active;
+      if (building && input.interact) build.place();
+      const press = input.interact && !building;
       input.interact = false;
-      jumpEdge = input.jump && !jumpLatch;
-      jumpLatch = input.jump;
+      if (building) input.gearRequest = null;
+      jumpPress.see(input.jump);
       if (input.viewToggle) {
         input.viewToggle = false;
+        toggleHelmet();
+      }
+      if (input.viewCycle) {
+        input.viewCycle = false;
         cycleView();
+      }
+      // Out past the far stop is the wide view; any step back in returns to the shoulder.
+      if (zoomPast && view === 'chase') setView('wide', false);
+      else if (zoomIn && view === 'wide') setView('chase', false);
+      if (input.headlamp) {
+        input.headlamp = false;
+        telemetry.headlamp = !telemetry.headlamp;
+        cosmonaut.lamps(telemetry.headlamp);
+        audio.bleep();
       }
       if (input.shoulderSwap) {
         input.shoulderSwap = false;
@@ -1017,15 +978,7 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
       }
 
       // ── The simulation, at its own fixed rate. ──
-      acc += dt;
-      let steps = 0;
-      while (acc >= STEP && steps < MAX_STEPS) {
-        simStep(STEP, steps === 0);
-        acc -= STEP;
-        steps += 1;
-      }
-      if (steps === MAX_STEPS) acc = 0;
-      const alpha = acc / STEP;
+      const alpha = clock.advance(dt, simStep);
       cosmonaut.present(alpha);
       rover.present(alpha);
 
@@ -1042,10 +995,9 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
       }
       if (airlockRun && airlockDoor) {
         const a = airlockDoor;
-        const ev = airlockRun.update(dt, {
-          doorOpen: a.open, cycling: a.state === 'cycling', tracking: tracking(),
-          from: { x: cosmonaut.position.x, y: cosmonaut.position.y, z: cosmonaut.position.z, yaw: cosmonaut.yaw },
-        });
+        actx.doorOpen = a.open; actx.cycling = a.state === 'cycling'; actx.tracking = tracking();
+        actx.from.x = cosmonaut.position.x; actx.from.y = cosmonaut.position.y; actx.from.z = cosmonaut.position.z; actx.from.yaw = cosmonaut.yaw;
+        const ev = airlockRun.update(dt, actx);
         if (ev?.kind === 'track') cosmonaut.script(ev.track, 'idle');
         else if (ev?.kind === 'open') { if (a.state === 'closed') base.cycleAirlock(a); audio.bleep(); }
         else if (ev?.kind === 'close') { if (a.state === 'open') base.cycleAirlock(a); audio.bleep(); }
@@ -1056,9 +1008,11 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
       if (!driving()) cosmonaut.indoors = !!base.inside;
 
       // ── The one key. ──
-      interactions.update(dt, { x: crew.x, z: crew.z, yaw: driving() ? rover.yaw : cosmonaut.yaw, driving: driving(), press, held: input.use || press });
+      ictx.x = crew.x; ictx.z = crew.z; ictx.yaw = driving() ? rover.yaw : cosmonaut.yaw; ictx.driving = driving(); ictx.press = press; ictx.held = !building && (input.use || press);
+      interactions.update(dt, ictx);
       if (!interactions.prompt.holding) bailHold = 0;
-      mission.update(dt, t, { crewX: crew.x, crewZ: crew.z, driving: driving() });
+      mctx.crewX = crew.x; mctx.crewZ = crew.z; mctx.driving = driving();
+      mission.update(dt, t, mctx);
       // ── The sinkhole: a hum on the radio that should not be there, and an
       // edge that gives. The base calls it in once the crew has been out a
       // while — before that the hole is a hundred metres of empty mare away
@@ -1076,18 +1030,17 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
         }
       }
       bt.distance = bt.known && !bt.escaped ? hole : -1;
-      bt.bearing = Math.atan2(SINKHOLE.x - crew.x, SINKHOLE.z - crew.z);
+      bt.bearing = Math.atan2(SINKHOLE.x - crew.x, crew.z - SINKHOLE.z);
       if (!driving() && !tracking() && sinkhole.onEdge(crew.x, crew.z)) startFall();
-      jobs.update(dt, { crewX: crew.x, crewZ: crew.z, driving: driving() });
+      jobs.update(dt, mctx);
 
       // ── The camera. ──
       if (driving()) {
         roverVel.set(Math.sin(rover.yaw) * rover.speed, 0, Math.cos(rover.yaw) * rover.speed);
         if (view === 'rover') {
-          cam.chase(dt, {
-            position: base.rover.position, velocity: roverVel, yaw: rover.yaw + rover.yawRate * 0.35,
-            height: 1.9, distance: Math.max(cam.distance, 6.2), speedFrac: Math.min(1, Math.abs(rover.speed) / 26),
-          }, { follow: 3.5, lead: 0.2, leadMax: 3, fovKick: 9, horizontal: 11, vertical: 4.5 });
+          chaseTarget.position = base.rover.position; chaseTarget.velocity = roverVel; chaseTarget.yaw = rover.yaw + rover.yawRate * 0.35;
+          chaseTarget.height = 1.9; chaseTarget.distance = Math.max(cam.distance, 6.2); chaseTarget.speedFrac = Math.min(1, Math.abs(rover.speed) / 26); chaseTarget.fovExtra = 0;
+          cam.chase(dt, chaseTarget, ROVER_CHASE);
         } else {
           (view === 'mast' ? base.roverParts.mast : base.roverParts.seat).getWorldPosition(tmp);
           if (view === 'mast') tmp.y += 0.12;
@@ -1104,16 +1057,15 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
         const inside = base.inside;
         const wide = view === 'wide' && !inside;
         // Near a habitat the walls are the whole answer to where the camera may be.
-        const nearHab = base.airlocks.some((a) => Math.hypot(a.x - crew.x, a.z - crew.z) < 15);
-        cam.chase(dt, {
-          position: cosmonaut.group.position, velocity: cosmonaut.velocity, yaw: cosmonaut.yaw,
-          height: wide ? 2.2 : 1.35,
-          distance: wide ? cam.distance * 4.2 + 14 : inside ? Math.min(cam.distance, 2.8) : cam.distance,
-          speedFrac: cosmonaut.state.speedFrac,
-          fovExtra: cosmonaut.state.sprinting ? 5 : 0,
-        }, wide
-          ? { follow: 1, lead: 0, leadMax: 0, fovKick: 0, horizontal: 4, vertical: 3 }
-          : { follow: 2.4, lead: 0.3, leadMax: 0.8, fovKick: 4, horizontal: 9, vertical: 4, shoulder: 0.4, blocked: nearHab ? base.blocked : null });
+        let nearHab = false;
+        for (const a of base.airlocks) if (Math.hypot(a.x - crew.x, a.z - crew.z) < 15) { nearHab = true; break; }
+        chaseTarget.position = cosmonaut.group.position; chaseTarget.velocity = cosmonaut.velocity; chaseTarget.yaw = cosmonaut.yaw;
+        chaseTarget.height = wide ? 2.2 : 1.35;
+        chaseTarget.distance = wide ? cam.distance * 4.2 + 14 : inside ? Math.min(cam.distance, 2.8) : cam.distance;
+        chaseTarget.speedFrac = cosmonaut.state.speedFrac;
+        chaseTarget.fovExtra = cosmonaut.state.sprinting ? 5 : 0;
+        FOOT_CHASE.blocked = nearHab ? base.blocked : null;
+        cam.chase(dt, chaseTarget, wide ? WIDE_CHASE : FOOT_CHASE);
       }
       if (!walked && cosmonaut.state.speed > 0.5) walked = true;
       if (!jumped && cosmonaut.state.airborne && cosmonaut.state.altitude > 0.3) jumped = true;
@@ -1149,7 +1101,8 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
     telemetry.cadence = cosmonaut.state.cadence;
     telemetry.grounded = cosmonaut.state.grounded;
     telemetry.fallen = cosmonaut.state.fallen;
-    telemetry.heading = (THREE.MathUtils.radToDeg(Math.atan2(-Math.sin(cam.yaw), -Math.cos(cam.yaw))) + 360) % 360;
+    // A map, not a mirror: north is -Z, east +X (the base's own layout), so what is on your right is right on the ribbon.
+    telemetry.heading = (THREE.MathUtils.radToDeg(Math.atan2(-Math.sin(cam.yaw), Math.cos(cam.yaw))) + 360) % 360;
 
     const work = onRover ? 0.1 : Math.min(1, cosmonaut.state.effort + (interactions.prompt.holding ? 0.35 : 0));
     exertion += (work - exertion) * (1 - Math.exp(-dt * 0.35));
@@ -1193,52 +1146,26 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
     bt.radioHold = Math.max(0, bt.radioHold - dt);
     if (bt.radioHold <= 0) bt.radio = '';
     dust.update(dt, terrain.heightAt);
-    base.update(dt, t, EARTH_DIR, crew.x, crew.z);
+    rover.light(lightPool);
+    if (telemetry.headlamp && !driving()) headlamp(lightPool, crew, view === 'helmet' ? cam.yaw + Math.PI : cosmonaut.yaw);
+    base.update(dt, t, sky.earthDir, crew.x, crew.z);
     sinkhole.update(dt, t);
-    earth.rotation.y += dt * 0.004;
-    clouds.rotation.y += dt * 0.0015;
-    atmoMat.uniforms.uSun.value.copy(SUN_DIR).transformDirection(camera.matrixWorldInverse);
     terrain.setSunView(tmp.copy(SUN_DIR).transformDirection(camera.matrixWorldInverse));
-    const su = Math.round(crew.dot(shadowU) / shadowTexel) * shadowTexel;
-    const sv = Math.round(crew.dot(shadowV) / shadowTexel) * shadowTexel;
-    sun.target.position.copy(shadowU).multiplyScalar(su).addScaledVector(shadowV, sv).addScaledVector(SUN_DIR, crew.dot(SUN_DIR));
-    sun.position.copy(sun.target.position).addScaledVector(SUN_DIR, 220);
+    if (devCam) {
+      camera.position.set(crew.x + devCam[0], crew.y + devCam[1], crew.z + devCam[2]);
+      camera.lookAt(crew.x, crew.y + 1.0, crew.z);
+    }
+    host.followShadow(crew, SUN_DIR);
     lightPool.flush(crew.x, crew.y, crew.z);
-    stars.position.copy(camera.position);
+    sky.update(dt, camera, renderer.getPixelRatio());
     if (surfacing > 0) { surfacing = Math.max(0, surfacing - dt * 0.7); post.setBlack(surfacing); }
-    perf.mark();
-    post.render(dt);
-    perf.end();
+    if (telemetry.phase === 'surface') build.update(crew.x, crew.z, camera);
+    host.render(dt);
   };
-
-  const onResize = () => {
-    const w = mount.clientWidth; const h = mount.clientHeight;
-    if (!w || !h) return;
-    renderer.setSize(w, h);
-    camera.aspect = w / h;
-    camera.updateProjectionMatrix();
-    post.setSize(w, h);
-  };
-  window.addEventListener('resize', onResize);
-  document.addEventListener('visibilitychange', onVis);
-  perf.setBuildMs(performance.now() - buildStart);
-  // Compile every program before the first frame — in parallel where the
-  // driver allows it — so the descent does not open on a long stall. Hidden
-  // props are shown for the compile so they cannot stall later either.
-  let disposed = false;
-  const hiddenForCompile: THREE.Object3D[] = [];
-  scene.traverse((o) => { if (!o.visible) { hiddenForCompile.push(o); o.visible = true; } });
-  const begin = () => {
-    for (const o of hiddenForCompile) o.visible = false;
-    if (disposed || raf || contextLost) return;
-    telemetry.ready = true;
-    last = performance.now();
-    raf = requestAnimationFrame(loop);
-  };
-  const compiling = renderer.compileAsync(scene, camera);
-  compiling.then(begin, begin);
+  host.start(frame, () => { telemetry.ready = true; }, cosmonaut.ready);
 
   const release = () => {
+    build.dispose();
     sinkhole.dispose();
     lander.dispose();
     mission.dispose();
@@ -1253,16 +1180,8 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
     dust.dispose();
     terrain.dispose();
     horizon.geometry.dispose();
-    earthGeom.dispose(); cloudGeom.dispose(); atmoGeom.dispose();
-    earthMat.map?.dispose(); cloudMat.map?.dispose();
-    earthMat.dispose(); cloudMat.dispose(); atmoMat.dispose();
-    sunSprite.material.dispose();
-    sunHalo.material.dispose();
-    stars.geometry.dispose();
-    (stars.material as THREE.Material).dispose();
-    scene.environment?.dispose();
-    post.dispose();
-    renderer.dispose();
+    sky.dispose();
+    envTarget.dispose();
   };
 
   const handle: MoonSurfaceHandle = {
@@ -1283,7 +1202,30 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
     },
     face(dx, dz) { cam.yaw = Math.atan2(-dx, -dz); cam.snap(); },
     where: () => ({ x: cosmonaut.position.x, y: cosmonaut.position.y, z: cosmonaut.position.z }),
-    cameraAt: () => ({ x: camera.position.x, y: camera.position.y, z: camera.position.z, blocked: base.blocked(camera.position.x, camera.position.y, camera.position.z), view }),
+    cameraAt: () => {
+      const p = camera.position;
+      return { x: p.x, y: p.y, z: p.z, blocked: base.blocked(p.x, p.y, p.z), clearance: p.y - floorHeight(p.x, p.z), view };
+    },
+    cameraSpots() {
+      const a = base.airlocks[0]; const b = base.airlocks[1] ?? a;
+      const ax = Math.sin(a.yaw); const az = Math.cos(a.yaw);
+      const bx = Math.sin(b.yaw); const bz = Math.cos(b.yaw);
+      let slope = { x: 0, z: 0, g: -1 };
+      for (let r = 40; r < TERRAIN_WALK_RADIUS - 10; r += 6) {
+        for (let k = 0; k < 48; k++) {
+          const x = Math.cos(k / 48 * Math.PI * 2) * r; const z = Math.sin(k / 48 * Math.PI * 2) * r;
+          const g = Math.hypot(terrain.heightAt(x + 1, z) - terrain.heightAt(x - 1, z), terrain.heightAt(x, z + 1) - terrain.heightAt(x, z - 1)) / 2;
+          if (g > slope.g && g < 0.5) slope = { x, z, g };
+        }
+      }
+      return [
+        { id: 'ramp', x: a.x + ax * 3, z: a.z + az * 3 },
+        { id: 'dome', x: a.x - ax * DOOR_Z, z: a.z - az * DOOR_Z },
+        { id: 'hull', x: b.x - bx * DOOR_Z + bz * 6.4, z: b.z - bz * DOOR_Z - bx * 6.4 },
+        { id: 'rover', x: base.roverCollider.x + base.roverCollider.r + 0.6, z: base.roverCollider.z },
+        { id: 'slope', x: slope.x, z: slope.z },
+      ];
+    },
     advanceMission: mission.advance,
     startJob: (id) => { jobs.start(id); },
     skipDescent() {
@@ -1299,6 +1241,10 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
       egressHold = 0.2;
     },
     perf: perf.sample,
+    probe: host.probe,
+    baseState(next) { if (next) base.setState(next); return base.state; },
+    devCamera(offset) { devCam = offset; },
+    setPaused: host.setPaused,
     roverAt: () => ({ x: base.roverCollider.x, z: base.roverCollider.z }),
     fallIntoBackrooms() {
       if (telemetry.phase !== 'surface' || br || fall.active) return;
@@ -1317,22 +1263,15 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
     teleportToExit() { br?.teleportToExit(); },
     escapeBackrooms() { br?.finish(); },
     backrooms: () => br,
+    build,
     dispose() {
-      disposed = true;
-      if (raf) cancelAnimationFrame(raf);
-      perf.dispose();
       if (window.__stellarMoon === handle) delete window.__stellarMoon;
-      window.removeEventListener('resize', onResize);
-      document.removeEventListener('visibilitychange', onVis);
-      renderer.domElement.removeEventListener('webglcontextlost', onContextLost);
-      earthTexCancelled = true;
+      unsubSettings();
+      unsubQuality();
       audio.dispose();
       brAudio.dispose();
       releaseBackrooms();
-      if (renderer.domElement.parentNode === mount) mount.removeChild(renderer.domElement);
-      // The GPU side goes once the async compile has settled: three keeps
-      // polling the programs it is compiling, and they must still exist.
-      compiling.then(release, release);
+      host.dispose(release);
     },
   };
   if (opts.startOnSurface) handle.skipDescent();

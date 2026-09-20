@@ -99,7 +99,7 @@ export function makePeople(data: EarthData, world: PeopleWorld, lite: boolean): 
   const part = (g: THREE.BufferGeometry) => {
     const m = new THREE.InstancedMesh(g, material, total);
     m.castShadow = !lite; m.receiveShadow = true;
-    m.frustumCulled = false;
+    m.boundingSphere = new THREE.Sphere();
     m.count = 0;
     group.add(m);
     return m;
@@ -108,6 +108,7 @@ export function makePeople(data: EarthData, world: PeopleWorld, lite: boolean): 
     torso: part(geoms.torso), hips: part(geoms.hips), head: part(geoms.head), hair: part(geoms.hair),
     legL: part(geoms.legL), legR: part(geoms.legR), armL: part(geoms.armL), armR: part(geoms.armR),
   };
+  const meshes = [mesh.torso, mesh.hips, mesh.head, mesh.hair, mesh.legL, mesh.legR, mesh.armL, mesh.armR];
 
   const people: Person[] = [];
   const fresh = (i: number): Person => ({
@@ -149,6 +150,7 @@ export function makePeople(data: EarthData, world: PeopleWorld, lite: boolean): 
   };
 
   let crowd = { x: 0, z: 0, faceX: 0, faceZ: 0, t: -1 };
+  const moverPool: Mover[] = people.map(() => ({ x: 0, z: 0, vx: 0, vz: 0, r: 0.35 }));
   const tmpM = new THREE.Matrix4(); const root = new THREE.Matrix4(); const joint = new THREE.Matrix4();
   const q = new THREE.Quaternion(); const e = new THREE.Euler(); const v = new THREE.Vector3(); const one = new THREE.Vector3(1, 1, 1);
   const set = (m: THREE.InstancedMesh, n: number, ox: number, oy: number, oz: number, rx: number, ry: number, rz: number) => {
@@ -183,10 +185,13 @@ export function makePeople(data: EarthData, world: PeopleWorld, lite: boolean): 
     },
     colliders(x, z, r, out) {
       out.length = 0;
-      for (const p of people) {
+      for (let i = 0; i < people.length; i++) {
+        const p = people[i];
         if (!p.active) continue;
         if (Math.abs(p.x - x) > r || Math.abs(p.z - z) > r) continue;
-        out.push({ x: p.x, z: p.z, vx: Math.sin(p.yaw) * p.speed, vz: Math.cos(p.yaw) * p.speed, r: 0.35 });
+        const m = moverPool[i];
+        m.x = p.x; m.z = p.z; m.vx = Math.sin(p.yaw) * p.speed; m.vz = Math.cos(p.yaw) * p.speed;
+        out.push(m);
       }
       return out;
     },
@@ -308,7 +313,10 @@ export function makePeople(data: EarthData, world: PeopleWorld, lite: boolean): 
         dress(n, i);
         n += 1;
       }
-      for (const m of Object.values(mesh)) {
+      // Only people within the pose range are drawn: a sphere that wide round the crew bounds them all.
+      const reach = (lite ? 180 : 280) + 4;
+      for (const m of meshes) {
+        m.boundingSphere!.set(v.set(cx, world.floorAt(cx, cz), cz), reach);
         m.count = n;
         m.instanceMatrix.needsUpdate = true;
         if (m.instanceColor) m.instanceColor.needsUpdate = true;
@@ -316,7 +324,7 @@ export function makePeople(data: EarthData, world: PeopleWorld, lite: boolean): 
     },
     dispose() {
       for (const g of Object.values(geoms)) g.dispose();
-      for (const m of Object.values(mesh)) m.dispose();
+      for (const m of meshes) m.dispose();
       material.dispose();
     },
   };

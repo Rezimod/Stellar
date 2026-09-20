@@ -14,8 +14,9 @@
 // pilot is playing for is the touchdown speed on the plaque afterwards.
 
 import * as THREE from 'three';
-import { MOON_G, type DustHandle } from '@/lib/solar-system/moon-fx';
-import { keep, mergeStatic } from '@/lib/solar-system/moon-batch';
+import { MOON_G, type DustBurst, type DustHandle } from '@/lib/solar-system/moon-fx';
+import { keep } from '@/lib/solar-system/moon-batch';
+import { acquireModel } from '@/game/models';
 import type { LightPool } from '@/lib/solar-system/moon-lights';
 
 export interface LanderInput {
@@ -62,6 +63,9 @@ export interface LanderHandle {
   dispose: () => void;
 }
 
+/** The vehicle, built in Blender (assets-src/blender/lander.py). */
+const LANDER_MODEL = '/explore/models/lander.glb';
+
 const START_ALT = 138;
 const START_DESCENT = 13.5;
 /** Full throttle, in gravities — a shade over twice the surface pull, as the LM had. */
@@ -94,14 +98,9 @@ export function makeLander(
   const geoms: THREE.BufferGeometry[] = [];
   const owned: THREE.Material[] = [];
   const seg = lite ? 10 : 16;
-  const gold = new THREE.MeshStandardMaterial({ color: 0xd4a72c, roughness: 0.34, metalness: 0.95 });
-  const foil = new THREE.MeshStandardMaterial({ color: 0x2a2a2e, roughness: 0.3, metalness: 0.9 });
-  const white = new THREE.MeshStandardMaterial({ color: 0xd6d6d0, roughness: 0.6, metalness: 0.08 });
-  const steel = new THREE.MeshStandardMaterial({ color: 0x777c84, roughness: 0.4, metalness: 0.85 });
-  const glass = new THREE.MeshPhysicalMaterial({ color: 0x9fb6c8, roughness: 0.06, metalness: 0.3, transparent: true, opacity: 0.5, clearcoat: 1 });
   const lampMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: new THREE.Color(0xfff2d0), emissiveIntensity: 1.8 });
   const plumeMat = new THREE.MeshBasicMaterial({ color: 0x9fd4ff, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending });
-  owned.push(gold, foil, white, steel, glass, lampMat, plumeMat);
+  owned.push(lampMat, plumeMat);
   const mesh = (parent: THREE.Object3D, g: THREE.BufferGeometry, m: THREE.Material, x = 0, y = 0, z = 0) => {
     geoms.push(g);
     const o = new THREE.Mesh(g, m);
@@ -112,51 +111,39 @@ export function makeLander(
     return o;
   };
 
-  // ── The vehicle: an octagonal descent stage in gold foil, the crew can
-  // above it with two triangular windows, four legs with dish pads and a
-  // ladder down the front one, the engine bell underneath. ──
-  mesh(group, new THREE.CylinderGeometry(2.3, 2.5, 1.8, 8), gold, 0, 1.9);
-  mesh(group, new THREE.CylinderGeometry(2.32, 2.32, 0.12, 8), foil, 0, 2.86);
-  const can = mesh(group, new THREE.CylinderGeometry(1.5, 1.7, 1.9, 8), white, 0, 3.75);
-  can.rotation.y = Math.PI / 8;
-  mesh(group, new THREE.CylinderGeometry(0.95, 1.3, 0.7, 8), white, 0, 4.95);
-  mesh(group, new THREE.CylinderGeometry(0.5, 0.5, 0.35, 10), steel, 0, 5.4);
-  for (const s of [-1, 1]) {
-    const w = mesh(group, new THREE.PlaneGeometry(0.62, 0.46), glass, s * 0.52, 3.95, 1.62);
-    w.rotation.x = -0.32;
-    w.rotation.y = s * 0.16;
-  }
-  mesh(group, new THREE.BoxGeometry(1.1, 0.5, 0.12), foil, 0, 3.2, 1.66);
+  // ── The vehicle: lander.glb, built in Blender to Stellar's own concept
+  // sheet (assets-src/blender/lander.py) — a tapered octagonal crew module
+  // over a dark equipment deck, gold tanks at its corners, four legs on
+  // dished pads, the hatch and its ladder, four bells under the deck. The
+  // plume, its light and the pad lamp stay here, because they animate. ──
+  let releaseModel: (() => void) | null = null;
+  let disposed = false;
+  acquireModel(LANDER_MODEL, true).then((handle) => {
+    if (disposed) { handle.release(); return; }
+    releaseModel = handle.release;
+    const shell = handle.scene.clone(true);
+    shell.traverse((o) => {
+      const mm = o as THREE.Mesh;
+      if (!mm.isMesh) return;
+      mm.castShadow = true;
+      mm.receiveShadow = !lite;
+    });
+    group.add(shell);
+  }, () => undefined);
+  mesh(group, new THREE.SphereGeometry(0.1, 8, 6), lampMat, 0, 2.95, 2.6);
+
+  // The plumes: a cone of light under each of the four bells, and the light
+  // they throw together. The model's engines stand at 0.88 m, on the
+  // diagonals (assets-src/blender/lander.py).
+  const plumes: THREE.Mesh[] = [];
   for (let i = 0; i < 4; i++) {
     const a = i * Math.PI / 2 + Math.PI / 4;
-    const lx = Math.sin(a) * 3.5; const lz = Math.cos(a) * 3.5;
-    const leg = mesh(group, new THREE.CylinderGeometry(0.09, 0.11, 3.5, 8), gold, lx * 0.62, 1.3, lz * 0.62);
-    leg.rotation.z = -Math.sin(a) * 0.62;
-    leg.rotation.x = Math.cos(a) * 0.62;
-    mesh(group, new THREE.CylinderGeometry(0.72, 0.56, 0.16, 12), gold, lx, 0.1, lz);
-    const brace = mesh(group, new THREE.CylinderGeometry(0.04, 0.04, 2.1, 6), steel, lx * 0.78, 0.65, lz * 0.78);
-    brace.rotation.z = -Math.sin(a) * 1.15;
-    brace.rotation.x = Math.cos(a) * 1.15;
+    const p = keep(mesh(group, new THREE.ConeGeometry(0.34, 4.2, seg, 1, true), plumeMat, Math.sin(a) * 0.62, -1.9, Math.cos(a) * 0.62));
+    p.rotation.x = Math.PI;
+    p.castShadow = false;
+    plumes.push(p);
   }
-  // Ladder down the front leg, and the porch at the top of it.
-  for (let i = 0; i < 7; i++) mesh(group, new THREE.BoxGeometry(0.5, 0.045, 0.05), steel, 0, 0.55 + i * 0.36, 2.52);
-  for (const s of [-1, 1]) mesh(group, new THREE.CylinderGeometry(0.028, 0.028, 2.4, 6), steel, s * 0.25, 1.65, 2.52);
-  mesh(group, new THREE.BoxGeometry(0.9, 0.06, 0.6), steel, 0, 3.0, 2.3);
-  // RCS quads on the corners, the docking light, the engine.
-  for (let i = 0; i < 4; i++) {
-    const a = i * Math.PI / 2;
-    const q = mesh(group, new THREE.BoxGeometry(0.28, 0.28, 0.28), steel, Math.sin(a) * 2.4, 2.6, Math.cos(a) * 2.4);
-    for (const d of [-1, 1]) mesh(q, new THREE.ConeGeometry(0.06, 0.14, 8), foil, d * 0.2, 0, 0).rotation.z = d * Math.PI / 2;
-  }
-  mesh(group, new THREE.SphereGeometry(0.1, 8, 6), lampMat, 0, 2.95, 2.6);
-  const bell = new THREE.MeshStandardMaterial({ color: 0x3a3a3e, roughness: 0.4, metalness: 0.9, side: THREE.DoubleSide });
-  owned.push(bell);
-  mesh(group, new THREE.CylinderGeometry(0.42, 0.95, 1.1, seg, 1, true), bell, 0, 0.45);
-  // The plume: a cone of light under the bell, plus the light it throws.
-  const plume = keep(mesh(group, new THREE.ConeGeometry(0.8, 5.0, seg, 1, true), plumeMat, 0, -2.4));
-  plume.rotation.x = Math.PI;
-  plume.castShadow = false;
-  geoms.push(...mergeStatic(group, { minCaster: 0.1 }).geometries);
+  const plumeScale = (x: number, y: number, z: number) => { for (const p of plumes) p.scale.set(x, y, z); };
 
   const position = group.position;
   const vel = new THREE.Vector3(start.driftX, -start.descent, start.driftZ);
@@ -169,6 +156,73 @@ export function makeLander(
   };
   let flicker = 0;
   let dustAcc = 0;
+  const grain: DustBurst = { x: 0, y: 0, z: 0, count: 1, speedMin: 2, speedMax: 4, cone: 1.5, size: 0.15, dirX: 0, dirZ: 0, bias: 2.4 };
+
+  /** The translation the last step of powered descent asked for. */
+  let tx = 0; let tz = 0;
+  /** One step of powered descent. */
+  const fly = (dt: number, input: LanderInput, height: (x: number, z: number) => number) => {
+    const ground = height(position.x, position.z);
+    const alt = position.y - ground;
+    const fall = Math.max(0, -vel.y);
+    // ── Guidance: could the engine still stop this fall in the height
+    // that is left? Leave a second of margin and a metre of pad. ──
+    const net = MAX_THRUST - g;
+    const offset = Math.hypot(position.x - padX, position.z - padZ);
+    // `safe` is the fastest the vehicle could be falling at this height and
+    // still be stopped by the engine, less the margin that makes a profile
+    // flyable rather than theoretical. Cross it by a clear margin and the
+    // computer takes the stick, because from there on nothing the pilot
+    // does gets it down gently.
+    const safe = Math.sqrt(2 * net * Math.max(0, alt - 1.2)) * PROFILE;
+    const want = Math.max(0.6, Math.min(Math.max(START_DESCENT, start.descent * (1 - 1 / (1 + alt / 60))), safe));
+    // Landing thirty metres off the middle of a pad that is forty-six
+    // across is a landing; landing in the rocks beyond it is not, so the
+    // computer also steps in for a pilot who has not killed the drift.
+    if (fall > safe * 1.06 + 0.9 || (alt < 25 && offset > 32)) telemetry.assist = true;
+
+    let throttle = THREE.MathUtils.clamp(input.throttle, 0, 1);
+    tx = input.moveX; tz = -input.moveY;
+    if (telemetry.assist) {
+      // Hold the profile, and steer the drift out on the way down.
+      throttle = THREE.MathUtils.clamp((fall - want) * 1.4 + (g / MAX_THRUST), 0, 1);
+      const backX = (padX - position.x) * 0.06 - vel.x * 0.55;
+      const backZ = (padZ - position.z) * 0.06 - vel.z * 0.55;
+      tx = THREE.MathUtils.clamp(backX, -1, 1);
+      tz = THREE.MathUtils.clamp(backZ, -1, 1);
+    }
+    // Dry, the engine derates rather than quits: the last of the pressure
+    // will still set it down, just not gently.
+    if (telemetry.fuel <= 0) throttle = Math.min(throttle, 0.55);
+    telemetry.fuel = Math.max(0, telemetry.fuel - throttle * FUEL_BURN * dt);
+    telemetry.throttle += (throttle - telemetry.throttle) * (1 - Math.exp(-dt * 7));
+
+    vel.y += (telemetry.throttle * MAX_THRUST - g) * dt;
+    vel.x += tx * RCS * dt;
+    vel.z += tz * RCS * dt;
+    // A little damping so the RCS is flyable rather than a skid.
+    vel.x *= Math.exp(-dt * 0.35);
+    vel.z *= Math.exp(-dt * 0.35);
+    position.addScaledVector(vel, dt);
+
+    const g2 = height(position.x, position.z);
+    if (position.y - g2 <= TOUCH) {
+      position.y = g2 + TOUCH;
+      telemetry.landed = true;
+      telemetry.touchdown = Math.max(0, -vel.y);
+      vel.set(0, 0, 0);
+      // The pads throw a ring of dust out from under the vehicle.
+      for (let i = 0; i < 26; i++) {
+        const a = Math.random() * Math.PI * 2;
+        grain.x = position.x + Math.cos(a) * 2.6; grain.y = g2; grain.z = position.z + Math.sin(a) * 2.6;
+        grain.count = 3; grain.speedMin = 1.4; grain.speedMax = 5.5; grain.cone = 1.45; grain.size = 0.17;
+        grain.dirX = Math.cos(a); grain.dirZ = Math.sin(a); grain.bias = 2.6;
+        dust.burst(grain);
+      }
+      telemetry.egressX = position.x;
+      telemetry.egressZ = position.z + 6.5;
+    }
+  };
 
   const handle: LanderHandle = {
     group, telemetry, position, yaw: 0,
@@ -184,7 +238,7 @@ export function makeLander(
         flicker += dt * 30;
         const t = telemetry.throttle;
         plumeMat.opacity = t * (0.5 + 0.1 * Math.sin(flicker));
-        plume.scale.set(0.85 + t * 0.35, 0.6 + t * 0.9 + 0.08 * Math.sin(flicker * 1.7), 0.85 + t * 0.35);
+        plumeScale(0.85 + t * 0.35, 0.6 + t * 0.9 + 0.08 * Math.sin(flicker * 1.7), 0.85 + t * 0.35);
         const g2 = height(position.x, position.z);
         const alt = position.y - g2;
         lights?.request(position.x, position.y - 1.2, position.z, 0xaad6ff, t * 30, 24 + alt * 0.6, 2);
@@ -194,11 +248,10 @@ export function makeLander(
           dustAcc -= 1;
           const a = Math.random() * Math.PI * 2;
           const r = 1.5 + Math.random() * (3 + blast * 10);
-          dust.burst({
-            x: position.x + Math.cos(a) * r, y: g2, z: position.z + Math.sin(a) * r,
-            count: 1, speedMin: 2, speedMax: 4 + blast * 9, cone: 1.5, size: 0.15,
-            dirX: Math.cos(a), dirZ: Math.sin(a), bias: 2.4 + blast * 2,
-          });
+          grain.x = position.x + Math.cos(a) * r; grain.y = g2; grain.z = position.z + Math.sin(a) * r;
+          grain.count = 1; grain.speedMin = 2; grain.speedMax = 4 + blast * 9; grain.cone = 1.5; grain.size = 0.15;
+          grain.dirX = Math.cos(a); grain.dirZ = Math.sin(a); grain.bias = 2.4 + blast * 2;
+          dust.burst(grain);
         }
         telemetry.altitude = Math.max(0, alt - TOUCH);
         telemetry.descent = -vel.y;
@@ -211,73 +264,18 @@ export function makeLander(
         lights?.request(position.x, position.y - 1.2, position.z, 0xaad6ff, telemetry.throttle * 20, 20, 2);
         return;
       }
-      const ground = height(position.x, position.z);
-      const alt = position.y - ground;
-      const fall = Math.max(0, -vel.y);
-      // ── Guidance: could the engine still stop this fall in the height
-      // that is left? Leave a second of margin and a metre of pad. ──
-      const net = MAX_THRUST - g;
-      const offset = Math.hypot(position.x - padX, position.z - padZ);
-      // `safe` is the fastest the vehicle could be falling at this height and
-      // still be stopped by the engine, less the margin that makes a profile
-      // flyable rather than theoretical. Cross it by a clear margin and the
-      // computer takes the stick, because from there on nothing the pilot
-      // does gets it down gently.
-      const safe = Math.sqrt(2 * net * Math.max(0, alt - 1.2)) * PROFILE;
-      const want = Math.max(0.6, Math.min(Math.max(START_DESCENT, start.descent * (1 - 1 / (1 + alt / 60))), safe));
-      // Landing thirty metres off the middle of a pad that is forty-six
-      // across is a landing; landing in the rocks beyond it is not, so the
-      // computer also steps in for a pilot who has not killed the drift.
-      if (fall > safe * 1.06 + 0.9 || (alt < 25 && offset > 32)) telemetry.assist = true;
-
-      let throttle = THREE.MathUtils.clamp(input.throttle, 0, 1);
-      let tx = input.moveX; let tz = -input.moveY;
-      if (telemetry.assist) {
-        // Hold the profile, and steer the drift out on the way down.
-        throttle = THREE.MathUtils.clamp((fall - want) * 1.4 + (g / MAX_THRUST), 0, 1);
-        const backX = (padX - position.x) * 0.06 - vel.x * 0.55;
-        const backZ = (padZ - position.z) * 0.06 - vel.z * 0.55;
-        tx = THREE.MathUtils.clamp(backX, -1, 1);
-        tz = THREE.MathUtils.clamp(backZ, -1, 1);
-      }
-      // Dry, the engine derates rather than quits: the last of the pressure
-      // will still set it down, just not gently.
-      if (telemetry.fuel <= 0) throttle = Math.min(throttle, 0.55);
-      telemetry.fuel = Math.max(0, telemetry.fuel - throttle * FUEL_BURN * dt);
-      telemetry.throttle += (throttle - telemetry.throttle) * (1 - Math.exp(-dt * 7));
-
-      vel.y += (telemetry.throttle * MAX_THRUST - g) * dt;
-      vel.x += tx * RCS * dt;
-      vel.z += tz * RCS * dt;
-      // A little damping so the RCS is flyable rather than a skid.
-      vel.x *= Math.exp(-dt * 0.35);
-      vel.z *= Math.exp(-dt * 0.35);
-      position.addScaledVector(vel, dt);
-
+      // The flight itself in steps no longer than a 120th of a second, so the
+      // touchdown — and its grade — does not depend on the frame rate.
+      const n = Math.max(1, Math.ceil(dt * 120 - 1e-6));
+      for (let i = 0; i < n && !telemetry.landed; i++) fly(dt / n, input, height);
       const g2 = height(position.x, position.z);
-      if (position.y - g2 <= TOUCH) {
-        position.y = g2 + TOUCH;
-        telemetry.landed = true;
-        telemetry.touchdown = Math.max(0, -vel.y);
-        vel.set(0, 0, 0);
-        // The pads throw a ring of dust out from under the vehicle.
-        for (let i = 0; i < 26; i++) {
-          const a = Math.random() * Math.PI * 2;
-          dust.burst({
-            x: position.x + Math.cos(a) * 2.6, y: g2, z: position.z + Math.sin(a) * 2.6,
-            count: 3, speedMin: 1.4, speedMax: 5.5, cone: 1.45, size: 0.17,
-            dirX: Math.cos(a), dirZ: Math.sin(a), bias: 2.6,
-          });
-        }
-        telemetry.egressX = position.x;
-        telemetry.egressZ = position.z + 6.5;
-      }
+      const alt = position.y - g2;
 
       // ── The exhaust, and what it does to the ground. ──
       flicker += dt * 30;
       const t = telemetry.throttle;
       plumeMat.opacity = t * (0.45 + 0.1 * Math.sin(flicker));
-      plume.scale.set(0.85 + t * 0.3, 0.5 + t * 0.7 + 0.06 * Math.sin(flicker * 1.7), 0.85 + t * 0.3);
+      plumeScale(0.85 + t * 0.3, 0.5 + t * 0.7 + 0.06 * Math.sin(flicker * 1.7), 0.85 + t * 0.3);
       lights?.request(position.x, position.y - 1.2, position.z, 0xaad6ff, t * 26, 20 + alt * 0.6, 2);
       // Below thirty metres the blast starts to move regolith; by ten it is
       // a sheet of it going sideways faster than the vehicle is coming down.
@@ -287,11 +285,10 @@ export function makeLander(
         dustAcc -= 1;
         const a = Math.random() * Math.PI * 2;
         const r = 1.5 + Math.random() * (3 + blast * 9);
-        dust.burst({
-          x: position.x + Math.cos(a) * r, y: g2, z: position.z + Math.sin(a) * r,
-          count: 1, speedMin: 1.5, speedMax: 3 + blast * 9, cone: 1.5, size: 0.14,
-          dirX: Math.cos(a), dirZ: Math.sin(a), bias: 2.2 + blast * 2,
-        });
+        grain.x = position.x + Math.cos(a) * r; grain.y = g2; grain.z = position.z + Math.sin(a) * r;
+        grain.count = 1; grain.speedMin = 1.5; grain.speedMax = 3 + blast * 9; grain.cone = 1.5; grain.size = 0.14;
+        grain.dirX = Math.cos(a); grain.dirZ = Math.sin(a); grain.bias = 2.2 + blast * 2;
+        dust.burst(grain);
       }
       // The vehicle leans a touch into the translation it is asking for.
       group.rotation.z += (-tx * 0.06 - group.rotation.z) * (1 - Math.exp(-dt * 3));
@@ -311,6 +308,8 @@ export function makeLander(
       vel.set(0, 0, 0);
     },
     dispose() {
+      disposed = true;
+      releaseModel?.();
       for (const g of geoms) g.dispose();
       for (const m of owned) m.dispose();
     },

@@ -9,7 +9,6 @@
 
 import * as THREE from 'three';
 import { MOON_G, type DustBurst, type DustHandle } from '@/lib/solar-system/moon-fx';
-import { mergeStatic } from '@/lib/solar-system/moon-batch';
 import { buildSuit } from '@/lib/solar-system/moon-suit-mesh';
 import { makeSuitPoser, type PoseBlend } from '@/lib/solar-system/moon-suit-pose';
 import {
@@ -72,6 +71,10 @@ export interface CosmonautHandle {
   look: (yaw: number, pitch: number) => void;
   /** Visor up (pressurised habitat) or down. */
   visor: (open: boolean) => void;
+  /** The helmet lamps, lit with the headlamp. */
+  lamps: (on: boolean) => void;
+  /** Settles once the suit model is on the rig (or could not load): compile after it. */
+  ready: Promise<void>;
   onStep: ((e: StepEvent) => void) | null;
   update: (dt: number, input: WalkInput, heightAt: (x: number, z: number) => number, colliders: Collider[], walkRadius: number) => void;
   present: (alpha: number) => void;
@@ -95,8 +98,6 @@ const ease = (rate: number, dt: number) => 1 - Math.exp(-dt * rate);
 export function makeCosmonaut(dust: DustHandle, lite = false, g = MOON_G, suited = true, bareHead = false): CosmonautHandle {
   const rig = buildSuit(lite, bareHead);
   const { group, helmet } = rig;
-  // Every joint is a group; everything rigid inside one becomes a draw call per material.
-  const merged = mergeStatic(group, { isPivot: (o) => (o as THREE.Group).isGroup === true, minCaster: 0.05 });
 
   const position = new THREE.Vector3();
   const vel = new THREE.Vector3();
@@ -140,14 +141,16 @@ export function makeCosmonaut(dust: DustHandle, lite = false, g = MOON_G, suited
   };
 
   const handle: CosmonautHandle = {
-    group, position, velocity: vel, yaw: 0, state, profile: loco.profile, feet: loco.feet, ankles: rig.ankles, onStep: null, indoors: false,
+    group, position, velocity: vel, yaw: 0, state, profile: loco.profile, feet: loco.feet, ankles: rig.ankles, onStep: null, indoors: false, ready: rig.ready,
     setGravity(gravity, pressurised) { loco.setProfile(gaitProfile(gravity, pressurised)); handle.profile = loco.profile; state.gravity = gravity; },
-    setProfile(p) { loco.setProfile(p); handle.profile = loco.profile; state.gravity = p.g; },
+    setProfile(p) { loco.setProfile(p); handle.profile = loco.profile; state.gravity = p.worldG; },
     setCeiling(c) { loco.ceilingAt = c; },
-    eye(out) { group.updateMatrixWorld(true); return rig.neck.localToWorld(out.copy(poser.eyeLocal)); },
+    // Only the chain from the root to the neck: the rest of the rig is not needed for one point.
+    eye(out) { rig.neck.updateWorldMatrix(true, false); return rig.neck.localToWorld(out.copy(poser.eyeLocal)); },
     setHelmetView(on) { helmetView = on; helmet.visible = !on; },
     look(y, p) { lookYaw = y; lookPitch = p; },
     visor(open) { visorOpen = open; },
+    lamps(on) { rig.setLamps(on); },
     script(track, then) { loco.yaw = handle.yaw; loco.script(track, then); },
     release(vx, vy, vz, mode) { loco.release(vx, vy, vz, mode); },
     hold(on) { held = on; },
@@ -236,10 +239,7 @@ export function makeCosmonaut(dust: DustHandle, lite = false, g = MOON_G, suited
       b.lookPitch = lookPitch;
       poser.body(dt, b);
     },
-    dispose() {
-      rig.dispose();
-      for (const geom of merged.geometries) geom.dispose();
-    },
+    dispose() { rig.dispose(); },
   };
   return handle;
 }

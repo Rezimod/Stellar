@@ -162,7 +162,8 @@ export function makeWorldSky(renderer: THREE.WebGLRenderer, profile: WorldProfil
   sun.position.copy(profile.sunDir).multiplyScalar(40);
   envScene.add(sun);
   const pmrem = new THREE.PMREMGenerator(renderer);
-  const environment = pmrem.fromScene(envScene, 0.03).texture;
+  const envTarget = pmrem.fromScene(envScene, 0.03);
+  const environment = envTarget.texture;
   pmrem.dispose();
   for (const o of [envSky, ground, sun]) { o.geometry.dispose(); (o.material as THREE.Material).dispose(); }
 
@@ -187,7 +188,7 @@ export function makeWorldSky(renderer: THREE.WebGLRenderer, profile: WorldProfil
       for (const m of owned) m.dispose();
       stars.geometry.dispose();
       (stars.material as THREE.Material).dispose();
-      environment.dispose();
+      envTarget.dispose();
     },
   };
 }

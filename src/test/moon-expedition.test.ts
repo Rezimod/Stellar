@@ -18,7 +18,7 @@ import type { Anchor, AnchorId } from '@/lib/solar-system/moon-base-zones';
 
 const flat = () => 0;
 const stamp = vi.fn();
-const dust: DustHandle = { points: new THREE.Points(), burst: vi.fn(), update: vi.fn(), dispose: vi.fn() };
+const dust: DustHandle = { points: new THREE.Points(), burst: vi.fn(), setCap: vi.fn(), update: vi.fn(), dispose: vi.fn() };
 
 beforeEach(() => { localStorage.clear(); });
 afterEach(() => { localStorage.clear(); });
@@ -153,7 +153,8 @@ describe('the expedition', () => {
       // Walk to wherever the telemetry points, and work it.
       c.stand(c.at.x, c.at.z, 0.1);
       const tx = c.at.x + Math.sin(m.telemetry.bearing) * (m.telemetry.distance - 1.2);
-      const tz = c.at.z + Math.cos(m.telemetry.bearing) * (m.telemetry.distance - 1.2);
+      // Bearings are map bearings: north is -z.
+      const tz = c.at.z - Math.cos(m.telemetry.bearing) * (m.telemetry.distance - 1.2);
       c.stand(tx, tz, 0.1);
       expect(c.io.prompt.label).toBe('clear');
       c.hold(1);
@@ -166,7 +167,7 @@ describe('the expedition', () => {
     // The seam wakes first; the hatch only answers after it.
     c.stand(m.marker ? m.marker.x : c.at.x, m.marker ? m.marker.z : c.at.z, 0.1);
     const hx = c.at.x + Math.sin(m.telemetry.bearing) * m.telemetry.distance;
-    const hz = c.at.z + Math.cos(m.telemetry.bearing) * m.telemetry.distance;
+    const hz = c.at.z - Math.cos(m.telemetry.bearing) * m.telemetry.distance;
     c.stand(hx, hz, 2);
     expect(m.telemetry.objective).toBe('obj.contactWait');
     c.stand(hx, hz, 5);
@@ -322,11 +323,10 @@ describe('side jobs', () => {
 function roverParts(): RoverParts {
   const obj = () => new THREE.Object3D();
   return {
-    spin: [obj(), obj(), obj(), obj(), obj(), obj()],
+    spin: [obj(), obj(), obj(), obj()],
     steer: [obj(), obj(), obj(), obj()],
-    rockers: [obj(), obj()],
-    bogies: [obj(), obj()],
-    wheelXZ: [[-1.35, 1.55], [-1.35, -0.2], [-1.35, -1.55], [1.35, 1.55], [1.35, -0.2], [1.35, -1.55]],
+    arms: [obj(), obj(), obj(), obj()],
+    wheelXZ: [[-0.8, 1.12], [-0.8, -1.12], [0.8, 1.12], [0.8, -1.12]],
     mast: obj(),
     seat: obj(),
     headlight: new THREE.SpotLight(),

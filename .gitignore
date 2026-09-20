@@ -85,3 +85,7 @@ docs/gita-grant-application.md
 docs/solana-foundation-georgia-grant-application.md
 docs/stellar-superteamgeo-grant-application-*.md
 docs/tether-grant-*.md
+
+# Explore asset pipeline: raw Blender exports and baked textures
+/assets-src/build/
+assets-src/renders/**/view-*.png

@@ -1,32 +1,38 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  Camera, ChevronsDown, ChevronsUp, Drill, Eye, EyeOff, Flame, Gauge, HelpCircle,
+  Camera, ChevronsDown, ChevronsUp, Drill, Eye, EyeOff, Flame, Flashlight, Gauge, HelpCircle,
   LogIn, Menu, Rocket, Trophy, Volume2, VolumeX, Wind, X,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { makeMoonSurface, type MoonSurfaceHandle } from '@/lib/solar-system/moon-surface';
 import { DRILL_BAND } from '@/lib/solar-system/moon-mission';
-import { setSoundOn, soundOn } from '@/lib/solar-system/sound-prefs';
 import { GameStick, tapKey } from './GameStick';
 import { CosmicLoader } from './CosmicLoader';
+import { ControlsHelp } from './ControlsHelp';
+import { unlockPointer } from '@/game/console';
+import { footBinding } from '@/game/bindings';
+import { attachSurfaceControls, type SurfaceControls } from '@/game/surface-controls';
 import { useLoadingTips } from './useLoadingTips';
 import { useSoundPref } from './useSoundPref';
 import type { RoomLink } from '@/lib/multiplayer/room-link';
+import { BuildHud } from './BuildHud';
 
 interface MoonSurfaceProps {
   onReturn: () => void;
   room: RoomLink;
+  /** The game shell's pause: the sim, the sound and the keys all stop. */
+  paused?: boolean;
+  /** Where the build is; the shell's loading screen follows it and this one stays hidden. */
+  onProgress?: (stage: 'build' | 'compile' | 'ready') => void;
+  /** The mouse was let go of (Esc under pointer lock): the shell should pause. */
+  onPauseRequest?: () => void;
 }
 
-const KEY_ROWS = ['r1', 'r2', 'r15', 'r9', 'r3', 'r4', 'r16', 'r5', 'r10', 'r6', 'r11', 'r12', 'r8', 'r13', 'r14', 'r7'] as const;
-const TOUCH_ROWS = ['t1', 't2', 't3', 't7', 't4', 't8', 't9', 't6', 't10', 't11', 't5'] as const;
-const HANDLED = new Set([
-  'KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
-  'Space', 'ShiftLeft', 'ShiftRight', 'KeyE', 'KeyC', 'KeyF', 'KeyV', 'KeyM', 'ControlLeft', 'KeyQ', 'AltLeft', 'AltRight',
-  'Digit1', 'Digit2', 'Digit3', 'Digit4',
-]);
+/** The Moon's own notes under the controls: the place, not the keys. */
+const KEY_TIPS = ['r16', 'r10', 'r8', 'r13', 'r7'] as const;
+const TOUCH_TIPS = ['t7', 't6', 't10', 't5'] as const;
 const fmtTime = (s: number) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 const fmtRange = (m: number) => (m >= 1000 ? `${(m / 1000).toFixed(2)} km` : `${Math.round(m)} m`);
 /** A rough range: to the nearest ten metres, marked as such. */
@@ -35,9 +41,10 @@ const fmtApprox = (m: number) => `~${fmtRange(Math.round(m / 10) * 10)}`;
 const PPD = 3.1;
 const TURNS = 3;
 
-export function MoonSurface({ onReturn, room }: MoonSurfaceProps) {
+export function MoonSurface({ onReturn, room, paused, onProgress, onPauseRequest }: MoonSurfaceProps) {
   const t = useTranslations('solarSystem.moon');
   const tl = useTranslations('solarSystem.loading');
+  const tc = useTranslations('solarSystem.controls');
   const tips = useLoadingTips();
   const [sound, toggleSound] = useSoundPref();
   const [touch, setTouch] = useState(false);
@@ -59,6 +66,16 @@ export function MoonSurface({ onReturn, room }: MoonSurfaceProps) {
   const landTitleRef = useRef<HTMLSpanElement>(null);
   const onReturnRef = useRef(onReturn);
   onReturnRef.current = onReturn;
+  const onProgressRef = useRef(onProgress);
+  onProgressRef.current = onProgress;
+  const onPauseRequestRef = useRef(onPauseRequest);
+  onPauseRequestRef.current = onPauseRequest;
+  const pausedRef = useRef(false);
+  pausedRef.current = !!paused;
+  // The translator is read through a ref: a new identity (a locale switch)
+  // must not tear the scene down and rebuild it.
+  const tRef = useRef(t);
+  tRef.current = t;
   const landRateRef = useRef<HTMLSpanElement>(null);
   const landOffRef = useRef<HTMLSpanElement>(null);
   const landDriftRef = useRef<HTMLSpanElement>(null);
@@ -104,6 +121,7 @@ export function MoonSurface({ onReturn, room }: MoonSurfaceProps) {
   const tempRef = useRef<HTMLSpanElement>(null);
   const evaRef = useRef<HTMLSpanElement>(null);
   const distRef = useRef<HTMLSpanElement>(null);
+  const lampRef = useRef<HTMLSpanElement>(null);
   const actionRef = useRef<HTMLButtonElement>(null);
   const actionTextRef = useRef<HTMLSpanElement>(null);
   const workRef = useRef<HTMLDivElement>(null);
@@ -117,13 +135,8 @@ export function MoonSurface({ onReturn, room }: MoonSurfaceProps) {
   const brRef = useRef<HTMLDivElement>(null);
   const brGravRef = useRef<HTMLSpanElement>(null);
   const brReadRef = useRef<HTMLSpanElement>(null);
-  const movingRef = useRef(false);
-  const keyboardMoveRef = useRef({ x: 0, y: 0 });
-  const runRef = useRef(false);
-  const crouchRef = useRef(false);
+  const controlsRef = useRef<SurfaceControls | null>(null);
   const touchRef = useRef(false);
-  runRef.current = run;
-  crouchRef.current = crouch;
 
   useEffect(() => {
     const coarse = window.matchMedia('(pointer: coarse)').matches;
@@ -147,6 +160,8 @@ export function MoonSurface({ onReturn, room }: MoonSurfaceProps) {
     const root = rootRef.current;
     if (!mount || !root) return;
     let rebuildTimer = 0;
+    const tt = (key: string, values?: Record<string, string | number>) => tRef.current(key, values);
+    onProgressRef.current?.('build');
     const handle = makeMoonSurface(mount, {
       room,
       startOnSurface: resumeRef.current,
@@ -160,100 +175,19 @@ export function MoonSurface({ onReturn, room }: MoonSurfaceProps) {
       },
     });
     handleRef.current = handle;
-    const input = handle.input;
-    const pressed = new Set<string>();
-    const sync = () => {
-      const has = (c: string) => pressed.has(c);
-      const x = (has('KeyD') || has('ArrowRight') ? 1 : 0) - (has('KeyA') || has('ArrowLeft') ? 1 : 0);
-      const y = (has('KeyW') || has('ArrowUp') ? 1 : 0) - (has('KeyS') || has('ArrowDown') ? 1 : 0);
-      const len = Math.hypot(x, y) || 1;
-      keyboardMoveRef.current = { x: x / len, y: y / len };
-      if (!movingRef.current) {
-        input.moveX = x / len;
-        input.moveY = y / len;
-      }
-      // Shift is a sprint (held, or tapped to latch); Alt is a deliberate walk; the touch key is a run.
-      input.run = runRef.current;
-      input.sprint = has('ShiftLeft') || has('ShiftRight');
-      input.walk = has('AltLeft') || has('AltRight');
-      input.crouch = has('ControlLeft') || crouchRef.current;
-      // E and F both hold the job in front of you; E also presses it.
-      input.use = has('KeyE') || has('KeyF');
-      // On the way down, the space bar is the descent engine.
-      input.throttle = has('Space') ? 1 : 0;
-      input.jump = has('Space');
-    };
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (!HANDLED.has(e.code)) return;
-      handle.startAudio();
-      if (e.repeat) { e.preventDefault(); return; }
-      pressed.add(e.code);
-      if (e.code === 'KeyE' || e.code === 'KeyF') input.interact = true;
-      if (e.code === 'KeyV') input.viewToggle = true;
-      if (e.code === 'KeyQ') input.shoulderSwap = true;
-      if (e.code === 'KeyC') { crouchRef.current = !crouchRef.current; setCrouch(crouchRef.current); }
-      if (e.code === 'KeyM') setSoundOn(!soundOn());
-      if (e.code.startsWith('Digit')) input.gearRequest = Number(e.code.slice(5)) - 1;
-      sync();
-      e.preventDefault();
-    };
-    const onKeyUp = (e: KeyboardEvent) => {
-      if (!HANDLED.has(e.code)) return;
-      pressed.delete(e.code);
-      sync();
-    };
-    const onBlur = () => {
-      pressed.clear();
-      input.moveX = input.moveY = 0;
-      input.jump = false; input.run = false; input.sprint = false; input.walk = false; input.use = false; input.throttle = 0;
-      keyboardMoveRef.current = { x: 0, y: 0 };
-      input.orbitDX = input.orbitDY = 0;
-      orbitId = -1;
-      runRef.current = false;
-      setRun(false);
-    };
-    const onHidden = () => { if (document.hidden) onBlur(); };
-    window.addEventListener('keydown', onKeyDown);
-    window.addEventListener('keyup', onKeyUp);
-    window.addEventListener('blur', onBlur);
-    document.addEventListener('visibilitychange', onHidden);
-    // Press and hold selects nothing and calls up no menu: this is a game.
-    const noSelect = (e: Event) => {
-      const el = e.target as Element | null;
-      if (el && el.closest('.moon-hud__help, .moon-hud__menu, .moon-hud__log')) return;
-      e.preventDefault();
-    };
-    document.addEventListener('selectstart', noSelect);
-    document.addEventListener('contextmenu', noSelect);
-
-    // Scene drags orbit the camera independently of the movement station.
-    let orbitId = -1;
-    let lastX = 0; let lastY = 0;
-    const onDown = (e: PointerEvent) => {
-      handle.startAudio();
-      if (e.button !== 0 || orbitId >= 0) return;
-      orbitId = e.pointerId;
-      lastX = e.clientX; lastY = e.clientY;
-      mount.setPointerCapture(e.pointerId);
-      e.preventDefault();
-    };
-    const onMove = (e: PointerEvent) => {
-      if (e.pointerId === orbitId) {
-        input.orbitDX += e.clientX - lastX;
-        input.orbitDY += e.clientY - lastY;
-        lastX = e.clientX; lastY = e.clientY;
-      }
-    };
-    const onUp = (e: PointerEvent) => {
-      if (e.pointerId === orbitId) orbitId = -1;
-    };
-    const onWheel = (e: WheelEvent) => { input.zoom += Math.sign(e.deltaY); e.preventDefault(); };
-    mount.addEventListener('pointerdown', onDown);
-    mount.addEventListener('pointermove', onMove);
-    mount.addEventListener('pointerup', onUp);
-    mount.addEventListener('pointercancel', onUp);
-    mount.addEventListener('lostpointercapture', onUp);
-    mount.addEventListener('wheel', onWheel, { passive: false });
+    onProgressRef.current?.('compile');
+    let readyReported = false;
+    const controls = attachSurfaceControls({
+      mount, input: handle.input, touch: touchRef.current,
+      paused: () => pausedRef.current,
+      wake: handle.startAudio,
+      onCrouch: setCrouch,
+      onPauseRequest: () => onPauseRequestRef.current?.(),
+      onMap: () => setLog((v) => !v),
+      onGearCycle: () => cycleGear(),
+      selectable: '.moon-hud__help, .moon-hud__menu, .moon-hud__log',
+    });
+    controlsRef.current = controls;
 
     // HUD paint at ~30 Hz off the telemetry, no React state churn.
     const tel = handle.telemetry;
@@ -282,40 +216,15 @@ export function MoonSurface({ onReturn, room }: MoonSurfaceProps) {
     let lastPaint = 0;
     const isTouch = window.matchMedia('(pointer: coarse)').matches;
     root.dataset.touch = String(isTouch);
-    // A standard-mapping gamepad: left stick moves (its length picks the gait), right stick looks,
-    // A jumps, X is the action key, B crouches, LT runs, L3 sprints, RB swaps the shoulder, Y turns the camera.
-    const padWas: boolean[] = [];
-    let padMoving = false;
-    const pollPad = () => {
-      const pads = typeof navigator.getGamepads === 'function' ? navigator.getGamepads() : [];
-      const pad = Array.from(pads).find((p) => p && p.mapping === 'standard');
-      if (!pad) return;
-      const dz = (v: number) => (Math.abs(v) < 0.15 ? 0 : (v - Math.sign(v) * 0.15) / 0.85);
-      const mx = dz(pad.axes[0] ?? 0); const my = -dz(pad.axes[1] ?? 0);
-      const down = (i: number) => !!pad.buttons[i]?.pressed;
-      const edge = (i: number) => { const on = down(i); const was = padWas[i]; padWas[i] = on; return on && !was; };
-      if (mx !== 0 || my !== 0) { padMoving = true; input.moveX = mx; input.moveY = my; handle.startAudio(); }
-      else if (padMoving) { padMoving = false; input.moveX = keyboardMoveRef.current.x; input.moveY = keyboardMoveRef.current.y; }
-      input.orbitDX += dz(pad.axes[2] ?? 0) * 14;
-      input.orbitDY += dz(pad.axes[3] ?? 0) * 10;
-      // Held buttons are let go only on their own release, so the keyboard and the touch keys keep theirs.
-      const jumpWas = !!padWas[0]; const useWas = !!padWas[2];
-      if (edge(0)) input.jump = true; else if (jumpWas && !down(0) && !pressed.has('Space')) input.jump = false;
-      if (edge(2)) { input.interact = true; input.use = true; } else if (useWas && !down(2) && !pressed.has('KeyE') && !pressed.has('KeyF')) input.use = false;
-      if (edge(1)) { crouchRef.current = !crouchRef.current; setCrouch(crouchRef.current); input.crouch = crouchRef.current; }
-      if (edge(3)) input.viewToggle = true;
-      if (edge(5)) input.shoulderSwap = true;
-      // LT runs, L3 sprints; the stick's own length picks the gait below that.
-      if (down(6) || padWas[6]) input.run = down(6) || runRef.current;
-      if (down(10) || padWas[10]) input.sprint = down(10) || pressed.has('ShiftLeft') || pressed.has('ShiftRight');
-      padWas[6] = down(6); padWas[10] = down(10);
-    };
+    let lastPoll = performance.now();
     const paint = (now: number) => {
       raf = requestAnimationFrame(paint);
-      pollPad();
+      controls.poll(Math.min(0.1, (now - lastPoll) / 1000));
+      lastPoll = now;
       if (now - lastPaint < 33) return;
       lastPaint = now;
       root.dataset.ready = String(tel.ready);
+      if (tel.ready && !readyReported) { readyReported = true; onProgressRef.current?.('ready'); }
       root.dataset.phase = tel.phase;
       root.dataset.view = tel.view;
       root.dataset.driving = String(tel.driving);
@@ -329,10 +238,10 @@ export function MoonSurface({ onReturn, room }: MoonSurfaceProps) {
       if (brPanel) {
         show(brPanel, under);
         if (under) {
-          text(brGravRef.current, t('backrooms.gravityRead', { n: bt.gravity.toFixed(2), g: (bt.gravity / 9.81).toFixed(2) }));
+          text(brGravRef.current, tt('backrooms.gravityRead', { n: bt.gravity.toFixed(2), g: (bt.gravity / 9.81).toFixed(2) }));
           if (brGravRef.current) brGravRef.current.dataset.earth = String(bt.gravity > 5);
           show(brReadRef.current, !!bt.readout);
-          if (bt.readout) text(brReadRef.current, t(`backrooms.readout.${bt.readout}`));
+          if (bt.readout) text(brReadRef.current, tt(`backrooms.readout.${bt.readout}`));
           setVar(brPanel, '--glitch', bt.glitch.toFixed(2));
         }
       }
@@ -341,7 +250,7 @@ export function MoonSurface({ onReturn, room }: MoonSurfaceProps) {
       if (tel.ascended) { tel.ascended = false; onReturnRef.current(); return; }
       if (tel.phase !== 'surface') {
         const l = tel.landing;
-        text(landTitleRef.current, tel.phase === 'ascent' ? t('landing.ascent') : t('landing.title'));
+        text(landTitleRef.current, tel.phase === 'ascent' ? tt('landing.ascent') : tt('landing.title'));
         text(landAltRef.current, `${l.altitude.toFixed(l.altitude < 10 ? 1 : 0)} m`);
         text(landRateRef.current, `${Math.abs(l.descent).toFixed(1)} m/s`);
         text(landOffRef.current, `${Math.round(l.offset)} m`);
@@ -351,8 +260,8 @@ export function MoonSurface({ onReturn, room }: MoonSurfaceProps) {
         show(assistRef.current, l.assist);
         show(plaqueRef.current, tel.phase === 'touchdown');
         if (tel.phase === 'touchdown') {
-          text(plaqueGradeRef.current, t(`grades.${tel.grade || 'good'}`));
-          text(plaqueSpeedRef.current, t('landing.touchdown', { n: l.touchdown.toFixed(2) }));
+          text(plaqueGradeRef.current, tt(`grades.${tel.grade || 'good'}`));
+          text(plaqueSpeedRef.current, tt('landing.touchdown', { n: l.touchdown.toFixed(2) }));
         }
         return;
       }
@@ -378,17 +287,17 @@ export function MoonSurface({ onReturn, room }: MoonSurfaceProps) {
           meter.dataset.kind = align ? 'align' : 'scan';
           meter.dataset.ping = String(m.ping);
           setVar(meter, '--v', (align ? j.meter : m.signal).toFixed(3));
-          text(meterLabelRef.current, align ? t('jobs.meter') : m.task === 'scan' ? t('mission.scanLock', { n: Math.round(m.work * 100) }) : t('mission.scanner'));
+          text(meterLabelRef.current, align ? tt('jobs.meter') : m.task === 'scan' ? tt('mission.scanLock', { n: Math.round(m.work * 100) }) : tt('mission.scanner'));
         }
       }
       show(objRef.current, (m.distance >= 0 || m.complete || j.active !== '') && !m.banner && !j.banner);
-      text(objTextRef.current, t(`mission.${m.objective || 'obj.done'}`));
+      text(objTextRef.current, tt(`mission.${m.objective || 'obj.done'}`));
       text(objRangeRef.current,
         m.task === 'drill' && m.atSite ? `${m.drill.depth.toFixed(1)} / ${5.2} m`
-        : m.task === 'clear' && m.atSite ? t('mission.patches', { n: m.cleared, total: m.patches })
+        : m.task === 'clear' && m.atSite ? tt('mission.patches', { n: m.cleared, total: m.patches })
         : m.distance >= 0 ? (m.approx ? fmtApprox(m.distance) : fmtRange(m.distance)) : '');
       show(jobRef.current, j.active !== '');
-      if (j.active && j.objective) text(jobTextRef.current, `${t(`jobs.steps.${j.objective}`)}${j.distance >= 0 && j.distance > 4 ? ` · ${fmtRange(j.distance)}` : ''}`);
+      if (j.active && j.objective) text(jobTextRef.current, `${tt(`jobs.steps.${j.objective}`)}${j.distance >= 0 && j.distance > 4 ? ` · ${fmtRange(j.distance)}` : ''}`);
 
       text(altRef.current, `${tel.altitude.toFixed(1)} m`);
       text(speedRef.current, `${tel.speed.toFixed(1)} m/s`);
@@ -399,10 +308,11 @@ export function MoonSurface({ onReturn, room }: MoonSurfaceProps) {
       text(tempRef.current, `${tel.suitTemp.toFixed(1)}°`);
       text(evaRef.current, fmtTime(tel.evaSeconds));
       text(distRef.current, fmtRange(tel.distanceM));
+      show(lampRef.current, tel.headlamp);
 
       // ── The one key: underground, the Backrooms' own. ──
       const p = under ? bt.prompt : tel.prompt;
-      const label = !p.active ? '' : under ? t(`backrooms.act.${p.label}`) : t(`act.${p.label}`);
+      const label = !p.active ? '' : under ? tt(`backrooms.act.${p.label}`) : tt(`act.${p.label}`);
       const action = actionRef.current;
       if (action) {
         show(action, p.active);
@@ -439,7 +349,7 @@ export function MoonSurface({ onReturn, room }: MoonSurfaceProps) {
           const heatEl = drillHeatRef.current;
           setVar(heatEl, '--v', d.heat.toFixed(3));
           if (heatEl) heatEl.dataset.state = d.heat > 0.75 ? 'hot' : 'ok';
-          const warn = d.stalled ? t('mission.drill.stalled') : d.ready ? t('mission.drill.ready') : d.hard ? t('mission.drill.hard') : '';
+          const warn = d.stalled ? tt('mission.drill.stalled') : d.ready ? tt('mission.drill.ready') : d.hard ? tt('mission.drill.hard') : '';
           show(drillWarnRef.current, warn !== '');
           text(drillWarnRef.current, warn);
         }
@@ -449,42 +359,42 @@ export function MoonSurface({ onReturn, room }: MoonSurfaceProps) {
         show(gear, tel.driving);
         if (tel.driving) {
           gear.dataset.gear = tel.gear;
-          text(gearTextRef.current, `${t(`gears.${tel.gear}`)} · ${Math.round(tel.battery * 100)}%`);
+          text(gearTextRef.current, `${tt(`gears.${tel.gear}`)} · ${Math.round(tel.battery * 100)}%`);
         }
       }
       const stance = stanceRef.current;
       if (stance) {
         const s = tel.driving
-          ? (tel.roverFault ? t('rover.fault') : tel.charging ? t('rover.charging', { n: Math.round(tel.battery * 100) }) : '')
-          : tel.fallen ? t(isTouch ? 'stance.fallenTouch' : 'stance.fallen') : tel.stumbling ? t('stance.stumble') : tel.sliding ? t('stance.slide') : tel.crouched ? t('stance.crouch') : '';
+          ? (tel.roverFault ? tt('rover.fault') : tel.charging ? tt('rover.charging', { n: Math.round(tel.battery * 100) }) : '')
+          : tel.fallen ? tt(isTouch ? 'stance.fallenTouch' : 'stance.fallen') : tel.stumbling ? tt('stance.stumble') : tel.sliding ? tt('stance.slide') : tel.crouched ? tt('stance.crouch') : '';
         show(stance, s !== '');
         text(stance, s);
       }
       const lock = tel.airlock;
-      const lockText = !lock.near ? '' : lock.state === 'cycling' ? t('airlock.cycling', { n: Math.round(lock.cycle * 100) }) : lock.state === 'open' ? t('airlock.open') : '';
+      const lockText = !lock.near ? '' : lock.state === 'cycling' ? tt('airlock.cycling', { n: Math.round(lock.cycle * 100) }) : lock.state === 'open' ? tt('airlock.open') : '';
       show(airlockRef.current, lockText !== '');
       text(airlockRef.current, lockText);
       const poi = poiRef.current;
       if (poi) {
         const on = !!tel.poiId && !p.active;
         show(poi, on);
-        if (on) text(poi, t(`pois.${tel.poiId}`));
+        if (on) text(poi, tt(`pois.${tel.poiId}`));
       }
       const hintKey = tel.hint ? (isTouch ? `hints.${tel.hint}Touch` : `hints.${tel.hint}`) : '';
       const hint = hintRef.current;
       if (hint) {
         show(hint, !!hintKey && !p.active);
-        if (hintKey) text(hint, t(hintKey));
+        if (hintKey) text(hint, tt(hintKey));
       }
       const banner = bannerRef.current;
       if (banner) {
         const key = m.banner ? `mission.${m.banner}` : j.banner ? `jobs.${j.banner}` : '';
         show(banner, key !== '');
-        if (key) text(banner.firstElementChild as HTMLElement, t(key));
+        if (key) text(banner.firstElementChild as HTMLElement, tt(key));
       }
       const radio = radioRef.current;
       if (radio) {
-        const line = bt.radio ? t(`backrooms.radio.${bt.radio}`) : m.radio ? t(`mission.${m.radio}`) : '';
+        const line = bt.radio ? tt(`backrooms.radio.${bt.radio}`) : m.radio ? tt(`mission.${m.radio}`) : '';
         show(radio, line !== '');
         if (line) text(radio, line);
         radio.dataset.static = String(!!bt.radio);
@@ -492,34 +402,28 @@ export function MoonSurface({ onReturn, room }: MoonSurfaceProps) {
       const readout = readoutRef.current;
       if (readout) {
         show(readout, !!tel.readout);
-        if (tel.readout) text(readout, tel.readout === 'charger' ? t('readout.charger', { n: Math.round(tel.battery * 100) }) : t(`readout.${tel.readout}`));
+        if (tel.readout) text(readout, tel.readout === 'charger' ? tt('readout.charger', { n: Math.round(tel.battery * 100) }) : tt(`readout.${tel.readout}`));
       }
       const impact = impactRef.current;
       if (impact) {
         impact.hidden = tel.impactHold <= 0;
-        if (tel.impactHold > 0) text(impact, t('impact', { n: Math.round(tel.impactDist) }));
+        if (tel.impactHold > 0) text(impact, tt('impact', { n: Math.round(tel.impactDist) }));
       }
     };
     raf = requestAnimationFrame(paint);
     return () => {
       cancelAnimationFrame(raf);
       window.clearTimeout(rebuildTimer);
-      window.removeEventListener('keydown', onKeyDown);
-      window.removeEventListener('keyup', onKeyUp);
-      window.removeEventListener('blur', onBlur);
-      document.removeEventListener('visibilitychange', onHidden);
-      document.removeEventListener('selectstart', noSelect);
-      document.removeEventListener('contextmenu', noSelect);
-      mount.removeEventListener('pointerdown', onDown);
-      mount.removeEventListener('pointermove', onMove);
-      mount.removeEventListener('pointerup', onUp);
-      mount.removeEventListener('pointercancel', onUp);
-      mount.removeEventListener('lostpointercapture', onUp);
-      mount.removeEventListener('wheel', onWheel);
+      controls.detach();
+      controlsRef.current = null;
       handle.dispose();
       handleRef.current = null;
     };
-  }, [t, glGeneration, room]);
+  }, [glGeneration, room]);
+  useEffect(() => {
+    handleRef.current?.setPaused(!!paused);
+    if (paused) unlockPointer();
+  }, [paused, glGeneration]);
 
   /** Capture the finger so a key stays down when it slides off, but never at
    *  the cost of the key itself: the press is registered first either way. */
@@ -539,16 +443,25 @@ export function MoonSurface({ onReturn, room }: MoonSurfaceProps) {
       onPointerUp: off, onPointerCancel: off, onLostPointerCapture: off,
     };
   };
-  const jumpKey = hold((on) => { const h = handleRef.current; if (h) h.input.jump = on; });
-  const throttleKey = hold((on) => { const h = handleRef.current; if (h) h.input.throttle = on ? 1 : 0; });
-  /** The action key: pressing it presses the job in front of you; holding it holds it. */
-  const actionKey = hold((on) => {
-    const h = handleRef.current;
-    if (!h) return;
-    if (on) h.input.interact = true;
-    h.input.use = on;
+  /** Hold a key on the touch deck. */
+  const deck = (key: 'jump' | 'throttle' | 'use') => hold((on) => {
+    const c = controlsRef.current;
+    if (!c) return;
+    c.touchDeck[key] = on;
+    c.sync();
   });
-  const cycleView = () => { const h = handleRef.current; if (h) h.input.viewToggle = true; };
+  const jumpKey = deck('jump');
+  const throttleKey = deck('throttle');
+  /** The action key: pressing it presses the job in front of you; holding it holds it. */
+  const useKey = deck('use');
+  const actionKey = {
+    ...useKey,
+    onPointerDown: (e: React.PointerEvent<HTMLButtonElement>) => {
+      if (e.button === 0 && handleRef.current) handleRef.current.input.interact = true;
+      useKey.onPointerDown(e);
+    },
+  };
+  const cycleView = () => { const h = handleRef.current; if (h) h.input.viewCycle = true; };
   const cycleGear = () => {
     const h = handleRef.current;
     if (!h) return;
@@ -556,20 +469,18 @@ export function MoonSurface({ onReturn, room }: MoonSurfaceProps) {
     h.input.gearRequest = (list.indexOf(h.telemetry.gear) + 1) % list.length;
   };
   const toggleRun = () => {
-    setRun((r) => {
-      const h = handleRef.current;
-      if (h) h.input.run = !r;
-      return !r;
-    });
+    const c = controlsRef.current;
+    if (!c) return;
+    c.touchDeck.run = !c.touchDeck.run;
+    c.sync();
+    setRun(c.touchDeck.run);
   };
-  const toggleCrouch = () => {
-    setCrouch((c) => {
-      crouchRef.current = !c;
-      const h = handleRef.current;
-      if (h) h.input.crouch = !c;
-      return !c;
-    });
-  };
+  const toggleCrouch = () => controlsRef.current?.toggleCrouch();
+  const getBuild = useCallback(() => handleRef.current?.build ?? null, []);
+  const canBuild = useCallback(() => {
+    const tel = handleRef.current?.telemetry;
+    return !!tel && tel.phase === 'surface' && !tel.driving && !tel.inside && tel.backrooms.phase === '';
+  }, []);
   const rewards = handleRef.current?.telemetry.mission.rewards ?? [];
   const jobsDone = handleRef.current?.telemetry.jobs.done ?? [];
   const underground = handleRef.current?.telemetry.backrooms;
@@ -577,8 +488,8 @@ export function MoonSurface({ onReturn, room }: MoonSurfaceProps) {
   return (
     <div ref={rootRef} className="moon-surface" data-phase="descent" data-ready="false" data-immersive={immersive}>
       <div ref={mountRef} className="moon-surface__canvas" />
-      <CosmicLoader className={gpuLost ? 'moon-surface__loader is-forced' : 'moon-surface__loader'} variant="descent"
-        label={gpuLost ? tl('gpu') : tl('moon')} detail={gpuLost ? undefined : tl('moonDetail')} tips={tips} />
+      {(gpuLost || !onProgress) && <CosmicLoader className={gpuLost ? 'moon-surface__loader is-forced' : 'moon-surface__loader'} variant="descent"
+        label={gpuLost ? tl('gpu') : tl('moon')} detail={gpuLost ? undefined : tl('moonDetail')} tips={tips} />}
       <div className="moon-hud">
         <div className="moon-hud__visor" aria-hidden />
         <div ref={blackRef} className="moon-hud__black" aria-hidden />
@@ -662,6 +573,7 @@ export function MoonSurface({ onReturn, room }: MoonSurfaceProps) {
           <span className="moon-hud__vital"><i>{t('suitTemp')}</i><span ref={tempRef} /></span>
           <span className="moon-hud__vital"><i>{t('eva')}</i><span ref={evaRef} /></span>
           <span className="moon-hud__vital"><i>{t('distance')}</i><span ref={distRef} /></span>
+          <span ref={lampRef} className="moon-hud__vital moon-hud__lamp" hidden><Flashlight size={13} aria-hidden /><i>{tc('lampOn')}</i></span>
         </div>
 
         {/* ── Right rail: the drill's instruments while it runs. ── */}
@@ -672,6 +584,8 @@ export function MoonSurface({ onReturn, room }: MoonSurfaceProps) {
           <span className="moon-hud__drill-row"><span>{t('mission.drill.temp')}</span><span ref={drillHeatRef} className="moon-hud__gauge"><i /></span></span>
           <span ref={drillWarnRef} className="moon-hud__drill-warn" hidden />
         </div>
+
+        <BuildHud world="moon" getBuild={getBuild} canOpen={canBuild} mount={mountRef} paused={!!paused} touch={touch} />
 
         {/* ── Top right: the camera, the eye, the menu. ── */}
         <button type="button" className="moon-hud__round moon-hud__unhide" onClick={() => setImmersive(false)} aria-label={t('hudShow')} title={t('hudShow')}>
@@ -714,7 +628,7 @@ export function MoonSurface({ onReturn, room }: MoonSurfaceProps) {
               <span>{t('help')}</span>
               <button type="button" onClick={() => setHelp(false)} aria-label={t('close')}><X size={14} aria-hidden /></button>
             </div>
-            {(touch ? TOUCH_ROWS : KEY_ROWS).map((k) => <p key={k}>{t(`keys.${k}`)}</p>)}
+            <ControlsHelp touch={touch} moon tips={(touch ? TOUCH_TIPS : KEY_TIPS).map((k) => t(`keys.${k}`))} />
           </div>
         )}
         {log && (
@@ -746,7 +660,7 @@ export function MoonSurface({ onReturn, room }: MoonSurfaceProps) {
         {/* ── The middle of the glass: what is in front of the crew. ── */}
         <div className="moon-hud__foot">
           <div ref={promptRef} className="moon-hud__prompt" hidden>
-            <kbd>E</kbd><span ref={promptTextRef} /><small ref={promptHoldRef} hidden>{t('hold')}</small>
+            <kbd>{footBinding('interact').keyLabel}</kbd><span ref={promptTextRef} /><small ref={promptHoldRef} hidden>{t('hold')}</small>
           </div>
           <div ref={airlockRef} className="moon-hud__airlock" hidden />
           <div ref={stanceRef} className="moon-hud__stance" hidden />
@@ -757,14 +671,11 @@ export function MoonSurface({ onReturn, room }: MoonSurfaceProps) {
         {/* ── The thumbs. ── */}
         <div className="moon-hud__move">
           <GameStick label={t('move')} onMove={(x, y) => {
-            movingRef.current = x !== 0 || y !== 0;
-            const h = handleRef.current;
-            if (!h) return;
-            if (movingRef.current) h.startAudio();
-            h.input.moveX = movingRef.current ? x : keyboardMoveRef.current.x;
-            h.input.moveY = movingRef.current ? y : keyboardMoveRef.current.y;
-            // On a touch screen, the stick pushed right out to its rim lopes.
-            if (touchRef.current) h.input.run = runRef.current || Math.hypot(x, y) > 0.93;
+            const c = controlsRef.current;
+            if (!c) return;
+            if (x !== 0 || y !== 0) handleRef.current?.startAudio();
+            c.touchDeck.x = x; c.touchDeck.y = y;
+            c.sync();
           }} />
           <div className="moon-hud__stance-keys">
             <button type="button" className="moon-hud__key" data-on={run} {...tapKey(toggleRun)} aria-pressed={run} title={t('run')}>

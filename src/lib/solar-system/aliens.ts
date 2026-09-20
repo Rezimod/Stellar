@@ -16,6 +16,7 @@
 // telegraph flash before each burst, so a pilot can read the attack.
 
 import * as THREE from 'three';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
 export interface HostileTarget {
   group: THREE.Group;
@@ -91,14 +92,16 @@ function buildSaucer(s: number, glowTex: THREE.Texture): THREE.Group {
   const dome = new THREE.Mesh(new THREE.SphereGeometry(s * 0.18, 16, 10, 0, Math.PI * 2, 0, Math.PI / 2), domeMat);
   dome.position.y = s * 0.08;
   g.add(dome);
+  // Eight running lights, one mesh.
   const lightMat = new THREE.MeshBasicMaterial({ color: 0x7dffd0 });
-  const lightGeom = new THREE.SphereGeometry(s * 0.03, 6, 6);
+  const lightParts: THREE.BufferGeometry[] = [];
   for (let i = 0; i < 8; i++) {
     const a = (i / 8) * Math.PI * 2;
-    const l = new THREE.Mesh(lightGeom, lightMat);
-    l.position.set(Math.cos(a) * s * 0.44, 0, Math.sin(a) * s * 0.44);
-    g.add(l);
+    lightParts.push(new THREE.SphereGeometry(s * 0.03, 6, 6).translate(Math.cos(a) * s * 0.44, 0, Math.sin(a) * s * 0.44));
   }
+  const lightGeom = mergeGeometries(lightParts, false)!;
+  for (const part of lightParts) part.dispose();
+  g.add(new THREE.Mesh(lightGeom, lightMat));
   const halo = new THREE.Sprite(new THREE.SpriteMaterial({
     map: glowTex, transparent: true, opacity: 0.45, depthWrite: false, blending: THREE.AdditiveBlending,
   }));
@@ -149,15 +152,17 @@ function buildMothership(s: number): THREE.Group {
   g.add(hull);
   const spine = new THREE.Mesh(new THREE.BoxGeometry(s * 0.1, s * 0.32, s * 1.1), hullMat);
   g.add(spine);
+  // Eighteen lit windows, one mesh.
   const winMat = new THREE.MeshBasicMaterial({ color: 0xbfe8ff });
-  const winGeom = new THREE.BoxGeometry(s * 0.015, s * 0.03, s * 0.06);
+  const winParts: THREE.BufferGeometry[] = [];
   for (const side of [-1, 1]) {
     for (let i = 0; i < 9; i++) {
-      const w = new THREE.Mesh(winGeom, winMat);
-      w.position.set(side * s * 0.225, s * 0.02, (i / 8 - 0.5) * s * 1.5);
-      g.add(w);
+      winParts.push(new THREE.BoxGeometry(s * 0.015, s * 0.03, s * 0.06).translate(side * s * 0.225, s * 0.02, (i / 8 - 0.5) * s * 1.5));
     }
   }
+  const winGeom = mergeGeometries(winParts, false)!;
+  for (const part of winParts) part.dispose();
+  g.add(new THREE.Mesh(winGeom, winMat));
   const drive = new THREE.Mesh(
     new THREE.SphereGeometry(s * 0.12, 10, 10),
     new THREE.MeshBasicMaterial({ color: 0xb08cff, transparent: true, opacity: 0.9 }),

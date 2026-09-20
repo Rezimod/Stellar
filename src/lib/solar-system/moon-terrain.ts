@@ -6,6 +6,7 @@
 // crater into it and the geometry, the boots and the rocks all agree.
 
 import * as THREE from 'three';
+import { mergeVertices } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
 export const TERRAIN_SIZE = 360;
 /** Playable radius — the cosmonaut is kept inside this. */
@@ -13,6 +14,8 @@ export const TERRAIN_WALK_RADIUS = 165;
 /** Base pad: level ground so the habitats sit square. */
 export const PAD_CENTER = new THREE.Vector2(0, -6);
 export const PAD_RADIUS = 46;
+/** The telescope station's footing on the western ridge: levelled to the crest. */
+export const TELESCOPE_PAD = { x: -58, z: -44, r: 5.5 };
 
 function hash(ix: number, iy: number, seed: number): number {
   let n = (ix * 374761393 + iy * 668265263 + seed * 1442695041) | 0;
@@ -90,6 +93,8 @@ export interface TerrainHandle {
   tint: (x: number, z: number, r: number, k: number) => void;
   /** The same along a walked path. */
   tintPath: (pts: [number, number][], width: number, k: number) => void;
+  /** Take the rocks off a walked path (rovers and boots have kicked them aside). Build time. */
+  clearRocks: (pts: [number, number][], width: number) => void;
   dispose: () => void;
 }
 
@@ -150,7 +155,7 @@ function regolithCanvases(size: number): HTMLCanvasElement[] {
       const grain = hash(x, y, 91) - 0.5;
       const clast = hash(x, y, 97) > 0.9965 ? 0.45 : 0;
       // Albedo: mid grey, a little warmer in the dips, sparkly clasts.
-      const base = 0.74 + v * 0.14 + grain * 0.12 + clast;
+      const base = 0.76 + v * 0.09 + grain * 0.06 + clast;
       const g = Math.max(0, Math.min(1, base));
       mi.data[i] = Math.round(g * 255 * 1.0);
       mi.data[i + 1] = Math.round(g * 255 * 0.985);
@@ -186,20 +191,39 @@ function regolithMaps(size: number): { map: THREE.CanvasTexture; normal: THREE.C
   return { map: tex(map, true), normal: tex(nrm, false), rough: tex(rgh, false) };
 }
 
+/** A boulder: angular breccia whose edges micrometeorites have rounded. The
+ *  sphere is welded first, so it shades smooth, then cut by a few fracture
+ *  planes (the flats a rock breaks along) before the noise roughens it. */
 function rockGeometry(seed: number, detail: number): THREE.BufferGeometry {
-  const g = new THREE.IcosahedronGeometry(1, detail);
+  const g = mergeVertices(new THREE.IcosahedronGeometry(1, detail).deleteAttribute('normal').deleteAttribute('uv'));
   const pos = g.attributes.position as THREE.BufferAttribute;
   const v = new THREE.Vector3();
   const sx = 0.7 + hash(seed, 1, 5) * 0.6; const sy = 0.55 + hash(seed, 2, 5) * 0.4; const sz = 0.7 + hash(seed, 3, 5) * 0.6;
+  const cuts = Array.from({ length: 5 }, (_, k) => {
+    const a = hash(seed, 10 + k, 7) * Math.PI * 2; const b = (hash(seed, 20 + k, 7) - 0.3) * 1.6;
+    return { n: new THREE.Vector3(Math.cos(a) * Math.cos(b), Math.sin(b), Math.sin(a) * Math.cos(b)), d: 0.62 + hash(seed, 30 + k, 7) * 0.22 };
+  });
   for (let i = 0; i < pos.count; i++) {
     v.fromBufferAttribute(pos, i);
-    const n = 1 + fbm(v.x * 1.7 + seed, v.y * 1.7 + v.z * 0.9, 4, seed + 40) * 0.42;
+    // Fracture faces: a softened clamp, so the flat meets the round without a crease.
+    for (const c of cuts) {
+      const over = v.dot(c.n) - c.d;
+      if (over > 0) v.addScaledVector(c.n, -over * (1 - 0.35 * Math.exp(-over * 12)));
+    }
+    const n = 1 + fbm(v.x * 1.7 + seed, v.y * 1.7 + v.z * 0.9, 4, seed + 40) * 0.3 + fbm(v.x * 6 + seed, v.z * 6 - v.y * 3, 2, seed + 44) * 0.08;
     v.multiplyScalar(n);
     // Flatten the underside so it sits in the dust rather than on a point.
     if (v.y < -0.35) v.y = -0.35 + (v.y + 0.35) * 0.25;
     v.x *= sx; v.y *= sy; v.z *= sz;
     pos.setXYZ(i, v.x, v.y, v.z);
   }
+  // Welding took the sphere's UVs: project new ones off the shape, for the grain.
+  const uv = new Float32Array(pos.count * 2);
+  for (let i = 0; i < pos.count; i++) {
+    uv[i * 2] = pos.getX(i) * 0.9 + pos.getZ(i) * 0.4;
+    uv[i * 2 + 1] = pos.getY(i) * 0.9 + pos.getZ(i) * 0.5;
+  }
+  g.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
   g.computeVertexNormals();
   return g;
 }
@@ -241,7 +265,8 @@ export function makeMoonHorizon(terrain: TerrainHandle, lite: boolean): THREE.Me
   return mesh;
 }
 
-export function makeMoonTerrain(lite: boolean): TerrainHandle {
+/** `density` scales the rock count (the preset's prop density). */
+export function makeMoonTerrain(lite: boolean, density = 1): TerrainHandle {
   const N = lite ? 160 : 320;
   const size = TERRAIN_SIZE;
   const half = size / 2;
@@ -285,8 +310,9 @@ export function makeMoonTerrain(lite: boolean): TerrainHandle {
     const ridgeD = Math.abs((x + 0.55 * z) / 1.14 + 68);
     const ridgeMask = Math.exp(-(ridgeD * ridgeD) / (2 * 28 * 28));
     if (ridgeMask > 1e-4) h += ridged(x / 60 + 3.1, z / 60, seed + 5) * 7.5 * ridgeMask;
-    h += fbm(x / 9, z / 9, 3, seed + 9) * 0.55;
-    h += fbm(x / 2.2, z / 2.2, 2, seed + 13) * 0.11;
+    // Small relief stays soft: under a low sun a sharp sub-metre bump reads as ripples, and regolith is powder.
+    h += fbm(x / 9, z / 9, 3, seed + 9) * 0.42;
+    h += fbm(x / 2.2, z / 2.2, 2, seed + 13) * 0.045;
     for (const c of craterBins[binOf(z) * bins + binOf(x)]) {
       const d = Math.hypot(x - c.x, z - c.z);
       if (d < c.r * 1.55) h += craterProfile(d, c);
@@ -294,7 +320,13 @@ export function makeMoonTerrain(lite: boolean): TerrainHandle {
     return h;
   };
   const padHeight = rawHeight(PAD_CENTER.x, PAD_CENTER.y) * 0.3;
+  const scopeLevel = rawHeight(TELESCOPE_PAD.x, TELESCOPE_PAD.z);
   const heightFn = (x: number, z: number): number => {
+    const ds = Math.hypot(x - TELESCOPE_PAD.x, z - TELESCOPE_PAD.z);
+    if (ds < TELESCOPE_PAD.r + 8) {
+      const t = ds <= TELESCOPE_PAD.r ? 0 : smooth((ds - TELESCOPE_PAD.r) / 8);
+      return scopeLevel + (rawHeight(x, z) - scopeLevel) * t;
+    }
     const h = rawHeight(x, z);
     const d = Math.hypot(x - PAD_CENTER.x, z - PAD_CENTER.y);
     if (d >= PAD_RADIUS + 22) return h;
@@ -376,7 +408,7 @@ export function makeMoonTerrain(lite: boolean): TerrainHandle {
   const mat = new THREE.MeshStandardMaterial({
     map: maps.map,
     normalMap: maps.normal,
-    normalScale: new THREE.Vector2(0.9, 0.9),
+    normalScale: new THREE.Vector2(0.55, 0.55),
     roughnessMap: maps.rough,
     roughness: 1,
     metalness: 0,
@@ -395,7 +427,7 @@ export function makeMoonTerrain(lite: boolean): TerrainHandle {
       .replace('#include <normal_fragment_maps>', `
         vec3 mapN = texture2D( normalMap, vNormalMapUv ).xyz * 2.0 - 1.0;
         vec3 mapN2 = texture2D( normalMap, vNormalMapUv * 6.37 + vec2(0.31, 0.77) ).xyz * 2.0 - 1.0;
-        mapN = normalize( vec3( mapN.xy * normalScale + mapN2.xy * normalScale * 0.55, mapN.z * mapN2.z ) );
+        mapN = normalize( vec3( mapN.xy * normalScale + mapN2.xy * normalScale * 0.35, mapN.z * mapN2.z ) );
         normal = normalize( tbn * mapN );`)
       .replace('#include <lights_fragment_begin>', `
         {
@@ -412,22 +444,35 @@ export function makeMoonTerrain(lite: boolean): TerrainHandle {
 
   // Rocks: three cuts, a few hundred seats. Small stuff everywhere, boulders
   // only out on the plain and up the ridge.
-  const rockGeoms = [rockGeometry(1, 1), rockGeometry(2, lite ? 1 : 2), rockGeometry(3, lite ? 1 : 2)];
+  const rockGeoms = [rockGeometry(1, lite ? 1 : 2), rockGeometry(2, lite ? 1 : 2), rockGeometry(3, lite ? 1 : 2)];
   const rockMat = new THREE.MeshStandardMaterial({ color: 0xa8a5a0, roughness: 0.92, metalness: 0.02, normalMap: maps.normal, normalScale: new THREE.Vector2(0.5, 0.5) });
-  const perCut = lite ? 90 : 180;
+  const perCut = Math.round((lite ? 90 : 180) * density);
   const rocks = new THREE.Group();
   rocks.name = 'moon-rocks';
   const instanced: THREE.InstancedMesh[] = [];
   const m = new THREE.Matrix4(); const q = new THREE.Quaternion(); const spin = new THREE.Quaternion();
   const s = new THREE.Vector3(); const p = new THREE.Vector3();
   const nrm = new THREE.Vector3(); const up = new THREE.Vector3(0, 1, 0);
+  // Every rock remembers its seat, so a new crater can re-seat it and a path can clear it.
+  interface Seat { im: THREE.InstancedMesh | null; k: number; x: number; z: number; spin: number; sx: number; sy: number; sz: number; sink: number; gone: boolean }
+  const seats: Seat[] = [];
+  const seatMatrix = (st: Seat) => {
+    p.set(st.x, heightAt(st.x, st.z) - st.sink, st.z);
+    normalAt(st.x, st.z, nrm);
+    q.setFromUnitVectors(up, nrm);
+    spin.setFromAxisAngle(up, st.spin);
+    q.multiply(spin);
+    s.set(st.sx, st.sy, st.sz);
+    if (st.gone) s.setScalar(0);
+    return m.compose(p, q, s);
+  };
   // Rocks are filed into a grid of chunks, each its own instanced mesh with
   // a tight bounding sphere: the view and the shadow camera then only draw
   // the chunks they can see, instead of every rock on the map every pass.
-  const CHUNKS = 4;
+  const CHUNKS = 3;
   const chunkOf = (v: number) => THREE.MathUtils.clamp(Math.floor((v + half) / size * CHUNKS), 0, CHUNKS - 1);
   rockGeoms.forEach((rg, cut) => {
-    const buckets: THREE.Matrix4[][] = Array.from({ length: CHUNKS * CHUNKS }, () => []);
+    const buckets: Seat[][] = Array.from({ length: CHUNKS * CHUNKS }, () => []);
     let placed = 0;
     for (let i = 0; i < perCut * 5 && placed < perCut; i++) {
       const k = i + cut * 1000;
@@ -438,14 +483,11 @@ export function makeMoonTerrain(lite: boolean): TerrainHandle {
       const scale = 0.18 + big * 2.6;
       if (d < PAD_RADIUS && scale > 0.5) continue;
       if (d < 12) continue;
-      p.set(x, heightAt(x, z) - scale * 0.22, z);
-      normalAt(x, z, nrm);
-      q.setFromUnitVectors(up, nrm);
-      spin.setFromAxisAngle(up, hash(k, 54, seed) * Math.PI * 2);
-      q.multiply(spin);
-      s.set(scale * (0.8 + hash(k, 55, seed) * 0.5), scale * (0.7 + hash(k, 56, seed) * 0.5), scale * (0.8 + hash(k, 57, seed) * 0.5));
-      m.compose(p, q, s);
-      buckets[chunkOf(z) * CHUNKS + chunkOf(x)].push(m.clone());
+      const st: Seat = {
+        im: null, k: 0, x, z, spin: hash(k, 54, seed) * Math.PI * 2, sink: scale * 0.22, gone: false,
+        sx: scale * (0.8 + hash(k, 55, seed) * 0.5), sy: scale * (0.7 + hash(k, 56, seed) * 0.5), sz: scale * (0.8 + hash(k, 57, seed) * 0.5),
+      };
+      buckets[chunkOf(z) * CHUNKS + chunkOf(x)].push(st);
       placed += 1;
     }
     for (const bucket of buckets) {
@@ -453,7 +495,7 @@ export function makeMoonTerrain(lite: boolean): TerrainHandle {
       const im = new THREE.InstancedMesh(rg, rockMat, bucket.length);
       im.castShadow = true;
       im.receiveShadow = true;
-      bucket.forEach((mat, k) => im.setMatrixAt(k, mat));
+      bucket.forEach((st, k) => { st.im = im; st.k = k; seats.push(st); im.setMatrixAt(k, seatMatrix(st)); });
       im.instanceMatrix.needsUpdate = true;
       im.computeBoundingSphere();
       rocks.add(im);
@@ -486,6 +528,25 @@ export function makeMoonTerrain(lite: boolean): TerrainHandle {
     // Upload the rows that changed, not the whole map.
     const start = jLo * (N + 1) * 3; const count = (jHi - jLo + 1) * (N + 1) * 3;
     for (const a of [pos, col, nrmAttr]) { a.addUpdateRange(start, count); a.needsUpdate = true; }
+    // The rocks agree with the ground: the small ones in the bowl are blown
+    // out with the ejecta, everything on the rim settles onto its new slope.
+    reseat((st) => {
+      const d = Math.hypot(st.x - cx, st.z - cz);
+      if (d >= r * 1.6) return false;
+      if (d < r * 0.9 && st.sy < r * 0.5) st.gone = true;
+      return true;
+    });
+  };
+
+  /** Re-seat the rocks `pick` marks, and upload only the chunks it touched. */
+  const reseat = (pick: (st: Seat) => boolean) => {
+    const touched = new Set<THREE.InstancedMesh>();
+    for (const st of seats) {
+      if (st.gone || !st.im || !pick(st)) continue;
+      st.im.setMatrixAt(st.k, seatMatrix(st));
+      touched.add(st.im);
+    }
+    for (const im of touched) { im.instanceMatrix.needsUpdate = true; im.computeBoundingSphere(); }
   };
 
   const punch = (cx: number, cz: number, r: number, depth: number) => {
@@ -545,8 +606,20 @@ export function makeMoonTerrain(lite: boolean): TerrainHandle {
     }, k);
   };
 
+  const clearRocks = (pts: [number, number][], width: number) => {
+    reseat((st) => {
+      for (let i = 0; i < pts.length - 1; i++) {
+        const [ax, az] = pts[i]; const [bx, bz] = pts[i + 1];
+        const vx = bx - ax; const vz = bz - az;
+        const t = THREE.MathUtils.clamp(((st.x - ax) * vx + (st.z - az) * vz) / (vx * vx + vz * vz || 1), 0, 1);
+        if (Math.hypot(st.x - ax - vx * t, st.z - az - vz * t) < width + st.sx) { st.gone = true; return true; }
+      }
+      return false;
+    });
+  };
+
   return {
-    mesh, rocks, heightAt, normalAt, stampCrater, punch, tint, tintPath,
+    mesh, rocks, heightAt, normalAt, stampCrater, punch, tint, tintPath, clearRocks,
     setSunView(v) { sunView.value.copy(v); },
     dispose() {
       geom.dispose(); mat.dispose();

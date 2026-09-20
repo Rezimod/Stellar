@@ -13,7 +13,7 @@ import { LANDING_SITES, MARS, PROXIMA_B, isWorldId } from '@/lib/solar-system/wo
 import { gaitProfile, LUNAR_G } from '@/lib/solar-system/suit-locomotion';
 
 const flat = () => 0;
-const dust: DustHandle = { points: new THREE.Points(), burst: vi.fn(), update: vi.fn(), dispose: vi.fn() };
+const dust: DustHandle = { points: new THREE.Points(), burst: vi.fn(), setCap: vi.fn(), update: vi.fn(), dispose: vi.fn() };
 const lights: LightPool = { lights: [], request: vi.fn(), flush: vi.fn() };
 const DT = 1 / 60;
 
