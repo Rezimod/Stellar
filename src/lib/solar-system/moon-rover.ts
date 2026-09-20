@@ -29,11 +29,12 @@ import { makeRoverDress, type DressState } from '@/lib/solar-system/moon-rover-d
 /** The parts of the rover the drive articulates, built by moon-rover-mesh. */
 export interface RoverParts {
   spin: THREE.Object3D[];
-  /** The four corner pivots, turned to steer: front left, rear left, front right, rear right. */
+  /** The four corner uprights, turned to steer, in ROVER_CORNERS order. */
   steer: THREE.Object3D[];
-  rockers: THREE.Object3D[];
-  bogies: THREE.Object3D[];
-  /** Where each wheel meets the ground, in the body's frame: per side, front, middle, rear. */
+  /** The four wishbone arms, rotated about Z as the suspension takes up the twist. */
+  arms: THREE.Object3D[];
+  /** Where each wheel meets the ground, in the body's frame, in ROVER_CORNERS
+   *  order: the −X side front and rear, then the +X side. */
   wheelXZ: [number, number][];
   mast: THREE.Object3D;
   /** The driver's eye, for the cockpit view. */
@@ -105,7 +106,7 @@ export function makeRover(group: THREE.Group, collider: Collider, parts: RoverPa
   const yawQ = new THREE.Quaternion();
   const tiltQ = new THREE.Quaternion();
   const tilt = new THREE.Euler();
-  const heights = new Float32Array(6);
+  const heights = new Float32Array(4);
   const dress = makeRoverDress(parts, terrain, dust, prints);
   // Suspension tuned to the load it carries: softer and slower under less weight.
   const heaveW = 13 * Math.pow(g / EARTH_G, 0.25);
@@ -185,7 +186,7 @@ export function makeRover(group: THREE.Group, collider: Collider, parts: RoverPa
       } else {
         fwd *= Math.exp(-dt * 2);
       }
-      const slope = (heights[0] + heights[3] - heights[2] - heights[5]) / 2 / 3.1;
+      const slope = (heights[0] + heights[2] - heights[1] - heights[3]) / 2 / 2.24;
       if (!airborne) fwd -= g * THREE.MathUtils.clamp(slope, -0.6, 0.6) * dt;
       if (!handle.driving && !airborne && Math.abs(fwd) < 0.6) fwd -= THREE.MathUtils.clamp(fwd, -6 * dt, 6 * dt);
 
@@ -228,16 +229,16 @@ export function makeRover(group: THREE.Group, collider: Collider, parts: RoverPa
       handle.slip = Math.abs(vx * c - vz * s);
       handle.battery = Math.max(0, handle.battery - Math.abs(handle.speed) * dt * 0.00011);
 
-      // ── Six wheels, six grounds. On them, the body rides a sprung mean and
-      // leans with the slope and the load shift; off them, it flies. ──
-      for (let i = 0; i < 6; i++) {
+      // ── Four wheels, four grounds. On them, the body rides a sprung mean
+      // and leans with the slope and the load shift; off them, it flies. ──
+      for (let i = 0; i < 4; i++) {
         const [lx, lz] = parts.wheelXZ[i];
         heights[i] = terrain.heightAt(x + lx * c + lz * s, z - lx * s + lz * c);
       }
-      const left = (heights[0] + heights[1] + heights[2]) / 3;
-      const right = (heights[3] + heights[4] + heights[5]) / 3;
-      const front = (heights[0] + heights[3]) / 2;
-      const rear = (heights[1] + heights[2] + heights[4] + heights[5]) / 4;
+      const left = (heights[0] + heights[1]) / 2;
+      const right = (heights[2] + heights[3]) / 2;
+      const front = (heights[0] + heights[2]) / 2;
+      const rear = (heights[1] + heights[3]) / 2;
       const ground = (left + right) / 2;
       const was = heaveVel;
       if (heave - ground > AIR_GAP) {
@@ -251,7 +252,7 @@ export function makeRover(group: THREE.Group, collider: Collider, parts: RoverPa
       }
       heave += heaveVel * dt;
       let highest = -Infinity;
-      for (let i = 0; i < 6; i++) if (heights[i] > highest) highest = heights[i];
+      for (let i = 0; i < 4; i++) if (heights[i] > highest) highest = heights[i];
       if (heave < highest - 0.14) { heave = highest - 0.14; heaveVel = Math.max(0, heaveVel); }
       const jolt = Math.abs(heaveVel - was) / dt;
       if (jolt > 26) handle.bump = Math.max(handle.bump, Math.min(1, (jolt - 26) / 60));
@@ -263,8 +264,8 @@ export function makeRover(group: THREE.Group, collider: Collider, parts: RoverPa
         pitch += (handle.driving ? -throttle * 0.6 : 0) * dt;
         roll += (handle.driving ? steer * 0.5 : 0) * dt;
       } else {
-        pitch += (-Math.atan2(front - rear, 2.3) + accel * 0.006 * transfer - pitch) * k;
-        roll += (Math.atan2(right - left, 2.7) + handle.yawRate * handle.speed * 0.004 * transfer - roll) * k;
+        pitch += (-Math.atan2(front - rear, 2.24) + accel * 0.006 * transfer - pitch) * k;
+        roll += (Math.atan2(right - left, 1.6) + handle.yawRate * handle.speed * 0.004 * transfer - roll) * k;
       }
       yawQ.setFromAxisAngle(up, handle.yaw);
       tilt.set(pitch, 0, roll);

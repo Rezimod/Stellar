@@ -37,7 +37,27 @@ npx --yes @gltf-transform/cli optimize assets-src/build/shipstellar.glb public/e
 ```
 
 (`ship_fighter.py` → `shipfighter.glb` → `ship-fighter.glb`, `ship_cruiser.py`
-→ `shipcruiser.glb` → `ship-cruiser.glb`.) `lib/vehicle.py` runs their
+→ `shipcruiser.glb` → `ship-cruiser.glb`.) The rover goes the same way, and
+keeps a node per moving part (a wishbone, an upright and a wheel at each
+corner, the mast, the tool arm's two joints), so it is built without LODs:
+
+```
+/Applications/Blender.app/Contents/MacOS/Blender -b -P assets-src/blender/rover.py -- assets-src/build assets-src/renders/rover
+npx --yes @gltf-transform/cli optimize assets-src/build/rover.glb public/explore/models/rover.glb --compress meshopt --texture-compress webp --texture-size 1024 --flatten false --join false --simplify false --prune false --instance false --palette false
+```
+
+The lander goes the same way (`lander.py` → `lander.glb`), and has no moving
+parts: its plume and lights stay code-built in `moon-lander.ts`.
+
+Two things to know about loading these files back:
+
+- A mesh with two materials comes back as a *group* whose transform carries
+  the quantisation, so a runtime that re-parents parts of a model must move
+  whole children, never the meshes inside them (`moon-rover-mesh.ts`).
+- Quantised positions are normalised integers, so anything bigger than about
+  a metre must be acquired with `keepNodes` — flattening bakes the node scale
+  back into the integers and clamps the model to a unit box (`models.ts`).
+ `lib/vehicle.py` runs their
 loop: high- and low-poly from one build function, an emission-swap bake of
 colour / normal / ORM / emissive into one 1K atlas with a hull slot and a
 lamp slot, the moving parts split out under hinge empties, LODs, empties,

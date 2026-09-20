@@ -44,7 +44,11 @@ function disposeTree(root: THREE.Object3D) {
 }
 
 /** Quantised files carry their scale on the nodes; bake every node's
- *  transform into its geometry so a mesh can be instanced on its own. */
+ *  transform into its geometry so a mesh can be instanced on its own.
+ *  Only for models that fit inside the quantised range: positions come in
+ *  as normalised integers, so baking a scale larger than 1 back into them
+ *  clamps the model to a unit box. Anything bigger than about a metre must
+ *  be acquired with `keepNodes` and keep its own node transforms. */
 function flatten(scene: THREE.Group): THREE.Group {
   scene.updateMatrixWorld(true);
   const flat = new THREE.Group();

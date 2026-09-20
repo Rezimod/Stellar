@@ -15,7 +15,8 @@
 
 import * as THREE from 'three';
 import { MOON_G, type DustBurst, type DustHandle } from '@/lib/solar-system/moon-fx';
-import { keep, mergeStatic } from '@/lib/solar-system/moon-batch';
+import { keep } from '@/lib/solar-system/moon-batch';
+import { acquireModel } from '@/game/models';
 import type { LightPool } from '@/lib/solar-system/moon-lights';
 
 export interface LanderInput {
@@ -62,6 +63,9 @@ export interface LanderHandle {
   dispose: () => void;
 }
 
+/** The vehicle, built in Blender (assets-src/blender/lander.py). */
+const LANDER_MODEL = '/explore/models/lander.glb';
+
 const START_ALT = 138;
 const START_DESCENT = 13.5;
 /** Full throttle, in gravities — a shade over twice the surface pull, as the LM had. */
@@ -94,14 +98,9 @@ export function makeLander(
   const geoms: THREE.BufferGeometry[] = [];
   const owned: THREE.Material[] = [];
   const seg = lite ? 10 : 16;
-  const gold = new THREE.MeshStandardMaterial({ color: 0xd4a72c, roughness: 0.34, metalness: 0.95 });
-  const foil = new THREE.MeshStandardMaterial({ color: 0x2a2a2e, roughness: 0.3, metalness: 0.9 });
-  const white = new THREE.MeshStandardMaterial({ color: 0xd6d6d0, roughness: 0.6, metalness: 0.08 });
-  const steel = new THREE.MeshStandardMaterial({ color: 0x777c84, roughness: 0.4, metalness: 0.85 });
-  const glass = new THREE.MeshPhysicalMaterial({ color: 0x9fb6c8, roughness: 0.06, metalness: 0.3, transparent: true, opacity: 0.5, clearcoat: 1 });
   const lampMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: new THREE.Color(0xfff2d0), emissiveIntensity: 1.8 });
   const plumeMat = new THREE.MeshBasicMaterial({ color: 0x9fd4ff, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending });
-  owned.push(gold, foil, white, steel, glass, lampMat, plumeMat);
+  owned.push(lampMat, plumeMat);
   const mesh = (parent: THREE.Object3D, g: THREE.BufferGeometry, m: THREE.Material, x = 0, y = 0, z = 0) => {
     geoms.push(g);
     const o = new THREE.Mesh(g, m);
@@ -112,51 +111,31 @@ export function makeLander(
     return o;
   };
 
-  // ── The vehicle: an octagonal descent stage in gold foil, the crew can
-  // above it with two triangular windows, four legs with dish pads and a
-  // ladder down the front one, the engine bell underneath. ──
-  mesh(group, new THREE.CylinderGeometry(2.3, 2.5, 1.8, 8), gold, 0, 1.9);
-  mesh(group, new THREE.CylinderGeometry(2.32, 2.32, 0.12, 8), foil, 0, 2.86);
-  const can = mesh(group, new THREE.CylinderGeometry(1.5, 1.7, 1.9, 8), white, 0, 3.75);
-  can.rotation.y = Math.PI / 8;
-  mesh(group, new THREE.CylinderGeometry(0.95, 1.3, 0.7, 8), white, 0, 4.95);
-  mesh(group, new THREE.CylinderGeometry(0.5, 0.5, 0.35, 10), steel, 0, 5.4);
-  for (const s of [-1, 1]) {
-    const w = mesh(group, new THREE.PlaneGeometry(0.62, 0.46), glass, s * 0.52, 3.95, 1.62);
-    w.rotation.x = -0.32;
-    w.rotation.y = s * 0.16;
-  }
-  mesh(group, new THREE.BoxGeometry(1.1, 0.5, 0.12), foil, 0, 3.2, 1.66);
-  for (let i = 0; i < 4; i++) {
-    const a = i * Math.PI / 2 + Math.PI / 4;
-    const lx = Math.sin(a) * 3.5; const lz = Math.cos(a) * 3.5;
-    const leg = mesh(group, new THREE.CylinderGeometry(0.09, 0.11, 3.5, 8), gold, lx * 0.62, 1.3, lz * 0.62);
-    leg.rotation.z = -Math.sin(a) * 0.62;
-    leg.rotation.x = Math.cos(a) * 0.62;
-    mesh(group, new THREE.CylinderGeometry(0.72, 0.56, 0.16, 12), gold, lx, 0.1, lz);
-    const brace = mesh(group, new THREE.CylinderGeometry(0.04, 0.04, 2.1, 6), steel, lx * 0.78, 0.65, lz * 0.78);
-    brace.rotation.z = -Math.sin(a) * 1.15;
-    brace.rotation.x = Math.cos(a) * 1.15;
-  }
-  // Ladder down the front leg, and the porch at the top of it.
-  for (let i = 0; i < 7; i++) mesh(group, new THREE.BoxGeometry(0.5, 0.045, 0.05), steel, 0, 0.55 + i * 0.36, 2.52);
-  for (const s of [-1, 1]) mesh(group, new THREE.CylinderGeometry(0.028, 0.028, 2.4, 6), steel, s * 0.25, 1.65, 2.52);
-  mesh(group, new THREE.BoxGeometry(0.9, 0.06, 0.6), steel, 0, 3.0, 2.3);
-  // RCS quads on the corners, the docking light, the engine.
-  for (let i = 0; i < 4; i++) {
-    const a = i * Math.PI / 2;
-    const q = mesh(group, new THREE.BoxGeometry(0.28, 0.28, 0.28), steel, Math.sin(a) * 2.4, 2.6, Math.cos(a) * 2.4);
-    for (const d of [-1, 1]) mesh(q, new THREE.ConeGeometry(0.06, 0.14, 8), foil, d * 0.2, 0, 0).rotation.z = d * Math.PI / 2;
-  }
+  // ── The vehicle: lander.glb, built in Blender to Stellar's own concept
+  // sheet (assets-src/blender/lander.py) — a tapered octagonal crew module
+  // over a dark equipment deck, gold tanks at its corners, four legs on
+  // dished pads, the hatch and its ladder, four bells under the deck. The
+  // plume, its light and the pad lamp stay here, because they animate. ──
+  let releaseModel: (() => void) | null = null;
+  let disposed = false;
+  acquireModel(LANDER_MODEL, true).then((handle) => {
+    if (disposed) { handle.release(); return; }
+    releaseModel = handle.release;
+    const shell = handle.scene.clone(true);
+    shell.traverse((o) => {
+      const mm = o as THREE.Mesh;
+      if (!mm.isMesh) return;
+      mm.castShadow = true;
+      mm.receiveShadow = !lite;
+    });
+    group.add(shell);
+  }, () => undefined);
   mesh(group, new THREE.SphereGeometry(0.1, 8, 6), lampMat, 0, 2.95, 2.6);
-  const bell = new THREE.MeshStandardMaterial({ color: 0x3a3a3e, roughness: 0.4, metalness: 0.9, side: THREE.DoubleSide });
-  owned.push(bell);
-  mesh(group, new THREE.CylinderGeometry(0.42, 0.95, 1.1, seg, 1, true), bell, 0, 0.45);
+
   // The plume: a cone of light under the bell, plus the light it throws.
   const plume = keep(mesh(group, new THREE.ConeGeometry(0.8, 5.0, seg, 1, true), plumeMat, 0, -2.4));
   plume.rotation.x = Math.PI;
   plume.castShadow = false;
-  geoms.push(...mergeStatic(group, { minCaster: 0.1 }).geometries);
 
   const position = group.position;
   const vel = new THREE.Vector3(start.driftX, -start.descent, start.driftZ);
@@ -321,6 +300,8 @@ export function makeLander(
       vel.set(0, 0, 0);
     },
     dispose() {
+      disposed = true;
+      releaseModel?.();
       for (const g of geoms) g.dispose();
       for (const m of owned) m.dispose();
     },

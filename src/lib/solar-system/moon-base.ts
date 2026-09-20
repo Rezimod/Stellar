@@ -533,7 +533,7 @@ export function makeMoonBase(
   rover.position.set(bay.x, heightAt(bay.x, bay.z), bay.z);
   rover.rotation.y = bay.yaw;
   group.add(rover);
-  const roverCollider: Collider = { x: bay.x, z: bay.z, r: 2.4 };
+  const roverCollider: Collider = { x: bay.x, z: bay.z, r: 1.9 };
   colliders.push(roverCollider);
   pois.push({ id: 'rover', x: bay.x, z: bay.z, r: 5.5 });
   const roverParts = builtRover.parts;

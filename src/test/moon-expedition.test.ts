@@ -323,11 +323,10 @@ describe('side jobs', () => {
 function roverParts(): RoverParts {
   const obj = () => new THREE.Object3D();
   return {
-    spin: [obj(), obj(), obj(), obj(), obj(), obj()],
+    spin: [obj(), obj(), obj(), obj()],
     steer: [obj(), obj(), obj(), obj()],
-    rockers: [obj(), obj()],
-    bogies: [obj(), obj()],
-    wheelXZ: [[-1.35, 1.55], [-1.35, -0.2], [-1.35, -1.55], [1.35, 1.55], [1.35, -0.2], [1.35, -1.55]],
+    arms: [obj(), obj(), obj(), obj()],
+    wheelXZ: [[-0.8, 1.12], [-0.8, -1.12], [0.8, 1.12], [0.8, -1.12]],
     mast: obj(),
     seat: obj(),
     headlight: new THREE.SpotLight(),

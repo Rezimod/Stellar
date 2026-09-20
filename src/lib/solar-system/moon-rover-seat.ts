@@ -1,17 +1,18 @@
 // Getting in and out of the rover, decided rather than teleported: which
 // side to climb in from, where the seat is, where a boot can come down on
 // the way out, and how a crew that bails leaves the saddle. The rover's
-// frame: +z forward, the driver's seat on the left at x −0.38, the tub's
-// sides at x ±0.9; the body origin sits 1.1 m up when seated.
+// frame (assets-src/blender/rover.py): +z forward, the driver's seat at
+// x +0.33 behind the yoke, the wheels at x ±0.8; a seated crew's origin
+// sits 0.88 m up, on the floor pan.
 
 import { seatTrack, type Track } from '@/lib/solar-system/suit-scripted';
 
 export interface RoverFrame { x: number; y: number; z: number; yaw: number }
 export interface Spot { x: number; y: number; z: number; yaw: number }
 
-const DOOR_X = 1.55;
-const DOOR_Z = 0.55;
-const SEAT = { x: -0.38, y: 1.1, z: 0.55 };
+const DOOR_X = 1.3;
+const DOOR_Z = -0.1;
+const SEAT = { x: 0.33, y: 0.88, z: -0.12 };
 
 /** A point in the rover's frame, in the world. */
 export function roverPoint(r: RoverFrame, lx: number, ly: number, lz: number): { x: number; y: number; z: number } {
