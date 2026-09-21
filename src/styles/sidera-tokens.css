@@ -155,7 +155,13 @@
 .sd-bar__mark { grid-area: mark; }
 .sd-bar__account { grid-area: account; justify-self: end; }
 .sd-bar__links { grid-area: links; display: flex; gap: 28px; margin: 0; padding: 0; list-style: none; }
-.sd-navlink { font-family: var(--sd-sans); font-weight: 500; font-size: 14px; color: var(--sd-ink-3); text-decoration: none; padding-block: 10px; white-space: nowrap; transition: color 0.18s ease; }
+.sd-navlink { position: relative; font-family: var(--sd-sans); font-weight: 500; font-size: 14px; color: var(--sd-ink-3); text-decoration: none; padding-block: 10px; white-space: nowrap; transition: color var(--sd-dur-fast) var(--sd-ease); }
+.sd-navlink::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: 4px; height: 1px;
+  background: currentColor; transform: scaleX(0); transform-origin: left center;
+  transition: transform var(--sd-dur-fast) var(--sd-ease);
+}
+.sd-navlink:hover::after, .sd-navlink:focus-visible::after { transform: scaleX(1); }
 .sd-navlink:hover { color: var(--sd-ink); }
 .sd-navlink[aria-current="page"] { color: var(--sd-ink); }
 @media (max-width: 719px) {
@@ -166,7 +172,7 @@
   font-family: var(--sd-sans); font-weight: 600; font-size: 14px;
   color: var(--sd-ink); background: var(--sd-plate);
   border: 1px solid var(--sd-rule-strong); border-radius: 999px;
-  padding: 9px 18px; min-height: 40px; cursor: pointer; transition: background 0.18s ease, border-color 0.18s ease;
+  padding: 9px 18px; min-height: 40px; cursor: pointer; transition: background var(--sd-dur-fast) var(--sd-ease), border-color var(--sd-dur-fast) var(--sd-ease);
 }
 .sd-account-btn:hover { background: var(--sd-plate-hover); border-color: var(--sd-ink-4); }
 .sd-account-menu { position: absolute; right: 0; top: calc(100% + 10px); z-index: 50; min-width: 210px; background: #101c3c; border: 1px solid var(--sd-rule-strong); border-radius: var(--sd-radius-sm); padding: 6px; box-shadow: 0 18px 50px rgba(0, 0, 0, 0.5); }
@@ -198,7 +204,7 @@
   font-family: var(--sd-sans); font-weight: 600; font-size: 15px; letter-spacing: -0.005em;
   color: var(--sd-ink); background: var(--sd-plate);
   border: 1px solid var(--sd-rule-strong); text-decoration: none; cursor: pointer;
-  transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+  transition: background var(--sd-dur-fast) var(--sd-ease), border-color var(--sd-dur-fast) var(--sd-ease), transform var(--sd-dur-fast) var(--sd-ease);
 }
 .sd-btn:hover:not(:disabled) { background: var(--sd-plate-hover); border-color: var(--sd-ink-4); }
 .sd-btn:active:not(:disabled) { transform: translateY(1px); }
@@ -393,6 +399,30 @@
 @media (prefers-reduced-motion: reduce) {
   .sd-reveal__stone, .sd-reveal__card, .sd-reveal__caption, .sd-reveal__after { animation: none; opacity: 1; }
   .sd-reveal__streak { display: none; }
+}
+
+/* ── Arrival ──────────────────────────────────────────────────── */
+/* .sd-rise is only put on by the client, so a reader without JavaScript is
+   never left looking at an empty page waiting for an observer that never ran. */
+.sd-rise > * > * {
+  opacity: 0; transform: translateY(18px);
+  transition: opacity var(--sd-dur-base) var(--sd-ease), transform var(--sd-dur-base) var(--sd-ease);
+}
+.sd-rise > * > :nth-child(2) { transition-delay: 80ms; }
+.sd-rise > * > :nth-child(3) { transition-delay: 160ms; }
+.sd-rise > * > :nth-child(4) { transition-delay: 240ms; }
+.sd-rise.is-in > * > * { opacity: 1; transform: none; }
+
+/* The hero is above the fold: it arrives on load, no observer involved. */
+.sd-hero__grid > div > * { animation: sd-draw 700ms var(--sd-ease) both; }
+.sd-hero__grid > div > :nth-child(2) { animation-delay: 180ms; }
+.sd-hero__grid > div > :nth-child(3) { animation-delay: 300ms; }
+.sd-hero__grid > div > :nth-child(4) { animation-delay: 420ms; }
+.sd-hero__grid > div > :nth-child(5) { animation-delay: 540ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  .sd-rise > * > * { opacity: 1; transform: none; transition: none; }
+  .sd-hero__grid > div > * { animation: none; }
 }
 
 /* ── Landing ──────────────────────────────────────────────────── */
