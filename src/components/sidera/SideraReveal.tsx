@@ -53,6 +53,7 @@ export default function SideraReveal({ cards }: { cards: RevealedCard[] }) {
           return (
             <li key={c.drawIndex} className="sd-reveal__card" style={{ '--sd-i': i } as CSSProperties}>
               <CardPlate
+                size="sm"
                 designation={c.designation}
                 name={c.name}
                 rarity={isRarity(c.rarity) ? (c.rarity as Rarity) : 'common'}

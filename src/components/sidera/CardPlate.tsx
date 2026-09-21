@@ -18,6 +18,8 @@ export type CardPlateProps = {
   data?: Datum[];
   /** The card page. Without it the plate is not a link. */
   href?: string;
+  /** Type and padding scale. The grid still decides the width. */
+  size?: 'sm' | 'md' | 'lg';
 };
 
 /**
@@ -28,12 +30,14 @@ export type CardPlateProps = {
  * (CardArt); epic and legendary take their rarity colour in the plate's edge,
  * so scarcity reads before the words do.
  */
-export default function CardPlate({ designation, name, rarity, observationStatus, artUrl, data, href }: CardPlateProps) {
+export default function CardPlate({ designation, name, rarity, observationStatus, artUrl, data, href, size = 'md' }: CardPlateProps) {
   const { color } = rarityInfo(rarity);
   const ranked = rarity === 'epic' || rarity === 'legendary';
   const body = (
     <article
       className={`sd-plate ${artUrl ? '' : 'sd-plate--outline'}`.trim()}
+      data-size={size}
+      data-rarity={rarity}
       style={ranked ? { borderColor: color } : undefined}
     >
       <div className="sd-plate__frame">

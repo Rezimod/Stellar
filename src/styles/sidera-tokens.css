@@ -55,6 +55,12 @@
   --sd-radius: 14px;
   --sd-radius-sm: 10px;
 
+  /* Motion. One clock for the whole product, so a hover and a reveal agree. */
+  --sd-dur-fast: 320ms;
+  --sd-dur-base: 480ms;
+  --sd-dur-slow: 720ms;
+  --sd-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+
   --font-display: var(--sd-display);
   --font-body: var(--sd-sans);
   --font-cta: var(--sd-sans);
@@ -214,23 +220,45 @@
 .sd-input:focus { border-color: var(--sd-accent); outline: none; }
 
 /* ── Card plate ───────────────────────────────────────────────── */
+/* A card is 63:88 — the trading-card ratio, so a plate reads as a card before
+   anything on it is legible. The frame takes whatever height the caption leaves.
+   `size` scales the type and the padding; the plate still fills its grid cell,
+   capped, so the grid stays the layout authority. */
 .sd-plate {
+  --sd-plate-pad: 16px;
+  --sd-plate-name: 19px;
+  --sd-plate-cap: 300px;
+  aspect-ratio: 63 / 88;
+  max-width: var(--sd-plate-cap);
+  margin-inline: auto;
   background: var(--sd-plate); border: 1px solid var(--sd-rule);
   border-radius: var(--sd-radius); overflow: hidden;
-  display: flex; flex-direction: column; height: 100%;
-  transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+  display: flex; flex-direction: column;
+  transition: border-color var(--sd-dur-fast) var(--sd-ease),
+              background var(--sd-dur-fast) var(--sd-ease),
+              transform var(--sd-dur-fast) var(--sd-ease);
+}
+.sd-plate[data-size='sm'] { --sd-plate-pad: 11px; --sd-plate-name: 15px; --sd-plate-cap: 180px; }
+.sd-plate[data-size='lg'] { --sd-plate-pad: 20px; --sd-plate-name: 26px; --sd-plate-cap: 400px; }
+/* Legendary carries a second rule inside the first: a mount, not a glow. */
+.sd-plate[data-rarity='legendary'] {
+  box-shadow: inset 0 0 0 3px var(--sd-canvas),
+              inset 0 0 0 4px color-mix(in srgb, var(--sd-rarity-legendary) 55%, transparent);
 }
 .sd-plate--outline { background: transparent; border-style: dashed; border-color: var(--sd-ink-4); }
-.sd-plate__frame { aspect-ratio: 5 / 7; background: radial-gradient(120% 90% at 50% 15%, #16254a 0%, #060c1d 70%); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.sd-plate__frame { flex: 1 1 auto; min-height: 0; background: radial-gradient(120% 90% at 50% 15%, #16254a 0%, #060c1d 70%); display: flex; align-items: center; justify-content: center; overflow: hidden; }
 .sd-plate__frame img, .sd-plate__frame svg { width: 100%; height: 100%; object-fit: cover; display: block; }
-.sd-plate__body { padding: 16px; display: flex; flex-direction: column; gap: 10px; }
-.sd-plate__name { font-family: var(--sd-sans); font-weight: 600; font-size: 19px; line-height: 1.2; letter-spacing: -0.015em; margin: 0; color: var(--sd-ink); }
+.sd-plate__body { flex: 0 0 auto; padding: var(--sd-plate-pad); display: flex; flex-direction: column; gap: 8px; }
+.sd-plate__name { font-family: var(--sd-sans); font-weight: 600; font-size: var(--sd-plate-name); line-height: 1.2; letter-spacing: -0.015em; margin: 0; color: var(--sd-ink); overflow-wrap: anywhere; }
 .sd-plate__marks { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0; }
-.sd-plate__link { display: block; text-decoration: none; color: inherit; height: 100%; }
-.sd-plate__link:hover .sd-plate { border-color: var(--sd-rule-strong); background: var(--sd-plate-hover); transform: translateY(-3px); }
-.sd-plate__link:hover .sd-plate--outline { background: var(--sd-plate); }
+.sd-plate__link { display: block; text-decoration: none; color: inherit; }
+@media (hover: hover) {
+  .sd-plate__link:hover .sd-plate { border-color: var(--sd-rule-strong); background: var(--sd-plate-hover); transform: translateY(-3px); }
+  .sd-plate__link:hover .sd-plate--outline { background: var(--sd-plate); }
+}
+.sd-plate__link:focus-within .sd-plate { border-color: var(--sd-rule-strong); background: var(--sd-plate-hover); }
 
-.sd-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; list-style: none; margin: 0; padding: 0; }
+.sd-grid { display: grid; align-items: start; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; list-style: none; margin: 0; padding: 0; }
 @media (min-width: 640px) { .sd-grid { grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 24px; } }
 
 /* ── Card page ────────────────────────────────────────────────── */
