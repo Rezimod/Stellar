@@ -4,8 +4,6 @@ import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties }
 import CardPlate from './CardPlate';
 import type { Rarity } from '@/lib/rarity';
 import { RARITIES, isRarity, rarityInfo } from '@/lib/rarity';
-import { SET_001_CARD_BY_DESIGNATION } from '@/lib/sets/set-001';
-import type { ObservationStatus } from '@/lib/sidera/observability';
 
 export type RevealedCard = {
   drawIndex: number;
@@ -121,7 +119,6 @@ export default function SideraReveal({ draw }: { draw: Draw }) {
 
       <ul className="sd-grid sd-reveal__cards">
         {ordered.map((c, i) => {
-          const authored = SET_001_CARD_BY_DESIGNATION.get(c.designation);
           const isBest = i === ordered.length - 1 && rarityOf(c) === top;
           return (
             <li
@@ -136,10 +133,9 @@ export default function SideraReveal({ draw }: { draw: Draw }) {
                 designation={c.designation}
                 name={c.name}
                 rarity={rarityOf(c)}
-                observationStatus={(authored?.seed.observationStatus ?? 'eligible') as ObservationStatus}
                 artUrl="/cards/placeholder.svg"
                 href={`/card/${c.designation}`}
-                data={[{ label: 'Ed', value: `${pad(c.editionNumber)} / ${c.editionSize}` }]}
+                data={[{ label: 'Edition', value: `No. ${pad(c.editionNumber)}` }]}
               />
             </li>
           );

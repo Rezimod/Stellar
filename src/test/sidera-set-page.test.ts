@@ -48,7 +48,7 @@ it('prints how many editions of a card are allocated', async () => {
     cards: [{ designation: 'TYCHO', rarity: 'rare', editionSize: 100, allocated: 7, remaining: 93 }],
   });
   const html = await renderSet();
-  expect(html).toContain('7 / 100');
+  expect(html).toContain('7 of 100');
 });
 
 it('draws a card the holder does not own as an outline, and their own with its number', async () => {
@@ -57,7 +57,7 @@ it('draws a card the holder does not own as an outline, and their own with its n
   ]);
   const html = await renderSet('holder-1');
   expect(mocks.holderView).toHaveBeenCalledWith({}, 'holder-1');
-  expect(html).toContain('004 / 100');
+  expect(html).toContain('No. 004');
   expect(html).toContain('sd-plate--outline');
   expect(html).toContain('Not held');
 });

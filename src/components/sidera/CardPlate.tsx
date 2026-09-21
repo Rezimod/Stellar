@@ -1,20 +1,17 @@
 import Link from 'next/link';
 import CardArt from './CardArt';
 import { rarityInfo, type Rarity } from '@/lib/rarity';
-import type { ObservationStatus } from '@/lib/sidera/observability';
-import DataRow, { type Datum } from './ui/DataRow';
-import ObservationStatusMark from './ui/ObservationStatusMark';
+import type { Datum } from './ui/DataRow';
 import RarityMark from './ui/RarityMark';
 
 export type CardPlateProps = {
   designation: string;
   name: string;
   rarity: Rarity;
-  observationStatus: ObservationStatus;
   /** A real capture. Null draws the outline plate: an edition nobody holds yet.
    *  The placeholder path means no frame exists, so the plate is drawn instead. */
   artUrl?: string | null;
-  /** Metadata beneath the image, in mono. Edition number first, where there is one. */
+  /** One short figure beside the name, in mono. Edition number first, where there is one. */
   data?: Datum[];
   /** The card page. Without it the plate is not a link. */
   href?: string;
@@ -23,20 +20,14 @@ export type CardPlateProps = {
 };
 
 /**
- * One object shot on black, captioned the way a survey captions a detection.
- *
- * Image, then designation, name, the two marks side by side, then the data.
- * Until a card has been photographed the plate is drawn from its own record
- * (CardArt); epic and legendary take their rarity colour in the plate's edge,
- * so scarcity reads before the words do.
+ * One object on black, and a single line beneath it: the name, the rarity
+ * glyph, one figure. The drawn plate already prints rarity and name across the
+ * art, so the caption carries nothing it repeats. Observation status and the
+ * rest of the record live on the card page.
  */
-export default function CardPlate({ designation, name, rarity, observationStatus, artUrl, data, href, size = 'md' }: CardPlateProps) {
+export default function CardPlate({ designation, name, rarity, artUrl, data, href, size = 'md' }: CardPlateProps) {
   const { color } = rarityInfo(rarity);
   const ranked = rarity === 'epic' || rarity === 'legendary';
-  /* A drawn plate prints the designation across the art itself. Repeating it in
-     the caption costs a line the art wants back — a photograph does not, so
-     there the caption still carries it. */
-  const drawn = Boolean(artUrl?.startsWith('/cards/'));
   const body = (
     <article
       className={`sd-plate ${artUrl ? '' : 'sd-plate--outline'}`.trim()}
@@ -53,15 +44,17 @@ export default function CardPlate({ designation, name, rarity, observationStatus
           <img src={artUrl} alt="" loading="lazy" decoding="async" />
         )}
       </div>
-      <hr className="sd-rule sd-rule--strong" />
       <div className="sd-plate__body">
-        {!drawn && <p className="sd-label">{designation}</p>}
         <h3 className="sd-plate__name">{name}</h3>
-        <p className="sd-plate__marks">
-          <RarityMark rarity={rarity} />
-          <ObservationStatusMark status={observationStatus} />
+        <p className="sd-plate__meta">
+          <RarityMark rarity={rarity} glyphOnly />
+          {data?.map((d) => (
+            <span key={d.label}>
+              <span className="sr-only">{d.label} </span>
+              {d.value}
+            </span>
+          ))}
         </p>
-        {data && data.length > 0 && <DataRow items={data} />}
       </div>
     </article>
   );

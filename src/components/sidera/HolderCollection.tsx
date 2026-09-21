@@ -2,7 +2,6 @@ import CardPlate from './CardPlate'
 import Caption from './ui/Caption'
 import type { Rarity } from '@/lib/rarity'
 import { rarityInfo } from '@/lib/rarity'
-import type { ObservationStatus } from '@/lib/sidera/observability'
 import type { CaptureSummary, HolderEdition } from '@/lib/sidera/repo'
 
 const pad = (n: number) => String(n).padStart(3, '0')
@@ -40,13 +39,9 @@ export default function HolderCollection({ editions }: { editions: HolderEdition
               designation={e.designation}
               name={e.name}
               rarity={e.rarity as Rarity}
-              observationStatus={e.observationStatus as ObservationStatus}
               artUrl="/cards/placeholder.svg"
               href={`/card/${e.designation}`}
-              data={[
-                { label: 'Ed', value: `${pad(e.editionNumber)} / ${e.editionSize}` },
-                { label: 'Nights', value: e.history.length },
-              ]}
+              data={[{ label: 'Edition', value: `No. ${pad(e.editionNumber)}` }]}
             />
             {e.latest ? (
               <Caption as="p" parts={captureParts(e.latest)} />

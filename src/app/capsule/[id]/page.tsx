@@ -10,7 +10,6 @@ import Rule from '@/components/sidera/ui/Rule';
 import { getDb } from '@/lib/db';
 import { isRarity, type Rarity } from '@/lib/rarity';
 import { SET_001_CARD_BY_DESIGNATION } from '@/lib/sets/set-001';
-import type { ObservationStatus } from '@/lib/sidera/observability';
 import type { OpenedOutcome } from '@/lib/sidera/audit';
 import { readFullLog } from '@/lib/sidera/capsule';
 import { verifyCapsule } from '@/lib/sidera/randomness';
@@ -122,13 +121,9 @@ export default async function CapsuleRecordPage({ params }: { params: Promise<{ 
                       designation={p.designation}
                       name={authored?.seed.name ?? p.designation}
                       rarity={isRarity(p.rarity) ? (p.rarity as Rarity) : 'common'}
-                      observationStatus={(authored?.seed.observationStatus ?? 'eligible') as ObservationStatus}
                       artUrl={authored?.seed.artUrl ?? '/cards/placeholder.svg'}
                       href={`/card/${p.designation}`}
-                      data={[
-                        { label: 'Draw', value: p.drawIndex + 1 },
-                        { label: 'Ed', value: `${pad(p.editionNumber)} / ${authored?.seed.editionSize ?? '—'}` },
-                      ]}
+                      data={[{ label: 'Edition', value: `No. ${pad(p.editionNumber)}` }]}
                     />
                   </li>
                 );
@@ -142,11 +137,7 @@ export default async function CapsuleRecordPage({ params }: { params: Promise<{ 
         )}
 
         <Rule />
-        <p className="sd-note">
-          The secret was locked in before this capsule went on sale; the nonce came from the buyer after it. Anyone
-          holding those two numbers can recompute every draw, and check each edition number against the supply that
-          was logged alongside them.
-        </p>
+        <p className="sd-note">The secret was fixed before the sale, the nonce by the buyer after. Together they recompute every draw.</p>
         <SideraVerify capsuleId={id} />
       </section>
     </SideraShell>

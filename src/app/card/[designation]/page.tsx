@@ -4,7 +4,6 @@ import { notFound } from 'next/navigation';
 import CardPlate from '@/components/sidera/CardPlate';
 import SideraBuyCard from '@/components/sidera/SideraBuyCard';
 import SideraShell from '@/components/sidera/SideraShell';
-import Caption from '@/components/sidera/ui/Caption';
 import DataRow, { type Datum } from '@/components/sidera/ui/DataRow';
 import ObservationStatusMark from '@/components/sidera/ui/ObservationStatusMark';
 import Rule from '@/components/sidera/ui/Rule';
@@ -90,12 +89,10 @@ export default async function CardPage({ params }: { params: Promise<{ designati
                 designation={seed.designation}
                 name={seed.name}
                 rarity={rarity}
-                observationStatus={seed.observationStatus as ObservationStatus}
                 artUrl={seed.artUrl}
-                data={[{ label: 'Ed', value: allocated === null ? String(seed.editionSize) : `${allocated} / ${seed.editionSize}` }]}
+                data={[{ label: 'Editions', value: allocated === null ? `${seed.editionSize} editions` : `${allocated} of ${seed.editionSize}` }]}
               />
             </div>
-            <Caption parts={['Set 001', seed.designation, 'Drawn from the record — awaiting Node 01']} />
           </figure>
 
           <div className="sd-card-page__col">
@@ -111,7 +108,6 @@ export default async function CardPage({ params }: { params: Promise<{ designati
                   { label: 'Rarity', value: rarityInfo(rarity).label },
                   { label: 'Catalogue', value: seed.catalogRef },
                   ...position,
-                  { label: 'Target', value: seed.targetId },
                   { label: 'Editions', value: allocated === null ? String(seed.editionSize) : `${allocated} / ${seed.editionSize}` },
                   { label: 'Price', value: `${priceGel} GEL` },
                 ]}
@@ -124,10 +120,6 @@ export default async function CardPage({ params }: { params: Promise<{ designati
                 <ObservationStatusMark status={seed.observationStatus as ObservationStatus} />
               </p>
               <p className="sd-data">{card.observability.reason}</p>
-              <p className="sd-note">
-                Node 01 is commissioning. When it photographs this object, the photograph is attached to every edition
-                of this card at once.
-              </p>
             </div>
 
             <Rule />

@@ -15,11 +15,25 @@ export type SceneProps = {
   kind: 'lunar' | 'planet' | 'moon' | 'star' | 'deepsky';
   p: Palette;
   id: string;
-  rand: () => number;
+  /** Where CardArt's generator had got to; the scene carries on from there. */
+  seed: number;
   /** Lunar cards only: where the gazetteer puts the feature. */
   lat?: number | null;
   lon?: number | null;
 };
+
+/** A generator picking up at a saved state. `state()` reads where it has got to. */
+export function resume(start: number) {
+  let h = start;
+  const rand = () => {
+    h ^= h << 13;
+    h ^= h >>> 17;
+    h ^= h << 5;
+    return ((h >>> 0) % 10000) / 10000;
+  };
+  rand.state = () => h;
+  return rand;
+}
 
 const CX = 100;
 const CY = 176;
@@ -61,7 +75,8 @@ function spiral(turns: number, a: number, b: number, phase: number) {
   return `M${pts.join(' L')}`;
 }
 
-export default function CardScene({ designation, kind, p, id, rand, lat, lon }: SceneProps) {
+export default function CardScene({ designation, kind, p, id, seed, lat, lon }: SceneProps) {
+  const rand = resume(seed);
   const body = `url(#${id}-body)`;
 
   if (kind === 'lunar') {

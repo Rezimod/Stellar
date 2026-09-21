@@ -19,7 +19,7 @@ for (const [name, path] of ROUTES) {
       await page.setViewportSize({ width, height });
       await page.goto(`http://localhost:3000${path}`, { waitUntil: 'networkidle', timeout: 120_000 });
       await page.waitForTimeout(1200);
-      await page.screenshot({ path: `qa/${name}-${label}.png`, fullPage: true });
+      await page.screenshot({ path: `qa/${name}-${label}.png`, fullPage: true, animations: 'disabled', timeout: 30_000 });
 
       // nothing may run off the side of a phone
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);

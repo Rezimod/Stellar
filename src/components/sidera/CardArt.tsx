@@ -1,6 +1,6 @@
 import { rarityInfo, type Rarity } from '@/lib/rarity';
 import { SET_001_CARD_BY_DESIGNATION } from '@/lib/sets/set-001';
-import CardScene from './CardScene';
+import CardScene, { resume } from './CardScene';
 import { paletteFor } from './cardArtPalette';
 
 /**
@@ -21,12 +21,7 @@ function seeded(text: string) {
     h ^= text.charCodeAt(i);
     h = Math.imul(h, 16777619);
   }
-  return () => {
-    h ^= h << 13;
-    h ^= h >>> 17;
-    h ^= h << 5;
-    return ((h >>> 0) % 10000) / 10000;
-  };
+  return resume(h);
 }
 
 type Kind = 'lunar' | 'planet' | 'moon' | 'star' | 'deepsky';
@@ -66,6 +61,44 @@ export default function CardArt({ designation, className = '' }: { designation: 
   const longest = Math.max(...lines.map((l) => l.length));
   const size = Math.min(lines.length > 1 ? 24 : 30, 164 / (longest * 0.78));
   const top = lines.length > 1 ? 62 : 68;
+
+  /* Drawn in this order, and the scene resumes the sequence after them — the
+     scene is a component of its own, so it must not share a generator that a
+     second render would advance. */
+  const stars = (
+    <g>
+      {Array.from({ length: 130 }, (_, i) => {
+        const r = rand();
+        return (
+          <circle
+            key={i}
+            cx={rand() * 200}
+            cy={rand() * 280}
+            r={r < 0.88 ? 0.45 : 1.1}
+            fill={r < 0.75 ? '#ffffff' : p.glow}
+            opacity={0.18 + rand() * 0.6}
+          />
+        );
+      })}
+    </g>
+  );
+  // Foreground: rock, close and unlit. Only where there is rock to be near.
+  const rocks = solar && (
+    <g fill="#03050d">
+      {Array.from({ length: 9 }, (_, i) => {
+        const x = 6 + i * 23 + rand() * 12;
+        const y = 252 + rand() * 26;
+        const s = 6 + rand() * 13;
+        const pts = Array.from({ length: 7 }, (_, k) => {
+          const a = (k / 7) * Math.PI * 2;
+          const rr = s * (0.62 + rand() * 0.5);
+          return `${(x + Math.cos(a) * rr).toFixed(1)} ${(y + Math.sin(a) * rr).toFixed(1)}`;
+        });
+        return <polygon key={i} points={pts.join(' ')} opacity={0.75 + rand() * 0.25} />;
+      })}
+    </g>
+  );
+  const sceneSeed = rand.state();
 
   return (
     <svg
@@ -114,48 +147,19 @@ export default function CardArt({ designation, className = '' }: { designation: 
         <ellipse cx="22" cy="240" rx="58" ry="22" fill={`url(#${id}-wash)`} transform="rotate(-24 22 240)" opacity="0.7" />
       </g>
 
-      <g>
-        {Array.from({ length: 130 }, (_, i) => {
-          const r = rand();
-          return (
-            <circle
-              key={i}
-              cx={rand() * 200}
-              cy={rand() * 280}
-              r={r < 0.88 ? 0.45 : 1.1}
-              fill={r < 0.75 ? '#ffffff' : p.glow}
-              opacity={0.18 + rand() * 0.6}
-            />
-          );
-        })}
-      </g>
+      {stars}
 
       <CardScene
         designation={designation}
         kind={kind}
         p={p}
         id={id}
-        rand={rand}
+        seed={sceneSeed}
         lat={card?.seed.surfaceLat}
         lon={card?.seed.surfaceLon}
       />
 
-      {/* Foreground: rock, close and unlit. Only where there is rock to be near. */}
-      {solar && (
-        <g fill="#03050d">
-          {Array.from({ length: 9 }, (_, i) => {
-            const x = 6 + i * 23 + rand() * 12;
-            const y = 252 + rand() * 26;
-            const s = 6 + rand() * 13;
-            const pts = Array.from({ length: 7 }, (_, k) => {
-              const a = (k / 7) * Math.PI * 2;
-              const rr = s * (0.62 + rand() * 0.5);
-              return `${(x + Math.cos(a) * rr).toFixed(1)} ${(y + Math.sin(a) * rr).toFixed(1)}`;
-            });
-            return <polygon key={i} points={pts.join(' ')} opacity={0.75 + rand() * 0.25} />;
-          })}
-        </g>
-      )}
+      {rocks}
 
       <rect width="200" height="280" fill={`url(#${id}-vignette)`} />
       <rect width="200" height="116" fill={`url(#${id}-scrim)`} />

@@ -39,14 +39,11 @@ export default async function CapsulesPage() {
             Sealed before it is sold.
           </h1>
           <p className="sd-hero__sub">
-            Three cards to a capsule. Its outcome is fixed by a secret published the moment it is listed and by a
-            number your own browser makes when you buy — so neither of us can choose what comes out, and the whole
-            draw can be recomputed afterwards by anyone who cares to.
+            Three cards. The outcome is fixed before the sale, and anyone can check it after.
           </p>
           {simulatedPayments() && (
             <p className="sd-note" style={{ marginTop: 20, maxWidth: '56ch' }}>
-              Rehearsal: this deployment takes no payment. A capsule can be bought, opened and checked exactly as it
-              will be when it sells, and the log marks every sale made this way.
+              Rehearsal: no payment is taken, and the log marks every sale made this way.
             </p>
           )}
           <div className="sd-stats" style={{ marginTop: 32 }}>
@@ -78,18 +75,14 @@ export default async function CapsulesPage() {
             </li>
           ))}
         </ul>
-        <p className="sd-note">
-          Provisional, and stamped into the log with every capsule opened under them — so changing them later cannot
-          quietly rewrite a capsule that is already open. Leave a capsule unpaid past the window and it goes back on
-          sale, which is logged too.
-        </p>
+        <p className="sd-note">Provisional. The odds are logged with every capsule opened under them.</p>
       </section>
 
       <section className="sd-container sd-section">
         <h2 className="sd-section__title">On sale</h2>
         {onSale === null && <p className="sd-note">The sale cannot be read at the moment.</p>}
         {onSale?.length === 0 && (
-          <p className="sd-note">Nothing is listed right now. Capsules are put up in batches — the log records each one.</p>
+          <p className="sd-note">Nothing is listed right now.</p>
         )}
         <div className="sd-capsules">
           {onSale?.map((c) => (
@@ -122,11 +115,6 @@ export default async function CapsulesPage() {
           <h2 className="sd-page__title" style={{ maxWidth: '20ch' }}>
             Every capsule ever listed is in the log
           </h2>
-          <p className="sd-lede">
-            Listed, bought, opened, released, withdrawn — in the order it happened, numbered, never rewritten. A
-            capsule that quietly vanished would leave its number behind, and the reading at the top of the page looks
-            for exactly that.
-          </p>
           <div className="sd-hero__cta">
             <Link href="/capsules/log" className="sd-btn">
               Read the log

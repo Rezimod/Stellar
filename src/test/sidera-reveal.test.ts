@@ -28,15 +28,8 @@ it('falls the shortest way when nothing scarce came out', () => {
   expect(render([card('PLATO', 'common', 0)])).toContain('sd-reveal--common');
 });
 
-it('takes each card’s observation status from the set, not from the draw', () => {
-  // Europa is epic and cannot be resolved from Node 01; the reveal must not
-  // imply otherwise just because the opening did not say.
-  const html = render([card('EUROPA', 'epic', 0)]);
-  expect(html).toContain('Not observable');
-});
-
 it('prints the edition number it was allocated', () => {
-  expect(render([card('TYCHO', 'rare', 0)])).toContain('003 / 100');
+  expect(render([card('TYCHO', 'rare', 0)])).toContain('No. 003');
 });
 
 it('draws the commonest card first so the last one out is the best', () => {

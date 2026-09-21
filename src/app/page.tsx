@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import CardPlate from "@/components/sidera/CardPlate";
+import HeroShowcase from "@/components/sidera/HeroShowcase";
 import CountUp from "@/components/sidera/ui/CountUp";
 import Rise from "@/components/sidera/ui/Rise";
 import SideraShell from "@/components/sidera/SideraShell";
@@ -11,7 +12,6 @@ import type { Rarity } from "@/lib/rarity";
 import { SET_001_CARDS } from "@/lib/sets/set-001";
 import { capsulesOnSale } from "@/lib/sidera/capsule";
 import { CAPSULE_PRICE_GEL, CARDS_PER_CAPSULE } from "@/lib/sidera/economics";
-import type { ObservationStatus } from "@/lib/sidera/observability";
 
 export const dynamic = "force-dynamic";
 
@@ -24,26 +24,38 @@ export const metadata: Metadata = {
 const STEPS = [
   {
     n: "01",
-    title: "Crack a capsule",
-    body: `Three cards come out, each a numbered edition of something real — a crater, a planet, a star, a nebula. What you draw is fixed by a secret published before the sale and a number your browser makes after it, and anyone can check the arithmetic afterwards.`,
+    title: "Open a capsule",
+    body: "Three numbered cards, each a real object. Every draw can be checked.",
   },
   {
     n: "02",
-    title: "The collection picks the night",
-    body: `Holders choose what Node 01 points at, from the cards it can physically record. Aperture, sky brightness and horizon decide what is on that list — not scarcity. Europa is the rarest thing in the set and can never be on it.`,
+    title: "Holders pick the night",
+    body: "The Collection chooses what Node 01 points at.",
   },
   {
     n: "03",
-    title: "The photograph lands in your card",
-    body: `One capture serves the whole card. The night your object is photographed, that frame is attached to your edition and to every other edition of it, with the node, the timestamp and the instrument printed beside it.`,
+    title: "The photograph joins the card",
+    body: "One capture goes to every edition of that card.",
   },
 ];
 
+const SHOWCASE = ["SATURN", "M42", "TYCHO", "EUROPA", "JUPITER", "M57", "MARS", "PLUTO"];
+
 export default async function HomePage() {
   const node = getNode("tbilisi-01");
-  const hero = ["SATURN", "M42", "TYCHO", "EUROPA"]
-    .map((d) => SET_001_CARDS.find((c) => c.seed.designation === d))
-    .filter((c): c is (typeof SET_001_CARDS)[number] => Boolean(c));
+  const showcase = SHOWCASE.flatMap((d) => {
+    const c = SET_001_CARDS.find((x) => x.seed.designation === d);
+    return c
+      ? [
+          {
+            designation: c.seed.designation,
+            name: c.seed.name,
+            rarity: c.seed.rarity as Rarity,
+            artUrl: c.seed.artUrl,
+          },
+        ]
+      : [];
+  });
 
   const db = getDb();
   let onSale = 0;
@@ -74,9 +86,8 @@ export default async function HomePage() {
               <span style={{ color: "var(--sd-accent)" }}>editions</span>.
             </h1>
             <p className="sd-hero__sub">
-              Twenty real objects — craters, planets, stars, nebulae. Each one a
-              numbered edition. A telescope in Tbilisi photographs one of them a
-              night, and everyone holding that card gets the photograph.
+              Twenty real objects, each a numbered edition. When Node 01
+              photographs one, every holder of that card gets the frame.
             </p>
             <div className="sd-hero__cta">
               <Link href="/capsules" className="sd-btn sd-btn--primary">
@@ -110,33 +121,14 @@ export default async function HomePage() {
             </div>
           </div>
 
-          <div className="sd-hero__art">
-            <ul className="sd-hero__fan">
-              {hero.map((c) => (
-                <li key={c.seed.designation} style={{ listStyle: "none" }}>
-                  <CardPlate
-                    designation={c.seed.designation}
-                    name={c.seed.name}
-                    rarity={c.seed.rarity as Rarity}
-                    observationStatus={
-                      c.seed.observationStatus as ObservationStatus
-                    }
-                    artUrl={c.seed.artUrl}
-                    href={`/card/${c.seed.designation}`}
-                  />
-                </li>
-              ))}
-            </ul>
-          </div>
+          <HeroShowcase cards={showcase} />
         </div>
       </section>
 
       <section className="sd-band">
         <div className="sd-container">
           <p className="sd-eyebrow">How it works</p>
-          <h2 className="sd-page__title">
-            Three cards, one telescope, a public ledger of every draw
-          </h2>
+          <h2 className="sd-page__title">Three cards, one telescope</h2>
           <ol className="sd-steps">
             {STEPS.map((s) => (
               <li key={s.n}>
@@ -157,13 +149,6 @@ export default async function HomePage() {
               <h2 className="sd-name">
                 Node 01 — {node.name}, {node.site}
               </h2>
-              <p className="sd-lede">
-                A 150 mm telescope on a city roof under a Bortle {node.bortle}{" "}
-                sky. It is being commissioned, so it has not begun its nightly
-                run — and nothing here pretends otherwise. What it will and will
-                not reach is already printed on every card in the set, object by
-                object.
-              </p>
               <div className="sd-section" style={{ marginTop: 28 }}>
                 <DataRow
                   items={[
@@ -201,12 +186,14 @@ export default async function HomePage() {
                   designation={c.seed.designation}
                   name={c.seed.name}
                   rarity={c.seed.rarity as Rarity}
-                  observationStatus={
-                    c.seed.observationStatus as ObservationStatus
-                  }
                   artUrl={c.seed.artUrl}
                   href={`/card/${c.seed.designation}`}
-                  data={[{ label: "Editions", value: c.seed.editionSize }]}
+                  data={[
+                    {
+                      label: "Editions",
+                      value: `${c.seed.editionSize} editions`,
+                    },
+                  ]}
                 />
               </li>
             ))}
@@ -221,15 +208,8 @@ export default async function HomePage() {
               className="sd-display"
               style={{ maxWidth: "18ch", marginInline: "auto" }}
             >
-              Nothing here is a rendering.
+              Every draw is in the log.
             </h2>
-            <p
-              className="sd-lede"
-              style={{ marginInline: "auto", textAlign: "center" }}
-            >
-              Every object on a card is somewhere overhead tonight, and every
-              draw is written into a log anyone can read, check and argue with.
-            </p>
             <div className="sd-hero__cta" style={{ justifyContent: "center" }}>
               <Link href="/capsules" className="sd-btn sd-btn--primary">
                 Open a capsule

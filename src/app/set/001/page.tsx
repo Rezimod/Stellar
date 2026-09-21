@@ -2,13 +2,11 @@ import type { Metadata } from 'next';
 import CardPlate from '@/components/sidera/CardPlate';
 import SideraShell from '@/components/sidera/SideraShell';
 import DataRow from '@/components/sidera/ui/DataRow';
-import Rule from '@/components/sidera/ui/Rule';
 import { getDb } from '@/lib/db';
 import { SET_001, SET_001_CARDS } from '@/lib/sets/set-001';
 import { readSetSupply } from '@/lib/sidera/capsule';
 import { holderView } from '@/lib/sidera/repo';
 import type { Rarity } from '@/lib/rarity';
-import type { ObservationStatus } from '@/lib/sidera/observability';
 
 export const dynamic = 'force-dynamic';
 
@@ -58,12 +56,7 @@ export default async function Set001Page({
           </div>
           <p className="sd-label">{SET_001.status === 'draft' ? 'In preparation' : 'On sale'}</p>
         </div>
-        <p className="sd-lede">
-          Twenty objects: the Moon&rsquo;s surface, the planets and one of their moons, three stars, five deep-sky
-          objects. Every card is a numbered edition. Rarity was decided when the set was written — whether Node 01 can
-          actually photograph the thing is a separate question of aperture and sky, and seven of the twenty it cannot.
-        </p>
-        <div className="sd-section" style={{ marginTop: 36 }}>
+        <div className="sd-section" style={{ marginTop: 28 }}>
           <DataRow
             items={[
               { label: 'Cards', value: SET_001_CARDS.length },
@@ -73,14 +66,7 @@ export default async function Set001Page({
             ]}
           />
         </div>
-        <div className="sd-section">
-          <Rule />
-        </div>
-
-        <h2 className="sd-section__title" style={{ marginTop: 40 }}>
-          The twenty
-        </h2>
-        <ul className="sd-grid">
+        <ul className="sd-grid sd-section">
           {SET_001_CARDS.map((c) => {
             const s = supply?.get(c.seed.designation);
             const mine = held?.get(c.seed.designation);
@@ -91,13 +77,12 @@ export default async function Set001Page({
                   designation={c.seed.designation}
                   name={c.seed.name}
                   rarity={c.seed.rarity as Rarity}
-                  observationStatus={c.seed.observationStatus as ObservationStatus}
                   artUrl={outlined ? null : c.seed.artUrl}
                   href={`/card/${c.seed.designation}`}
                   data={[
                     mine !== undefined
-                      ? { label: 'Ed', value: `${pad(mine)} / ${c.seed.editionSize}` }
-                      : { label: 'Editions', value: s ? `${s.allocated} / ${s.editionSize}` : `${c.seed.editionSize}` },
+                      ? { label: 'Edition', value: `No. ${pad(mine)}` }
+                      : { label: 'Editions', value: s ? `${s.allocated} of ${s.editionSize}` : `${c.seed.editionSize} editions` },
                   ]}
                 />
               </li>

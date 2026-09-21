@@ -122,7 +122,7 @@
 .sd-datarow { display: flex; flex-wrap: wrap; column-gap: 28px; row-gap: 10px; margin: 0; font-family: var(--sd-mono); font-size: 13px; line-height: 1.4; font-variant-numeric: tabular-nums; }
 .sd-datarow > div { display: flex; gap: 8px; min-width: 0; align-items: baseline; }
 .sd-datarow dt { color: var(--sd-ink-3); text-transform: uppercase; letter-spacing: 0.12em; font-size: 11px; }
-.sd-datarow dd { margin: 0; color: var(--sd-ink); overflow-wrap: anywhere; }
+.sd-datarow dd { margin: 0; color: var(--sd-ink); }
 .sd-datarow--stacked { flex-direction: column; row-gap: 0; }
 .sd-datarow--stacked > div { justify-content: space-between; border-top: 1px solid var(--sd-rule); padding: 11px 0; }
 
@@ -232,7 +232,7 @@
    capped, so the grid stays the layout authority. */
 .sd-plate {
   --sd-plate-pad: 16px;
-  --sd-plate-name: 19px;
+  --sd-plate-name: 17px;
   --sd-plate-cap: 300px;
   aspect-ratio: 63 / 88;
   max-width: var(--sd-plate-cap);
@@ -244,8 +244,8 @@
               background var(--sd-dur-fast) var(--sd-ease),
               transform var(--sd-dur-fast) var(--sd-ease);
 }
-.sd-plate[data-size='sm'] { --sd-plate-pad: 11px; --sd-plate-name: 15px; --sd-plate-cap: 180px; }
-.sd-plate[data-size='lg'] { --sd-plate-pad: 20px; --sd-plate-name: 26px; --sd-plate-cap: 400px; }
+.sd-plate[data-size='sm'] { --sd-plate-pad: 11px; --sd-plate-name: 14px; --sd-plate-cap: 180px; }
+.sd-plate[data-size='lg'] { --sd-plate-pad: 20px; --sd-plate-name: 22px; --sd-plate-cap: 400px; }
 /* Legendary carries a second rule inside the first: a mount, not a glow. */
 .sd-plate[data-rarity='legendary'] {
   box-shadow: inset 0 0 0 3px var(--sd-canvas),
@@ -254,8 +254,10 @@
 .sd-plate--outline { background: transparent; border-style: dashed; border-color: var(--sd-ink-4); }
 .sd-plate__frame { flex: 1 1 auto; min-height: 0; background: radial-gradient(120% 90% at 50% 15%, #16254a 0%, #060c1d 70%); display: flex; align-items: center; justify-content: center; overflow: hidden; }
 .sd-plate__frame img, .sd-plate__frame svg { width: 100%; height: 100%; object-fit: cover; display: block; }
-.sd-plate__body { flex: 0 0 auto; padding: var(--sd-plate-pad); display: flex; flex-direction: column; gap: 8px; }
-.sd-plate__name { font-family: var(--sd-sans); font-weight: 600; font-size: var(--sd-plate-name); line-height: 1.2; letter-spacing: -0.015em; margin: 0; color: var(--sd-ink); overflow-wrap: anywhere; }
+.sd-plate__body { flex: 0 0 auto; padding: calc(var(--sd-plate-pad) * 0.75) var(--sd-plate-pad) var(--sd-plate-pad); display: flex; flex-direction: column; gap: 4px; border-top: 1px solid var(--sd-rule); }
+.sd-plate__meta { display: flex; align-items: center; gap: 8px; margin: 0; font-family: var(--sd-mono); font-size: 12px; font-variant-numeric: tabular-nums; color: var(--sd-ink-3); }
+.sd-plate__meta .sd-rarity { padding: 0; background: none; border: 0; }
+.sd-plate__name { font-family: var(--sd-sans); font-weight: 600; font-size: var(--sd-plate-name); line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: -0.015em; margin: 0; color: var(--sd-ink); }
 .sd-plate__marks { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0; }
 .sd-plate__link { display: block; text-decoration: none; color: inherit; }
 @media (hover: hover) {
@@ -265,6 +267,7 @@
 .sd-plate__link:focus-within .sd-plate { border-color: var(--sd-rule-strong); background: var(--sd-plate-hover); }
 
 .sd-grid { display: grid; align-items: start; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; list-style: none; margin: 0; padding: 0; }
+.sd-grid.sd-section { margin-top: 40px; }
 @media (min-width: 640px) { .sd-grid { grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 24px; } }
 
 /* ── Card page ────────────────────────────────────────────────── */
@@ -432,14 +435,29 @@
 @media (min-width: 900px) { .sd-hero { padding-block: 104px 88px; } .sd-hero__grid { grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr); gap: 64px; } }
 .sd-hero__sub { color: var(--sd-ink-2); font-size: 18px; max-width: 46ch; margin: 22px 0 0; }
 .sd-hero__cta { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 32px; }
-.sd-hero__art { position: relative; }
-/* The fan bleeds past the fold on purpose — a set continues below the crease.
-   Masked so it fades out rather than being chopped. */
-@media (min-width: 900px) {
-  .sd-hero__art { max-height: 74vh; overflow: hidden; -webkit-mask-image: linear-gradient(#000 72%, transparent 100%); mask-image: linear-gradient(#000 72%, transparent 100%); }
+/* The showcase: the set turning past, one card in front. Every slot sits at
+   the centre of the stage and is moved out by its distance from the front. */
+.sd-showcase { position: relative; }
+.sd-showcase__stage { position: relative; height: 360px; margin: 0; padding: 0; list-style: none; perspective: 1400px; }
+@media (min-width: 900px) { .sd-showcase__stage { height: 470px; } }
+.sd-showcase__slot {
+  position: absolute; left: 50%; top: 50%; width: 220px;
+  transition: transform var(--sd-dur-slow) var(--sd-ease), opacity var(--sd-dur-slow) var(--sd-ease);
+  transform: translate(-50%, -50%) scale(0.6); opacity: 0; z-index: 0;
 }
-.sd-hero__fan { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; margin: 0; padding: 0; }
-.sd-hero__fan > li:nth-child(even) { transform: translateY(26px); }
+@media (min-width: 900px) { .sd-showcase__slot { width: 290px; } }
+.sd-showcase__slot .sd-plate { max-width: none; background: color-mix(in srgb, var(--sd-ink) 5%, var(--sd-canvas)); }
+.sd-showcase__slot[data-pos='0'] { transform: translate(-50%, calc(-50% - 10px)); opacity: 1; z-index: 3; }
+.sd-showcase__slot[data-pos='0'] .sd-plate { box-shadow: 0 40px 80px rgba(0, 0, 0, 0.55); }
+.sd-showcase__slot[data-pos='-1'] { transform: translate(-112%, -50%) scale(0.78) rotateY(14deg); opacity: 0.55; z-index: 2; }
+.sd-showcase__slot[data-pos='1'] { transform: translate(12%, -50%) scale(0.78) rotateY(-14deg); opacity: 0.55; z-index: 2; }
+.sd-showcase__slot[data-pos='-2'] { transform: translate(-150%, -50%) scale(0.6) rotateY(20deg); opacity: 0; z-index: 1; }
+.sd-showcase__slot[data-pos='2'] { transform: translate(50%, -50%) scale(0.6) rotateY(-20deg); opacity: 0; z-index: 1; }
+.sd-showcase__dots { display: flex; justify-content: center; gap: 2px; margin-top: 8px; }
+.sd-showcase__dot { width: 28px; height: 28px; padding: 0; border: 0; background: none; cursor: pointer; display: grid; place-items: center; }
+.sd-showcase__dot::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--sd-ink-4); transition: background var(--sd-dur-fast) var(--sd-ease), width var(--sd-dur-fast) var(--sd-ease); }
+.sd-showcase__dot[aria-current='true']::before { width: 18px; border-radius: 3px; background: var(--sd-accent); }
+@media (prefers-reduced-motion: reduce) { .sd-showcase__slot, .sd-showcase__dot::before { transition: none; } }
 /* The cosmic ground: one deep radial, a faint horizon, no rainbow */
 .sd-sky { position: absolute; inset: 0; pointer-events: none; background:
   radial-gradient(90% 60% at 72% 8%, rgba(255, 179, 71, 0.13) 0%, transparent 60%),
