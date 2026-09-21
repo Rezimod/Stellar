@@ -13,7 +13,10 @@ const card = (designation: string, rarity: string, drawIndex: number): RevealedC
   editionSize: 100,
 });
 
-const render = (cards: RevealedCard[]) => renderToStaticMarkup(createElement(SideraReveal, { cards }));
+const render = (cards: RevealedCard[]) =>
+  renderToStaticMarkup(
+    createElement(SideraReveal, { draw: { sequence: 1, secret: 'abcdef0123456789', nonce: 'fedcba9876543210', cards } }),
+  );
 
 it('pitches the descent to the scarcest card in the capsule', () => {
   const html = render([card('TYCHO', 'rare', 0), card('SATURN', 'legendary', 1), card('PLATO', 'common', 2)]);
@@ -34,4 +37,18 @@ it('takes each card’s observation status from the set, not from the draw', () 
 
 it('prints the edition number it was allocated', () => {
   expect(render([card('TYCHO', 'rare', 0)])).toContain('003 / 100');
+});
+
+it('draws the commonest card first so the last one out is the best', () => {
+  const html = render([card('SATURN', 'legendary', 0), card('PLATO', 'common', 1), card('TYCHO', 'rare', 2)]);
+  expect(html.indexOf('PLATO')).toBeLessThan(html.indexOf('TYCHO'));
+  expect(html.indexOf('TYCHO')).toBeLessThan(html.indexOf('SATURN'));
+  expect(html).toContain('sd-reveal__card--best');
+});
+
+it('prints the draw’s own provenance so it can be checked', () => {
+  const html = render([card('TYCHO', 'rare', 0)]);
+  expect(html).toContain('seed abcdef01');
+  expect(html).toContain('client fedcba98');
+  expect(html).toContain('/capsules/log');
 });

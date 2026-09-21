@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
 import { AuthModal } from '@/components/auth/AuthModal';
 import { useStellarUser } from '@/hooks/useStellarUser';
-import SideraReveal, { type RevealedCard } from './SideraReveal';
+import SideraReveal, { type Draw } from './SideraReveal';
 
 /**
  * Opening a capsule from its own public record.
@@ -18,11 +18,11 @@ export default function SideraOpen({ capsuleId }: { capsuleId: string }) {
   const { getAccessToken } = usePrivy();
   const { authenticated, ready } = useStellarUser();
   const [authOpen, setAuthOpen] = useState(false);
-  const [cards, setCards] = useState<RevealedCard[] | null>(null);
+  const [draw, setDraw] = useState<Draw | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
-  if (cards) return <SideraReveal cards={cards} />;
+  if (draw) return <SideraReveal draw={draw} />;
 
   const open = async () => {
     setBusy(true);
@@ -39,7 +39,12 @@ export default function SideraOpen({ capsuleId }: { capsuleId: string }) {
         setError(res.status === 404 ? 'This capsule is not yours to open.' : (data.error ?? 'The capsule could not be opened.'));
         return;
       }
-      setCards(data.cards as RevealedCard[]);
+      setDraw({
+        sequence: data.sequence as number,
+        secret: String(data.secret ?? ''),
+        nonce: String(data.nonce ?? ''),
+        cards: data.cards as Draw['cards'],
+      });
     } catch {
       setError('The capsule could not be opened. Try again in a moment.');
     } finally {
