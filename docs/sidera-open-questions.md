@@ -109,7 +109,9 @@ most reversible option; each needs a yes/no from Rezi.
     remaining part of Gate 3 needs a person, not a value: a signed-in stranger
     paying real SOL and opening what they bought.
 
-21. **Phase 7 — does the renderer carry card art?** Rendered 2026-09-21, the
+21. ~~**Phase 7 — does the renderer carry card art?**~~ **Decided 2026-09-22:
+    renders for the planets.** Saturn, Mars, Jupiter and Venus carry them; every
+    other card keeps its drawn plate. The original finding: Rendered 2026-09-21, the
     three the plan names, then stopped. Saturn and Mars are usable
     (`public/cards/SATURN.webp`, `MARS.webp`; not yet wired to any card).
     Europa fails: Explore has no Europa map, so it comes out a plain beige
