@@ -1,17 +1,16 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import CardArt from '@/components/sidera/CardArt';
+import CardPlate from '@/components/sidera/CardPlate';
 import SideraBuyCard from '@/components/sidera/SideraBuyCard';
 import SideraShell from '@/components/sidera/SideraShell';
 import Caption from '@/components/sidera/ui/Caption';
 import DataRow, { type Datum } from '@/components/sidera/ui/DataRow';
 import ObservationStatusMark from '@/components/sidera/ui/ObservationStatusMark';
-import RarityMark from '@/components/sidera/ui/RarityMark';
 import Rule from '@/components/sidera/ui/Rule';
 import { getDb } from '@/lib/db';
 import { formatDec, formatRa } from '@/lib/observatory/telescope-targets';
-import type { Rarity } from '@/lib/rarity';
+import { rarityInfo, type Rarity } from '@/lib/rarity';
 import { SET_001_CARD_BY_DESIGNATION } from '@/lib/sets/set-001';
 import { DIRECT_CARD_PRICE_GEL } from '@/lib/sidera/economics';
 import type { ObservationStatus } from '@/lib/sidera/observability';
@@ -75,29 +74,32 @@ export default async function CardPage({ params }: { params: Promise<{ designati
   return (
     <SideraShell>
       <section className="sd-container sd-page">
-        <Link href="/set/001" className="sd-back">
-          Set 001
-        </Link>
+        <p className="sd-crumb sd-label">
+          <Link href="/set/001">Set 001</Link>
+          <span>/</span>
+          <strong>{seed.name}</strong>
+          <span>/</span>
+          <span>{allocated === null ? `${seed.editionSize} editions` : `No. ${allocated} of ${seed.editionSize}`}</span>
+        </p>
 
         <div className="sd-card-page">
           <figure className="sd-figure">
-            <div className="sd-figure__frame">
-              {seed.artUrl && !seed.artUrl.startsWith('/cards/') ? (
-                <img src={seed.artUrl} alt={`${seed.name}, photographed by Node 01`} />
-              ) : (
-                <CardArt designation={seed.designation} />
-              )}
+            <div className="sd-tilt">
+              <CardPlate
+                size="lg"
+                designation={seed.designation}
+                name={seed.name}
+                rarity={rarity}
+                observationStatus={seed.observationStatus as ObservationStatus}
+                artUrl={seed.artUrl}
+                data={[{ label: 'Ed', value: allocated === null ? String(seed.editionSize) : `${allocated} / ${seed.editionSize}` }]}
+              />
             </div>
             <Caption parts={['Set 001', seed.designation, 'Drawn from the record — awaiting Node 01']} />
           </figure>
 
-          <div>
-            <p className="sd-label">{seed.designation}</p>
+          <div className="sd-card-page__col">
             <h1 className="sd-page__title">{seed.name}</h1>
-            <p className="sd-plate__marks" style={{ marginTop: 12 }}>
-              <RarityMark rarity={rarity} />
-              <ObservationStatusMark status={seed.observationStatus as ObservationStatus} />
-            </p>
             <p className="sd-blurb">{seed.blurb}</p>
 
             <div className="sd-section">
@@ -106,6 +108,7 @@ export default async function CardPage({ params }: { params: Promise<{ designati
                 layout="stacked"
                 items={[
                   { label: 'Object', value: seed.objectType },
+                  { label: 'Rarity', value: rarityInfo(rarity).label },
                   { label: 'Catalogue', value: seed.catalogRef },
                   ...position,
                   { label: 'Target', value: seed.targetId },
@@ -117,6 +120,9 @@ export default async function CardPage({ params }: { params: Promise<{ designati
 
             <div className="sd-section">
               <h2 className="sd-section__title">Observation</h2>
+              <p className="sd-plate__marks">
+                <ObservationStatusMark status={seed.observationStatus as ObservationStatus} />
+              </p>
               <p className="sd-data">{card.observability.reason}</p>
               <p className="sd-note">
                 Node 01 is commissioning. When it photographs this object, the photograph is attached to every edition
@@ -125,7 +131,7 @@ export default async function CardPage({ params }: { params: Promise<{ designati
             </div>
 
             <Rule />
-            <div className="sd-section">
+            <div className="sd-section sd-buy">
               <SideraBuyCard
                 designation={seed.designation}
                 name={seed.name}

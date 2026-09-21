@@ -263,7 +263,46 @@
 
 /* ── Card page ────────────────────────────────────────────────── */
 .sd-card-page { display: grid; gap: 32px; margin-top: 28px; }
-@media (min-width: 900px) { .sd-card-page { grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 56px; align-items: start; } }
+@media (min-width: 1024px) { .sd-card-page { grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr); gap: 64px; align-items: center; } }
+.sd-card-page__col { max-width: 520px; }
+
+/* The one card on the site that is lit and held: a slow turn, one deep
+   shadow. It stops under the pointer so it can actually be read. */
+.sd-tilt { perspective: 1200px; }
+.sd-tilt .sd-plate { box-shadow: 0 40px 80px rgba(0, 0, 0, 0.55); animation: sd-tilt 9s ease-in-out infinite; }
+.sd-tilt .sd-plate[data-rarity='legendary'] {
+  box-shadow: inset 0 0 0 3px var(--sd-canvas),
+              inset 0 0 0 4px color-mix(in srgb, var(--sd-rarity-legendary) 55%, transparent),
+              0 40px 80px rgba(0, 0, 0, 0.55);
+}
+@keyframes sd-tilt {
+  0%, 100% { transform: rotateY(-6deg) rotateX(2deg); }
+  50% { transform: rotateY(6deg) rotateX(-2deg); }
+}
+@media (hover: hover) { .sd-tilt:hover .sd-plate { animation-play-state: paused; } }
+@media (hover: none) { .sd-tilt .sd-plate { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .sd-tilt .sd-plate { animation: none; } }
+
+/* Breadcrumb: where this card sits in the set, printed like a shelf mark. */
+.sd-crumb { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; margin: 0 0 18px; }
+.sd-crumb a { color: var(--sd-ink-3); text-decoration: none; }
+.sd-crumb a:hover { color: var(--sd-ink-2); }
+.sd-crumb span { color: var(--sd-ink-3); }
+.sd-crumb strong { color: var(--sd-ink-2); font-weight: 500; }
+
+/* Under 1024 the buy control rides the bottom of the viewport. Same markup,
+   not a second copy of it. */
+@media (max-width: 1023px) {
+  .sd-buy {
+    position: sticky; bottom: 0; z-index: 20;
+    margin-inline: calc(var(--sd-gutter) * -1);
+    padding: 14px var(--sd-gutter) calc(14px + env(safe-area-inset-bottom));
+    background: color-mix(in srgb, var(--sd-canvas) 92%, transparent);
+    backdrop-filter: blur(8px);
+    border-top: 1px solid var(--sd-rule);
+  }
+}
+
 .sd-figure { margin: 0; }
 .sd-figure__frame { background: radial-gradient(120% 90% at 50% 15%, #16254a 0%, #060c1d 70%); border: 1px solid var(--sd-rule); border-radius: var(--sd-radius); aspect-ratio: 5 / 7; display: flex; align-items: center; justify-content: center; overflow: hidden; }
 .sd-figure__frame img, .sd-figure__frame svg { width: 100%; height: 100%; object-fit: cover; display: block; }
