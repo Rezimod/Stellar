@@ -1042,9 +1042,6 @@
   "solarSystem": {
     "title": "Solar system",
     "subtitle": "Live positions from Astronomy Engine — drag to orbit, scroll to zoom, tap a body for facts.",
-    "backSky": "Back to sky",
-    "dragHint": "Drag · pinch zoom · tap a body",
-    "controlsAria": "Simulation controls",
     "immersive": {
       "exit": "Exit solar system"
     },
@@ -1058,9 +1055,7 @@
         "realtime": "Live",
         "10m": "+10 m/s",
         "1h": "+1 h/s",
-        "6h": "+6 h/s",
-        "1d": "+1 d/s",
-        "7d": "+7 d/s"
+        "1d": "+1 d/s"
       },
       "speedAria": "Time rate"
     },
@@ -1074,7 +1069,6 @@
     "detail": {
       "title": "Selected body",
       "placeholder": "Tap a planet or the Sun in the viewport.",
-      "meanRadius": "Mean radius",
       "diameter": "Diameter",
       "gravity": "Surface gravity",
       "meanTemp": "Mean surface temp",
@@ -1092,8 +1086,7 @@
       "askTheSky": "Ask the Sky",
       "gearRecommender": "What gear?",
       "clear": "Clear selection",
-      "closeSheet": "Close details — camera stays on this body; zoom out to pick another",
-      "openInfo": "Planet info"
+      "closeSheet": "Close details — camera stays on this body; zoom out to pick another"
     },
     "bodies": {
       "sun": {
@@ -1155,8 +1148,6 @@
       "shield": "Shield",
       "energy": "Energy",
       "altShort": "Alt",
-      "velShort": "Vel",
-      "orbitOf": "{body} orbit",
       "commsHeader": "Incoming transmission · {from}",
       "comms": {
         "centauriPrime": {
@@ -1176,7 +1167,6 @@
       "eject": "Eject",
       "board": "Board",
       "evaOut": "EVA — suit jets",
-      "evaBoard": "EVA — press V to board",
       "evaBoardTouch": "EVA — tap Board",
       "fire": "Fire",
       "boost": "Boost",
@@ -1184,7 +1174,6 @@
       "move": "Thrust and turn",
       "look": "Pitch and yaw",
       "speedMode": "Speed mode",
-      "modeLabel": "Mode",
       "modes": {
         "cruise": "Cruise",
         "fast": "Fast",
@@ -1203,7 +1192,6 @@
       "target": "Target",
       "foils": "Wings",
       "foilsOpen": "Open",
-      "foilsLocked": "Locked",
       "alerts": {
         "proximity": "Collision — pull up",
         "entry": "Atmospheric entry",
@@ -1223,7 +1211,6 @@
         "undocked": "Released — you have the con",
         "horizon": "Event horizon — tidal forces rising"
       },
-      "hullLost": "Hull lost",
       "respawn": "Respawn in {n}",
       "systems": {
         "sol": "Solar System",
@@ -1275,23 +1262,16 @@
         "xfoil": "Starfighter",
         "endurance": "Interstellar explorer"
       },
-      "assistOn": "Assist on",
-      "assistOff": "Assist off",
       "driveReady": "Drive ready",
       "driveLocked": "Mass locked",
-      "driveCharging": "Drive engaged",
       "targets": "Targets",
-      "targetNone": "No target",
       "targetClear": "Clear target",
       "align": "Align",
       "heat": "Heat",
       "log": "Log",
       "contacts": "{n} contacts",
-      "noContacts": "No contacts",
       "region": "Approaching {body}",
       "discovery": "Discovery",
-      "navJump": "Jump · {system}",
-      "navContact": "Unknown contact",
       "navKinds": {
         "star": "Star",
         "planet": "Planet",
@@ -1409,7 +1389,6 @@
         }
       },
       "help": "Controls",
-      "helpShow": "Show controls",
       "keys": {
         "r1": "W / S — thrust and brake",
         "r2": "A / D — turn left and right",
@@ -1513,13 +1492,12 @@
       "run": "Lope",
       "move": "Move astronaut",
       "help": "Surface controls",
-      "helpShow": "Show controls",
       "close": "Close",
       "impact": "Meteoroid impact — {n} m away",
       "hints": {
         "walk": "W A S D — jog. Shift to sprint, Alt to walk.",
         "jump": "Space — jump. One sixth g: you will be up there a while.",
-        "walkTouch": "Left stick — walk. Drag anywhere else to look around.",
+        "walkTouch": "Left stick — walk. Drag the right half of the screen to look around.",
         "jumpTouch": "Jump is bottom right. One sixth g: you will be up there a while."
       },
       "keys": {
@@ -1912,7 +1890,6 @@
       "preflight": "Preflight",
       "preflightDetail": "Powering up the {ship}",
       "ascent": "Climbing back to orbit",
-      "ascentDetail": "The surface falls away below",
       "tips": {
         "t1": "Light from the Sun takes 8 minutes 20 seconds to reach Earth.",
         "t2": "The Moon drifts 3.8 cm farther from Earth every year.",
@@ -1934,7 +1911,7 @@
         "hints": {
           "walk": "W A S D — walk. Hold Shift to run. Mars holds you down twice as hard as the Moon.",
           "jump": "Space — jump. A metre, no more: this is a real planet.",
-          "walkTouch": "Left stick — walk. Drag anywhere else to look around.",
+          "walkTouch": "Left stick — walk. Drag the right half of the screen to look around.",
           "jumpTouch": "Jump is bottom right. A metre, no more: this is a real planet."
         },
         "keys": {
@@ -1993,7 +1970,7 @@
         "hints": {
           "walk": "W A S D — walk. Hold Shift to run. The ground pulls harder than home.",
           "jump": "Space — jump. Not far: this is 1.1 g.",
-          "walkTouch": "Left stick — walk. Drag anywhere else to look around.",
+          "walkTouch": "Left stick — walk. Drag the right half of the screen to look around.",
           "jumpTouch": "Jump is bottom right. Not far: this is 1.1 g."
         },
         "keys": {
@@ -2047,7 +2024,7 @@
         "hints": {
           "walk": "W A S D — jog. Shift — sprint. The red car by the pad is yours: E to get in.",
           "jump": "Space — jump. The red car by the pad is yours: E to get in.",
-          "walkTouch": "Left stick — jog; push it to the rim to sprint. Drag anywhere else to look around.",
+          "walkTouch": "Left stick — jog; push it to the rim to sprint. Drag the right half of the screen to look around.",
           "jumpTouch": "Jump is bottom right. The red car by the pad: the amber key gets you in.",
           "drive": "W / S — drive and brake (reverse when stopped) · A / D — steer · Space — handbrake · E — get out",
           "driveTouch": "Stick up and down — drive and brake · left and right — steer · Jump key — handbrake"

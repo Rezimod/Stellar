@@ -93,28 +93,6 @@ declare global {
   }
 }
 
-export interface CosmicView {
-  /** 0..1 — how zoomed into the solar system the camera is (1 = close). */
-  solar: number;
-  /** 0..1 — stellar neighbourhood layer presence. */
-  stellar: number;
-  /** 0..1 — Milky Way disk layer presence. */
-  galactic: number;
-  /** 0..1 — Local Group presence (Magellanic Clouds, Andromeda, Triangulum). */
-  local: number;
-  /** 0..1 — nearby-universe galaxy backdrop presence. */
-  universe: number;
-  /** 0..1 — cosmic web / large-scale-structure presence. */
-  web: number;
-  /** Sun projected to screen-space CSS pixels (null = off-screen / behind camera). */
-  sunScreen: { x: number; y: number; depth: number } | null;
-  /** Milky Way label projected to screen (null when galactic tier hidden). */
-  milkyWayScreen: { x: number; y: number; depth: number } | null;
-  /** Selected body projected to screen + its apparent radius in CSS pixels —
-   *  anchors the planet info popup beside the body. */
-  selectedScreen: { x: number; y: number; rPx: number } | null;
-}
-
 /** The simulation clock, owned by the page and read by the canvas every
  *  frame — a mutable cell, so ticking it never re-renders anything. */
 export interface EpochRef {
@@ -129,8 +107,6 @@ export interface SolarSystemCanvasProps {
   /** When set, camera orbits this body at low altitude (system view when null). */
   focusBodyId: SolarBodyId | null;
   onSelect: (id: SolarBodyId | null) => void;
-  /** Streams the cosmic tier blend + projected anchor screen positions every frame. */
-  onCosmicView?: (view: CosmicView) => void;
   /** Fired when the user clicks the Milky Way disk at the galactic tier —
    *  the page then animates the camera back into the solar system. */
   onZoomToSun?: () => void;
@@ -161,29 +137,6 @@ function projectInto(worldPos: THREE.Vector3, camera: THREE.Camera, cssWidth: nu
   out.y = (-v.y * 0.5 + 0.5) * cssHeight;
   out.depth = v.z;
   return true;
-}
-
-function projectToScreen(
-  worldPos: THREE.Vector3,
-  camera: THREE.Camera,
-  cssWidth: number,
-  cssHeight: number,
-): ScreenPoint | null {
-  const out = { x: 0, y: 0, depth: 0 };
-  return projectInto(worldPos, camera, cssWidth, cssHeight, out) ? out : null;
-}
-
-function localToScreen(
-  local: THREE.Vector3,
-  parent: THREE.Object3D,
-  camera: THREE.Camera,
-  cssWidth: number,
-  cssHeight: number,
-): { x: number; y: number; depth: number } | null {
-  const world = projScratch.copy(local);
-  parent.updateMatrixWorld();
-  world.applyMatrix4(parent.matrixWorld);
-  return projectToScreen(world, camera, cssWidth, cssHeight);
 }
 
 /** Surface gravity (m/s²) and atmosphere top (× radius) for the flight
@@ -238,7 +191,6 @@ export function SolarSystemCanvas({
   selectedId,
   focusBodyId,
   onSelect,
-  onCosmicView,
   onZoomToSun,
   zoomTo,
   onZoomToConsumed,
@@ -253,7 +205,6 @@ export function SolarSystemCanvas({
   const selectedRef = useRef(selectedId);
   const focusRef = useRef(focusBodyId);
   const onSelectRef = useRef(onSelect);
-  const onCosmicViewRef = useRef(onCosmicView);
   const onZoomToSunRef = useRef(onZoomToSun);
   const zoomToRef = useRef(zoomTo);
   const onZoomToConsumedRef = useRef(onZoomToConsumed);
@@ -271,7 +222,6 @@ export function SolarSystemCanvas({
   selectedRef.current = selectedId;
   focusRef.current = focusBodyId;
   onSelectRef.current = onSelect;
-  onCosmicViewRef.current = onCosmicView;
   onZoomToSunRef.current = onZoomToSun;
   zoomToRef.current = zoomTo;
   onZoomToConsumedRef.current = onZoomToConsumed;
@@ -643,8 +593,13 @@ export function SolarSystemCanvas({
           if (textureLoadsCancelled || detailLoaded.has(id) || id === 'sun') return;
           const mesh = meshById.get(id);
           if (mesh) {
-            disposeMat(mesh.material as THREE.Material);
+            // The night map is shared and outlives this material: hand it
+            // back before the material is freed, as the success path does.
+            const failed = mesh.material as THREE.MeshStandardMaterial;
+            if (failed.emissiveMap === earthNightTex) failed.emissiveMap = null;
+            disposeMat(failed);
             mesh.material = createPlanetMaterial(id, lite, null);
+            if (id === 'earth') applyEarthNight();
           }
         },
       );
@@ -1505,44 +1460,6 @@ export function SolarSystemCanvas({
       // flying — they just draw lines across the thing you came to look at,
       // so they fade away as the camera closes on the subject.
       setOrbitRingsFade(orbitRings, ship ? 0.14 : focus ? 0 : THREE.MathUtils.clamp((sysRadius - 9) / 9, 0, 1));
-
-      // Stream the view + projected anchor positions to the parent so it
-      // can place the Sun pin / Milky Way tap label as HTML overlays.
-      const onView = onCosmicViewRef.current;
-      if (onView && !flightActive) {
-        const width = mount.clientWidth;
-        const height = mount.clientHeight;
-        const sunWorld = sunMesh ? sunMesh.position : new THREE.Vector3();
-        const sunScreen = projectToScreen(sunWorld, camera, width, height);
-        // Anchored on the galactic centre, not on us: the Sun already has
-        // its own pin out in the Orion Spur, and labelling the galaxy at our
-        // position read as though the Milky Way were something we sit beside.
-        const mwAnchor = galaxyDisk.group.visible
-          ? localToScreen(galaxyDisk.center, galaxyDisk.group, camera, width, height)
-          : null;
-        // Selected body anchor + apparent radius — the planet popup docks
-        // beside the body instead of covering the map.
-        let selectedScreen: { x: number; y: number; rPx: number } | null = null;
-        const sel = selectedRef.current;
-        const selMesh = sel ? meshById.get(sel) : undefined;
-        if (sel && selMesh) {
-          const p = projectToScreen(selMesh.position, camera, width, height);
-          if (p) {
-            const dist = camera.position.distanceTo(selMesh.position);
-            const rPx =
-              (worldRadiusForBody(sel) / Math.max(dist, 1e-6)) *
-              (height / 2) /
-              Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
-            selectedScreen = { x: p.x, y: p.y, rPx };
-          }
-        }
-        onView({
-          ...currentTier,
-          sunScreen,
-          milkyWayScreen: mwAnchor,
-          selectedScreen,
-        });
-      }
 
       postFx.render(dtSec);
       if (!readyFired) {

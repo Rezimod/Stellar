@@ -970,7 +970,11 @@ export function makeAlienEncounters(): AlienHandle {
           (o.material as THREE.SpriteMaterial).dispose();
         }
       });
+      // The pooled bolts swap between the two sets, so the traverse above
+      // only ever frees whichever they are holding: free all four by name.
+      boltMat.dispose();
       boltMatRed.dispose();
+      boltGeom.dispose();
       boltGeomLong.dispose();
       glowTex.dispose();
     },

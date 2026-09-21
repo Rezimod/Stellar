@@ -48,7 +48,6 @@ export interface RoverParts {
 }
 
 export type RoverGear = 'creep' | 'cruise' | 'sprint' | 'ion';
-export const ROVER_GEARS: RoverGear[] = ['creep', 'cruise', 'sprint', 'ion'];
 
 interface GearSpec {
   top: number;

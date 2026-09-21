@@ -1,12 +1,102 @@
 # Explore Mode — Architecture & Audit
 
-State of `origin/main` at `ff33a41` (2026-09-17), written for Phase 0 of `EXPLORE-UPGRADE-PLAN.md`. It describes what exists, what it costs, and what is broken or missing against the lunar vertical slice. Later phases update it. The final pass is Phase 12.
+Two layers. **§0 is the state now**, at the end of Phase 12 of `EXPLORE-UPGRADE-PLAN.md`. **§1–§6 are the Phase 0 audit** of `origin/main` at `ff33a41` (2026-09-17) — the findings list and the per-phase checklist that the work was pulled from, kept as the record of what was wrong and which phase fixed it. Where the two disagree, §0 is what the code does.
 
 - **Size:** `src/lib/solar-system/` has 96 modules. With `src/components/solar-system/` (14 files) the total is about 35.6k lines.
 - **Largest files:** `scene-extras.ts` (2679), `player-ship.ts` (2458), `SolarSystemCanvas.tsx` (1605), `galactic-scene.ts` (1548), `moon-surface.ts` (1309).
 - **Verification:** every finding cites lines that were read. The top P1 claims were re-checked by hand, and the numbers come from the bench (§3).
 
+## 0. State at Phase 12 (2026-09-21, `explore/lunar-slice`)
+
+Phases 0–8 are on `origin/main` (`4900130` + `c74816e`); 9, 10, 11 and 12 are on `explore/lunar-slice`, pushed and awaiting review. Nothing here has been merged or deployed.
+
+- **Size:** `src/lib/solar-system/` has 110 modules; with `src/components/solar-system/` (16), `src/game/` (12), `src/components/play/` (10) and `src/lib/multiplayer/` the total is about 42.7k lines. 74 test files, 711 tests.
+- **Largest files:** `scene-extras.ts` (2753), `player-ship.ts` (2639), `SolarSystemCanvas.tsx` (1633), `galactic-scene.ts` (1548), `moon-surface.ts` (1367).
+- **Models:** eight glTF files in `public/explore/models/` (cosmonaut 1.4 MB, base kit 1.4 MB, ship-stellar 0.9 MB, rover 0.5 MB, ship-fighter 0.5 MB, lander 0.4 MB, ship-cruiser 0.35 MB, crate 0.1 MB), all meshopt-compressed with WebP atlases, built by `assets-src/blender/*.py`.
+
+### 0.1 The game, as it is now
+
+```
+/solar-system   the guide: the orrery, SEO copy, and a Launch key → /play
+/play           middleware header → its own minimal document (Privy + next-intl only)
+                └ PlayClient → GameShell ─ src/game/state.ts: boot → title → loading → playing ⇄ paused → exiting
+                                          ├ TitleScreen · PauseMenu · SettingsPanel · ControlsPanel · MissionsPanel
+                                          ├ CosmicLoader (real stage progress)
+                                          └ GameWorld ─ one scene at a time, keyed by the checkpoint
+                                             ├ SolarSystemCanvas (WebGL ctx #1; unmounted while a surface is up)
+                                             │   orrery · galactic tiers · flight world · remote fleet
+                                             ├ PlayerShip (the deck) ─ player-ship.ts · ship-mesh · flight-camera
+                                             │   flight-input · flight-audio · flight-missions · flight-targeting
+                                             │   star-routes · aliens · flight-approach (the arrival)
+                                             ├ MoonSurface  ─ makeMoonSurface  ┐ both on surface-host.ts
+                                             └ WorldSurface ─ makeWorldSurface ┘ (renderer, camera, sun + shadow
+                                                 box, light pool, post, perf + governor, live quality preset,
+                                                 loop, visibility, pause, context loss, compile, release)
+```
+
+- **One state machine** (`src/game/state.ts`), not booleans: `game.travel()`, `game.pause()`, `game.restart()`, `game.exit()`. The checkpoint (`src/game/save.ts`) records the scene; `progress('ready')` writes it.
+- **One quality authority** (`src/game/quality.ts`): three presets, `auto` picked from device signals, a governed floor the runtime governor can lower (never raise), and a preset the player names in Settings that overrides both. `surface-host` applies a change live for everything the renderer owns; build-time detail (props, stars, LOD distances) follows on the next scene.
+- **One frame accountant** (`moon-perf.ts`): stats every frame, a pixel-ratio governor in quarter steps, and `onOverBudget` for the preset step. `?fixedpx` pins it for benches.
+- **One interaction resolver** (`moon-interactions.ts`) shared by the Moon and the worlds: priority, facing, distance; `tap` / `hold` with progress; `requires` blocks rather than hides.
+- **One mission engine** (`missions.ts` + `mission-store.ts`), five Moon missions in `moon-missions.ts`, their props in `moon-mission-props.ts`.
+- **One model cache** (`src/game/models.ts`): ref-counted glTF, meshopt, `keepNodes` for skinned meshes and named empties, and a prefetch that rides the arrival.
+- **Records, not rewards** (`achievements.ts`): a `RewardSink` interface with a localStorage implementation behind it. No network, no chain.
+- **Multiplayer** rides in `GameWorld`: one `RoomLink`, Supabase Realtime, remote crews on the surfaces and a remote fleet in flight.
+
+### 0.2 Persistence (all of Explore)
+
+| Key | Owner | Shape |
+|---|---|---|
+| `stellar_explore_settings` | `game/settings.ts` | `{v, quality, sensitivity, invertY, fov}` |
+| `stellar_explore_save` | `game/save.ts` | `{v, scene, savedAt}` — the checkpoint |
+| `stellar_explore_achievements_v1` | `achievements.ts` | one record per finished mission |
+| `stellar_explore_arrival` | `PlayerShip.tsx` | the arrival has been watched once |
+| `stellar_explore_help` / `stellar_hud_layout_v2` | `PlayerShip.tsx` | help seen; touch deck layout |
+| `stellar_sound` / `stellar_sound_level` | `sound-prefs.ts` | the switch and the master level |
+| `stellar_moon_missions_v1` | `mission-store.ts` | `{done[], rewards[], active}` |
+| `stellar_moon_expedition_v2` (migrates `_v1`) | `moon-mission.ts` | the older five-act expedition |
+| `stellar_moon_jobs_v1` | `moon-jobs.ts` | `{done[]}` |
+| `stellar_moon_backrooms_v1` | `backrooms-save.ts` | `{discovered, escaped, entries, lastSeconds, bestSeconds}` |
+| `stellar_tbilisi_expedition_v1` | `world-earth-expedition.ts` | `{stage, found[], parts, aligned}` |
+| `stellar_proxima_contact` | `world-surface.ts` | ISO date; written, never read |
+| `stellar_expedition_log` | `flight-missions.ts` | discovery ids |
+
+### 0.3 Dev hooks (development builds only)
+
+- Query: `/play?orbit`, `?moon`, `?land=mars|proximaB|earth`, `?fixedpx`, `?backrooms=fall`.
+- Window: `__stellarGame` (the state machine), `__stellarQuality` (`level`, `governed`, `step`, `pretend`), `__stellarMoon`, `__stellarWorld`, `__stellarFlight`, `__stellarOrrery`, `__stellarRoom`.
+- Harnesses in `scripts/`: `explore-bench.mjs` (6 scenarios), `explore-smoke.mjs` (the shell), `explore-camera.mjs`, `explore-memtest.mjs`, `explore-arrival.mjs` (phase 9), `explore-hud.mjs` (phase 10), `explore-mobile.mjs` (phase 11), `explore-e2e.mjs` (phase 12: the slice, then the explicit checks).
+
+### 0.4 Performance, Phase 0 → Phase 12
+
+Draw calls and triangles repeat run to run (±3) and are the durable comparison. Frame time depends on what else the machine is doing, so both columns carry their load average. The final run (`phase12-final`) was taken on a quiet machine; two earlier Phase 12 runs under load 20–55 reproduced every count exactly and read 33–117 ms.
+
+| Scenario | Draw calls 0 → 12 | Triangles 0 → 12 | Median ms 0 → 12 | p95 ms |
+|---|---|---|---|---|
+| a orrery | 207 → **153** | 279,810 → **272,410** | 33.4 → **16.7** | 100.0 → 16.8 |
+| b flight near Earth | 189 → **88** | 86,064 → **79,254** | 50.0 → **16.7** | 83.4 → 33.3 |
+| c Moon at lander | 568 → **311** | 511,391 → **207,316** | 66.7 → **16.7** | 83.3 → 33.4 |
+| d Moon facing base | 534 → **286** | 498,991 → **202,775** | 66.6 → **16.7** | 66.7 → 33.4 |
+| e Moon driving rover | 481 → **179** | 457,935 → **160,463** | 83.3 → **16.7** | 100.1 → 16.8 |
+| f Mars base | 305 → **95** | 379,203 → **123,890** | 50.0 → **16.7** | 66.7 → 16.7 |
+
+Phase 0 ran at load 16–33, Phase 12 at 5.8–9.1: the frame times are not measured under the same weather, and the counts are. Draw calls are down 46–71 %, triangles up to 68 %, and every scenario now holds 60 fps on the Iris Plus 640 when the machine is otherwise idle. One outlier stands in the record: Mars's worst frame in that run was 4.2 s, a single upload stall as the scene opened.
+
+### 0.5 Known limitations at Phase 12
+
+- **The arrival's longest frame is over the 100 ms the plan asked for**: 1067–1183 ms at load 8–17, 2.9 s at load 25. The planet maps decode off the main thread now (`texture-load.ts`); what is left is the GPU upload, which cannot leave it, and the glTF parse behind the prefetch.
+- **`TODO(explore-slice)` — one, in `achievements.ts`**: records are self-reported and worth nothing on chain. A verified one needs a server (see `docs/reputation-economy.md`).
+- **Selecting a planet in the orrery shows no facts** and no "observe tonight" link (A20). `PlanetDetailPanel`, `planet-data.ts` and `planet-visibility.ts` were built for it, were never rendered, and were deleted in Phase 12 — they are in git history if that screen is built.
+- **The other worlds have no missions.** Mars, Proxima b and Tbilisi have places, people and things to use; the mission engine supports them, and the content is out of this plan's scope.
+- **Mid-act progress is not saved**: drill depth, the active job step, rover battery and position, the ship kind and camera zoom all reset. Missions, jobs, records and the checkpoint survive.
+- **`stellar_proxima_contact` is written and never read** (E18).
+- **Lint is not configured** — the repo has no ESLint config, so no run has ever claimed lint passed.
+- **`world-earth-life.test.ts` "a car stops for someone standing in the road" is flaky**: one failure in a full suite run on 2026-09-21, passing on three runs of its own and every run since.
+
+
 ## 1. System map
+
+*(Phase 0, 2026-09-17. The shape now is §0.1.)*
 
 ```
 /solar-system  page.tsx → SolarSystemPageClient (dynamic, ssr:false) → SolarSystemExplorer
@@ -82,6 +172,8 @@ node scripts/explore-bench.mjs --url http://localhost:3000 [--only a,c] [--label
 
 ## 3. Phase 0 baseline
 
+*(The final numbers are in §0.4.)*
+
 Machine: Intel Iris Plus 640 (i7-7660U), ANGLE Metal, headless, 1280×800 @ DPR 1, dev build. 2026-09-17, worktree `ff33a41`.
 
 **Run 1 (`baseline-1`, 12:14–12:18, load 16–33): this is the reference.**
@@ -122,6 +214,8 @@ Moon hook `perf()` in run 1:
 
 
 ## 4. Systems
+
+*(Phase 0. Every block below describes `ff33a41`; what each phase changed is in `EXPLORE-UPGRADE-PROGRESS.md`, and the state now is §0.)*
 
 One block per system: entry point, owning modules, data flow, per-frame cost, known problems. Finding IDs in brackets refer to §5.
 
@@ -1098,20 +1192,18 @@ Draw calls after this phase (probe, DPR 1, 1280×800): orrery 195 → 153, fligh
 - [ ] C03: the scene rebuilds on a locale change, if not closed in 0.5.
 
 ### Phase 11 — mobile + adaptive quality
-- [ ] C08 / E19 (P2): presets from device signals. The governor can step presets, not just DPR.
-- [ ] E19: context loss sends the player back to the pad. Restore from a checkpoint.
-- [ ] A03 (P1): 4K texture memory on mobile.
-- [ ] B18 / B06: touch layout split out of `PlayerShip`.
-- [ ] D26: memory while in the Backrooms.
+- [x] C08 / E19 (P2): `detectQuality(deviceSignals())` picks the preset; `moon-perf.onOverBudget` → `stepQualityDown()` takes a whole level once the pixel ratio is at its floor, under `auto` only and never upwards.
+- [x] E19: a lost context rebuilds the scene in place and comes back on the surface with the mission progress intact (checked in `explore-mobile.mjs` and again in `explore-e2e.mjs`).
+- [x] A03 (P1): the detail (4K) maps are never fetched on a low-data connection or during an arrival, and mobile starts on `performance`; the decode is off the main thread (`texture-load.ts`).
+- [ ] B18 / B06: the touch layout still lives in `PlayerShip` for flight; the surfaces' deck is in `MoonSurface`/`WorldSurface` and shares `GameStick` + `surface-controls`.
+- [ ] D26: memory while in the Backrooms — not measured; the three-visit heap check covers the surface only.
 
 ### Phase 12 — QA + cleanup
-- [ ] Dead code:
-  - A20: `PlanetDetailPanel`, `saturn-rings.ts` and the `onCosmicView` path.
-  - B14: `radio.ts`, if not reused.
-- [ ] Duplication:
-  - A22: gravity tables and sprite generators.
-  - B16: camera zoom constants.
-  - A25: redundant ref effects.
-- [ ] A19 (P3): Earth texture error path disposes the shared night map.
-- [ ] B13 (P3): alien bolt geometry and material dispose.
-- [ ] B09: confirm the combat gating from 0.5 holds end to end.
+- [x] Dead code:
+  - A20: `PlanetDetailPanel.tsx`, `planet-data.ts`, `planet-visibility.ts`, `saturn-rings.ts` and the whole `onCosmicView` projection path (with `projectToScreen` / `localToScreen`) deleted.
+  - B14: `radio.ts` deleted — nothing imported it.
+  - Also: `loadedModelCount`, `ROVER_GEARS`, `mixRgb`, `rgbStr`; 23 dead i18n keys in both locales; 96 CSS rules (15.5 kB) for markup that no longer exists.
+- [ ] Duplication: A22 (gravity tables and sprite generators), B16 (camera zoom constants) and A25 (redundant ref effects) are left as they are — each is a refactor across live systems, which is not what a QA phase is for.
+- [x] A19 (P3): the failed-texture path hands the shared night map back before disposing the material, and re-applies it.
+- [x] B13 (P3): all four bolt geometries and materials are freed by name, whichever set the pool is holding.
+- [x] B09: checked end to end in `explore-e2e.mjs` — `session.combat` is false at `/play` and the fire key is not in the DOM.

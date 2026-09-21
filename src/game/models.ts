@@ -90,11 +90,6 @@ export function acquireModel(url: string, keepNodes = false): Promise<ModelHandl
   return e.promise.then((scene) => ({ scene, release }), (err: unknown) => { release(); throw err; });
 }
 
-/** How many models are held right now; the memory test reads it. */
-export function loadedModelCount(): number {
-  return cache.size;
-}
-
 /** The full-detail mesh of a model (the one not named as a LOD), for an instanced prop. */
 export function firstMesh(root: THREE.Object3D): THREE.Mesh | null {
   let found: THREE.Mesh | null = null;

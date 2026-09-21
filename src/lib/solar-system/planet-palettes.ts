@@ -27,19 +27,3 @@ export function hexToRgb(hex: string): [number, number, number] {
   return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
 }
 
-export function mixRgb(
-  a: [number, number, number],
-  b: [number, number, number],
-  t: number,
-): [number, number, number] {
-  const u = Math.max(0, Math.min(1, t));
-  return [
-    Math.round(a[0] + (b[0] - a[0]) * u),
-    Math.round(a[1] + (b[1] - a[1]) * u),
-    Math.round(a[2] + (b[2] - a[2]) * u),
-  ];
-}
-
-export function rgbStr(c: [number, number, number], alpha = 1): string {
-  return alpha < 1 ? `rgba(${c[0]},${c[1]},${c[2]},${alpha})` : `rgb(${c[0]},${c[1]},${c[2]})`;
-}
