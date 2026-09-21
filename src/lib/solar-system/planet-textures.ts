@@ -99,6 +99,30 @@ function injectWorldVaryings(shader: CompiledShader) {
  *  is a single slot. */
 type ShaderMutator = (shader: CompiledShader) => void;
 
+/**
+ * Keeps a sunlit surface under the bloom threshold (0.85, post-processing.ts),
+ * which was only ever true of the dimmer worlds: the Sahara, the Moon's
+ * highlands and the brightest cloud decks went over it, and up close — where
+ * there is a screen of them — the bloom turned the view into a white haze.
+ * A soft shoulder on the brightest channel, so hue holds and nothing under
+ * the knee changes at all.
+ */
+const highlightShoulder: ShaderMutator = (shader) => {
+  shader.fragmentShader = shader.fragmentShader.replace(
+    '#include <opaque_fragment>',
+    /* glsl */ `{
+      const float knee = 0.5;
+      const float ceiling = 0.78;
+      float peak = max(outgoingLight.r, max(outgoingLight.g, outgoingLight.b));
+      if (peak > knee) {
+        float room = ceiling - knee;
+        outgoingLight *= (knee + room * (1.0 - exp(-(peak - knee) / room))) / peak;
+      }
+    }
+    #include <opaque_fragment>`,
+  );
+};
+
 /** Earth: city lights only on the hemisphere facing away from the Sun. */
 const earthNight: ShaderMutator = (shader) => {
   injectWorldVaryings(shader);
@@ -349,6 +373,7 @@ function ringShadow(): ShaderMutator {
 
 function applyHooks(id: SolarBodyId, mat: THREE.MeshStandardMaterial, lite: boolean) {
   const mutators: ShaderMutator[] = [];
+  if (id !== 'sun') mutators.push(highlightShoulder);
   if (id === 'earth') mutators.push(earthNight);
   const wind = WIND_FIELD[id];
   if (wind) mutators.push(gasGiantAtmosphere(id, wind, lite));

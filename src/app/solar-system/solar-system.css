@@ -673,6 +673,37 @@
   gap: 5px;
 }
 .flight-hud__comms[hidden] { display: none; }
+
+/* ── The popup: on a phone, whatever needs saying comes up at the top of the
+   glass and goes again, instead of living in a card on the deck. ── */
+.flight-hud__toast {
+  position: absolute;
+  top: calc(var(--edge-top) + 64px);
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: calc(100% - 2 * var(--gutter));
+  width: max-content;
+  padding: 8px 14px;
+  border: 1px solid var(--hud-line);
+  border-radius: 999px;
+  background: var(--hud-deep);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  font-size: 12px;
+  line-height: 1.35;
+  text-align: center;
+  animation: flight-toast-in 0.28s cubic-bezier(0.2, 0.9, 0.3, 1.1) both;
+}
+.flight-hud__toast[hidden] { display: none; }
+.flight-hud__toast[data-tone='warn'] { border-color: rgba(255, 150, 120, 0.6); color: #ffd2c4; }
+.flight-hud__toast[data-tone='ok'] { border-color: color-mix(in srgb, var(--terracotta) 60%, transparent); color: var(--hud-ink); }
+@keyframes flight-toast-in {
+  from { opacity: 0; transform: translate(-50%, -8px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .flight-hud__toast { animation: none; }
+}
 .flight-hud__comms-from { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--hud-accent); }
 .flight-hud__comms p { margin: 0; font-size: 12px; line-height: 1.5; }
 
@@ -762,7 +793,7 @@
   gap: 10px;
   grid-template-areas: 'land' 'keys' 'console';
 }
-.flight-hud__prompts { grid-area: land; display: flex; gap: 8px; }
+.flight-hud__prompts { grid-area: land; justify-self: start; display: flex; align-items: flex-end; gap: 8px; }
 .flight-hud .flight-hud__dock-key { border-color: rgba(77, 163, 255, 0.55); color: var(--hud-accent); }
 .flight-hud .flight-hud__dock-key[data-on='true'] { background: rgba(77, 163, 255, 0.2); }
 
@@ -778,13 +809,15 @@
   white-space: nowrap;
   animation: moon-impact 0.5s ease-out both;
 }
+/* The way down: a small key at the left of the dock, not a card over the ship. */
 .flight-hud .flight-hud__land {
   --land: 0;
   height: auto;
-  min-width: 260px;
-  padding: 10px 14px 10px 10px;
-  gap: 12px;
-  border-radius: var(--hud-radius);
+  width: max-content;
+  max-width: min(236px, calc(100cqw - 2 * var(--gutter)));
+  padding: 6px 11px 6px 6px;
+  gap: 9px;
+  border-radius: 14px;
   border-color: color-mix(in srgb, var(--terracotta) 55%, transparent);
   background: var(--hud-deep);
   color: var(--hud-ink);
@@ -796,20 +829,19 @@
   display: grid;
   place-items: center;
   flex: none;
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
   background: color-mix(in srgb, var(--terracotta) 22%, transparent);
   color: var(--terracotta);
 }
 .flight-hud__land[data-ready='true'] .flight-hud__land-icon { animation: land-icon-bob 1.4s ease-in-out infinite; }
-.flight-hud__land-text { display: grid; gap: 3px; min-width: 0; flex: 1; }
-.flight-hud__land-title { font-size: 14px; line-height: 1.2; }
-.flight-hud__land-place { font-size: 12px; color: var(--hud-dim); line-height: 1.2; }
+.flight-hud__land-text { display: grid; gap: 2px; min-width: 0; flex: 1; }
+.flight-hud__land-title { font-size: 12px; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .flight-hud__land-gauge {
   position: relative;
-  height: 3px;
-  margin-top: 4px;
+  height: 2px;
+  margin-top: 2px;
   border-radius: 2px;
   background: var(--hud-line);
   overflow: hidden;
@@ -822,19 +854,19 @@
   transform-origin: left;
   transition: transform 0.2s linear;
 }
-.flight-hud__land-state { font-family: var(--font-mono, ui-monospace, monospace); font-size: 12px; color: var(--hud-dim); }
+.flight-hud__land-state { font-family: var(--font-mono, ui-monospace, monospace); font-size: 11px; line-height: 1.2; color: var(--hud-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .flight-hud__land[data-ready='true'] .flight-hud__land-state { color: var(--terracotta); }
 .flight-hud__land-key {
   flex: none;
   display: grid;
   place-items: center;
-  width: 30px;
-  height: 30px;
+  width: 24px;
+  height: 24px;
   border: 1px solid var(--hud-line);
-  border-bottom-width: 3px;
-  border-radius: 8px;
+  border-bottom-width: 2px;
+  border-radius: 6px;
   font-family: var(--font-mono, ui-monospace, monospace);
-  font-size: 13px;
+  font-size: 12px;
   color: var(--hud-ink);
 }
 /* Over a world you could land on but are too high for: the card is there, so
@@ -1010,9 +1042,17 @@
 .flight-hud[data-touch='true'] .flight-hud__key--fire { right: 0; bottom: 0; width: calc(var(--key) * 1.45); height: calc(var(--key) * 1.45); border-color: rgba(77, 163, 255, 0.45); background: rgba(14, 26, 48, 0.72); }
 .flight-hud[data-touch='true'] .flight-hud__key--fire svg { color: var(--hud-ink); }
 .flight-hud[data-touch='true'] .flight-hud__key--fire:active { background: rgba(77, 163, 255, 0.35); }
-.flight-hud[data-touch='true'] .flight-hud__key:nth-of-type(2) { right: calc(var(--key) * 1.7); bottom: calc(var(--key) * 0.1); }
-.flight-hud[data-touch='true'] .flight-hud__key:nth-of-type(3) { right: calc(var(--key) * 0.2); bottom: calc(var(--key) * 1.7); }
+/* Placed by name: counted, they slid round a slot when the fire key was not
+   there (combat off), and the boost key lost its place altogether. */
+.flight-hud[data-touch='true'] .flight-hud__keys [data-place='boost'] { right: calc(var(--key) * 1.7); bottom: calc(var(--key) * 0.1); }
+.flight-hud[data-touch='true'] .flight-hud__keys [data-place='brake'] { right: calc(var(--key) * 0.2); bottom: calc(var(--key) * 1.7); }
 .flight-hud[data-touch='true'] .flight-hud__gear-slot { right: calc(var(--key) * 1.85); bottom: calc(var(--key) * 1.6); }
+/* No fire key: three keys in a tight corner — brake under the thumb, boost
+   beside it, the gear above — instead of round a gap for a key that is not there. */
+.flight-hud[data-touch='true'] .flight-hud__keys[data-combat='false'] { width: calc(var(--key) * 2.3); height: calc(var(--key) * 2.3); }
+.flight-hud[data-touch='true'] .flight-hud__keys[data-combat='false'] [data-place='brake'] { right: 0; bottom: 0; }
+.flight-hud[data-touch='true'] .flight-hud__keys[data-combat='false'] [data-place='boost'] { right: calc(var(--key) * 1.22); bottom: 0; }
+.flight-hud[data-touch='true'] .flight-hud__keys[data-combat='false'] .flight-hud__gear-slot { right: 0; bottom: calc(var(--key) * 1.22); }
 
 /* ── Phones: the dock is two rows — stick and cluster, then the console
    bar. Everything is sized off --stick and --key so the whole band fits a
@@ -1036,6 +1076,44 @@
   .flight-hud__sys-name { font-size: 9px; }
   .flight-hud__systems { gap: 6px; min-width: 52px; }
   .flight-hud { --key: clamp(44px, 13cqw, 52px); }
+}
+/* ── A phone either way up — narrow, or turned on its side and short. The
+   deck keeps to the edges and the universe gets the middle: the heading is
+   one line and a pair of numbers, the jump is a round key under the menu,
+   the standing order and the ship's alerts come up as the popup, and the
+   console is a pill, not a band. (PlayerShip's `compact` is the same test.) ── */
+@container viewport (max-width: 599px) or (max-height: 500px) {
+  .flight-hud[data-touch='true'] .flight-hud__title { font-size: 16px; }
+  .flight-hud[data-touch='true'] .flight-hud__sub,
+  .flight-hud[data-touch='true'] .flight-hud__status,
+  .flight-hud[data-touch='true'] .flight-hud__reading > span { display: none; }
+  .flight-hud[data-touch='true'] .flight-hud__readings { display: flex; gap: 12px; margin-top: 2px; }
+  .flight-hud[data-touch='true'] .flight-hud__reading { gap: 5px; }
+  .flight-hud[data-touch='true'] .flight-hud__reading > b { font-size: 12px; }
+  .flight-hud[data-touch='true'] .flight-hud__side { width: auto; }
+  .flight-hud[data-touch='true'] .flight-hud__order { display: none; }
+  .flight-hud[data-touch='true'] .flight-drive__jump { width: var(--hud-round); height: var(--hud-round); padding: 0; border-radius: 50%; justify-content: center; }
+  .flight-hud[data-touch='true'] .flight-drive__jump .flight-hud__card-text,
+  .flight-hud[data-touch='true'] .flight-drive__jump .flight-hud__card-go { display: none; }
+  .flight-hud[data-touch='true'] .flight-drive__jump .flight-hud__card-icon { width: auto; height: auto; background: transparent; }
+  .flight-hud[data-touch='true'] .flight-drive__jump .flight-hud__dot { top: 5px; right: 5px; }
+  .flight-hud[data-touch='true'] .flight-hud__comms { top: calc(var(--edge-top) + 110px); }
+  .flight-hud[data-touch='true'] .flight-hud__console { width: auto; justify-self: center; gap: 10px; padding: 4px 12px 4px 5px; border-radius: 999px; }
+  .flight-hud[data-touch='true'] .flight-hud__radar { width: 34px; height: 34px; }
+  .flight-hud[data-touch='true'] .flight-hud__range { gap: 1px; }
+  .flight-hud[data-touch='true'] .flight-hud__console-value { font-size: 13px; }
+  .flight-hud[data-touch='true'] .flight-hud__speed { width: 54px; height: 54px; margin: -2px 0; }
+  .flight-hud[data-touch='true'] .flight-hud__speed-value { font-size: 14px; }
+  .flight-hud[data-touch='true'] .flight-hud__speed .flight-hud__console-label { display: none; }
+  .flight-hud[data-touch='true'] .flight-hud__systems { gap: 5px; min-width: 0; width: 64px; }
+  .flight-hud[data-touch='true'] .flight-hud__sys { grid-template-columns: 12px minmax(0, 1fr); gap: 5px; }
+  .flight-hud[data-touch='true'] .flight-hud__sys svg { width: 12px; height: 12px; }
+  .flight-hud[data-touch='true'] .flight-hud__sys-name { display: none; }
+  .flight-hud[data-touch='true'] .flight-hud__track { height: 4px; }
+}
+@container viewport (max-width: 599px) {
+  /* Upright, the menu keys stand in a column: the jump key is the third. */
+  .flight-hud[data-touch='true'] .flight-hud__side { top: calc(var(--edge-top) + (var(--hud-round) + 9px) * 2); }
 }
 @container viewport (max-width: 380px) {
   .flight-hud__rail-key > span:last-child { display: none; }

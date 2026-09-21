@@ -55,6 +55,11 @@ const ARRIVAL_SEEN = 'stellar_explore_arrival';
 /** On the first run the way out opens once the transit is behind them. */
 const ARRIVAL_SKIP_AFTER = 4.5;
 const ICONS = [Shield, Zap, ChevronsUp];
+/** How long a passing moment stays up in the popup. */
+const POPUP_MS = 4200;
+/** The ship's alerts that are a danger, and the ones that are good news. */
+const WARN_ALERTS = new Set(['proximity', 'solar', 'lowshield', 'shielddown', 'hullcritical', 'hostile', 'horizon', 'masslock']);
+const OK_ALERTS = new Set(['jumpready', 'arrived', 'docked', 'undocked']);
 /** The quick targets in the menu: a named world, or a kind to walk through.
  *  A key only shows when the system it is flown in has one. */
 interface RailKey {
@@ -119,7 +124,6 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, returnedFr
   const t = useTranslations('solarSystem.flight');
   const tb = useTranslations('solarSystem.bodies');
   const tl = useTranslations('solarSystem.loading');
-  const ts = useTranslations('solarSystem');
   const tips = useLoadingTips();
   const [sound, toggleSound] = useSoundPref();
   const [active, setActive] = useState(false);
@@ -159,6 +163,7 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, returnedFr
   const rangeLabelRef = useRef<HTMLSpanElement>(null);
   const rangeRef = useRef<HTMLSpanElement>(null);
   const statusRef = useRef<HTMLSpanElement>(null);
+  const toastRef = useRef<HTMLDivElement>(null);
   const markerRef = useRef<HTMLDivElement>(null);
   const markerNameRef = useRef<HTMLSpanElement>(null);
   const commsRef = useRef<HTMLDivElement>(null);
@@ -169,7 +174,6 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, returnedFr
   const orderBarRef = useRef<HTMLSpanElement>(null);
   const landRef = useRef<HTMLButtonElement>(null);
   const landTextRef = useRef<HTMLSpanElement>(null);
-  const landPlaceRef = useRef<HTMLSpanElement>(null);
   const landStateRef = useRef<HTMLSpanElement>(null);
   const landFillRef = useRef(-1);
   const dockRef = useRef<HTMLButtonElement>(null);
@@ -428,6 +432,16 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, returnedFr
     };
     resize();
     window.addEventListener('resize', resize);
+    // Turning the deck to landscape changes its box without a window resize.
+    const observer = new ResizeObserver(resize);
+    if (root) observer.observe(root);
+    // The popup's own memory: the last moment worth saying, and until when.
+    let popText = '';
+    let popTone = '';
+    let popUntil = 0;
+    let wasReady = false;
+    let lastOrder = '';
+    const pop = (value: string, tone: string, now: number) => { popText = value; popTone = tone; popUntil = now + POPUP_MS; };
     const name = (id: string) => SOLAR_IDS.has(id) ? tb(`${id}.name`) : t.has(`bodies.${id}`) ? t(`bodies.${id}`) : id.toUpperCase();
     const text = (el: HTMLElement | null, value: string) => { if (el && el.textContent !== value) el.textContent = value; };
     let raf = 0;
@@ -485,7 +499,6 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, returnedFr
         if (!landKey.hidden && landLabelRef.current !== label) {
           landLabelRef.current = label;
           text(landTextRef.current, t(`landOn.${tel.nearId}`));
-          text(landPlaceRef.current, ts(tel.nearId === 'moon' ? 'moon.place' : `worlds.${tel.nearId}.place`));
           text(landStateRef.current, ready ? t('landReady') : t('landDescend', { n: fmt(ceiling) }));
         }
         // How far down to the ceiling, on a log scale: full once under it.
@@ -534,6 +547,32 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, returnedFr
         dockKey.hidden = !show;
         dockKey.dataset.on = String(tel.docking);
         if (show) text(dockTextRef.current, t(tel.docking ? 'docking' : 'dock'));
+      }
+
+      // ── The popup. On a phone the deck keeps to the edges and leaves the
+      // glass to the view, so what matters comes up in the middle of it and
+      // goes again: the ship's own alerts for as long as they stand, and the
+      // moments the smaller deck no longer shows — low enough to land, a new
+      // standing order, the order done — for a few seconds each. `compact`
+      // is the stylesheet's own phone test: narrow, or turned on its side. ──
+      const compact = touch && (vw < 600 || vh < 501);
+      const landNow = canLand;
+      const orderKey = session.combat ? (tel.orderDone ? 'done' : tel.orderId) : '';
+      if (compact) {
+        if (landNow && !wasReady) pop(`${t(`landOn.${tel.nearId}`)} · ${t('landReady')}`, 'ok', now);
+        if (orderKey && orderKey !== lastOrder) pop(tel.orderDone ? t('orderDone') : t('order', { body: name(tel.orderId) }), tel.orderDone ? 'ok' : 'warn', now);
+      }
+      wasReady = landNow;
+      lastOrder = orderKey;
+      const toast = toastRef.current;
+      if (toast) {
+        const showing = !compact ? '' : status || (now < popUntil ? popText : '');
+        const tone = status ? (tel.crashed || WARN_ALERTS.has(tel.alert) ? 'warn' : OK_ALERTS.has(tel.alert) || tel.docked ? 'ok' : 'info') : popTone;
+        if (toast.hidden !== !showing) toast.hidden = !showing;
+        if (showing) {
+          text(toast, showing);
+          if (toast.dataset.tone !== tone) toast.dataset.tone = tone;
+        }
       }
 
       // The quick targets in the menu: one for every kind of thing this
@@ -615,7 +654,7 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, returnedFr
       }
     };
     raf = requestAnimationFrame(paint);
-    return () => { cancelAnimationFrame(raf); window.removeEventListener('resize', resize); };
+    return () => { cancelAnimationFrame(raf); window.removeEventListener('resize', resize); observer.disconnect(); };
   }, [active, paused, touch, session, t, tb]);
 
   const hold = (key: 'fire' | 'boost' | 'brake') => {
@@ -884,6 +923,7 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, returnedFr
             </div>
           )}
           <div ref={markerRef} className="flight-hud__marker" hidden><span ref={markerNameRef} /></div>
+          <div ref={toastRef} className="flight-hud__toast" role="status" aria-live="polite" hidden />
           <div ref={commsRef} className="flight-hud__comms" role="status" hidden>
             <span ref={commsFromRef} className="flight-hud__comms-from" />
             <p ref={commsTextRef} />
@@ -893,10 +933,9 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, returnedFr
           <div className="flight-hud__dock">
             <div className="flight-hud__prompts">
               <button ref={landRef} type="button" className="flight-hud__prompt flight-hud__land" {...tapKey(land)} hidden>
-                <span className="flight-hud__land-icon"><ArrowDownToLine size={18} aria-hidden /></span>
+                <span className="flight-hud__land-icon"><ArrowDownToLine size={15} aria-hidden /></span>
                 <span className="flight-hud__land-text">
                   <span ref={landTextRef} className="flight-hud__land-title">{t('landOn.moon')}</span>
-                  <span ref={landPlaceRef} className="flight-hud__land-place" />
                   <span className="flight-hud__land-gauge" aria-hidden><i /></span>
                   <span ref={landStateRef} className="flight-hud__land-state" />
                 </span>
@@ -916,7 +955,7 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, returnedFr
                 }} />}
               </div>
             )}
-            <div className="flight-hud__keys">
+            <div className="flight-hud__keys" data-combat={session.combat}>
               {touch ? (
                 <>
                   {session.combat && <button type="button" className="flight-hud__key flight-hud__key--fire" {...placed('fire')} {...hold('fire')} disabled={keysOff} aria-label={t('fire')} title={t('fire')}><Crosshair size={26} aria-hidden /><span>{t('fire')}</span></button>}

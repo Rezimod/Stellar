@@ -1078,6 +1078,47 @@ export function SolarSystemCanvas({
     // the next build, as it does on the surfaces.
     const offQuality = onQualityChange(onResize);
 
+    // How much of the glass a sunlit world is filling, eased: see worldGlare().
+    let bodyGlare = 0;
+    const toCam = new THREE.Vector3();
+    const toStar = new THREE.Vector3();
+    const camFwd = new THREE.Vector3();
+    /**
+     * A lit face is the brightest thing in the frame once it fills the glass:
+     * the surface does not get brighter as the ship closes, there is only
+     * more of it, burning out and blooming until the screen is a haze. Scored
+     * 0…1 as the share of the view the nearest lit world covers, times how
+     * much of what the camera sees of it is in daylight.
+     */
+    const worldGlare = (bodies: readonly FlightBody[]) => {
+      camera.getWorldDirection(camFwd);
+      const halfFov = THREE.MathUtils.degToRad(camera.fov) / 2;
+      let worst = 0;
+      for (const b of bodies) {
+        if (b.kind === 'star' || b.kind === 'blackhole' || b.kind === 'station' || b.destroyed) continue;
+        toCam.subVectors(camera.position, b.position);
+        const d = toCam.length();
+        if (d <= b.radius) continue;
+        const ang = Math.asin(b.radius / d);
+        // Behind the camera, or out past the edge of the view: not in the frame.
+        const off = Math.acos(THREE.MathUtils.clamp(-toCam.dot(camFwd) / d, -1, 1));
+        if (off > halfFov * 1.4 + ang) continue;
+        const cover = Math.min(1, (ang / halfFov) ** 2);
+        if (cover < 0.02) continue;
+        let star: FlightBody | null = null; let best = Infinity;
+        for (const s of bodies) {
+          if (s.kind !== 'star') continue;
+          const ds = s.position.distanceToSquared(b.position);
+          if (ds < best) { best = ds; star = s; }
+        }
+        if (!star) continue;
+        toStar.subVectors(star.position, b.position).normalize();
+        const lit = 0.5 + 0.5 * toCam.normalize().dot(toStar);
+        worst = Math.max(worst, cover * lit);
+      }
+      return worst;
+    };
+
     let raf = 0;
     let lastFrame = performance.now();
     const t0 = lastFrame;
@@ -1119,6 +1160,7 @@ export function SolarSystemCanvas({
       camera.far = ORBIT_FAR;
       camera.updateProjectionMatrix();
       renderer.toneMappingExposure = 1.18;
+      bodyGlare = 0;
     };
 
     // The flight model's view of the world: every solid body with its real
@@ -1391,8 +1433,11 @@ export function SolarSystemCanvas({
         markTargets(tel, world, camera);
         // Exposure adapts against the Sun: the closer and the more the nose
         // is on it, the further the iris closes, so the disc keeps a
-        // surface and the rest of the frame goes dark and dangerous.
-        renderer.toneMappingExposure = 1.18 - 0.62 * session!.telemetry.sunGlare;
+        // surface and the rest of the frame goes dark and dangerous. It
+        // closes the same way, less far, on a sunlit world that fills the
+        // glass, so a close pass keeps its colour instead of burning white.
+        bodyGlare += (worldGlare(world.bodies) - bodyGlare) * (1 - Math.exp(-dtSec * 2.5));
+        renderer.toneMappingExposure = Math.max(0.42, 1.18 - 0.62 * session!.telemetry.sunGlare - 0.5 * bodyGlare);
       } else if (focus && meshById.has(focus)) {
         vTarget.copy(meshById.get(focus)!.position);
         const pr = worldRadiusForBody(focus);
