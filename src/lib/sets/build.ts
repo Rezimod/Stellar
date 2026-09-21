@@ -35,6 +35,12 @@ export const JUDGING_NODE_ID = 'tbilisi-01';
 /** One placeholder until the art exists. */
 export const PLACEHOLDER_ART = '/cards/placeholder.svg';
 
+/** Rendered from Explore's own planet maps by tools/explore/render-card.ts —
+ *  art, not a Node 01 frame. Everything else is drawn from its record. */
+const RENDERED = new Set(['SATURN', 'MARS', 'JUPITER', 'VENUS']);
+
+export const isRendered = (artUrl: string | null | undefined) => Boolean(artUrl?.endsWith('.webp') && artUrl.startsWith('/cards/'));
+
 export function subjectOf(facts: Pick<CardSeed, 'targetId' | 'decDeg'>, optics: CardOptics): ObservabilitySubject {
   return { targetId: facts.targetId, decDeg: facts.decDeg ?? null, ...optics };
 }
@@ -50,7 +56,7 @@ export function authorCard(facts: CardFacts, optics: CardOptics): AuthoredCard {
       ...facts,
       observationStatus: judged.status,
       editionSize: EDITION_SIZE[facts.rarity],
-      artUrl: PLACEHOLDER_ART,
+      artUrl: RENDERED.has(facts.designation) ? `/cards/${facts.designation}.webp` : PLACEHOLDER_ART,
     },
     subject,
     observability: judged,

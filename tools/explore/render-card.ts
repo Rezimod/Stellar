@@ -47,6 +47,20 @@ const PRESETS: Partial<Record<CardObjectId, Preset>> = {
     lighting: { ...BASE_LIGHT },
     spin: 250,
   },
+  // The Great Red Spot turned toward the viewer, a thin crescent of night.
+  jupiter: {
+    designation: 'JUPITER',
+    camera: { ...BASE_CAMERA },
+    lighting: { ...BASE_LIGHT, azimuth: 35 },
+    spin: 0,
+  },
+  // A gibbous cloud deck: Venus shows no surface, so the phase is the picture.
+  venus: {
+    designation: 'VENUS',
+    camera: { ...BASE_CAMERA },
+    lighting: { ...BASE_LIGHT, azimuth: 70 },
+    spin: 0,
+  },
   europa: {
     designation: 'EUROPA',
     camera: { ...BASE_CAMERA },

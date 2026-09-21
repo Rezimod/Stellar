@@ -10,6 +10,7 @@ import Rule from '@/components/sidera/ui/Rule';
 import { getDb } from '@/lib/db';
 import { formatDec, formatRa } from '@/lib/observatory/telescope-targets';
 import { rarityInfo, type Rarity } from '@/lib/rarity';
+import { isRendered } from '@/lib/sets/build';
 import { SET_001_CARD_BY_DESIGNATION } from '@/lib/sets/set-001';
 import { DIRECT_CARD_PRICE_GEL } from '@/lib/sidera/economics';
 import type { ObservationStatus } from '@/lib/sidera/observability';
@@ -93,6 +94,7 @@ export default async function CardPage({ params }: { params: Promise<{ designati
                 data={[{ label: 'Editions', value: allocated === null ? `${seed.editionSize} editions` : `${allocated} of ${seed.editionSize}` }]}
               />
             </div>
+            {isRendered(seed.artUrl) && <p className="sd-label sd-figure__note">Rendered from mission maps · awaiting Node 01</p>}
           </figure>
 
           <div className="sd-card-page__col">

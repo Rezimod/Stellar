@@ -4,6 +4,8 @@ import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties }
 import CardPlate from './CardPlate';
 import type { Rarity } from '@/lib/rarity';
 import { RARITIES, isRarity, rarityInfo } from '@/lib/rarity';
+import { PLACEHOLDER_ART } from '@/lib/sets/build';
+import { SET_001_CARD_BY_DESIGNATION } from '@/lib/sets/set-001';
 
 export type RevealedCard = {
   drawIndex: number;
@@ -133,7 +135,7 @@ export default function SideraReveal({ draw }: { draw: Draw }) {
                 designation={c.designation}
                 name={c.name}
                 rarity={rarityOf(c)}
-                artUrl="/cards/placeholder.svg"
+                artUrl={SET_001_CARD_BY_DESIGNATION.get(c.designation)?.seed.artUrl ?? PLACEHOLDER_ART}
                 href={`/card/${c.designation}`}
                 data={[{ label: 'Edition', value: `No. ${pad(c.editionNumber)}` }]}
               />

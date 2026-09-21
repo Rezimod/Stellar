@@ -1,6 +1,8 @@
 import CardPlate from './CardPlate'
 import Caption from './ui/Caption'
 import type { Rarity } from '@/lib/rarity'
+import { PLACEHOLDER_ART } from '@/lib/sets/build'
+import { SET_001_CARD_BY_DESIGNATION } from '@/lib/sets/set-001'
 import { rarityInfo } from '@/lib/rarity'
 import type { CaptureSummary, HolderEdition } from '@/lib/sidera/repo'
 
@@ -39,7 +41,7 @@ export default function HolderCollection({ editions }: { editions: HolderEdition
               designation={e.designation}
               name={e.name}
               rarity={e.rarity as Rarity}
-              artUrl="/cards/placeholder.svg"
+              artUrl={SET_001_CARD_BY_DESIGNATION.get(e.designation)?.seed.artUrl ?? PLACEHOLDER_ART}
               href={`/card/${e.designation}`}
               data={[{ label: 'Edition', value: `No. ${pad(e.editionNumber)}` }]}
             />

@@ -9,6 +9,7 @@ import DataRow from '@/components/sidera/ui/DataRow';
 import Rule from '@/components/sidera/ui/Rule';
 import { getDb } from '@/lib/db';
 import { isRarity, type Rarity } from '@/lib/rarity';
+import { PLACEHOLDER_ART } from '@/lib/sets/build';
 import { SET_001_CARD_BY_DESIGNATION } from '@/lib/sets/set-001';
 import type { OpenedOutcome } from '@/lib/sidera/audit';
 import { readFullLog } from '@/lib/sidera/capsule';
@@ -121,7 +122,7 @@ export default async function CapsuleRecordPage({ params }: { params: Promise<{ 
                       designation={p.designation}
                       name={authored?.seed.name ?? p.designation}
                       rarity={isRarity(p.rarity) ? (p.rarity as Rarity) : 'common'}
-                      artUrl={authored?.seed.artUrl ?? '/cards/placeholder.svg'}
+                      artUrl={authored?.seed.artUrl ?? PLACEHOLDER_ART}
                       href={`/card/${p.designation}`}
                       data={[{ label: 'Edition', value: `No. ${pad(p.editionNumber)}` }]}
                     />

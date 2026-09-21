@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import CardArt from './CardArt';
 import { rarityInfo, type Rarity } from '@/lib/rarity';
+import { PLACEHOLDER_ART, isRendered } from '@/lib/sets/build';
 import type { Datum } from './ui/DataRow';
 import RarityMark from './ui/RarityMark';
 
@@ -38,10 +39,10 @@ export default function CardPlate({ designation, name, rarity, artUrl, data, hre
       <div className="sd-plate__frame">
         {!artUrl ? (
           <span className="sd-label">Not held</span>
-        ) : artUrl.startsWith('/cards/') ? (
+        ) : artUrl === PLACEHOLDER_ART ? (
           <CardArt designation={designation} />
         ) : (
-          <img src={artUrl} alt="" loading="lazy" decoding="async" />
+          <img src={artUrl} alt={isRendered(artUrl) ? `${name}, rendered` : ''} loading="lazy" decoding="async" />
         )}
       </div>
       <div className="sd-plate__body">
