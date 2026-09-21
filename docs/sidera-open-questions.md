@@ -108,3 +108,16 @@ most reversible option; each needs a yes/no from Rezi.
     and got a 503: the buy route refuses to quote without a recipient. The
     remaining part of Gate 3 needs a person, not a value: a signed-in stranger
     paying real SOL and opening what they bought.
+
+21. **Phase 7 — does the renderer carry card art?** Rendered 2026-09-21, the
+    three the plan names, then stopped. Saturn and Mars are usable
+    (`public/cards/SATURN.webp`, `MARS.webp`; not yet wired to any card).
+    Europa fails: Explore has no Europa map, so it comes out a plain beige
+    sphere, and the still was not kept. Across Set 001 the renderer can carry
+    about 4 objects well (Saturn, Mars, Jupiter, Venus), about 7 at the margin
+    (Pluto, the Great Red Spot, the four craters and Tranquility Base, all
+    limited by map resolution), and none of the 9 stars, clusters, nebulae and
+    galaxies — or Europa, until a public-domain Galileo mosaic is added. **For
+    the owner:** expand the renderer to the planets, or keep the drawn plates
+    for every card and commission an illustrator. The drawn plates stay live
+    until that is decided.
