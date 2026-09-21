@@ -85,3 +85,6 @@ docs/gita-grant-application.md
 docs/solana-foundation-georgia-grant-application.md
 docs/stellar-superteamgeo-grant-application-*.md
 docs/tether-grant-*.md
+
+# Visual QA screenshots (e2e/visual.spec.ts)
+qa/

@@ -79,7 +79,7 @@ export default async function CardPage({ params }: { params: Promise<{ designati
           <span>/</span>
           <strong>{seed.name}</strong>
           <span>/</span>
-          <span>{allocated === null ? `${seed.editionSize} editions` : `No. ${allocated} of ${seed.editionSize}`}</span>
+          <span>{allocated ? `No. ${allocated} of ${seed.editionSize}` : `${seed.editionSize} editions`}</span>
         </p>
 
         <div className="sd-card-page">

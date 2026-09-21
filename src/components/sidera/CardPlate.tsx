@@ -33,6 +33,10 @@ export type CardPlateProps = {
 export default function CardPlate({ designation, name, rarity, observationStatus, artUrl, data, href, size = 'md' }: CardPlateProps) {
   const { color } = rarityInfo(rarity);
   const ranked = rarity === 'epic' || rarity === 'legendary';
+  /* A drawn plate prints the designation across the art itself. Repeating it in
+     the caption costs a line the art wants back — a photograph does not, so
+     there the caption still carries it. */
+  const drawn = Boolean(artUrl?.startsWith('/cards/'));
   const body = (
     <article
       className={`sd-plate ${artUrl ? '' : 'sd-plate--outline'}`.trim()}
@@ -51,7 +55,7 @@ export default function CardPlate({ designation, name, rarity, observationStatus
       </div>
       <hr className="sd-rule sd-rule--strong" />
       <div className="sd-plate__body">
-        <p className="sd-label">{designation}</p>
+        {!drawn && <p className="sd-label">{designation}</p>}
         <h3 className="sd-plate__name">{name}</h3>
         <p className="sd-plate__marks">
           <RarityMark rarity={rarity} />

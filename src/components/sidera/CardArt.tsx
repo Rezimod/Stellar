@@ -73,7 +73,7 @@ export default function CardArt({ designation, className = '' }: { designation: 
       className={className}
       role="img"
       aria-label={`${name}, drawn plate`}
-      preserveAspectRatio="xMidYMid slice"
+      preserveAspectRatio="xMidYMin slice"
     >
       <defs>
         <radialGradient id={`${id}-sky`} cx="50%" cy="34%" r="88%">
