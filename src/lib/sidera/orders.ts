@@ -27,6 +27,24 @@ export type OrderRow = typeof orders.$inferSelect;
 export const CAPSULE_PRODUCT_ID = 'sidera-capsule';
 export const CARD_PRODUCT_PREFIX = 'sidera-card:';
 
+/**
+ * Whether this deployment is rehearsing rather than selling.
+ *
+ * With it on, no Solana transfer is looked for and no money moves: an order is
+ * treated as paid the moment its buyer asks, and the signature recorded says
+ * so. It is a deployment setting, never a request parameter, and the rehearsal
+ * is marked in the capsule log at purchase, so a rehearsal sale can never be
+ * read back as a real one.
+ */
+export function simulatedPayments(): boolean {
+  return process.env.NEXT_PUBLIC_SIDERA_SIMULATED_PAYMENT === '1';
+}
+
+/** What a rehearsal records where a transaction signature would go. */
+export function simulatedSignature(reference: string): string {
+  return `simulated-no-payment:${reference}`;
+}
+
 export function merchantWallet(): PublicKey | null {
   try {
     return process.env.NEXT_PUBLIC_MERCHANT_WALLET ? new PublicKey(process.env.NEXT_PUBLIC_MERCHANT_WALLET) : null;
@@ -108,6 +126,9 @@ export type PaymentCheck =
 
 /** Looks for the order's payment on chain. Does not write. */
 export async function findPayment(order: OrderRow): Promise<PaymentCheck> {
+  if (simulatedPayments()) {
+    return { paid: true, signature: simulatedSignature(order.paymentReference), paidAt: new Date(), late: false };
+  }
   const recipient = merchantWallet();
   if (!recipient) return { paid: false, error: 'Merchant wallet not configured', status: 503 };
   if (!(order.amountSol > 0)) return { paid: false, error: 'The order has no amount to pay', status: 400 };

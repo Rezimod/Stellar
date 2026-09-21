@@ -57,6 +57,24 @@ describe('finding a payment', () => {
   });
 });
 
+describe('a rehearsal deployment', () => {
+  afterEach(() => { delete process.env.NEXT_PUBLIC_SIDERA_SIMULATED_PAYMENT; });
+
+  it('settles the order itself, asks no chain, and records a signature that says so', async () => {
+    process.env.NEXT_PUBLIC_SIDERA_SIMULATED_PAYMENT = '1';
+    const found = await findPayment(order());
+    expect(found).toMatchObject({ paid: true, late: false, signature: `simulated-no-payment:${REFERENCE}` });
+    expect(pay.findReference).not.toHaveBeenCalled();
+    expect(pay.validateTransfer).not.toHaveBeenCalled();
+  });
+
+  it('is off unless the deployment says exactly 1', async () => {
+    process.env.NEXT_PUBLIC_SIDERA_SIMULATED_PAYMENT = 'true';
+    pay.findReference.mockRejectedValue(new FindReferenceError('not found'));
+    expect(await findPayment(order())).toEqual({ paid: false });
+  });
+});
+
 describe('quoting in SOL', () => {
   it('refuses to quote on the fallback rate, where the marketplace still falls back', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => ({ ok: false })));

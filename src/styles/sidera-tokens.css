@@ -248,6 +248,8 @@
 /* ── Paying ───────────────────────────────────────────────────── */
 .sd-pay { display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-start; }
 .sd-pay__code { border: 1px solid var(--sd-rule-strong); border-radius: var(--sd-radius-sm); padding: 14px; background: #fff; line-height: 0; }
+.sd-pay__rehearsal { flex: 0 1 260px; border: 1px dashed var(--sd-rule-strong); border-radius: var(--sd-radius-sm); padding: 16px 18px; background: var(--sd-plate); display: flex; flex-direction: column; gap: 8px; }
+.sd-pay__rehearsal .sd-blurb { margin: 0; font-size: 14px; }
 .sd-pay__side { flex: 1 1 240px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
 .sd-pay__actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
 

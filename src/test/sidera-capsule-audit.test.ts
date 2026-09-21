@@ -94,6 +94,17 @@ describe('auditing the capsule log', () => {
     expect(kinds(early.notes)).toContain('awaiting_payment');
   });
 
+  it('notes a sale made on a deployment that takes no payment, without flagging it', () => {
+    const rows = honestLog(2).map((r) =>
+      r.capsuleSequence === 2 && r.event === 'purchased'
+        ? { ...r, outcome: { ...(r.outcome as Record<string, unknown>), simulated: true } }
+        : r,
+    );
+    const audit = auditLog(rows, NOW);
+    expect(audit.flags).toEqual([]);
+    expect(audit.notes).toEqual([expect.objectContaining({ kind: 'simulated_payment', capsuleSequence: 2 })]);
+  });
+
   it('flags an opening with no purchase before it', () => {
     const rows = honestLog(3).filter((r) => !(r.capsuleSequence === 2 && r.event === 'purchased'));
     expect(kinds(auditLog(rows, NOW).flags)).toContain('opened_without_purchase');

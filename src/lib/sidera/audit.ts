@@ -45,8 +45,13 @@ export type LogRow = {
 /** What a 'listed' row's outcome carries: null, or the demo mark. */
 export type ListedOutcome = { demo?: boolean } | null;
 
-/** What a 'purchased' row's outcome carries: when the payment window closes. */
-export type PurchasedOutcome = { expiresAt?: string } | null;
+/**
+ * What a 'purchased' row's outcome carries: when the payment window closes,
+ * and whether the sale was a rehearsal — bought on a deployment that takes no
+ * payment. A rehearsal is a note, not a flag: it is in the log, and the log
+ * explains it.
+ */
+export type PurchasedOutcome = { expiresAt?: string; simulated?: boolean } | null;
 
 /** What an 'opened' row's outcome carries. */
 export type OpenedOutcome = {
@@ -97,6 +102,7 @@ export type AuditFlag = {
     | 'verification_failed'
     // Notes: in the log, explained by it.
     | 'awaiting_payment'
+    | 'simulated_payment'
     | 'released_unpaid'
     | 'voided_sold_out'
     | 'withdrawn_unsold'
@@ -247,6 +253,9 @@ export function auditLog(rows: LogRow[], now: Date = new Date()): Audit {
     const revealed = (secret: string | null | undefined) => Boolean(secret) && commitmentOf(secret as string) === committed;
 
     const expiresAt = time((purchased?.outcome as PurchasedOutcome)?.expiresAt);
+    if ((purchased?.outcome as PurchasedOutcome)?.simulated) {
+      note('simulated_payment', `bought on a deployment that takes no payment: nothing was paid for this capsule`);
+    }
     if (purchased && !opened && !voided && !released) {
       if (expiresAt >= now.getTime()) note('awaiting_payment', `purchased at ${purchased.at}; its payment window closes ${new Date(expiresAt).toISOString()}`);
       else flag('purchased_not_opened', `purchased at ${purchased.at}, not opened`);

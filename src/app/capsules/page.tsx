@@ -8,6 +8,7 @@ import { getDb } from '@/lib/db';
 import { RARITIES } from '@/lib/rarity';
 import { CAPSULE_PRICE_GEL, CARDS_PER_CAPSULE, ORDER_WINDOW_MINUTES, RARITY_ODDS_BPS } from '@/lib/sidera/economics';
 import { capsulesOnSale } from '@/lib/sidera/capsule';
+import { simulatedPayments } from '@/lib/sidera/orders';
 
 export const dynamic = 'force-dynamic';
 
@@ -42,6 +43,12 @@ export default async function CapsulesPage() {
             number your own browser makes when you buy — so neither of us can choose what comes out, and the whole
             draw can be recomputed afterwards by anyone who cares to.
           </p>
+          {simulatedPayments() && (
+            <p className="sd-note" style={{ marginTop: 20, maxWidth: '56ch' }}>
+              Rehearsal: this deployment takes no payment. A capsule can be bought, opened and checked exactly as it
+              will be when it sells, and the log marks every sale made this way.
+            </p>
+          )}
           <div className="sd-stats" style={{ marginTop: 32 }}>
             <div>
               <div className="sd-stat__n">{CARDS_PER_CAPSULE}</div>

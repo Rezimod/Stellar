@@ -20,7 +20,7 @@ import { isRarity, type Rarity } from '@/lib/rarity';
 import type { Db } from './attach';
 import type { LogRow } from './audit';
 import { CAPSULE_PRICE_GEL, CARDS_PER_CAPSULE, RARITY_ODDS_BPS } from './economics';
-import { findPayment, markPaid, orderExpiry, type OrderRow, type PaymentCheck } from './orders';
+import { findPayment, markPaid, orderExpiry, simulatedPayments, type OrderRow, type PaymentCheck } from './orders';
 import {
   SoldOutError,
   commitmentOf,
@@ -299,7 +299,7 @@ export async function purchaseCapsule(
       )
       INSERT INTO capsule_log (capsule_id, capsule_sequence, event, commitment, buyer_wallet, buyer_nonce, purchase_hash, outcome)
       SELECT id, sequence, 'purchased', commitment, buyer_wallet, buyer_nonce, purchase_hash,
-        ${JSON.stringify({ expiresAt })}::jsonb FROM c
+        ${JSON.stringify(simulatedPayments() ? { expiresAt, simulated: true } : { expiresAt })}::jsonb FROM c
       RETURNING seq
     `),
     db.execute(sql`
