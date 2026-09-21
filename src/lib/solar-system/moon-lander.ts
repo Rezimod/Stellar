@@ -76,6 +76,9 @@ const FUEL_BURN = 0.035;
  *  margin that makes the profile flyable at all. */
 const PROFILE = 0.8;
 const TOUCH = 0.35;
+/** Radius of the laid pad the crew aims at, as moon-base-zones draws it. The
+ *  other worlds have no paint, so this simply makes their guidance precise. */
+const PAD_R = 11.5;
 
 /** Where the powered descent begins: height over the pad, sink rate, and how far off it the vehicle is. */
 export interface DescentStart { alt: number; descent: number; offsetX: number; offsetZ: number; driftX: number; driftZ: number }
@@ -179,15 +182,27 @@ export function makeLander(
     // Landing thirty metres off the middle of a pad that is forty-six
     // across is a landing; landing in the rocks beyond it is not, so the
     // computer also steps in for a pilot who has not killed the drift.
+    // The threshold stays wide on purpose: a pilot who is still working the
+    // drift keeps the stick, and it is the computer's own approach below
+    // that has to put the vehicle on the paint.
     if (fall > safe * 1.06 + 0.9 || (alt < 25 && offset > 32)) telemetry.assist = true;
 
     let throttle = THREE.MathUtils.clamp(input.throttle, 0, 1);
     tx = input.moveX; tz = -input.moveY;
     if (telemetry.assist) {
-      // Hold the profile, and steer the drift out on the way down.
-      throttle = THREE.MathUtils.clamp((fall - want) * 1.4 + (g / MAX_THRUST), 0, 1);
-      const backX = (padX - position.x) * 0.06 - vel.x * 0.55;
-      const backZ = (padZ - position.z) * 0.06 - vel.z * 0.55;
+      // Fly back over the middle, then set down on it. The old gain pulled
+      // the offset in on a 9-second time constant while the whole descent
+      // lasted 16, so the computer ran out of height with the pad still
+      // twenty metres away and put the vehicle down in the regolith beside
+      // it. Close the offset faster, and while it is still wide, ease the
+      // sink rate so there is height left to close it in — which is what a
+      // pilot does, and what the fuel is for (a full tank is over a minute
+      // of hover and the descent takes a quarter of that).
+      const wide = offset > PAD_R * 0.25 && alt > 12;
+      const target = wide ? Math.min(want, 2.4) : want;
+      throttle = THREE.MathUtils.clamp((fall - target) * 1.4 + (g / MAX_THRUST), 0, 1);
+      const backX = (padX - position.x) * 0.13 - vel.x * 0.62;
+      const backZ = (padZ - position.z) * 0.13 - vel.z * 0.62;
       tx = THREE.MathUtils.clamp(backX, -1, 1);
       tz = THREE.MathUtils.clamp(backZ, -1, 1);
     }
