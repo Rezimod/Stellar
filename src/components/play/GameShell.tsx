@@ -18,6 +18,9 @@ import { SettingsPanel } from './SettingsPanel';
 import { ControlsPanel } from './ControlsPanel';
 import { MissionsPanel } from './MissionsPanel';
 
+/** How long the loading screen takes to fade off the scene; the CSS transition matches. */
+const LOADER_FADE_MS = 700;
+
 /** A deep link straight onto a scene: /play?moon, ?land=mars, ?orbit. */
 function sceneFromQuery(): GameScene | undefined {
   const q = new URLSearchParams(window.location.search);
@@ -51,6 +54,17 @@ export default function GameShell() {
   const [dropped, setDropped] = useState(false);
   const dropTimer = useRef(0);
   const { state, scene, stage, overlay } = snap;
+  /** The loader fades off the first frames rather than vanishing from over them. */
+  const [loaderFading, setLoaderFading] = useState(false);
+  const wasLoading = useRef(false);
+  useEffect(() => {
+    if (state === 'loading') { wasLoading.current = true; setLoaderFading(false); return; }
+    if (!wasLoading.current) return;
+    wasLoading.current = false;
+    setLoaderFading(true);
+    const id = window.setTimeout(() => setLoaderFading(false), LOADER_FADE_MS);
+    return () => window.clearTimeout(id);
+  }, [state]);
 
   useEffect(() => {
     document.body.setAttribute('data-solar-immersive', '1');
@@ -122,8 +136,8 @@ export default function GameShell() {
   return (
     <div ref={rootRef} className="game-shell" data-state={state}>
       {inWorld && <GameWorld key={snap.generation} scene={scene} state={state} />}
-      {state === 'loading' && (
-        <CosmicLoader className="game-shell__loader" variant={scene === 'orbit' ? 'orrery' : 'descent'}
+      {(state === 'loading' || loaderFading) && (
+        <CosmicLoader className={state === 'loading' ? 'game-shell__loader' : 'game-shell__loader is-done'} variant={scene === 'orbit' ? 'orrery' : 'descent'} body={scene === 'orbit' ? 'earth' : scene}
           label={t(`loading.scene.${scene}`)} detail={t(`loading.${stage}`)} progress={STAGE_PROGRESS[stage]} tips={tips} />
       )}
       {dropped && state === 'playing' && <p className="game-shell__notice" role="status">{t('qualityDrop')}</p>}

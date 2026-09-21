@@ -2179,7 +2179,11 @@
 /* In the rover the jump key is gone: the gear key takes its place under the action key. */
 .moon-surface[data-driving='true'] .moon-hud__gear { grid-column: 2; grid-row: 2; width: auto; min-width: 78px; padding: 0 10px; flex-direction: row; gap: 6px; }
 
-/* ═══════════ The cosmic loading screen: before any 3D scene is ready ═══════════ */
+/* ═══════════ The cosmic loading screen: before any 3D scene is ready ═══════════
+   Everything that moves here is a transform or an opacity. The compositor
+   runs those on its own thread, so the screen keeps moving through the
+   seconds the main thread spends building the scene underneath it — a
+   `left` or a `width` would stop dead exactly when the wait is longest. */
 .cosmic-loader {
   position: absolute;
   inset: 0;
@@ -2187,7 +2191,7 @@
   display: grid;
   place-content: center;
   justify-items: center;
-  gap: 14px;
+  gap: 22px;
   overflow: hidden;
   background: #050812;
   color: #eef2fb;
@@ -2195,6 +2199,7 @@
   padding-inline: 16px;
   transition: opacity 0.6s ease, visibility 0s linear 0s;
 }
+.cosmic-loader__sky { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
 .cosmic-loader__stars {
   position: absolute;
   top: 0;
@@ -2202,168 +2207,277 @@
   width: 1px;
   height: 1px;
   border-radius: 50%;
-  animation: cosmic-twinkle 5.5s ease-in-out infinite alternate;
+  animation: cosmic-twinkle 5.5s ease-in-out infinite alternate, cosmic-drift 70s ease-in-out infinite alternate;
 }
-.cosmic-loader__stars--near { width: 2px; height: 2px; animation-duration: 3.8s; animation-delay: -1.7s; }
-.cosmic-loader__system { position: relative; width: 148px; height: 148px; margin-bottom: 10px; }
-.cosmic-loader__sun {
+.cosmic-loader__stars--near {
+  width: 2px;
+  height: 2px;
+  animation-duration: 3.8s, 38s;
+  animation-delay: -1.7s, -9s;
+}
+.cosmic-loader__stage { position: relative; display: grid; place-items: center; min-height: 230px; }
+
+/* ── A photographed world: the map scrolls behind a round window; the
+   night side, the limb darkening and the sunlit highlight sit on top. ── */
+.cosmic-globe {
   position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 16px;
-  height: 16px;
-  margin: -8px 0 0 -8px;
+  display: block;
+  overflow: hidden;
   border-radius: 50%;
-  background: var(--terracotta, #ffb347);
+  background: #1a1d24;
+  isolation: isolate;
 }
+.cosmic-globe__map {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 400%;
+  height: 100%;
+  /* Two tiles of an equirectangular map, each twice the globe's width:
+     sliding one tile along is a whole turn, and it joins seamlessly. */
+  background-size: 50% 100%;
+  background-repeat: repeat-x;
+  animation: cosmic-spin 48s linear infinite;
+}
+.cosmic-globe__shade {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 32% 28%, rgba(255, 250, 240, 0.2) 0, rgba(255, 250, 240, 0) 34%),
+    radial-gradient(circle at 36% 32%, rgba(2, 4, 10, 0) 36%, rgba(2, 4, 10, 0.5) 60%, rgba(2, 4, 10, 0.93) 78%);
+  box-shadow: inset -6px -5px 14px rgba(0, 0, 0, 0.55), inset 2px 2px 5px rgba(255, 255, 255, 0.07);
+}
+.cosmic-globe[data-body='earth'] { box-shadow: 0 0 0 1px rgba(120, 175, 255, 0.2), 0 0 22px rgba(80, 150, 255, 0.16); }
+.cosmic-globe[data-body='mars'] { box-shadow: 0 0 0 1px rgba(255, 170, 130, 0.14); }
+/* No photograph of Proxima b exists: the Earth's oceans turned rose and its land teal. */
+.cosmic-globe[data-body='proximaB'] .cosmic-globe__map { filter: hue-rotate(120deg) saturate(1.1); }
+.cosmic-globe[data-body='proximaB'] { box-shadow: 0 0 0 1px rgba(255, 150, 200, 0.18), 0 0 22px rgba(255, 120, 180, 0.12); }
+
+/* ── The orrery: a world, and the Moon round it on a tilted orbit. The
+   system is one 3D context, so the Moon really passes behind the world. ── */
+.cosmic-loader__system {
+  position: relative;
+  width: 228px;
+  height: 228px;
+  perspective: 720px;
+  transform-style: preserve-3d;
+}
+.cosmic-loader__world { left: 50%; top: 50%; width: 116px; height: 116px; margin: -58px 0 0 -58px; }
 .cosmic-loader__orbit {
   position: absolute;
   left: 50%;
   top: 50%;
-  border: 1px solid rgba(168, 180, 200, 0.28);
+  width: 216px;
+  height: 216px;
+  margin: -108px 0 0 -108px;
+  border: 1px solid rgba(168, 180, 200, 0.24);
   border-radius: 50%;
-  animation: cosmic-orbit linear infinite;
+  transform-style: preserve-3d;
+  transform: rotateX(74deg) rotateZ(0deg);
+  animation: cosmic-orbit 13s linear infinite;
 }
-.cosmic-loader__orbit i {
+.cosmic-loader__carrier { position: absolute; left: 50%; top: 0; width: 0; height: 0; transform-style: preserve-3d; }
+/* Turned back against the orbit every frame, so the Moon always faces the glass. */
+.cosmic-loader__satellite {
+  left: -13px;
+  top: -13px;
+  width: 26px;
+  height: 26px;
+  transform: rotateZ(0deg) rotateX(-74deg);
+  animation: cosmic-billboard 13s linear infinite;
+}
+.cosmic-loader__satellite .cosmic-globe__map { animation-duration: 90s; }
+
+/* ── The way down (or up): a world's limb, and a lander flown onto it. ── */
+.cosmic-loader__approach {
+  position: relative;
+  width: min(420px, 86vw);
+  height: 230px;
+  overflow: hidden;
+  /* The world runs on below the frame: its curve fades out rather than stopping on a line. */
+  -webkit-mask-image: linear-gradient(to bottom, #000 72%, transparent);
+  mask-image: linear-gradient(to bottom, #000 72%, transparent);
+}
+.cosmic-loader__limb { left: 50%; top: 148px; width: 560px; height: 560px; margin-left: -280px; }
+.cosmic-loader__limb .cosmic-globe__map {
+  /* The top of a map is its pole; the horizon should show the latitudes a lander comes down on. */
+  background-size: 50% 170%;
+  background-position: 0 42%;
+  animation-duration: 160s;
+}
+.cosmic-loader__limb .cosmic-globe__shade {
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255, 250, 240, 0.1) 0, rgba(255, 250, 240, 0) 30%),
+    radial-gradient(circle at 50% 50%, rgba(2, 4, 10, 0) 50%, rgba(2, 4, 10, 0.75) 72%);
+}
+.cosmic-loader__craft {
   position: absolute;
   left: 50%;
-  top: 0;
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
+  top: -12px;
+  width: 52px;
+  height: 57px;
+  margin-left: -26px;
+  animation: cosmic-descend 4.6s cubic-bezier(0.25, 0.1, 0.3, 1) infinite;
 }
-.cosmic-loader__orbit--1 { width: 54px; height: 54px; margin: -27px 0 0 -27px; animation-duration: 3.2s; }
-.cosmic-loader__orbit--1 i { width: 5px; height: 5px; background: #c9c3b8; }
-.cosmic-loader__orbit--2 { width: 96px; height: 96px; margin: -48px 0 0 -48px; animation-duration: 6.4s; }
-.cosmic-loader__orbit--2 i { width: 8px; height: 8px; background: var(--seafoam, #5eead4); }
-.cosmic-loader__orbit--3 { width: 146px; height: 146px; margin: -73px 0 0 -73px; animation-duration: 12s; }
-.cosmic-loader__orbit--3 i { width: 7px; height: 7px; background: #e0a070; }
+.cosmic-loader__lander { position: relative; display: block; width: 52px; height: 57px; }
+.cosmic-loader__flame {
+  position: absolute;
+  left: 50%;
+  top: 35px;
+  width: 9px;
+  height: 22px;
+  margin-left: -4.5px;
+  border-radius: 0 0 50% 50%;
+  background: linear-gradient(#fff4dc, var(--terracotta, #ffb347) 45%, rgba(255, 179, 71, 0));
+  transform-origin: 50% 0;
+  animation: cosmic-flicker 0.13s ease-in-out infinite alternate, cosmic-burn 4.6s linear infinite;
+}
+.cosmic-loader__dust {
+  position: absolute;
+  left: 50%;
+  top: 138px;
+  width: 150px;
+  height: 18px;
+  margin-left: -75px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(214, 208, 198, 0.55), rgba(214, 208, 198, 0) 70%);
+  opacity: 0;
+  animation: cosmic-dust 4.6s ease-out infinite;
+}
+.cosmic-loader[data-variant='ascent'] .cosmic-loader__craft,
+.cosmic-loader[data-variant='ascent'] .cosmic-loader__dust { animation-direction: reverse; }
+.cosmic-loader[data-variant='ascent'] .cosmic-loader__flame { animation-direction: alternate, reverse; }
+
+/* ── The star streaks of a ship getting under way. ── */
+.cosmic-loader__streaks { position: relative; width: min(560px, 92vw); height: 230px; }
+.cosmic-loader__streaks span {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 50%;
+  height: 1.5px;
+  margin-top: -0.75px;
+  transform-origin: 0 50%;
+  transform: rotate(calc(var(--i) * 15deg + 4deg));
+}
+.cosmic-loader__streaks span:nth-child(3n) { height: 1px; }
+.cosmic-loader__streaks span::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(220, 232, 255, 0), rgba(220, 232, 255, 0.95));
+  transform-origin: 0 50%;
+  opacity: 0;
+  animation: cosmic-streak 1.15s cubic-bezier(0.55, 0, 1, 1) infinite;
+  animation-delay: calc(var(--i) * -0.29s);
+}
+.cosmic-loader__streaks span:nth-child(4n)::before { background: linear-gradient(90deg, rgba(94, 234, 212, 0), rgba(94, 234, 212, 0.9)); }
+.cosmic-loader__streaks b {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  margin: -4px 0 0 -4px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 14px 4px rgba(190, 215, 255, 0.4);
+  animation: cosmic-core 1.15s ease-in-out infinite alternate;
+}
+
+/* ── The words, and the bar under them. ── */
+.cosmic-loader__copy { position: relative; display: grid; justify-items: center; gap: 10px; max-width: 36ch; }
 .cosmic-loader__label {
-  position: relative;
   margin: 0;
-  font: 500 15px/1.35 var(--font-body, system-ui), sans-serif;
-  letter-spacing: 0.04em;
+  font: 500 16px/1.35 var(--font-body, system-ui), sans-serif;
+  letter-spacing: 0.02em;
 }
 .cosmic-loader__detail {
-  position: relative;
   margin: 0;
   font: 500 12px/1.4 var(--font-mono, ui-monospace), monospace;
+  letter-spacing: 0.03em;
   color: rgba(168, 180, 200, 0.85);
 }
 .cosmic-loader__bar {
   position: relative;
-  width: 168px;
+  width: 200px;
   height: 2px;
-  margin-top: 6px;
+  margin-top: 4px;
   border-radius: 2px;
-  background: rgba(168, 180, 200, 0.18);
+  background: rgba(168, 180, 200, 0.16);
   overflow: hidden;
 }
 .cosmic-loader__bar i {
   position: absolute;
   top: 0;
   bottom: 0;
+  left: 0;
   width: 40%;
   border-radius: 2px;
   background: var(--terracotta, #ffb347);
-  animation: cosmic-bar 1.6s ease-in-out infinite;
+  animation: cosmic-sweep 1.6s ease-in-out infinite;
 }
-.cosmic-loader__bar[data-determinate] i { left: 0; animation: none; transition: width 0.4s ease; }
+.cosmic-loader__bar[data-determinate] i {
+  width: 100%;
+  transform-origin: 0 50%;
+  animation: none;
+  transition: transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+/* A glint along a known bar, so a long stage still reads as working. */
+.cosmic-loader__bar[data-determinate]::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 30%;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0));
+  animation: cosmic-glint 1.9s ease-in-out infinite;
+}
 /* A line to read while the scene comes up; each one fades in as it arrives. */
 .cosmic-loader__tip {
-  position: relative;
   max-width: 34ch;
   min-height: 2.8em;
-  margin: 10px 0 0;
+  margin: 8px 0 0;
   font: 500 12px/1.45 var(--font-body, system-ui), sans-serif;
   color: rgba(200, 210, 228, 0.78);
   animation: cosmic-tip-in 0.7s ease both;
 }
-
-/* The Moon with a lander on its way down (or up): a grey disc lit from the
-   upper left, a few craters, and a small vehicle on a dotted line. */
-.cosmic-loader__moon-scene { position: relative; width: 160px; height: 176px; margin-bottom: 6px; }
-.cosmic-loader__moon {
-  position: absolute;
-  left: 50%;
-  bottom: 0;
-  width: 128px;
-  height: 128px;
-  margin-left: -64px;
-  border-radius: 50%;
-  background:
-    radial-gradient(circle at 36% 62%, rgba(70, 76, 90, 0.9) 0 9px, transparent 10px),
-    radial-gradient(circle at 66% 40%, rgba(70, 76, 90, 0.8) 0 6px, transparent 7px),
-    radial-gradient(circle at 58% 72%, rgba(70, 76, 90, 0.7) 0 4px, transparent 5px),
-    radial-gradient(circle at 28% 34%, rgba(70, 76, 90, 0.6) 0 3px, transparent 4px),
-    radial-gradient(circle at 32% 28%, #d9dbe0 0%, #a6a9b3 45%, #4a4e5c 78%, #22252f 100%);
-  box-shadow: 0 0 0 1px rgba(200, 210, 228, 0.08), 0 0 32px rgba(180, 190, 210, 0.08);
+@keyframes cosmic-twinkle { from { opacity: 0.5; } to { opacity: 1; } }
+@keyframes cosmic-drift { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(-1.6vw, 0.8vh, 0); } }
+@keyframes cosmic-spin { to { transform: translate3d(-50%, 0, 0); } }
+@keyframes cosmic-orbit { to { transform: rotateX(74deg) rotateZ(360deg); } }
+@keyframes cosmic-billboard { to { transform: rotateZ(-360deg) rotateX(-74deg); } }
+@keyframes cosmic-descend {
+  0% { transform: translate3d(-34px, -8px, 0) rotate(-9deg); opacity: 0; }
+  10% { opacity: 1; }
+  66% { transform: translate3d(0, 100px, 0) rotate(0deg); }
+  86% { transform: translate3d(0, 100px, 0); opacity: 1; }
+  100% { transform: translate3d(0, 100px, 0); opacity: 0; }
 }
-.cosmic-loader__lander {
-  position: absolute;
-  left: 50%;
-  top: 0;
-  width: 14px;
-  height: 12px;
-  margin-left: -7px;
-  background: #c9c3b8;
-  clip-path: polygon(20% 0, 80% 0, 100% 55%, 100% 100%, 72% 100%, 72% 80%, 28% 80%, 28% 100%, 0 100%, 0 55%);
-  animation: cosmic-descend 3.2s ease-in-out infinite;
+@keyframes cosmic-burn { 0%, 64% { opacity: 1; } 67%, 100% { opacity: 0; } }
+@keyframes cosmic-flicker { from { transform: scaleY(0.7); } to { transform: scaleY(1.15); } }
+@keyframes cosmic-dust {
+  0%, 58% { opacity: 0; transform: scaleX(0.3); }
+  68% { opacity: 0.9; transform: scaleX(1); }
+  100% { opacity: 0; transform: scaleX(1.5); }
 }
-.cosmic-loader__lander i {
-  position: absolute;
-  left: 50%;
-  top: 100%;
-  width: 4px;
-  height: 10px;
-  margin-left: -2px;
-  border-radius: 0 0 4px 4px;
-  background: linear-gradient(var(--terracotta, #ffb347), transparent);
-  animation: cosmic-flame 0.32s ease-in-out infinite alternate;
+@keyframes cosmic-streak {
+  0% { transform: translateX(6%) scaleX(0.05); opacity: 0; }
+  25% { opacity: 1; }
+  100% { transform: translateX(70%) scaleX(1); opacity: 0; }
 }
-.cosmic-loader[data-variant='ascent'] .cosmic-loader__lander { animation-name: cosmic-ascend; }
-
-/* The star streaks of a ship getting under way: lines racing out from a point. */
-.cosmic-loader__streaks { position: relative; width: 168px; height: 168px; margin-bottom: 6px; }
-.cosmic-loader__streaks span {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 84px;
-  height: 1px;
-  transform-origin: 0 50%;
-  transform: rotate(calc(var(--i) * 25.7deg));
-}
-.cosmic-loader__streaks span::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(90deg, transparent, rgba(220, 230, 255, 0.9));
-  transform-origin: 0 50%;
-  animation: cosmic-streak 1.4s linear infinite;
-  animation-delay: calc(var(--i) * -0.1s);
-}
-.cosmic-loader__streaks b {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 10px;
-  height: 10px;
-  margin: -5px 0 0 -5px;
-  border-radius: 50%;
-  background: #fff;
-  box-shadow: 0 0 18px 6px rgba(160, 200, 255, 0.45);
-}
-@keyframes cosmic-orbit { to { transform: rotate(360deg); } }
-@keyframes cosmic-twinkle { from { opacity: 0.55; } to { opacity: 1; } }
-@keyframes cosmic-bar { 0% { left: -40%; } 100% { left: 100%; } }
+@keyframes cosmic-core { from { opacity: 0.75; transform: scale(0.85); } to { opacity: 1; transform: scale(1.15); } }
+@keyframes cosmic-sweep { from { transform: translateX(-100%); } to { transform: translateX(250%); } }
+@keyframes cosmic-glint { from { transform: translateX(-100%); } to { transform: translateX(340%); } }
 @keyframes cosmic-tip-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
-@keyframes cosmic-descend { 0% { transform: translateY(0); } 100% { transform: translateY(46px); } }
-@keyframes cosmic-ascend { 0% { transform: translateY(46px); } 100% { transform: translateY(0); } }
-@keyframes cosmic-flame { from { transform: scaleY(0.6); opacity: 0.7; } to { transform: scaleY(1.2); opacity: 1; } }
-@keyframes cosmic-streak { 0% { transform: scaleX(0); opacity: 0; } 30% { opacity: 1; } 100% { transform: scaleX(1); opacity: 0; } }
 @media (prefers-reduced-motion: reduce) {
-  .cosmic-loader__orbit, .cosmic-loader__stars, .cosmic-loader__bar i, .cosmic-loader__lander, .cosmic-loader__lander i,
-  .cosmic-loader__streaks span::before, .cosmic-loader__tip { animation: none; }
+  .cosmic-loader__stars, .cosmic-globe__map, .cosmic-loader__orbit, .cosmic-loader__satellite, .cosmic-loader__craft,
+  .cosmic-loader__flame, .cosmic-loader__dust, .cosmic-loader__streaks span::before, .cosmic-loader__streaks b,
+  .cosmic-loader__bar i, .cosmic-loader__bar::after, .cosmic-loader__tip { animation: none; }
+  .cosmic-loader__craft { transform: translate3d(0, 100px, 0); }
+  .cosmic-loader__streaks span::before { opacity: 0.6; }
 }
 /* The launch screen over the deck: above every key, under nothing. */
 .flight-hud__launching { z-index: 80; }

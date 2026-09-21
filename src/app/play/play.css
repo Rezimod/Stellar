@@ -20,6 +20,12 @@
   background: #050812;
 }
 .game-shell__loader { z-index: 180; }
+.game-shell__loader.is-done {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.6s ease, visibility 0s linear 0.6s;
+}
 /* The governor's one line: it has just taken a level off, and the player can
    put it back in Settings. Seven seconds, top centre, over the glass. */
 .game-shell__notice {
@@ -55,13 +61,19 @@
   padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
 }
 .game-pause { background: rgba(5, 8, 18, 0.72); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
-.game-menu__orrery {
+/* The loader's Earth and Moon, smaller and dimmer, over the menus. Dimmed
+   globe by globe: an opacity on the system would flatten its 3D, and the
+   Moon would stop passing behind the Earth. */
+.game-menu .game-menu__orrery {
   position: absolute;
   left: 50%;
-  top: 10%;
-  margin-left: -74px;
-  opacity: 0.55;
+  top: 8%;
+  margin-left: -114px;
+  transform: scale(0.72);
+  transform-origin: 50% 0;
 }
+.game-menu__orrery .cosmic-globe { opacity: 0.62; }
+.game-menu__orrery .cosmic-loader__orbit { border-color: rgba(168, 180, 200, 0.14); }
 .game-menu__panel {
   position: relative;
   width: min(100%, 360px);

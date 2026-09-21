@@ -4,6 +4,7 @@
 // on (or into).
 
 import * as THREE from 'three';
+import { cachedTexture } from '@/lib/solar-system/texture-cache';
 import { sceneRadiusFromAu, type ScaleMode } from '@/lib/solar-system/ephemeris';
 import type { FlightBody } from '@/lib/solar-system/player-ship';
 
@@ -20,8 +21,12 @@ function seeded(seed: number) {
   };
 }
 
-/** Grey-brown regolith pocked with craters: bright rims, shadowed floors. */
+/** Grey-brown regolith pocked with craters: bright rims, shadowed floors. Seeded, so drawn once per page. */
 export function crateredTexture(seed: number, base: [number, number, number], craters = 140): THREE.CanvasTexture {
+  return cachedTexture(`cratered:${seed}:${base.join(',')}:${craters}`, () => drawCrateredTexture(seed, base, craters));
+}
+
+function drawCrateredTexture(seed: number, base: [number, number, number], craters: number): THREE.CanvasTexture {
   const w = 512;
   const h = 256;
   const c = document.createElement('canvas');
@@ -61,8 +66,12 @@ export function crateredTexture(seed: number, base: [number, number, number], cr
   return tex;
 }
 
-/** Zonal bands with eddies for an ice giant. */
+/** Zonal bands with eddies for an ice giant. Seeded, so drawn once per page. */
 export function bandedTexture(seed: number, colours: [number, number, number][]): THREE.CanvasTexture {
+  return cachedTexture(`banded:${seed}:${colours.join(';')}`, () => drawBandedTexture(seed, colours));
+}
+
+function drawBandedTexture(seed: number, colours: [number, number, number][]): THREE.CanvasTexture {
   const w = 512;
   const h = 256;
   const c = document.createElement('canvas');
@@ -91,9 +100,29 @@ export function bandedTexture(seed: number, colours: [number, number, number][])
   return tex;
 }
 
+type LivingWorldTextures = { day: THREE.CanvasTexture; night: THREE.CanvasTexture; clouds: THREE.CanvasTexture };
+const livingDrawn = new Map<number, LivingWorldTextures>();
+
 /** An inhabited ocean world: day map with continents and ice, a night map
- *  of city lights clustered on the land, and a broken cloud deck. */
-export function livingWorldTextures(seed: number): { day: THREE.CanvasTexture; night: THREE.CanvasTexture; clouds: THREE.CanvasTexture } {
+ *  of city lights clustered on the land, and a broken cloud deck. Seeded,
+ *  so drawn once per page. */
+export function livingWorldTextures(seed: number): LivingWorldTextures {
+  const drawn = () => {
+    let set = livingDrawn.get(seed);
+    if (!set) {
+      set = drawLivingWorldTextures(seed);
+      livingDrawn.set(seed, set);
+    }
+    return set;
+  };
+  return {
+    day: cachedTexture(`living:${seed}:day`, () => drawn().day),
+    night: cachedTexture(`living:${seed}:night`, () => drawn().night),
+    clouds: cachedTexture(`living:${seed}:clouds`, () => drawn().clouds),
+  };
+}
+
+function drawLivingWorldTextures(seed: number): LivingWorldTextures {
   const w = 1024;
   const h = 512;
   const rnd = seeded(seed);

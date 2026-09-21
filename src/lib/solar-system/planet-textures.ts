@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { cachedTexture } from '@/lib/solar-system/texture-cache';
 import type { SolarBodyId } from '@/lib/solar-system/ephemeris';
 import { bodyColor, worldRadiusForBody } from '@/lib/solar-system/ephemeris';
 import { AXIAL_TILT_DEG } from '@/lib/solar-system/planet-spin';
@@ -19,10 +20,20 @@ function roughnessFor(id: SolarBodyId): number {
   return GAS_GIANTS.has(id) ? 0.95 : 0.8;
 }
 
+/** A body's stand-in map, drawn once per page (texture-cache.ts). */
 function canvasTexture(
+  id: SolarBodyId,
   draw: (ctx: CanvasRenderingContext2D, w: number, h: number) => void,
   w = 1024,
   h = 512,
+): THREE.CanvasTexture {
+  return cachedTexture(`planet:${id}`, () => drawCanvasTexture(draw, w, h));
+}
+
+function drawCanvasTexture(
+  draw: (ctx: CanvasRenderingContext2D, w: number, h: number) => void,
+  w: number,
+  h: number,
 ): THREE.CanvasTexture {
   const canvas = document.createElement('canvas');
   canvas.width = w;
@@ -413,7 +424,7 @@ function proceduralMaterial(id: SolarBodyId, lite: boolean): THREE.MeshStandardM
   const roughness = roughnessFor(id);
 
   if (id === 'sun') {
-    const map = canvasTexture((ctx, w, h) => {
+    const map = canvasTexture(id, (ctx, w, h) => {
       const g = ctx.createRadialGradient(w * 0.35, h * 0.35, 0, w * 0.5, h * 0.5, w * 0.65);
       g.addColorStop(0, '#fff9e6');
       g.addColorStop(0.35, '#ffe08a');
@@ -433,7 +444,7 @@ function proceduralMaterial(id: SolarBodyId, lite: boolean): THREE.MeshStandardM
   }
 
   if (id === 'jupiter' || id === 'saturn') {
-    const map = canvasTexture((ctx, w, h) => {
+    const map = canvasTexture(id, (ctx, w, h) => {
       const bands = id === 'jupiter' ? 22 : 16;
       for (let i = 0; i < bands; i++) {
         const y0 = (i / bands) * h;
@@ -449,7 +460,7 @@ function proceduralMaterial(id: SolarBodyId, lite: boolean): THREE.MeshStandardM
   }
 
   if (id === 'earth') {
-    const map = canvasTexture((ctx, w, h) => {
+    const map = canvasTexture(id, (ctx, w, h) => {
       const g = ctx.createLinearGradient(0, 0, w, h);
       g.addColorStop(0, '#1a4a7a');
       g.addColorStop(0.35, '#2d6aab');
@@ -473,7 +484,7 @@ function proceduralMaterial(id: SolarBodyId, lite: boolean): THREE.MeshStandardM
   }
 
   if (id === 'mars') {
-    const map = canvasTexture((ctx, w, h) => {
+    const map = canvasTexture(id, (ctx, w, h) => {
       ctx.fillStyle = '#9e3d28';
       ctx.fillRect(0, 0, w, h);
       for (let i = 0; i < 120; i++) {
@@ -485,7 +496,7 @@ function proceduralMaterial(id: SolarBodyId, lite: boolean): THREE.MeshStandardM
   }
 
   if (id === 'venus') {
-    const map = canvasTexture((ctx, w, h) => {
+    const map = canvasTexture(id, (ctx, w, h) => {
       const g = ctx.createLinearGradient(0, 0, 0, h);
       g.addColorStop(0, '#e8dcc8');
       g.addColorStop(0.5, '#d4c4a8');
@@ -503,7 +514,7 @@ function proceduralMaterial(id: SolarBodyId, lite: boolean): THREE.MeshStandardM
   }
 
   if (id === 'mercury') {
-    const map = canvasTexture((ctx, w, h) => {
+    const map = canvasTexture(id, (ctx, w, h) => {
       ctx.fillStyle = hex;
       ctx.fillRect(0, 0, w, h);
       noiseRoughness(ctx, w, h, 0.35);
@@ -518,7 +529,7 @@ function proceduralMaterial(id: SolarBodyId, lite: boolean): THREE.MeshStandardM
   }
 
   if (id === 'uranus' || id === 'neptune') {
-    const map = canvasTexture((ctx, w, h) => {
+    const map = canvasTexture(id, (ctx, w, h) => {
       const g = ctx.createRadialGradient(w * 0.3, h * 0.4, 0, w * 0.5, h * 0.5, w * 0.55);
       if (id === 'uranus') {
         g.addColorStop(0, '#b8dfe8');
@@ -535,7 +546,7 @@ function proceduralMaterial(id: SolarBodyId, lite: boolean): THREE.MeshStandardM
   }
 
   if (id === 'pluto') {
-    const map = canvasTexture((ctx, w, h) => {
+    const map = canvasTexture(id, (ctx, w, h) => {
       ctx.fillStyle = '#a89888';
       ctx.fillRect(0, 0, w, h);
       noiseRoughness(ctx, w, h, 0.2);
@@ -547,7 +558,7 @@ function proceduralMaterial(id: SolarBodyId, lite: boolean): THREE.MeshStandardM
     return new THREE.MeshStandardMaterial({ map, roughness, metalness: 0 });
   }
 
-  const map = canvasTexture((ctx, w, h) => {
+  const map = canvasTexture(id, (ctx, w, h) => {
     ctx.fillStyle = hex;
     ctx.fillRect(0, 0, w, h);
     noiseRoughness(ctx, w, h, 0.18);

@@ -711,7 +711,7 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
     const code = opts.room?.code ?? null;
     const seed = brSeed ?? (code ? seedFromCode(code) : 1000 + entry.entries);
     const next = makeBackrooms({
-      renderer, camera, cosmonaut, cam, audio: brAudio, seed, lite,
+      renderer, camera, cosmonaut, cam, audio: brAudio, target: post.drawTarget(), seed, lite,
       spawnShift: code ? (Math.random() * 2 - 1) * 1.6 : 0,
     });
     br = next;

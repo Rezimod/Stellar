@@ -8,6 +8,7 @@
 // smooth fade-in/out as `sysRadius` grows past the solar-system tier.
 
 import * as THREE from 'three';
+import { cachedTexture } from '@/lib/solar-system/texture-cache';
 
 const PC_TO_UNIT = 22;       // 1 parsec → 22 scene units (compressed for visual cohesion)
 const NEAR_STAR_MAX_R = 2600; // visual clamp so very distant catalog stars stay in view
@@ -757,7 +758,7 @@ export function makeMilkyWayDisk(lite = false): MilkyWayHandle {
     // The painted disk carries the smooth glow, the point volume the stars.
     // Weighted the other way the galaxy turns into a haze.
     if (f > 0.005 && !diskMat.map) {
-      diskMat.map = spiralGalaxyTexture(MILKY_WAY_MODEL, lite, lite ? 1024 : 2048);
+      diskMat.map = cachedTexture(`spiral:milky-way:${lite}`, () => spiralGalaxyTexture(MILKY_WAY_MODEL, lite, lite ? 1024 : 2048));
       diskMat.needsUpdate = true;
     }
     diskMat.opacity = f * 0.78;
@@ -910,7 +911,7 @@ export function makeAndromedaGalaxy(lite: boolean): AndromedaHandle {
   const setFade = (fade: number) => {
     const f = THREE.MathUtils.clamp(fade, 0, 1);
     if (f > 0.005 && !diskMat.map) {
-      diskMat.map = spiralGalaxyTexture(ANDROMEDA_MODEL, lite, lite ? 1024 : 2048);
+      diskMat.map = cachedTexture(`spiral:andromeda:${lite}`, () => spiralGalaxyTexture(ANDROMEDA_MODEL, lite, lite ? 1024 : 2048));
       diskMat.needsUpdate = true;
     }
     diskMat.opacity = f * 0.8;
@@ -985,7 +986,7 @@ export function makeOtherGalaxies(): OtherGalaxiesHandle {
   const texs: THREE.Texture[] = [];
 
   for (const g of OTHER_GALAXIES) {
-    const tex = galaxySpriteTexture(g.shape, g.color);
+    const tex = cachedTexture(`galaxy:${OTHER_GALAXIES.indexOf(g)}`, () => galaxySpriteTexture(g.shape, g.color));
     texs.push(tex);
     const mat = new THREE.MeshBasicMaterial({
       map: tex,
@@ -1463,7 +1464,7 @@ export function makeCosmicWeb(lite: boolean): CosmicWebHandle {
   geom.setAttribute('aTile', new THREE.BufferAttribute(gTile, 2));
   geom.setAttribute('aAlpha', new THREE.BufferAttribute(gAlpha, 1));
 
-  const atlas = galaxyAtlasTexture();
+  const atlas = cachedTexture('galaxy-atlas', galaxyAtlasTexture);
   const mat = new THREE.ShaderMaterial({
     uniforms: {
       uAtlas: { value: atlas },

@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { cachedTexture } from '@/lib/solar-system/texture-cache';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { getSaturnRingStripTexture } from '@/lib/solar-system/saturn-ring-strip';
 import { GeoMoon } from 'astronomy-engine';
@@ -614,7 +615,7 @@ export function disposeAtmosphereShell(mesh: THREE.Mesh) {
 export function makeEarthExtras(earthRadius: number, lite: boolean): EarthExtrasHandle {
   // Cloud layer — procedural fallback swaps to the real NASA-derived
   // satellite cloud composite once it loads.
-  const cloudsTex = cloudsTexture();
+  const cloudsTex = cachedTexture('earth-clouds', cloudsTexture);
   const cloudGeom = new THREE.SphereGeometry(earthRadius * 1.013, lite ? 48 : 72, lite ? 48 : 72);
   const cloudMat = new THREE.MeshStandardMaterial({
     map: cloudsTex,
@@ -684,7 +685,7 @@ export function makeEarthExtras(earthRadius: number, lite: boolean): EarthExtras
   // so Mare Tranquillitatis and Tycho's rays sit where they belong.
   const moonGroup = new THREE.Group();
   moonGroup.name = 'moonGroup';
-  const moonTex = moonTexture();
+  const moonTex = cachedTexture('moon', moonTexture);
   const moonRadius = earthRadius * 0.273;
   const moonGeom = new THREE.SphereGeometry(moonRadius, lite ? 32 : 48, lite ? 32 : 48);
   const moonMat = new THREE.MeshStandardMaterial({
@@ -891,8 +892,8 @@ export function makeSunExtras(sunRadius: number): SunExtrasHandle {
 
   // ── Multi-layer corona: additive billboards, two of them slowly
   // counter-rotating streamer layers, all breathing on their own phase. ──
-  const flareTex = lensFlareSprite();
-  const raysTex = coronaRaysTexture();
+  const flareTex = cachedTexture('lens-flare', lensFlareSprite);
+  const raysTex = cachedTexture('corona-rays', coronaRaysTexture);
   // Kept tight to the disc. A corona that reaches ten radii out is bigger
   // than the inner planets' orbits at this scale and simply erases whatever
   // you flew over to look at.
@@ -920,7 +921,7 @@ export function makeSunExtras(sunRadius: number): SunExtrasHandle {
 
   // ── Prominence loops — fiery arcs anchored on the limb, carried around
   // by the Sun's slow rotation, each breathing on its own rhythm. ──
-  const promTex = prominenceTexture();
+  const promTex = cachedTexture('prominence', prominenceTexture);
   const promGroup = new THREE.Group();
   promGroup.name = 'sunProminences';
   const proms: { pivot: THREE.Group; plane: THREE.Mesh; mat: THREE.MeshBasicMaterial; phase: number; speed: number }[] = [];
@@ -948,7 +949,7 @@ export function makeSunExtras(sunRadius: number): SunExtrasHandle {
 
   // ── Eruptive flare — a jet that bursts from a random limb point every
   // several seconds, grows, and fades. ──
-  const jetTex = flareJetTexture();
+  const jetTex = cachedTexture('flare-jet', flareJetTexture);
   const jetMat = new THREE.MeshBasicMaterial({
     map: jetTex,
     transparent: true,
@@ -1164,7 +1165,7 @@ function milkyGlowTexture(): THREE.CanvasTexture {
 export function makeMilkyWayGlow(lite: boolean): MilkyWayGlowHandle {
   const group = new THREE.Group();
   group.name = 'milkyWayGlow';
-  const tex = milkyGlowTexture();
+  const tex = cachedTexture('milky-glow', milkyGlowTexture);
   const geom = new THREE.TorusGeometry(305, 36, lite ? 14 : 24, lite ? 64 : 112);
   const BASE_OPACITY = 0.22;
   const mat = new THREE.MeshBasicMaterial({
@@ -1587,10 +1588,8 @@ export function makeAurora(
   group.name = 'aurora';
   const lat = THREE.MathUtils.degToRad(opts.latitudeDeg ?? 70);
   const intensity = opts.intensity ?? 0.55;
-  const tex = auroraCurtainTexture(
-    new THREE.Color(opts.color),
-    new THREE.Color(opts.topColor ?? opts.color),
-  );
+  const top = opts.topColor ?? opts.color;
+  const tex = cachedTexture(`aurora:${opts.color}:${top}`, () => auroraCurtainTexture(new THREE.Color(opts.color), new THREE.Color(top)));
 
   const ringR = planetRadius * Math.cos(lat);
   const baseY = planetRadius * Math.sin(lat);
@@ -1708,7 +1707,7 @@ export function makeEarthRocket(earthRadius: number): EarthRocketHandle {
   // to a point behind, the way a real ascent plume reads) plus a hot glow
   // sprite right at the engine.
   const plumeTex = cometGlowSprite();
-  const flameTex = flareJetTexture();
+  const flameTex = cachedTexture('flare-jet', flareJetTexture);
   const flameMat = new THREE.MeshBasicMaterial({
     map: flameTex,
     transparent: true,

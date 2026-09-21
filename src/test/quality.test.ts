@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
-  clearQualityGovernor, currentQuality, detectQuality, governedQuality, onQualityChange, qualityProfile,
+  budgetedPixelRatio, clearQualityGovernor, currentQuality, detectQuality, governedQuality, onQualityChange, qualityProfile,
   QUALITY_LEVELS, resetQualityDetection, stepQualityDown, type DeviceSignals,
 } from '@/game/quality';
 import { resetSettings, updateSettings } from '@/game/settings';
@@ -88,5 +88,25 @@ describe('quality presets', () => {
       expect(governedQuality()).toBe(null);
       expect(currentQuality().level).toBe(detectQuality({ gpu: '', cores: navigator.hardwareConcurrency || 4, touch: false, width: window.innerWidth, memoryGB: 0 }));
     });
+  });
+});
+
+describe('the pixel budget', () => {
+  const iris = desktop.gpu;
+  it('a Retina Mac on Intel graphics draws about 1.1x at 1440×900, not the preset\'s 1.5', () => {
+    const r = budgetedPixelRatio(2, 1.5, iris, 1440, 900);
+    expect(r).toBeGreaterThan(1);
+    expect(r).toBeLessThan(1.2);
+    expect(1440 * 900 * r * r).toBeLessThanOrEqual(1.6e6 + 1);
+  });
+  it('never goes under 1 for a big window: that is the governor\'s ground', () => {
+    expect(budgetedPixelRatio(2, 1.5, iris, 2560, 1440)).toBe(1);
+  });
+  it('leaves a discrete or Apple GPU at the preset', () => {
+    expect(budgetedPixelRatio(2, 2, 'ANGLE Metal Renderer: Apple M2', 1440, 900)).toBe(2);
+    expect(budgetedPixelRatio(2, 1.5, 'NVIDIA GeForce RTX 3070', 1920, 1080)).toBe(1.5);
+  });
+  it('a screen of ratio 1 stays at 1', () => {
+    expect(budgetedPixelRatio(1, 1.5, iris, 800, 600)).toBe(1);
   });
 });

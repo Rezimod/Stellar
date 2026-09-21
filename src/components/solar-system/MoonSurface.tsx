@@ -214,6 +214,10 @@ export function MoonSurface({ onReturn, room, paused, onProgress, onPauseRequest
       const w = compassRef.current?.clientWidth ?? 0;
       if (w > 0) pipLimit = Math.max(12, (w / 2 - 9) / PPD);
     };
+    // Measured when the strip changes size, not on every paint: a read after
+    // the paint's own style writes forces a whole-page layout each time.
+    const compassSize = new ResizeObserver(measureCompass);
+    if (compassRef.current) compassSize.observe(compassRef.current);
     const pipAt = (el: HTMLElement | null, bearing: number, heading: number, on: boolean) => {
       if (!el) return;
       show(el, on);
@@ -280,7 +284,6 @@ export function MoonSurface({ onReturn, room, paused, onProgress, onPauseRequest
       }
 
       // ── The compass, and where the crew is being sent. ──
-      measureCompass();
       const heading = tel.heading;
       if (stripRef.current) stripRef.current.style.transform = `translateX(${-(heading + 360) * PPD}px)`;
       const m = tel.mission;
@@ -474,6 +477,7 @@ export function MoonSurface({ onReturn, room, paused, onProgress, onPauseRequest
     raf = requestAnimationFrame(paint);
     return () => {
       cancelAnimationFrame(raf);
+      compassSize.disconnect();
       window.clearTimeout(rebuildTimer);
       controls.detach();
       controlsRef.current = null;

@@ -83,7 +83,15 @@ export function detectQuality(s: DeviceSignals): QualityLevel {
   return 'balanced';
 }
 
+let gpuCached: string | null = null;
+
 function gpuString(): string {
+  if (gpuCached !== null) return gpuCached;
+  gpuCached = readGpuString();
+  return gpuCached;
+}
+
+function readGpuString(): string {
   try {
     const gl = document.createElement('canvas').getContext('webgl2') ?? document.createElement('canvas').getContext('webgl');
     if (!gl) return '';
@@ -107,6 +115,28 @@ export function deviceSignals(): DeviceSignals {
     width: window.innerWidth,
     memoryGB: nav.deviceMemory ?? 0,
   };
+}
+
+/** Render pixels an integrated GPU fills through the post chain inside a
+ *  frame: about a 1440×900 window at 1.2. A Retina laptop on Intel graphics
+ *  would otherwise draw 2.9 MP at the preset's 1.5 and spend the first ten
+ *  seconds of every scene waiting for the governor to find that out. */
+const INTEGRATED_PIXEL_BUDGET = 1.6e6;
+const BUDGETED_GPU = /intel|iris|uhd|radeon\s*(vega|graphics)/i;
+
+/** The pixel ratio to draw a `cssWidth`×`cssHeight` canvas at: the screen's,
+ *  capped by the preset and, on integrated or weak graphics, by the pixel
+ *  budget — never under 1, which is where the governor takes over. */
+export function pixelRatioFor(q: QualityProfile, cssWidth: number, cssHeight: number): number {
+  return budgetedPixelRatio(window.devicePixelRatio || 1, q.maxPixelRatio, gpuString(), cssWidth, cssHeight);
+}
+
+/** The arithmetic behind `pixelRatioFor`. Pure, so it is tested. */
+export function budgetedPixelRatio(dpr: number, maxRatio: number, gpu: string, cssWidth: number, cssHeight: number): number {
+  const ratio = Math.min(dpr, maxRatio);
+  const area = cssWidth * cssHeight;
+  if (area <= 0 || !(WEAK_GPU.test(gpu) || BUDGETED_GPU.test(gpu))) return ratio;
+  return Math.min(ratio, Math.max(1, Math.sqrt(INTEGRATED_PIXEL_BUDGET / area)));
 }
 
 /** How far the governor has had to come down, under `auto` only. */

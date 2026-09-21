@@ -22,6 +22,7 @@ import { chooseSighting, sightingEnds, type Sighting } from '@/lib/solar-system/
 import type { BackroomsAudio } from '@/lib/solar-system/backrooms-audio';
 import type { CosmonautHandle, WalkInput } from '@/lib/solar-system/moon-cosmonaut';
 import type { CameraRig } from '@/lib/solar-system/moon-camera';
+import { compileFor } from '@/lib/solar-system/gpu-warm';
 
 export type BackroomsPhase = 'wake' | 'explore' | 'door' | 'stairs' | 'climb' | 'out';
 
@@ -56,6 +57,8 @@ export interface BackroomsDeps {
   cosmonaut: CosmonautHandle;
   cam: CameraRig;
   audio: BackroomsAudio;
+  /** The post chain's target, which the compile has to aim at (gpu-warm.ts). */
+  target: THREE.WebGLRenderTarget;
   seed: number;
   lite: boolean;
   /** Metres to the side of the plan's spawn to wake at, so a crew waking together does not wake in one body. */
@@ -309,7 +312,7 @@ export function makeBackrooms(deps: BackroomsDeps): BackroomsHandle {
   // Compile with everything shown once, so nothing stalls later.
   const hiddenForCompile = [watcher, stairs];
   for (const o of hiddenForCompile) o.visible = true;
-  const ready = renderer.compileAsync(scene, camera).then(() => undefined, () => undefined).finally(() => {
+  const ready = compileFor(renderer, deps.target, () => renderer.compileAsync(scene, camera)).then(() => undefined, () => undefined).finally(() => {
     for (const o of hiddenForCompile) o.visible = false;
   });
 

@@ -8,6 +8,8 @@ import type { QualityProfile } from '@/game/quality';
 export interface PostFxHandle {
   render: (dtSec: number) => void;
   setSize: (cssWidth: number, cssHeight: number) => void;
+  /** Where the scene is drawn: a pre-compile must target it to build the variants the frame uses. */
+  drawTarget: () => THREE.WebGLRenderTarget;
   dispose: () => void;
 }
 
@@ -59,6 +61,7 @@ export function makePostFx(
       composer.render(dtSec);
     },
     setSize,
+    drawTarget: () => composer.renderTarget1,
     dispose() {
       renderPass.dispose();
       bloom?.dispose();

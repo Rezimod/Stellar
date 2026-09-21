@@ -39,6 +39,8 @@ export interface MoonPostHandle {
   setBlack: (k: number) => void;
   /** A new preset: bloom on or off, and the samples on the target. */
   setQuality: (q: PostQuality) => void;
+  /** Where the scene is drawn: a pre-compile must target it to build the variants the frame uses. */
+  drawTarget: () => THREE.WebGLRenderTarget;
   dispose: () => void;
 }
 
@@ -136,6 +138,7 @@ export function makeMoonPost(renderer: THREE.WebGLRenderer, scene: THREE.Scene, 
     scene: () => renderPass.scene as THREE.Scene,
     setBackrooms(k) { back = k; },
     setBlack(k) { film.uniforms.uBlack.value = k; },
+    drawTarget: () => composer.renderTarget1,
     setQuality(next) {
       q = next;
       bloom.enabled = q.bloom;

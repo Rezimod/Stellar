@@ -56,7 +56,8 @@ import {
 } from '@/lib/solar-system/scene-extras';
 import { makeSunSurface } from '@/lib/solar-system/sun-surface';
 import { makePostFx } from '@/lib/solar-system/post-processing';
-import { currentQuality, onQualityChange } from '@/game/quality';
+import { currentQuality, onQualityChange, pixelRatioFor } from '@/game/quality';
+import { compileFor, uploadSceneTextures } from '@/lib/solar-system/gpu-warm';
 import { probeCalls } from '@/lib/solar-system/moon-perf';
 import {
   createPlayerShip,
@@ -128,6 +129,8 @@ export interface SolarSystemCanvasProps {
  *  point is behind the camera so the overlay can hide its anchor. */
 interface ScreenPoint { x: number; y: number; depth: number }
 const projScratch = new THREE.Vector3();
+/** The longest the loading screen waits on the planet maps before the procedural ones go up instead. */
+const MAPS_WAIT_MS = 8000;
 
 /** Project a world-space point into `out` (CSS pixels). False when the point
  *  is behind the camera, so the caller can hide its anchor. Allocation-free. */
@@ -266,7 +269,7 @@ export function SolarSystemCanvas({
       onReadyRef.current?.();
       return;
     }
-    const ratioFor = () => Math.min(window.devicePixelRatio, currentQuality().maxPixelRatio);
+    const ratioFor = () => pixelRatioFor(currentQuality(), mount.clientWidth, mount.clientHeight);
     renderer.setPixelRatio(ratioFor());
     renderer.setSize(mount.clientWidth, mount.clientHeight);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -534,6 +537,13 @@ export function SolarSystemCanvas({
     // Off the main thread where the browser allows it: see texture-load.ts.
     const loader = makePlanetTextureLoader();
     const maxAniso = renderer.capabilities.getMaxAnisotropy();
+    // The loading screen stays up until the base maps (and the night lights)
+    // are in and on the GPU: a map that lands after it has gone swaps a
+    // material and uploads four megabytes in the middle of the first seconds
+    // the player sees. A slow connection gets the procedural maps instead.
+    let mapsPending = NASA_TEXTURE_IDS.length + 1;
+    const mapsDeadline = performance.now() + MAPS_WAIT_MS;
+    const mapSettled = () => { mapsPending -= 1; };
 
     // NASA Black Marble-derived night lights — the dark side of Earth glows
     // with real city grids via the material's emissive map.
@@ -546,6 +556,7 @@ export function SolarSystemCanvas({
       m.needsUpdate = true;
     };
     loader.load('/solar-system/planets/earth-night.jpg', (tex) => {
+      mapSettled();
       if (textureLoadsCancelled) {
         disposePlanetTexture(tex);
         return;
@@ -554,7 +565,7 @@ export function SolarSystemCanvas({
       tex.wrapS = THREE.RepeatWrapping;
       earthNightTex = tex;
       applyEarthNight();
-    });
+    }, mapSettled);
 
     const detailLoaded = new Set<SolarBodyId>();
     const applyLoadedTexture = (id: SolarBodyId, tex: THREE.Texture) => {
@@ -589,6 +600,7 @@ export function SolarSystemCanvas({
       loader.load(
         url,
         (tex) => {
+          mapSettled();
           if (textureLoadsCancelled || detailLoaded.has(id)) {
             disposePlanetTexture(tex);
             return;
@@ -596,6 +608,7 @@ export function SolarSystemCanvas({
           applyLoadedTexture(id, tex);
         },
         () => {
+          mapSettled();
           if (textureLoadsCancelled || detailLoaded.has(id) || id === 'sun') return;
           const mesh = meshById.get(id);
           if (mesh) {
@@ -1055,6 +1068,7 @@ export function SolarSystemCanvas({
       if (!mount) return;
       camera.aspect = Math.max(1, mount.clientWidth) / Math.max(1, mount.clientHeight);
       camera.updateProjectionMatrix();
+      renderer.setPixelRatio(ratioFor());
       renderer.setSize(mount.clientWidth, mount.clientHeight);
       postFx.setSize(mount.clientWidth, mount.clientHeight);
     };
@@ -1062,10 +1076,7 @@ export function SolarSystemCanvas({
     // A new preset: the pixel ratio follows at once. What was decided when the
     // scene was built — the bloom chain, the star and belt counts — follows on
     // the next build, as it does on the surfaces.
-    const offQuality = onQualityChange(() => {
-      renderer.setPixelRatio(ratioFor());
-      onResize();
-    });
+    const offQuality = onQualityChange(onResize);
 
     let raf = 0;
     let lastFrame = performance.now();
@@ -1327,6 +1338,9 @@ export function SolarSystemCanvas({
           scene.add(ship.group);
           scene.add(ship.boltGroup);
           scene.add(ship.fxGroup);
+          // The ship's programs start building now, in parallel where the
+          // driver allows, rather than one by one inside its first frame.
+          compileFor(renderer, postFx.drawTarget(), () => renderer.compile(scene, camera));
           // Which star system is drawn follows the ship; see below.
           ship.fillAnchor.add(shipFill);
           shipFill.position.set(0, 0, 0);
@@ -1480,12 +1494,25 @@ export function SolarSystemCanvas({
 
       postFx.render(dtSec);
       if (!readyFired) {
-        readyFired = true;
-        onReadyRef.current?.();
+        if (mapsPending > 0 && now < mapsDeadline) {
+          // Still waiting on the maps; the loader covers the canvas.
+        } else if (!warmed) {
+          // Every program in the scene — the galactic tiers and the belts
+          // that are faded out now included — and every texture, uploaded,
+          // before the loader goes. Then a couple of frames to show it holds.
+          warmed = true;
+          compileFor(renderer, postFx.drawTarget(), () => renderer.compile(scene, camera));
+          uploadSceneTextures(renderer, scene);
+        } else if (++settledFrames >= 2) {
+          readyFired = true;
+          onReadyRef.current?.();
+        }
       }
       raf = requestAnimationFrame(loop);
     };
     let readyFired = false;
+    let warmed = false;
+    let settledFrames = 0;
     startLoop();
     if (process.env.NODE_ENV !== 'production') window.__stellarOrrery = { probe: (within) => probeCalls(renderer, scene, () => postFx.render(0), within) };
 

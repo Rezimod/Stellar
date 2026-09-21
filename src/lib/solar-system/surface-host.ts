@@ -10,8 +10,9 @@ import * as THREE from 'three';
 import { makeMoonPost, type MoonPostHandle } from '@/lib/solar-system/moon-post';
 import { makeMoonPerf, probeCalls, type MoonPerf } from '@/lib/solar-system/moon-perf';
 import { makeLightPool, type LightPool } from '@/lib/solar-system/moon-lights';
+import { compileFor, uploadSceneTextures } from '@/lib/solar-system/gpu-warm';
 import { getSettings } from '@/game/settings';
-import { currentQuality, onQualityChange, stepQualityDown, type QualityProfile } from '@/game/quality';
+import { currentQuality, onQualityChange, pixelRatioFor, stepQualityDown, type QualityProfile } from '@/game/quality';
 
 export interface SurfaceHostOptions {
   clearColor: THREE.ColorRepresentation;
@@ -61,7 +62,8 @@ export function makeSurfaceHost(mount: HTMLElement, opts: SurfaceHostOptions): S
   // MSAA lives on the composer's target (moon-post); the default framebuffer
   // only ever receives the final quad, so it needs none of its own.
   const renderer = new THREE.WebGLRenderer({ antialias: false, alpha: false, powerPreference: 'high-performance' });
-  const ratioFor = (q: QualityProfile) => Math.min(window.devicePixelRatio, q.maxPixelRatio);
+  let profile = quality;
+  const ratioFor = (q: QualityProfile) => pixelRatioFor(q, mount.clientWidth, mount.clientHeight);
   let maxRatio = ratioFor(quality);
   renderer.setPixelRatio(maxRatio);
   renderer.setSize(mount.clientWidth, mount.clientHeight);
@@ -115,6 +117,7 @@ export function makeSurfaceHost(mount: HTMLElement, opts: SurfaceHostOptions): S
 
   // ── A new preset, live: the pixel ratio, the shadow map, the post chain. ──
   const unsubQuality = onQualityChange((q) => {
+    profile = q;
     maxRatio = ratioFor(q);
     perf.setRatioBounds(pinned ? maxRatio : Math.min(1, maxRatio), maxRatio);
     renderer.setPixelRatio(maxRatio);
@@ -165,6 +168,13 @@ export function makeSurfaceHost(mount: HTMLElement, opts: SurfaceHostOptions): S
   const onResize = () => {
     const w = mount.clientWidth; const h = mount.clientHeight;
     if (!w || !h) return;
+    // A bigger window is more pixels: the budget may want a different ratio.
+    const cap = ratioFor(profile);
+    if (Math.abs(cap - maxRatio) > 0.01) {
+      maxRatio = cap;
+      perf.setRatioBounds(pinned ? maxRatio : Math.min(1, maxRatio), maxRatio);
+      renderer.setPixelRatio(maxRatio);
+    }
     renderer.setSize(w, h);
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
@@ -196,6 +206,16 @@ export function makeSurfaceHost(mount: HTMLElement, opts: SurfaceHostOptions): S
         const hiddenForCompile: THREE.Object3D[] = [];
         scene.traverse((o) => { if (!o.visible) { hiddenForCompile.push(o); o.visible = true; } });
         const begin = () => {
+          if (!disposed && !raf && !contextLost) {
+            // Still under the loader: every upload, and one frame through
+            // the shadow pass and the whole post chain, whose programs the
+            // compile above never sees. With the hidden props still shown,
+            // their maps go up too.
+            try {
+              uploadSceneTextures(renderer, scene);
+              post.render(0);
+            } catch { /* a lost context mid-warm: the loss handler rebuilds */ }
+          }
           for (const o of hiddenForCompile) o.visible = false;
           perf.setBuildMs(performance.now() - buildStart);
           if (disposed || raf || contextLost) return;
@@ -203,7 +223,7 @@ export function makeSurfaceHost(mount: HTMLElement, opts: SurfaceHostOptions): S
           onReady();
           resume();
         };
-        return renderer.compileAsync(scene, camera).then(begin, begin);
+        return compileFor(renderer, post.drawTarget(), () => renderer.compileAsync(scene, camera)).then(begin, begin);
       };
       compiling = after ? after.then(compile, compile) : compile() ?? Promise.resolve();
     },
