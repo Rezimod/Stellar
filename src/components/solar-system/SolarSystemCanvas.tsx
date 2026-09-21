@@ -56,6 +56,7 @@ import {
 } from '@/lib/solar-system/scene-extras';
 import { makeSunSurface } from '@/lib/solar-system/sun-surface';
 import { makePostFx } from '@/lib/solar-system/post-processing';
+import { currentQuality, onQualityChange } from '@/game/quality';
 import { probeCalls } from '@/lib/solar-system/moon-perf';
 import {
   createPlayerShip,
@@ -242,7 +243,11 @@ export function SolarSystemCanvas({
     type NavWithConn = Navigator & { connection?: { saveData?: boolean; effectiveType?: string } };
     const conn = (navigator as NavWithConn).connection;
     const lowData = !!conn && (conn.saveData === true || conn.effectiveType === '2g' || conn.effectiveType === 'slow-2g');
-    const lite = isMobile || lowData;
+    // The orrery and the flight world answer to the same preset as the
+    // surfaces: the player's choice in Settings, or the device's. `lowData`
+    // stays on top of it — a narrow pipe is not the same thing as a slow GPU.
+    const quality = currentQuality();
+    const lite = quality.lite || isMobile || lowData;
 
     let renderer: THREE.WebGLRenderer;
     try {
@@ -261,7 +266,8 @@ export function SolarSystemCanvas({
       onReadyRef.current?.();
       return;
     }
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, lite ? 1.5 : 1.75));
+    const ratioFor = () => Math.min(window.devicePixelRatio, currentQuality().maxPixelRatio);
+    renderer.setPixelRatio(ratioFor());
     renderer.setSize(mount.clientWidth, mount.clientHeight);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -342,7 +348,7 @@ export function SolarSystemCanvas({
 
     // Scene → bloom → tone-mapped output (the Sun, engine glows and bolts
     // bloom; lit planet surfaces sit under the threshold and stay sharp).
-    const postFx = makePostFx(renderer, scene, camera, lite);
+    const postFx = makePostFx(renderer, scene, camera, quality);
 
     // Space lighting: the sun is the only real source, but a dim ambient
     // keeps night sides identifiable — without it, the Moon and any planet
@@ -608,8 +614,12 @@ export function SolarSystemCanvas({
     // Once a body fills enough of the frame that a 2K map would show its
     // pixels, pull the 4K one in behind it. One fetch per body per session.
     const detailRequested = new Set<SolarBodyId>();
+    // `performance` never asks for a four-megapixel map: the fetch, the decode
+    // and the upload together cost more than the pixels are worth on a phone,
+    // and the base map is already 2K.
+    const wantsDetail = !lowData && !quality.lite;
     const maybeLoadDetailMap = (id: SolarBodyId, mesh: THREE.Mesh) => {
-      if (lowData || detailRequested.has(id)) return;
+      if (!wantsDetail || detailRequested.has(id)) return;
       // Not during an arrival: the decode is off the main thread now
       // (texture-load.ts), but the upload is not, and the crew are watching a
       // world come up. Whatever they pass on the way keeps its base map; by
@@ -1049,6 +1059,13 @@ export function SolarSystemCanvas({
       postFx.setSize(mount.clientWidth, mount.clientHeight);
     };
     window.addEventListener('resize', onResize);
+    // A new preset: the pixel ratio follows at once. What was decided when the
+    // scene was built — the bloom chain, the star and belt counts — follows on
+    // the next build, as it does on the surfaces.
+    const offQuality = onQualityChange(() => {
+      renderer.setPixelRatio(ratioFor());
+      onResize();
+    });
 
     let raf = 0;
     let lastFrame = performance.now();
@@ -1479,6 +1496,7 @@ export function SolarSystemCanvas({
       renderer.domElement.removeEventListener('webglcontextlost', onContextLost);
       document.removeEventListener('visibilitychange', onVis);
       window.removeEventListener('resize', onResize);
+      offQuality();
       el.removeEventListener('pointerdown', onPointerDown);
       el.removeEventListener('pointermove', onPointerMove);
       el.removeEventListener('pointerup', onPointerUp);

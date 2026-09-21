@@ -3,6 +3,7 @@ import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
+import type { QualityProfile } from '@/game/quality';
 
 export interface PostFxHandle {
   render: (dtSec: number) => void;
@@ -13,43 +14,43 @@ export interface PostFxHandle {
 /**
  * Scene → bloom → tone-mapped output. Threshold sits above every lit planet
  * surface so only HDR emitters bloom: the Sun's photosphere, engine glows,
- * laser bolts. On lite devices the bloom chain runs at half resolution.
+ * laser bolts.
+ *
+ * The chain is what the preset says it is, the same as the surfaces'
+ * (`moon-post.ts`). `performance` drops the bloom outright: UnrealBloom is
+ * five blur levels — a dozen passes, each one a program bind and a quad —
+ * and on a phone that is the frame, not a garnish. The Sun still reads,
+ * because the tone map is doing the work either way.
  */
 export function makePostFx(
   renderer: THREE.WebGLRenderer,
   scene: THREE.Scene,
   camera: THREE.Camera,
-  lite: boolean,
+  quality: QualityProfile,
 ): PostFxHandle {
   const size = renderer.getSize(new THREE.Vector2());
   const pr0 = renderer.getPixelRatio();
   // The scene is drawn into the composer's target, never the canvas, so the
-  // anti-aliasing has to live here: a multisampled target on desktop.
+  // anti-aliasing has to live here. Off the `performance` preset nothing
+  // changes from what the orrery always drew: a multisampled target and a
+  // full-resolution bloom chain.
   const target = new THREE.WebGLRenderTarget(size.x * pr0, size.y * pr0, {
     type: THREE.HalfFloatType,
-    samples: lite ? 0 : 4,
+    samples: quality.bloom ? 4 : 0,
   });
   const composer = new EffectComposer(renderer, target);
-  const bloomScale = lite ? 0.5 : 1;
   const renderPass = new RenderPass(scene, camera);
-  const bloom = new UnrealBloomPass(
-    new THREE.Vector2(size.x * bloomScale, size.y * bloomScale),
-    0.4,
-    0.7,
-    0.85,
-  );
+  const bloom = quality.bloom
+    ? new UnrealBloomPass(new THREE.Vector2(size.x, size.y), 0.4, 0.7, 0.85)
+    : null;
   const output = new OutputPass();
   composer.addPass(renderPass);
-  composer.addPass(bloom);
+  if (bloom) composer.addPass(bloom);
   composer.addPass(output);
 
   const setSize = (w: number, h: number) => {
-    const pr = renderer.getPixelRatio();
-    composer.setPixelRatio(pr);
+    composer.setPixelRatio(renderer.getPixelRatio());
     composer.setSize(w, h);
-    // EffectComposer resizes every pass to full device resolution — pull the
-    // bloom chain back down on lite devices after that.
-    bloom.setSize(w * pr * bloomScale, h * pr * bloomScale);
   };
   setSize(size.x, size.y);
 
@@ -60,7 +61,7 @@ export function makePostFx(
     setSize,
     dispose() {
       renderPass.dispose();
-      bloom.dispose();
+      bloom?.dispose();
       output.dispose();
       composer.dispose();
     },
