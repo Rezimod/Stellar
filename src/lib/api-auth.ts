@@ -15,8 +15,8 @@ let _privy: PrivyClient | null = null;
 function getPrivy(): PrivyClient {
   if (!_privy) {
     _privy = new PrivyClient(
-      process.env.NEXT_PUBLIC_PRIVY_APP_ID!,
-      process.env.PRIVY_APP_SECRET!,
+      process.env.NEXT_PUBLIC_PRIVY_APP_ID!.trim(),
+      (process.env.PRIVY_APP_SECRET ?? '').trim(),
     );
   }
   return _privy;
@@ -45,7 +45,10 @@ export async function getSessionWalletAddresses(privyId: string): Promise<string
     return accounts
       .filter((a) => a.type === 'wallet' && typeof a.address === 'string' && a.address.length > 0)
       .map((a) => a.address as string);
-  } catch {
+  } catch (err) {
+    // Reading a user needs the app secret; checking a token does not. A wrong
+    // or missing PRIVY_APP_SECRET shows up here, and only here.
+    console.error('[privy] cannot read linked wallets:', err instanceof Error ? err.message : err);
     return [];
   }
 }
