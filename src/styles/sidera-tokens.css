@@ -357,67 +357,190 @@
 .sd-verdict { display: inline-flex; align-items: center; gap: 8px; border: 1px solid color-mix(in srgb, var(--sd-teal) 45%, transparent); background: color-mix(in srgb, var(--sd-teal) 10%, transparent); color: var(--sd-teal); border-radius: 999px; padding: 8px 16px; font-family: var(--sd-mono); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; }
 
 /* ── The reveal ───────────────────────────────────────────────── */
-/* Three beats. The stone arrives, the cards are drawn out of it in turn,
-   then the draw prints its own provenance. --sd-fall comes from the
-   component, pitched to the scarcest card in the capsule. */
-.sd-reveal { position: relative; display: flex; flex-direction: column; gap: 32px; align-items: center; }
+/* A stone coming home, on a stage over the whole screen. It enters the
+   atmosphere burning in --sd-heat (the colour of the scarcest card it
+   carries) — the only glow here, and it is the object's own. It strikes,
+   cools and cracks; the cards rise out of it face down and turn over, one at a
+   time, commonest first. Every beat is timed off --sd-fall, --sd-open and
+   --sd-stagger, which the component sets from the capsule's contents. */
+.sd-reveal { --sd-impact-y: 118px; --sd-from-x: min(640px, 62vw); --sd-from-y: -230px; position: relative; }
+.sd-reveal__stage { position: relative; display: flex; flex-direction: column; align-items: center; gap: 28px; padding: 48px 0 8px; }
 
-.sd-reveal__descent { position: relative; display: flex; align-items: center; justify-content: center; min-height: 72px; }
-.sd-reveal__stone { display: block; animation: sd-fall var(--sd-fall, 550ms) cubic-bezier(0.34, 1.2, 0.64, 1) both; filter: drop-shadow(0 0 24px color-mix(in srgb, currentColor 45%, transparent)); }
+.sd-reveal--staged {
+  position: fixed; inset: 0; z-index: 80; overflow-y: auto; overscroll-behavior: contain;
+  display: grid; place-items: center; padding: 24px var(--sd-gutter);
+  background:
+    var(--sd-stars) 0 0 / 340px 300px,
+    radial-gradient(90% 60% at 50% 0%, #11234f 0%, transparent 65%),
+    rgba(3, 7, 18, 0.99);
+  animation: sd-stage-in 400ms var(--sd-ease) both;
+}
+.sd-reveal--staged .sd-reveal__stage { width: min(980px, 100%); min-height: min(760px, 100%); padding-top: 72px; }
 
-/* The entry streak: one line of atmosphere, drawn and gone. No particles. */
-.sd-reveal__streak {
-  position: absolute; top: 18%; right: 50%; width: 300px; height: 2px; transform-origin: right center;
-  background: linear-gradient(90deg, transparent, var(--sd-accent));
-  animation: sd-streak var(--sd-fall, 550ms) var(--sd-ease) both;
+.sd-reveal__sky { position: absolute; inset: 0; pointer-events: none; }
+.sd-reveal:not(.sd-reveal--staged) .sd-reveal__sky { display: none; }
+
+/* The limb of the Earth: where the stone meets the air. */
+.sd-reveal__limb {
+  position: absolute; left: 50%; top: 58%; width: 220%; aspect-ratio: 1; transform: translateX(-50%);
+  border-radius: 50%; border-top: 1px solid rgba(150, 195, 255, 0.35);
+  box-shadow: 0 -10px 60px rgba(90, 150, 255, 0.18), inset 0 20px 80px rgba(60, 120, 255, 0.12);
+  opacity: 0; animation: sd-fade 1200ms var(--sd-ease) 100ms both;
 }
 
-.sd-reveal__caption { opacity: 0; animation: sd-draw var(--sd-dur-base) var(--sd-ease) both; animation-delay: var(--sd-fall, 550ms); }
+.sd-reveal__meteor {
+  position: absolute; left: 50%; top: var(--sd-impact-y); width: 0; height: 0;
+  animation:
+    sd-enter var(--sd-fall) cubic-bezier(0.45, 0, 0.85, 0.6) both,
+    sd-out 180ms linear var(--sd-fall) forwards;
+}
+.sd-reveal__head {
+  position: absolute; left: -7px; top: -7px; width: 14px; height: 14px; border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 10px 3px var(--sd-heat), 0 0 36px 12px color-mix(in srgb, var(--sd-heat) 55%, transparent);
+}
+.sd-reveal__tail {
+  position: absolute; left: 0; top: -2px; width: 460px; height: 4px; border-radius: 4px;
+  transform-origin: 0 50%; transform: rotate(-20deg); transform: rotate(atan2(var(--sd-from-y), var(--sd-from-x)));
+  background: linear-gradient(90deg, #fff 0%, var(--sd-heat) 12%, color-mix(in srgb, var(--sd-heat) 30%, transparent) 45%, transparent 100%);
+  filter: blur(0.6px);
+}
+.sd-reveal__flash {
+  position: absolute; left: 50%; top: var(--sd-impact-y); width: 220px; height: 220px; margin: -110px 0 0 -110px; border-radius: 50%;
+  background: radial-gradient(circle, #fff 0%, color-mix(in srgb, var(--sd-heat) 70%, transparent) 22%, transparent 62%);
+  opacity: 0; animation: sd-flash 650ms ease-out var(--sd-fall) both;
+}
+.sd-reveal__shock {
+  position: absolute; left: 50%; top: var(--sd-impact-y); width: 120px; height: 120px; margin: -60px 0 0 -60px; border-radius: 50%;
+  border: 2px solid var(--sd-heat); opacity: 0;
+  animation: sd-shock 1100ms cubic-bezier(0.1, 0.7, 0.3, 1) var(--sd-fall) both;
+}
 
-.sd-reveal__cards { width: 100%; }
-.sd-reveal__card { opacity: 0; animation: sd-draw var(--sd-dur-base) var(--sd-ease) both; animation-delay: calc(var(--sd-fall, 550ms) + var(--sd-i, 0) * 350ms); }
+.sd-reveal__descent { position: relative; z-index: 1; height: 72px; display: grid; place-items: center; margin-top: calc(var(--sd-impact-y) - 36px - 72px); }
+.sd-reveal__stone {
+  display: block; color: var(--sd-heat);
+  animation:
+    sd-land 520ms cubic-bezier(0.3, 1.5, 0.5, 1) var(--sd-fall) both,
+    sd-cool 1800ms ease-out var(--sd-fall) both,
+    sd-dim 600ms var(--sd-ease) calc(var(--sd-fall) + var(--sd-open)) forwards;
+}
+.sd-reveal__stone svg { display: block; }
+.sd-reveal__crack { stroke-dasharray: 64; stroke-dashoffset: 64; animation: sd-crack 420ms ease-out calc(var(--sd-fall) + 260ms) forwards; }
+
+.sd-reveal__caption { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; margin: 0; text-align: center; animation: sd-draw 600ms var(--sd-ease) calc(var(--sd-fall) + 160ms) both; }
+.sd-reveal__line { font-weight: 600; font-size: clamp(22px, 3.6vw, 32px); letter-spacing: -0.03em; }
+
+.sd-reveal__cards { position: relative; z-index: 1; list-style: none; margin: 0; padding: 0; width: 100%; display: flex; justify-content: center; align-items: flex-end; gap: clamp(10px, 3vw, 28px); perspective: 1400px; }
+.sd-reveal__card { --sd-lift: 0px; position: relative; flex: 0 1 200px; min-width: 0; animation: sd-emerge 640ms cubic-bezier(0.2, 0.8, 0.2, 1.1) calc(var(--sd-fall) + var(--sd-open) + var(--sd-i) * var(--sd-stagger)) both; }
+.sd-reveal__card--best { --sd-lift: -18px; flex-basis: 232px; }
 .sd-reveal__card:focus-visible { outline: 2px solid var(--sd-focus); outline-offset: 6px; border-radius: var(--sd-radius); }
-/* The last card out is the best one: it sits a little above its neighbours. */
-@media (min-width: 640px) { .sd-reveal__card--best { transform: translateY(-20px); } }
+.sd-reveal__card .sd-plate { max-width: none; }
+
+.sd-flip { position: relative; transform-style: preserve-3d; animation: sd-turn 720ms cubic-bezier(0.3, 0.7, 0.2, 1) calc(var(--sd-fall) + var(--sd-open) + var(--sd-i) * var(--sd-stagger) + 340ms) both; }
+.sd-flip__front { backface-visibility: hidden; }
+.sd-flip__back {
+  position: absolute; inset: 0; z-index: 1; transform: rotateY(180deg); backface-visibility: hidden;
+  display: grid; place-items: center; border-radius: var(--sd-radius);
+  border: 1px solid color-mix(in srgb, var(--sd-heat) 45%, transparent);
+  background:
+    repeating-linear-gradient(135deg, rgba(255, 179, 71, 0.06) 0 1px, transparent 1px 9px),
+    radial-gradient(120% 90% at 50% 10%, #1d3264 0%, #070e22 75%);
+}
+.sd-flip__back .sd-sealed__mark { font-size: 15px; }
+
+/* The best card is lit by what it came out of, once it has turned. */
+.sd-reveal__aura {
+  position: absolute; inset: -18% -22%; z-index: -1; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--sd-heat) 40%, transparent), transparent);
+  opacity: 0; animation: sd-fade 900ms ease-out calc(var(--sd-fall) + var(--sd-open) + var(--sd-i) * var(--sd-stagger) + 900ms) both;
+}
+.sd-reveal--common .sd-reveal__aura, .sd-reveal--rare .sd-reveal__aura { display: none; }
 
 .sd-skip {
-  position: absolute; top: 0; right: 0; z-index: 2;
-  background: none; border: 1px solid var(--sd-rule); border-radius: 999px;
-  padding: 6px 14px; cursor: pointer;
-  font-family: var(--sd-mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase;
-  color: var(--sd-ink-3);
+  position: absolute; top: 16px; right: 0; z-index: 3;
+  background: rgba(255, 255, 255, 0.04); border: 1px solid var(--sd-rule-strong); border-radius: 999px;
+  padding: 8px 16px; min-height: 40px; cursor: pointer;
+  font-family: var(--sd-mono); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--sd-ink-2);
   transition: color var(--sd-dur-fast) var(--sd-ease), border-color var(--sd-dur-fast) var(--sd-ease);
 }
-.sd-skip:hover { color: var(--sd-ink-2); border-color: var(--sd-rule-strong); }
+.sd-skip:hover { color: var(--sd-ink); border-color: var(--sd-ink-4); }
 
-.sd-reveal__after { display: flex; flex-direction: column; align-items: center; gap: 18px; opacity: 0; animation: sd-draw var(--sd-dur-base) var(--sd-ease) both; animation-delay: calc(var(--sd-fall, 550ms) + var(--sd-i, 0) * 350ms); }
-.sd-reveal__provenance { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 14px; color: var(--sd-ink-3); margin: 0; }
-.sd-reveal__provenance a { color: var(--sd-ink-2); }
+.sd-reveal__after { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 20px; animation: sd-draw 600ms var(--sd-ease) calc(var(--sd-fall) + var(--sd-open) + var(--sd-i) * var(--sd-stagger) + 400ms) both; }
+.sd-reveal__provenance {
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 22px; margin: 0;
+  padding: 12px 20px; border: 1px solid var(--sd-rule); border-radius: 999px;
+  background: rgba(255, 255, 255, 0.03); color: var(--sd-ink-3);
+}
+.sd-reveal__provenance a { color: var(--sd-accent); }
+.sd-reveal__after .sd-pay__actions { justify-content: center; }
 
-@keyframes sd-fall {
-  from { transform: translateY(-64px) rotate(-16deg) scale(0.9); opacity: 0; }
-  60% { opacity: 1; }
+@keyframes sd-stage-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes sd-fade { to { opacity: 1; } }
+@keyframes sd-enter {
+  from { transform: translate(var(--sd-from-x), var(--sd-from-y)) scale(0.6); opacity: 0; }
+  8% { opacity: 1; }
   to { transform: none; opacity: 1; }
 }
-@keyframes sd-streak {
-  from { transform: scaleX(0); opacity: 0.9; }
-  70% { transform: scaleX(1); opacity: 0.5; }
-  to { transform: scaleX(1); opacity: 0; }
+@keyframes sd-out { to { opacity: 0; } }
+@keyframes sd-flash {
+  0% { opacity: 0; transform: scale(0.2); }
+  18% { opacity: 1; }
+  100% { opacity: 0; transform: scale(2.4); }
+}
+@keyframes sd-shock {
+  0% { opacity: 0; transform: scale(0.2); }
+  6% { opacity: 0.9; }
+  100% { opacity: 0; transform: scale(5.5); }
+}
+@keyframes sd-land {
+  from { opacity: 0; transform: scale(0.35); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes sd-cool {
+  from { filter: brightness(2.2) drop-shadow(0 0 22px var(--sd-heat)); }
+  to { filter: brightness(1) drop-shadow(0 0 3px color-mix(in srgb, var(--sd-heat) 50%, transparent)); }
+}
+@keyframes sd-dim { to { opacity: 0.4; transform: scale(0.82); } }
+@keyframes sd-crack { to { stroke-dashoffset: 0; } }
+@keyframes sd-emerge {
+  from { opacity: 0; transform: translateY(-120px) scale(0.3); }
+  to { opacity: 1; transform: translateY(var(--sd-lift)); }
+}
+@keyframes sd-turn {
+  from { transform: rotateY(180deg); }
+  to { transform: rotateY(0deg); }
 }
 @keyframes sd-draw {
   from { opacity: 0; transform: translateY(18px) scale(0.98); }
   to { opacity: 1; transform: none; }
 }
-/* Skipped, or never animated: everything is simply there. */
-.sd-reveal.is-done .sd-reveal__stone,
-.sd-reveal.is-done .sd-reveal__streak,
+
+/* Skipped, closed, or never animated: everything is simply there. */
+.sd-reveal.is-done .sd-reveal__meteor,
+.sd-reveal.is-done .sd-reveal__flash,
+.sd-reveal.is-done .sd-reveal__shock { display: none; }
+.sd-reveal.is-done .sd-reveal__limb,
 .sd-reveal.is-done .sd-reveal__caption,
-.sd-reveal.is-done .sd-reveal__card,
-.sd-reveal.is-done .sd-reveal__after { animation: none; opacity: 1; }
-.sd-reveal.is-done .sd-reveal__streak { opacity: 0; }
+.sd-reveal.is-done .sd-reveal__after,
+.sd-reveal.is-done .sd-reveal__aura,
+.sd-reveal.is-done .sd-flip { animation: none; opacity: 1; transform: none; }
+.sd-reveal.is-done .sd-reveal__stone { animation: none; opacity: 0.4; transform: scale(0.82); filter: none; }
+.sd-reveal.is-done .sd-reveal__crack { animation: none; stroke-dashoffset: 0; }
+.sd-reveal.is-done .sd-reveal__card { animation: none; opacity: 1; transform: translateY(var(--sd-lift)); }
+.sd-reveal:not(.sd-reveal--staged) .sd-reveal__descent { display: none; }
 @media (prefers-reduced-motion: reduce) {
-  .sd-reveal__stone, .sd-reveal__card, .sd-reveal__caption, .sd-reveal__after { animation: none; opacity: 1; }
-  .sd-reveal__streak { display: none; }
+  .sd-reveal--staged, .sd-reveal__limb, .sd-reveal__stone, .sd-reveal__crack, .sd-reveal__caption,
+  .sd-reveal__card, .sd-flip, .sd-reveal__aura, .sd-reveal__after { animation: none; opacity: 1; }
+  .sd-reveal__crack { stroke-dashoffset: 0; }
+  .sd-reveal__meteor, .sd-reveal__flash, .sd-reveal__shock { display: none; }
+}
+@media (max-width: 639px) {
+  .sd-reveal { --sd-impact-y: 104px; }
+  .sd-reveal__card { flex-basis: 30%; }
+  .sd-reveal__card--best { flex-basis: 34%; }
+  .sd-reveal__card .sd-plate__name { font-size: 12px; }
+  .sd-reveal__card .sd-plate__body { padding: 8px; }
 }
 
 /* ── Arrival ──────────────────────────────────────────────────── */
