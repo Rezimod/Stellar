@@ -15,8 +15,8 @@ export default function SideraVote({ designation, name }: { designation: string;
   if (!ready || !authenticated) {
     return (
       <>
-        <button type="button" className="sd-btn" onClick={() => setAuthOpen(true)}>
-          Sign in to vote
+        <button type="button" className="sd-btn" onClick={() => setAuthOpen(true)} aria-label={`Sign in to vote for ${name}`}>
+          Vote
         </button>
         <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
       </>
@@ -48,7 +48,7 @@ export default function SideraVote({ designation, name }: { designation: string;
 
   return (
     <>
-      <button type="button" className="sd-btn" onClick={vote} disabled={state.busy}>
+      <button type="button" className="sd-btn" onClick={vote} disabled={state.busy} aria-label={`Vote for ${name}`}>
         {state.busy ? 'Recording' : 'Vote'}
       </button>
       {state.note && <p className="sd-data">{state.note}</p>}
