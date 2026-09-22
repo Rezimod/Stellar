@@ -13,7 +13,7 @@ import { getNode } from "@/lib/observatory/nodes";
 import type { Rarity } from "@/lib/rarity";
 import { SET_001_CARDS } from "@/lib/sets/set-001";
 import { capsulesOnSale } from "@/lib/sidera/capsule";
-import { CAPSULE_PRICE_GEL, CARDS_PER_CAPSULE } from "@/lib/sidera/economics";
+import { CAPSULE_PRICE_USD, CARDS_PER_CAPSULE } from "@/lib/sidera/economics";
 
 export const dynamic = "force-dynamic";
 
@@ -100,7 +100,7 @@ export default async function HomePage() {
               </p>
               <div className="sd-hero__cta">
                 <Link href="/capsules" className="sd-btn sd-btn--primary">
-                  Open a capsule — {CAPSULE_PRICE_GEL} GEL
+                  Open a capsule — ${CAPSULE_PRICE_USD}
                 </Link>
                 <Link href="/tonight" className="sd-btn">
                   Tonight’s sky

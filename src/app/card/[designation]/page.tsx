@@ -14,7 +14,7 @@ import { formatDec, formatRa } from '@/lib/observatory/telescope-targets';
 import { rarityInfo, type Rarity } from '@/lib/rarity';
 import { isRendered } from '@/lib/sets/build';
 import { SET_001_CARD_BY_DESIGNATION } from '@/lib/sets/set-001';
-import { DIRECT_CARD_PRICE_GEL } from '@/lib/sidera/economics';
+import { DIRECT_CARD_PRICE_USD } from '@/lib/sidera/economics';
 import type { ObservationStatus } from '@/lib/sidera/observability';
 import { cardAvailability } from '@/lib/sidera/orders';
 
@@ -41,7 +41,7 @@ export default async function CardPage({ params }: { params: Promise<{ designati
 
   const { seed } = card;
   const rarity = seed.rarity as Rarity;
-  const priceGel = DIRECT_CARD_PRICE_GEL[rarity];
+  const priceUsd = DIRECT_CARD_PRICE_USD[rarity];
 
   const db = getDb();
   let allocated: number | null = null;
@@ -110,14 +110,14 @@ export default async function CardPage({ params }: { params: Promise<{ designati
           className="sd-facts"
           items={[
             ...position,
-            { label: 'Price', value: `${priceGel} GEL` },
+            { label: 'Price', value: `$${priceUsd}` },
           ]}
         />
         <div className="sd-buy">
           <SideraBuyCard
             designation={seed.designation}
             name={seed.name}
-            priceGel={priceGel}
+            priceUsd={priceUsd}
             available={available}
             released={released}
           />
@@ -136,7 +136,7 @@ export default async function CardPage({ params }: { params: Promise<{ designati
                 { label: 'Catalogue', value: seed.catalogRef },
                 ...position,
                 { label: 'Editions', value: allocated === null ? String(seed.editionSize) : `${allocated} / ${seed.editionSize}` },
-                { label: 'Price', value: `${priceGel} GEL` },
+                { label: 'Price', value: `$${priceUsd}` },
               ]}
             />
           </div>

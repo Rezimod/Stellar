@@ -934,6 +934,12 @@ export const cardVote = pgTable('card_vote', {
 //   CREATE UNIQUE INDEX IF NOT EXISTS capsule_log_card_sold_unique
 //     ON capsule_log ((outcome->>'orderHash')) WHERE event = 'card_sold';
 //   CREATE INDEX IF NOT EXISTS capsule_log_capsule_idx ON capsule_log (capsule_id, seq);
+//
+//   -- Prices move to US dollars. Capsules on sale, or bought and not yet paid (which can return to the sale), are repriced; opened ones
+//   -- keep their lari price as history.
+//   ALTER TABLE capsule ADD COLUMN IF NOT EXISTS price_usd double precision;
+//   ALTER TABLE capsule ALTER COLUMN price_gel DROP NOT NULL;
+//   UPDATE capsule SET price_usd = 15 WHERE state IN ('listed', 'purchased') AND price_usd IS NULL;
 export const capsule = pgTable('capsule', {
   /** Chosen by the server before insert: it is part of what the draws are derived from. */
   id: uuid('id').primaryKey(),
@@ -950,7 +956,10 @@ export const capsule = pgTable('capsule', {
   state: text('state').notNull().default('listed'),
   /** Listed by the demo script: never offered for sale, and marked so in its 'listed' log entry. */
   demo: boolean('demo').notNull().default(false),
-  priceGel: doublePrecision('price_gel').notNull(),
+  /** What the capsule sells for, in US dollars; paid in SOL at the live rate. */
+  priceUsd: doublePrecision('price_usd').notNull(),
+  /** Lari, for capsules listed before prices moved to dollars. History only. */
+  priceGel: doublePrecision('price_gel'),
   cardsPerCapsule: integer('cards_per_capsule').notNull(),
   listedAt: timestamp('listed_at', { withTimezone: true }).defaultNow().notNull(),
   buyerWallet: text('buyer_wallet'),

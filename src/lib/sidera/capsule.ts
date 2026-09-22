@@ -19,7 +19,7 @@ import { orders } from '@/lib/schema';
 import { isRarity, type Rarity } from '@/lib/rarity';
 import type { Db } from './attach';
 import type { LogRow } from './audit';
-import { CAPSULE_PRICE_GEL, CARDS_PER_CAPSULE, RARITY_ODDS_BPS } from './economics';
+import { CAPSULE_PRICE_USD, CARDS_PER_CAPSULE, RARITY_ODDS_BPS } from './economics';
 import { findPayment, markPaid, orderExpiry, simulatedPayments, type OrderRow, type PaymentCheck } from './orders';
 import {
   SoldOutError,
@@ -148,10 +148,10 @@ export type ListedCapsule = { id: string; sequence: number; commitment: string }
  */
 export async function listCapsules(
   db: Db,
-  input: { setId: string; count: number; priceGel?: number; demo?: boolean },
+  input: { setId: string; count: number; priceUsd?: number; demo?: boolean },
 ): Promise<ListedCapsule[]> {
   const demo = input.demo === true;
-  const price = input.priceGel ?? CAPSULE_PRICE_GEL;
+  const price = input.priceUsd ?? CAPSULE_PRICE_USD;
   const supply = await readSupply(db, input.setId);
   const remaining = supply.reduce((sum, s) => sum + Math.max(0, s.remaining), 0);
   const { rows: open } = (await db.execute(sql`
@@ -172,7 +172,7 @@ export async function listCapsules(
     const statements = capsules.map((c) =>
       db.execute(sql`
         WITH c AS (
-          INSERT INTO capsule (id, set_id, sequence, commitment, server_secret_sealed, price_gel, cards_per_capsule, demo)
+          INSERT INTO capsule (id, set_id, sequence, commitment, server_secret_sealed, price_usd, cards_per_capsule, demo)
           SELECT ${c.id}::uuid, ${input.setId}::uuid, COALESCE(MAX(sequence), 0) + 1, ${c.commitment}, ${c.sealed},
             ${price}, ${CARDS_PER_CAPSULE}, ${demo}
           FROM capsule
@@ -201,15 +201,15 @@ export async function listCapsules(
 /** Capsules on sale, lowest number first. Never selects the sealed secret; never offers a demo capsule. */
 export async function capsulesOnSale(db: Db, limit = 50) {
   const { rows } = (await db.execute(sql`
-    SELECT id, set_id, sequence, commitment, price_gel, cards_per_capsule, listed_at
+    SELECT id, set_id, sequence, commitment, price_usd, cards_per_capsule, listed_at
     FROM capsule WHERE state = 'listed' AND NOT demo ORDER BY sequence LIMIT ${limit}
-  `)) as Rows<{ id: string; set_id: string; sequence: number | string; commitment: string; price_gel: number; cards_per_capsule: number; listed_at: string }>;
+  `)) as Rows<{ id: string; set_id: string; sequence: number | string; commitment: string; price_usd: number; cards_per_capsule: number; listed_at: string }>;
   return rows.map((r) => ({
     id: r.id,
     setId: r.set_id,
     sequence: Number(r.sequence),
     commitment: r.commitment,
-    priceGel: Number(r.price_gel),
+    priceUsd: Number(r.price_usd),
     cardsPerCapsule: Number(r.cards_per_capsule),
     listedAt: r.listed_at,
   }));
@@ -225,7 +225,7 @@ type CapsuleRow = {
   server_secret_sealed: string;
   server_secret: string | null;
   state: 'listed' | 'purchased' | 'opened' | 'void' | 'released';
-  price_gel: number;
+  price_usd: number;
   cards_per_capsule: number;
   buyer_wallet: string | null;
   buyer_nonce: string | null;
@@ -233,7 +233,7 @@ type CapsuleRow = {
   demo: boolean;
 };
 
-const CAPSULE_COLUMNS = sql.raw(`id, set_id, sequence, commitment, server_secret_sealed, server_secret, state, price_gel,
+const CAPSULE_COLUMNS = sql.raw(`id, set_id, sequence, commitment, server_secret_sealed, server_secret, state, price_usd,
       cards_per_capsule, buyer_wallet, buyer_nonce, order_id, demo`);
 
 export async function readCapsule(db: Db, capsuleId: string): Promise<CapsuleRow | null> {
@@ -250,7 +250,7 @@ async function readOrder(db: Db, orderId: string): Promise<OrderRow | null> {
 }
 
 export type PurchaseResult =
-  | { ok: true; orderId: string; sequence: number; message: string; purchaseHash: string; priceGel: number; expiresAt: string }
+  | { ok: true; orderId: string; sequence: number; message: string; purchaseHash: string; priceUsd: number; expiresAt: string }
   | { ok: false; reason: 'not_found' | 'not_listed' | 'commitment_mismatch' };
 
 /**
@@ -286,7 +286,7 @@ export async function purchaseCapsule(
   const terms = { capsuleId, sequence, commitment: input.commitment, wallet: input.wallet, nonce: input.nonce };
   const hash = purchaseHash(terms);
   const orderId = randomUUID();
-  const priceGel = Number(capsuleRow.price_gel);
+  const priceUsd = Number(capsuleRow.price_usd);
   const expiresAt = orderExpiry().toISOString();
 
   const [claimed, order] = await runBatch(db, [
@@ -307,14 +307,14 @@ export async function purchaseCapsule(
         amount_sol, amount_stars, amount_fiat, currency, payment_reference, status,
         shipping_name, shipping_phone, shipping_address, shipping_city, shipping_country, expires_at)
       SELECT ${orderId}::uuid, ${input.privyId}, ${input.wallet}, 'sidera-capsule', ${`Capsule ${sequence}`}, 'sidera', 'sol',
-        ${input.amountSol}, 0, ${priceGel}, 'GEL', ${input.paymentReference}, 'pending', '', '', '', '', '', ${expiresAt}::timestamptz
+        ${input.amountSol}, 0, ${priceUsd}, 'USD', ${input.paymentReference}, 'pending', '', '', '', '', '', ${expiresAt}::timestamptz
       WHERE EXISTS (SELECT 1 FROM capsule WHERE id = ${capsuleId}::uuid AND order_id = ${orderId}::uuid)
       RETURNING id
     `),
   ]);
 
   if (claimed.rows.length === 0 || order.rows.length === 0) return { ok: false, reason: 'not_listed' };
-  return { ok: true, orderId, sequence, message: purchaseMessage(terms), purchaseHash: hash, priceGel, expiresAt };
+  return { ok: true, orderId, sequence, message: purchaseMessage(terms), purchaseHash: hash, priceUsd, expiresAt };
 }
 
 // ─── Opening ────────────────────────────────────────────────────────────────

@@ -4,9 +4,9 @@ import bs58 from 'bs58';
 import { describe, expect, it } from 'vitest';
 import { RARITIES, type Rarity } from '@/lib/rarity';
 import {
-  CAPSULE_PRICE_GEL,
+  CAPSULE_PRICE_USD,
   CARDS_PER_CAPSULE,
-  DIRECT_CARD_PRICE_GEL,
+  DIRECT_CARD_PRICE_USD,
   RARITY_ODDS,
   RARITY_ODDS_BPS,
   UNKNOWN_COSTS,
@@ -40,21 +40,21 @@ describe('the odds and prices', () => {
   });
 
   it('prices every rarity, rarer dearer', () => {
-    const prices = RARITIES.map((r) => DIRECT_CARD_PRICE_GEL[r]);
+    const prices = RARITIES.map((r) => DIRECT_CARD_PRICE_USD[r]);
     expect([...prices].sort((a, b) => a - b)).toEqual(prices);
-    expect(CAPSULE_PRICE_GEL).toBeGreaterThan(0);
+    expect(CAPSULE_PRICE_USD).toBeGreaterThan(0);
     expect(CARDS_PER_CAPSULE).toBeGreaterThan(0);
   });
 
   it('computes Gate 2’s contents value and margin from the constants', () => {
     const e = capsuleEconomics(UNKNOWN_COSTS);
-    const perDraw = RARITIES.reduce((s, r) => s + RARITY_ODDS[r] * DIRECT_CARD_PRICE_GEL[r], 0);
-    expect(e.expectedContentsValueGel).toBeCloseTo(CARDS_PER_CAPSULE * perDraw, 10);
-    expect(e.contributionMarginGel).toBe(CAPSULE_PRICE_GEL);
+    const perDraw = RARITIES.reduce((s, r) => s + RARITY_ODDS[r] * DIRECT_CARD_PRICE_USD[r], 0);
+    expect(e.expectedContentsValueUsd).toBeCloseTo(CARDS_PER_CAPSULE * perDraw, 10);
+    expect(e.contributionMarginUsd).toBe(CAPSULE_PRICE_USD);
 
-    const costed = capsuleEconomics({ ...UNKNOWN_COSTS, paymentFeeRate: 0.03, contentsCostPerCardGel: 1, fulfilmentGel: 2 }, 40);
-    expect(costed.variableCostGel).toBeCloseTo(40 * 0.03 + CARDS_PER_CAPSULE * 1 + 2, 10);
-    expect(costed.contributionMarginGel).toBeCloseTo(40 - costed.variableCostGel, 10);
+    const costed = capsuleEconomics({ ...UNKNOWN_COSTS, paymentFeeRate: 0.03, contentsCostPerCardUsd: 1, fulfilmentUsd: 2 }, 40);
+    expect(costed.variableCostUsd).toBeCloseTo(40 * 0.03 + CARDS_PER_CAPSULE * 1 + 2, 10);
+    expect(costed.contributionMarginUsd).toBeCloseTo(40 - costed.variableCostUsd, 10);
   });
 });
 

@@ -9,7 +9,7 @@ import PageHead from '@/components/sidera/ui/PageHead';
 import RarityMark from '@/components/sidera/ui/RarityMark';
 import { getDb } from '@/lib/db';
 import { RARITIES } from '@/lib/rarity';
-import { CAPSULE_PRICE_GEL, CARDS_PER_CAPSULE, ORDER_WINDOW_MINUTES, RARITY_ODDS_BPS } from '@/lib/sidera/economics';
+import { CAPSULE_PRICE_USD, CARDS_PER_CAPSULE, ORDER_WINDOW_MINUTES, RARITY_ODDS_BPS } from '@/lib/sidera/economics';
 import { capsulesOnSale } from '@/lib/sidera/capsule';
 import { simulatedPayments } from '@/lib/sidera/orders';
 
@@ -40,7 +40,7 @@ export default async function CapsulesPage() {
       <PageHead
         index="03"
         section="Capsules"
-        meta={`Set 001 · ${CAPSULE_PRICE_GEL} GEL a capsule`}
+        meta={`Set 001 · $${CAPSULE_PRICE_USD} a capsule`}
         eyebrow="Three cards inside"
         title="Sealed before it is sold."
         sub="The outcome is fixed before the sale, and anyone can check it after."
@@ -93,7 +93,7 @@ export default async function CapsulesPage() {
                 <span className="sd-capsule__n">
                   <span className="sd-label">Capsule</span> {String(c.sequence).padStart(3, '0')}
                 </span>
-                <span className="sd-capsule__price">{c.priceGel} GEL</span>
+                <span className="sd-capsule__price">${c.priceUsd}</span>
               </div>
               <DataRow
                 layout="stacked"
@@ -106,7 +106,7 @@ export default async function CapsulesPage() {
                 capsuleId={c.id}
                 sequence={c.sequence}
                 commitment={c.commitment}
-                priceGel={c.priceGel}
+                priceUsd={c.priceUsd}
                 cardsPerCapsule={c.cardsPerCapsule}
               />
             </article>

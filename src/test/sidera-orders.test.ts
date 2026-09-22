@@ -11,7 +11,7 @@ vi.mock('@solana/pay', async (actual) => ({
 }));
 import { FindReferenceError } from '@solana/pay';
 import type { Db } from '@/lib/sidera/attach';
-import { findPayment, fulfilCardOrder, gelToSol, orderHash, type OrderRow } from '@/lib/sidera/orders';
+import { findPayment, fulfilCardOrder, usdToSol, orderHash, type OrderRow } from '@/lib/sidera/orders';
 import { SolPriceUnavailableError, SOL_PRICE_FALLBACK, fetchSolPriceRates } from '@/lib/sol-price';
 
 const MERCHANT = '7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU';
@@ -78,16 +78,16 @@ describe('a rehearsal deployment', () => {
 describe('quoting in SOL', () => {
   it('refuses to quote on the fallback rate, where the marketplace still falls back', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => ({ ok: false })));
-    await expect(gelToSol(39)).rejects.toBeInstanceOf(SolPriceUnavailableError);
+    await expect(usdToSol(39)).rejects.toBeInstanceOf(SolPriceUnavailableError);
     expect(await fetchSolPriceRates()).toEqual(SOL_PRICE_FALLBACK);
 
     vi.stubGlobal('fetch', vi.fn(async () => { throw new Error('offline'); }));
-    await expect(gelToSol(39)).rejects.toBeInstanceOf(SolPriceUnavailableError);
+    await expect(usdToSol(39)).rejects.toBeInstanceOf(SolPriceUnavailableError);
   });
 
   it('quotes at the live rate', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true, json: async () => ({ solana: { usd: 150 } }) })));
-    expect(await gelToSol(39)).toBeGreaterThan(0);
+    expect(await usdToSol(39)).toBeGreaterThan(0);
   });
 });
 

@@ -29,7 +29,7 @@ import { listCapsules, openCapsule, releaseCapsule, sealSecret, settleCapsulePay
  */
 type Capsule = {
   id: string; set_id: string; sequence: number; commitment: string; server_secret_sealed: string;
-  server_secret: string | null; state: string; price_gel: number; cards_per_capsule: number;
+  server_secret: string | null; state: string; price_usd: number; cards_per_capsule: number;
   buyer_wallet: string | null; buyer_nonce: string | null; purchase_hash: string | null; order_id: string | null;
   demo?: boolean;
 };
@@ -89,7 +89,7 @@ function fakePostgres(state: State) {
     if (/INSERT INTO capsule \(id, set_id, sequence/.test(sql)) {
       const [id, setId, commitment, sealed, price, perCapsule] = p as [string, string, string, string, number, number];
       const sequence = Math.max(0, ...tx.capsules.map((c) => c.sequence)) + 1;
-      tx.capsules.push({ id, set_id: setId, sequence, commitment, server_secret_sealed: sealed, server_secret: null, state: 'listed', price_gel: price, cards_per_capsule: perCapsule, buyer_wallet: null, buyer_nonce: null, purchase_hash: null, order_id: null });
+      tx.capsules.push({ id, set_id: setId, sequence, commitment, server_secret_sealed: sealed, server_secret: null, state: 'listed', price_usd: price, cards_per_capsule: perCapsule, buyer_wallet: null, buyer_nonce: null, purchase_hash: null, order_id: null });
       tx.log.push({ seq: 0, capsuleId: id, capsuleSequence: sequence, event: 'listed', commitment, buyerWallet: null, buyerNonce: null, purchaseHash: null, outcome: null, at: '' });
       return { rows: [{ capsule_id: id, capsule_sequence: sequence }] };
     }
@@ -266,7 +266,7 @@ function purchased(n: number, from = 1): Capsule[] {
     const nonce = createHash('sha256').update(`nonce-${from + i}`).digest('hex');
     return {
       id, set_id: SET, sequence: from + i, commitment, server_secret_sealed: sealSecret(secret, id),
-      server_secret: null, state: 'purchased', price_gel: 39, cards_per_capsule: 3, buyer_wallet: wallet,
+      server_secret: null, state: 'purchased', price_usd: 39, cards_per_capsule: 3, buyer_wallet: wallet,
       buyer_nonce: nonce, purchase_hash: purchaseHash({ capsuleId: id, sequence: from + i, commitment, wallet, nonce }), order_id: randomUUID(),
     };
   });

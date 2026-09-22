@@ -29,13 +29,13 @@ export default function SideraBuyCapsule({
   capsuleId,
   sequence,
   commitment,
-  priceGel,
+  priceUsd,
   cardsPerCapsule,
 }: {
   capsuleId: string;
   sequence: number;
   commitment: string;
-  priceGel: number;
+  priceUsd: number;
   cardsPerCapsule: number;
 }) {
   const { getAccessToken } = usePrivy();
@@ -152,7 +152,7 @@ export default function SideraBuyCapsule({
         <div className="sd-pay__actions">
           {ready && authenticated ? (
             <button type="button" className="sd-btn sd-btn--primary" onClick={reserve} disabled={busy}>
-              {busy ? 'Reserving' : `Take this capsule — ${priceGel} GEL`}
+              {busy ? 'Reserving' : `Take this capsule — $${priceUsd}`}
             </button>
           ) : (
             <button type="button" className="sd-btn sd-btn--primary" onClick={() => setAuthOpen(true)}>

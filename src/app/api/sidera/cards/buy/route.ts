@@ -5,8 +5,8 @@ import { assertOwnsWallet, verifyPrivy } from '@/lib/api-auth';
 import { paused } from '@/lib/kill-switch';
 import { sideraBuyRateLimit } from '@/lib/rate-limit';
 import { isRarity } from '@/lib/rarity';
-import { DIRECT_CARD_PRICE_GEL } from '@/lib/sidera/economics';
-import { cardAvailability, createCardOrder, gelToSol, merchantWallet, newPaymentReference, paymentUrl } from '@/lib/sidera/orders';
+import { DIRECT_CARD_PRICE_USD } from '@/lib/sidera/economics';
+import { cardAvailability, createCardOrder, usdToSol, merchantWallet, newPaymentReference, paymentUrl } from '@/lib/sidera/orders';
 import { limited } from '@/lib/sidera/route-guards';
 import { SolPriceUnavailableError } from '@/lib/sol-price';
 
@@ -51,10 +51,10 @@ export async function POST(req: NextRequest) {
   if (!c.released) return NextResponse.json({ error: 'This set is not on sale yet' }, { status: 409 });
   if (!c.available) return NextResponse.json({ error: 'No edition of this card is available on its own' }, { status: 409 });
 
-  const priceGel = DIRECT_CARD_PRICE_GEL[c.rarity];
+  const priceUsd = DIRECT_CARD_PRICE_USD[c.rarity];
   let amountSol: number;
   try {
-    amountSol = await gelToSol(priceGel);
+    amountSol = await usdToSol(priceUsd);
   } catch (err) {
     if (!(err instanceof SolPriceUnavailableError)) console.error('[sidera/cards/buy] quote', err);
     return NextResponse.json({ error: 'No price can be quoted right now — please retry shortly.' }, { status: 503 });
@@ -62,15 +62,15 @@ export async function POST(req: NextRequest) {
 
   try {
     const reference = newPaymentReference();
-    const order = await createCardOrder(db, { privyId, wallet: walletAddress, designation, name: c.name, priceGel, amountSol, reference });
+    const order = await createCardOrder(db, { privyId, wallet: walletAddress, designation, name: c.name, priceUsd, amountSol, reference });
     return NextResponse.json({
       orderId: order.id,
       designation,
       reference,
       url: paymentUrl({ recipient, amountSol, reference, label: c.name, orderId: order.id }),
       amountSol,
-      amountFiat: priceGel,
-      currency: 'GEL',
+      amountFiat: priceUsd,
+      currency: 'USD',
       status: 'pending',
       expiresAt: order.expiresAt?.toISOString() ?? null,
     });

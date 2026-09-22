@@ -13,13 +13,13 @@ import SideraPay, { type Confirmation, type SideraOrder } from './SideraPay';
 export default function SideraBuyCard({
   designation,
   name,
-  priceGel,
+  priceUsd,
   available,
   released,
 }: {
   designation: string;
   name: string;
-  priceGel: number;
+  priceUsd: number;
   available: boolean;
   /** A draft set sells nothing. Set 001 is draft until it is released. */
   released: boolean;
@@ -88,7 +88,7 @@ export default function SideraBuyCard({
       <div className="sd-pay__actions">
         {ready && authenticated ? (
           <button type="button" className="sd-btn sd-btn--primary" onClick={place} disabled={placing}>
-            {placing ? 'Placing' : `Buy this one outright — ${priceGel} GEL`}
+            {placing ? 'Placing' : `Buy this one outright — $${priceUsd}`}
           </button>
         ) : (
           <button type="button" className="sd-btn sd-btn--primary" onClick={() => setAuthOpen(true)}>

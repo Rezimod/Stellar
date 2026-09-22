@@ -54,13 +54,13 @@ export function merchantWallet(): PublicKey | null {
 }
 
 /**
- * Lari to SOL at the live rate, to the lamport-safe six places the orders
+ * US dollars to SOL at the live rate, to the lamport-safe six places the orders
  * table already uses. Throws SolPriceUnavailableError rather than quote on a
  * fixed fallback rate, and refuses a quote that comes to nothing.
  */
-export async function gelToSol(gel: number): Promise<number> {
+export async function usdToSol(usd: number): Promise<number> {
   const { solPerGEL, solPrice } = await fetchSolPriceRates({ strict: true });
-  const sol = +priceToSol(gel, 'GEL', solPerGEL, solPrice).toFixed(6);
+  const sol = +priceToSol(usd, 'USD', solPerGEL, solPrice).toFixed(6);
   if (!(sol > 0)) throw new Error('A Sidera quote must be a positive amount of SOL');
   return sol;
 }
@@ -87,7 +87,7 @@ export function paymentUrl(input: { recipient: PublicKey; amountSol: number; ref
 /** A pending order for one card, bought on its own. */
 export async function createCardOrder(
   db: Db,
-  input: { privyId: string; wallet: string; designation: string; name: string; priceGel: number; amountSol: number; reference: string },
+  input: { privyId: string; wallet: string; designation: string; name: string; priceUsd: number; amountSol: number; reference: string },
 ): Promise<OrderRow> {
   const [row] = await db
     .insert(orders)
@@ -100,8 +100,8 @@ export async function createCardOrder(
       paymentMethod: 'sol',
       amountSol: input.amountSol,
       amountStars: 0,
-      amountFiat: input.priceGel,
-      currency: 'GEL',
+      amountFiat: input.priceUsd,
+      currency: 'USD',
       paymentReference: input.reference,
       status: 'pending',
       shippingName: '',

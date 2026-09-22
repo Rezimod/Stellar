@@ -5,7 +5,7 @@ import { assertOwnsWallet, verifyPrivy } from '@/lib/api-auth';
 import { paused } from '@/lib/kill-switch';
 import { sideraBuyRateLimit } from '@/lib/rate-limit';
 import { purchaseCapsule, readCapsule } from '@/lib/sidera/capsule';
-import { gelToSol, merchantWallet, newPaymentReference, paymentUrl } from '@/lib/sidera/orders';
+import { usdToSol, merchantWallet, newPaymentReference, paymentUrl } from '@/lib/sidera/orders';
 import { isHex32, verifyPurchaseSignature } from '@/lib/sidera/randomness';
 import { isUuid, limited } from '@/lib/sidera/route-guards';
 import { SolPriceUnavailableError } from '@/lib/sol-price';
@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
 
   let amountSol: number;
   try {
-    amountSol = await gelToSol(Number(listed.price_gel));
+    amountSol = await usdToSol(Number(listed.price_usd));
   } catch (err) {
     if (!(err instanceof SolPriceUnavailableError)) console.error('[sidera/capsules/buy] quote', err);
     return NextResponse.json({ error: 'No price can be quoted right now — please retry shortly.' }, { status: 503 });
@@ -97,8 +97,8 @@ export async function POST(req: NextRequest) {
       reference,
       url: paymentUrl({ recipient, amountSol, reference, label: `Capsule ${result.sequence}`, orderId: result.orderId }),
       amountSol,
-      amountFiat: result.priceGel,
-      currency: 'GEL',
+      amountFiat: result.priceUsd,
+      currency: 'USD',
       purchaseMessage: result.message,
       purchaseHash: result.purchaseHash,
       status: 'pending',

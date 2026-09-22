@@ -52,43 +52,43 @@ export const RARITY_ODDS: Record<Rarity, number> = {
  */
 export const ORDER_WINDOW_MINUTES = 15;
 
-/** PROVISIONAL (Gate 2). What one capsule costs, in lari. */
-export const CAPSULE_PRICE_GEL = 39;
+/** PROVISIONAL (Gate 2). What one capsule costs, in US dollars. Paid in SOL at the live rate. */
+export const CAPSULE_PRICE_USD = 15;
 
-/** PROVISIONAL (Gate 2). What one card costs bought on its own, in lari. */
-export const DIRECT_CARD_PRICE_GEL: Record<Rarity, number> = {
-  common: 8,
-  rare: 20,
-  epic: 60,
-  legendary: 250,
+/** PROVISIONAL (Gate 2). What one card costs bought on its own, in US dollars. */
+export const DIRECT_CARD_PRICE_USD: Record<Rarity, number> = {
+  common: 3,
+  rare: 8,
+  epic: 22,
+  legendary: 95,
 };
 
-/** The cost base Gate 2 needs, per capsule sold, in lari. Unknowns are zero until supplied. */
+/** The cost base Gate 2 needs, per capsule sold, in US dollars. Unknowns are zero until supplied. */
 export type CapsuleCosts = {
   /** Payment processing, as a fraction of the price (0.029 for 2.9%). */
   paymentFeeRate: number;
   /** Fixed per-payment fee. */
-  paymentFeeFixedGel: number;
+  paymentFeeFixedUsd: number;
   /** Producing one card's contents (a printed card, if physical; 0 if digital only). */
-  contentsCostPerCardGel: number;
-  fulfilmentGel: number;
-  packagingGel: number;
+  contentsCostPerCardUsd: number;
+  fulfilmentUsd: number;
+  packagingUsd: number;
   /** Expected refunds and returns, as a fraction of the price. */
   returnsRate: number;
-  supportGel: number;
+  supportUsd: number;
   /** Node 01's running cost, spread over the capsules sold in the same period. */
-  telescopeOperatingGel: number;
+  telescopeOperatingUsd: number;
 };
 
 export const UNKNOWN_COSTS: CapsuleCosts = {
   paymentFeeRate: 0,
-  paymentFeeFixedGel: 0,
-  contentsCostPerCardGel: 0,
-  fulfilmentGel: 0,
-  packagingGel: 0,
+  paymentFeeFixedUsd: 0,
+  contentsCostPerCardUsd: 0,
+  fulfilmentUsd: 0,
+  packagingUsd: 0,
   returnsRate: 0,
-  supportGel: 0,
-  telescopeOperatingGel: 0,
+  supportUsd: 0,
+  telescopeOperatingUsd: 0,
 };
 
 /**
@@ -96,26 +96,26 @@ export const UNKNOWN_COSTS: CapsuleCosts = {
  * bought one at a time; contribution margin is what one capsule leaves after
  * the costs that scale with it.
  */
-export function capsuleEconomics(costs: CapsuleCosts, price = CAPSULE_PRICE_GEL) {
-  const valuePerDraw = RARITIES.reduce((sum, r) => sum + RARITY_ODDS[r] * DIRECT_CARD_PRICE_GEL[r], 0);
-  const expectedContentsValueGel = CARDS_PER_CAPSULE * valuePerDraw;
-  const variableCostGel =
+export function capsuleEconomics(costs: CapsuleCosts, price = CAPSULE_PRICE_USD) {
+  const valuePerDraw = RARITIES.reduce((sum, r) => sum + RARITY_ODDS[r] * DIRECT_CARD_PRICE_USD[r], 0);
+  const expectedContentsValueUsd = CARDS_PER_CAPSULE * valuePerDraw;
+  const variableCostUsd =
     price * (costs.paymentFeeRate + costs.returnsRate) +
-    costs.paymentFeeFixedGel +
-    CARDS_PER_CAPSULE * costs.contentsCostPerCardGel +
-    costs.fulfilmentGel +
-    costs.packagingGel +
-    costs.supportGel +
-    costs.telescopeOperatingGel;
-  const contributionMarginGel = price - variableCostGel;
+    costs.paymentFeeFixedUsd +
+    CARDS_PER_CAPSULE * costs.contentsCostPerCardUsd +
+    costs.fulfilmentUsd +
+    costs.packagingUsd +
+    costs.supportUsd +
+    costs.telescopeOperatingUsd;
+  const contributionMarginUsd = price - variableCostUsd;
   return {
-    priceGel: price,
-    expectedContentsValueGel,
+    priceUsd: price,
+    expectedContentsValueUsd,
     /** Contents value over price: above 1, a capsule is cheaper than its cards bought one by one. */
-    contentsValueRatio: expectedContentsValueGel / price,
-    variableCostGel,
-    contributionMarginGel,
-    contributionMarginRate: contributionMarginGel / price,
+    contentsValueRatio: expectedContentsValueUsd / price,
+    variableCostUsd,
+    contributionMarginUsd,
+    contributionMarginRate: contributionMarginUsd / price,
   };
 }
 

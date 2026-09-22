@@ -12,7 +12,7 @@ const mocks = vi.hoisted(() => ({
   purchaseCapsule: vi.fn(),
   readFullLog: vi.fn(),
   settleCapsulePayment: vi.fn(),
-  gelToSol: vi.fn(),
+  usdToSol: vi.fn(),
   findPayment: vi.fn(),
   markPaid: vi.fn(),
   markRefundDue: vi.fn(),
@@ -35,7 +35,7 @@ vi.mock('@/lib/sidera/capsule', () => ({
 vi.mock('@/lib/sidera/orders', () => ({
   CAPSULE_PRODUCT_ID: 'sidera-capsule',
   CARD_PRODUCT_PREFIX: 'sidera-card:',
-  gelToSol: mocks.gelToSol,
+  usdToSol: mocks.usdToSol,
   merchantWallet: () => ({ toBase58: () => 'merchant' }),
   newPaymentReference: () => 'reference',
   paymentUrl: () => 'solana:merchant',
@@ -62,7 +62,7 @@ function post(url: string, body: unknown) {
   return new NextRequest(`http://localhost${url}`, { method: 'POST', body: JSON.stringify(body) });
 }
 
-const bought = { id: CAPSULE, sequence: 1, commitment: HEX, state: 'purchased', buyer_wallet: HOLDER, buyer_nonce: HEX, order_id: 'order-1', price_gel: 39 };
+const bought = { id: CAPSULE, sequence: 1, commitment: HEX, state: 'purchased', buyer_wallet: HOLDER, buyer_nonce: HEX, order_id: 'order-1', price_usd: 39 };
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -73,7 +73,7 @@ beforeEach(() => {
   mocks.readCapsule.mockResolvedValue(bought);
   mocks.openCapsule.mockResolvedValue({ ok: true, alreadyOpened: false, secret: HEX, pulls: [] });
   mocks.orderRows = [{ status: 'paid' }];
-  mocks.gelToSol.mockResolvedValue(0.1);
+  mocks.usdToSol.mockResolvedValue(0.1);
   const chain: Record<string, unknown> = {};
   for (const m of ['select', 'from', 'where']) chain[m] = () => chain;
   chain.limit = async () => mocks.orderRows;
@@ -151,7 +151,7 @@ describe('buying a capsule', () => {
 
   it('returns the purchase message and its hash as the buyer’s receipt', async () => {
     mocks.readCapsule.mockResolvedValue({ ...bought, state: 'listed' });
-    mocks.purchaseCapsule.mockResolvedValue({ ok: true, orderId: 'order-1', sequence: 1, message: 'Sidera capsule purchase\n…', purchaseHash: 'cd'.repeat(32), priceGel: 39 });
+    mocks.purchaseCapsule.mockResolvedValue({ ok: true, orderId: 'order-1', sequence: 1, message: 'Sidera capsule purchase\n…', purchaseHash: 'cd'.repeat(32), priceUsd: 39 });
     const res = await buy(post('/api/sidera/capsules/buy', body));
     expect(res.status).toBe(200);
     expect(await res.json()).toMatchObject({ orderId: 'order-1', purchaseHash: 'cd'.repeat(32), purchaseMessage: expect.stringMatching(/^Sidera capsule purchase/) });
@@ -168,7 +168,7 @@ describe('buying a capsule', () => {
 
   it('gives no quote without a live SOL price', async () => {
     mocks.readCapsule.mockResolvedValue({ ...bought, state: 'listed' });
-    mocks.gelToSol.mockRejectedValue(new SolPriceUnavailableError());
+    mocks.usdToSol.mockRejectedValue(new SolPriceUnavailableError());
     expect((await buy(post('/api/sidera/capsules/buy', body))).status).toBe(503);
     expect(mocks.purchaseCapsule).not.toHaveBeenCalled();
   });
@@ -260,7 +260,7 @@ describe('buying a card on its own', () => {
 
   it('gives no quote without a live SOL price', async () => {
     mocks.cardAvailability.mockResolvedValue({ cardId: 'k', name: 'Tycho', rarity: 'common', editionSize: 300, allocated: 5, released: true, available: true });
-    mocks.gelToSol.mockRejectedValue(new SolPriceUnavailableError());
+    mocks.usdToSol.mockRejectedValue(new SolPriceUnavailableError());
     expect((await buyCard(post('/api/sidera/cards/buy', { walletAddress: HOLDER, designation: 'TYCHO' }))).status).toBe(503);
     expect(mocks.createCardOrder).not.toHaveBeenCalled();
   });
