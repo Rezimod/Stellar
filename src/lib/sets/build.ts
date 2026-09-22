@@ -62,3 +62,26 @@ export function authorCard(facts: CardFacts, optics: CardOptics): AuthoredCard {
     observability: judged,
   };
 }
+
+/**
+ * A card from fiction: an original design, never an observation. There is no
+ * sky it can be found in, so Node 01 never photographs it and the card says so.
+ */
+export function authorFiction(facts: Omit<CardFacts, 'targetId' | 'raHours' | 'decDeg' | 'surfaceLat' | 'surfaceLon'>): AuthoredCard {
+  const seed: CardSeed = {
+    ...facts,
+    targetId: 'fiction',
+    raHours: null,
+    decDeg: null,
+    surfaceLat: null,
+    surfaceLon: null,
+    observationStatus: 'not_available',
+    editionSize: EDITION_SIZE[facts.rarity],
+    artUrl: PLACEHOLDER_ART,
+  };
+  return {
+    seed,
+    subject: { targetId: 'fiction', decDeg: null, resolveArcsec: null, magnitude: null, sizeArcmin: null },
+    observability: { status: 'not_available', reason: 'Fiction. It exists in no sky, so no telescope will ever photograph it.' },
+  };
+}

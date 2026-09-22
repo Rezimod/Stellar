@@ -28,12 +28,12 @@ export const CARDS_PER_CAPSULE = 3;
  * PROVISIONAL (Gate 2). Chance of each rarity on a single draw, in parts per
  * ten thousand. Integers so the draw is exact arithmetic that any verifier,
  * in any language, reproduces bit for bit. Set to Set 001's own supply mix
- * (2,400 / 500 / 120 / 15 editions), so no tier runs out long before the rest.
+ * (2,700 / 700 / 150 / 15 editions), so no tier runs out long before the rest.
  */
 export const RARITY_ODDS_BPS: Record<Rarity, number> = {
-  common: 7900,
-  rare: 1650,
-  epic: 400,
+  common: 7570,
+  rare: 1960,
+  epic: 420,
   legendary: 50,
 };
 

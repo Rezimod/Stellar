@@ -5,6 +5,8 @@ import { usePrivy } from '@privy-io/react-auth';
 import { AuthModal } from '@/components/auth/AuthModal';
 import { useSideraHolder } from './useSideraHolder';
 import SideraPay, { type Confirmation, type SideraOrder } from './SideraPay';
+import SideraReveal from './SideraReveal';
+import type { Rarity } from '@/lib/rarity';
 
 /**
  * Buying one card on its own. The edition number is allocated when the
@@ -13,12 +15,14 @@ import SideraPay, { type Confirmation, type SideraOrder } from './SideraPay';
 export default function SideraBuyCard({
   designation,
   name,
+  rarity,
   priceUsd,
   available,
   released,
 }: {
   designation: string;
   name: string;
+  rarity: Rarity;
   priceUsd: number;
   available: boolean;
   /** A draft set sells nothing. Set 001 is draft until it is released. */
@@ -45,12 +49,23 @@ export default function SideraBuyCard({
     );
   }
 
+  // Paid: the card comes down the way a capsule's do, on its own.
   if (done?.edition) {
-    const n = String(done.edition.editionNumber).padStart(3, '0');
     return (
-      <p className="sd-data">
-        Edition {n} / {done.edition.editionSize} of {name} is yours. It is in your Collection.
-      </p>
+      <SideraReveal
+        draw={{
+          cards: [
+            {
+              drawIndex: 0,
+              designation: done.edition.designation,
+              name,
+              rarity,
+              editionNumber: done.edition.editionNumber,
+              editionSize: done.edition.editionSize,
+            },
+          ],
+        }}
+      />
     );
   }
 

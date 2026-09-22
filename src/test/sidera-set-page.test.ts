@@ -38,14 +38,14 @@ beforeEach(() => {
 it('draws a plate for every card in the set', async () => {
   const html = await renderSet();
   for (const c of SET_001_CARDS) expect(html).toContain(c.seed.designation);
-  expect(html).toContain('/card/TYCHO');
+  expect(html).toContain('/card/JUPITER');
 });
 
 it('prints how many editions of a card are allocated', async () => {
   mocks.readSetSupply.mockResolvedValue({
     set: 'SET001',
     owedDraws: 0,
-    cards: [{ designation: 'TYCHO', rarity: 'rare', editionSize: 100, allocated: 7, remaining: 93 }],
+    cards: [{ designation: 'JUPITER', rarity: 'rare', editionSize: 100, allocated: 7, remaining: 93 }],
   });
   const html = await renderSet();
   expect(html).toContain('93 of 100 left');
@@ -53,7 +53,7 @@ it('prints how many editions of a card are allocated', async () => {
 
 it('draws a card the holder does not own as an outline, and their own with its number', async () => {
   mocks.holderView.mockResolvedValue([
-    { editionId: 'e1', designation: 'TYCHO', name: 'Tycho', editionNumber: 4, editionSize: 100, rarity: 'rare', observationStatus: 'eligible', latest: null, history: [] },
+    { editionId: 'e1', designation: 'JUPITER', name: 'Jupiter', editionNumber: 4, editionSize: 100, rarity: 'rare', observationStatus: 'eligible', latest: null, history: [] },
   ]);
   const html = await renderSet('holder-1');
   expect(mocks.holderView).toHaveBeenCalledWith({}, 'holder-1');
@@ -63,9 +63,9 @@ it('draws a card the holder does not own as an outline, and their own with its n
 });
 
 it('shows a card’s record, its observation verdict and its rarity', async () => {
-  const html = await renderCard('TYCHO');
-  expect(html).toContain('Tycho');
-  expect(html).toContain('TYCHO');
+  const html = await renderCard('JUPITER');
+  expect(html).toContain('Jupiter');
+  expect(html).toContain('JUPITER');
   expect(html).toContain('Catalogue');
   expect(html).toContain('Rare');
 });
@@ -75,13 +75,13 @@ it('refuses a designation that is not in the set', async () => {
 });
 
 it('offers a card for sale only when an edition can be spared', async () => {
-  mocks.cardAvailability.mockResolvedValue({ cardId: 'c1', name: 'Tycho', rarity: 'rare', editionSize: 100, allocated: 7, released: true, available: true });
-  expect(await renderCard('TYCHO')).toContain('Buy this card');
-  mocks.cardAvailability.mockResolvedValue({ cardId: 'c1', name: 'Tycho', rarity: 'rare', editionSize: 100, allocated: 100, released: true, available: false });
-  expect(await renderCard('TYCHO')).toContain('Not for sale');
+  mocks.cardAvailability.mockResolvedValue({ cardId: 'c1', name: 'Jupiter', rarity: 'rare', editionSize: 100, allocated: 7, released: true, available: true });
+  expect(await renderCard('JUPITER')).toContain('Buy this card');
+  mocks.cardAvailability.mockResolvedValue({ cardId: 'c1', name: 'Jupiter', rarity: 'rare', editionSize: 100, allocated: 100, released: true, available: false });
+  expect(await renderCard('JUPITER')).toContain('Not for sale');
 });
 
 it('sells nothing from a set that is still a draft', async () => {
-  mocks.cardAvailability.mockResolvedValue({ cardId: 'c1', name: 'Tycho', rarity: 'rare', editionSize: 100, allocated: 0, released: false, available: false });
-  expect(await renderCard('TYCHO')).toContain('Set not released');
+  mocks.cardAvailability.mockResolvedValue({ cardId: 'c1', name: 'Jupiter', rarity: 'rare', editionSize: 100, allocated: 0, released: false, available: false });
+  expect(await renderCard('JUPITER')).toContain('Set not released');
 });

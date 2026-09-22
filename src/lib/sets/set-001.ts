@@ -1,25 +1,23 @@
 /**
  * Set 001.
  *
- * Twenty real objects: the Moon's surface, the planets and one of their moons,
- * three stars, and five deep-sky objects. Rarity is a decision made here and
- * stored; it has nothing to do with whether Node 01 can photograph the
- * object. Seven of the twenty it cannot, and the reasons are physical — too
- * small to resolve, too diffuse for a city sky, or never above the horizon
- * from Tbilisi.
+ * Twenty-four cards: sixteen of the best-known things in the real sky, and
+ * eight from fiction. Rarity is a decision made here and stored; it has
+ * nothing to do with whether Node 01 can photograph the object. For the real
+ * cards that is judged from the instrument and the site (see build.ts); the
+ * fiction cards are original designs that exist in no sky, and say so.
  *
  * Sources. Fixed positions are J2000. Stars come from src/lib/sky/stars.ts and
- * deep-sky objects from the node's own catalogue (sky-field.ts); the one object
- * in neither, Omega Centauri, is from Harris (2010). Lunar positions are the
- * IAU gazetteer's. Sizes for resolution are the object's real extent at a
- * typical distance: a planet near opposition, the Moon at its mean distance.
+ * deep-sky objects from the node's own catalogue (sky-field.ts); the two in
+ * neither — the Eagle Nebula and M87 — are from the NGC/IC catalogue. Lunar
+ * positions are the IAU gazetteer's. Sizes for resolution are the object's
+ * real extent at a typical distance.
  */
 
 import { BRIGHT_STARS } from '@/lib/sky/stars';
 import { DEEP_SKY_BY_ID } from '@/lib/observatory/sky-field';
 import { arcsecFromKm, arcsecFromKmAtAu, MOON_DISTANCE_KM } from '@/lib/sidera/observability';
-import { TYCHO_CARD } from '@/lib/sidera/tycho';
-import { authorCard, type AuthoredCard, type CardFacts, type CardOptics } from './build';
+import { authorCard, authorFiction, type AuthoredCard, type CardFacts, type CardOptics } from './build';
 
 export const SET_001 = {
   code: 'SET001',
@@ -27,8 +25,6 @@ export const SET_001 = {
   status: 'draft',
   releasedAt: null,
 } as const;
-
-const atMoon = (km: number) => arcsecFromKm(km, MOON_DISTANCE_KM);
 
 function star(id: string) {
   const s = BRIGHT_STARS.find((x) => x.id === id);
@@ -43,14 +39,11 @@ function dso(id: string) {
 }
 
 /** A moving body: no fixed position, only a size. */
-const body = (resolveArcsec: number, magnitude: number | null = null): CardOptics => ({
+const body = (resolveArcsec: number | null, magnitude: number | null = null): CardOptics => ({
   resolveArcsec,
   magnitude,
   sizeArcmin: null,
 });
-
-/** A lunar feature, resolved at its own diameter. */
-const lunar = (km: number): CardOptics => body(atMoon(km));
 
 /** A deep-sky object from the node's catalogue, seen whole. */
 function deepSky(id: string): Pick<CardFacts, 'raHours' | 'decDeg'> & { optics: CardOptics } {
@@ -62,242 +55,214 @@ function deepSky(id: string): Pick<CardFacts, 'raHours' | 'decDeg'> & { optics: 
   };
 }
 
+/** A star, seen as a point. */
+function point(id: string): Pick<CardFacts, 'raHours' | 'decDeg'> & { optics: CardOptics } {
+  const s = star(id);
+  return { raHours: s.ra, decDeg: s.dec, optics: { resolveArcsec: null, magnitude: s.mag, sizeArcmin: null } };
+}
+
 const NO_POSITION = { raHours: null, decDeg: null, surfaceLat: null, surfaceLon: null } as const;
 const OFF_MOON = { surfaceLat: null, surfaceLon: null } as const;
 
 const m42 = deepSky('m42');
-const m57 = deepSky('m57');
-const m13 = deepSky('m13');
-const m101 = deepSky('m101');
-const albireo = star('albireo');
-const mizar = star('mizar');
-const canopus = star('canopus');
+const m45 = deepSky('m45');
+const m31 = deepSky('m31');
+const sirius = point('sirius');
+const polaris = point('polaris');
+const betelgeuse = point('betelgeuse');
 
 export const SET_001_CARDS: AuthoredCard[] = [
   // The Moon.
-  TYCHO_CARD,
   authorCard(
     {
-      designation: 'COPERNICUS', name: 'Copernicus', objectType: 'lunar crater', rarity: 'common',
-      targetId: 'moon', catalogRef: 'IAU Copernicus (lunar crater)',
-      raHours: null, decDeg: null, surfaceLat: 9.62, surfaceLon: -20.08,
-      blurb:
-        'A crater 93 km across on the southern edge of Mare Imbrium, with terraced walls and a ' +
-        'cluster of central peaks. About 800 million years old; the youngest era of lunar history ' +
-        'is named after it.',
+      designation: 'MOON', name: 'The Moon', objectType: "Earth's moon", rarity: 'common',
+      targetId: 'moon', catalogRef: 'JPL Horizons 301', ...NO_POSITION,
+      blurb: 'Our closest neighbour, 384,000 km away. Every crater you can see is older than the dinosaurs.',
     },
-    lunar(93),
-  ),
-  authorCard(
-    {
-      designation: 'PLATO', name: 'Plato', objectType: 'lunar crater', rarity: 'common',
-      targetId: 'moon', catalogRef: 'IAU Plato (lunar crater)',
-      raHours: null, decDeg: null, surfaceLat: 51.62, surfaceLon: -9.38,
-      blurb:
-        'A walled plain 101 km across on the northern shore of Mare Imbrium. Lava filled its floor ' +
-        'long ago, which is why it reads as one of the darkest patches on the near side.',
-    },
-    lunar(101),
-  ),
-  authorCard(
-    {
-      designation: 'CLAVIUS', name: 'Clavius', objectType: 'lunar crater', rarity: 'rare',
-      targetId: 'moon', catalogRef: 'IAU Clavius (lunar crater)',
-      raHours: null, decDeg: null, surfaceLat: -58.62, surfaceLon: -14.73,
-      blurb:
-        'One of the largest craters on the near side, 231 km across, in the southern highlands. ' +
-        'A curving chain of smaller craters crosses its floor, largest to smallest.',
-    },
-    lunar(231),
+    body(arcsecFromKm(3_474, MOON_DISTANCE_KM)),
   ),
   authorCard(
     {
       designation: 'TRANQUILITY-BASE', name: 'Tranquility Base', objectType: 'lunar landing site',
       rarity: 'legendary', targetId: 'moon', catalogRef: 'Apollo 11 lunar module site (LROC)',
       raHours: null, decDeg: null, surfaceLat: 0.67408, surfaceLon: 23.47297,
-      blurb:
-        'Where the Apollo 11 lunar module set down on 20 July 1969. The descent stage is still ' +
-        'there, about nine metres across its legs. From Tbilisi nothing smaller than about 5 km ' +
-        'on the Moon can be told apart, so Node 01 records the plain, not the site.',
+      blurb: 'Where Apollo 11 landed on 20 July 1969. The lander’s base is still standing there.',
     },
     // The descent stage, legs included.
-    lunar(0.0094),
+    body(arcsecFromKm(0.0094, MOON_DISTANCE_KM)),
   ),
 
-  // The planets, and what is on or around them.
+  // The planets.
   authorCard(
     {
       designation: 'VENUS', name: 'Venus', objectType: 'planet', rarity: 'common',
-      targetId: 'venus', catalogRef: 'JPL Horizons 299',
-      ...NO_POSITION,
-      blurb:
-        'Wrapped in cloud that shows no detail in visible light. What the telescope records is ' +
-        'its phase, which Galileo used in 1610 as evidence that Venus goes round the Sun.',
+      targetId: 'venus', catalogRef: 'JPL Horizons 299', ...NO_POSITION,
+      blurb: 'The brightest planet in the sky, hidden under clouds of acid. It shows phases like the Moon.',
     },
-    // Near greatest elongation, about 0.7 AU.
     body(arcsecFromKmAtAu(12_104, 0.7)),
   ),
   authorCard(
     {
       designation: 'MARS', name: 'Mars', objectType: 'planet', rarity: 'common',
-      targetId: 'mars', catalogRef: 'JPL Horizons 499',
-      ...NO_POSITION,
-      blurb:
-        'A small ochre disc for most of its two-year cycle. Only for a few weeks around opposition ' +
-        'is it large enough to show a polar cap and the darker markings.',
+      targetId: 'mars', catalogRef: 'JPL Horizons 499', ...NO_POSITION,
+      blurb: 'The red planet: rust-coloured dust, polar ice caps and the tallest volcano in the solar system.',
     },
     body(arcsecFromKmAtAu(6_779, 0.6)),
   ),
   authorCard(
     {
-      designation: 'JUPITER', name: 'Jupiter', objectType: 'planet', rarity: 'common',
-      targetId: 'jupiter', catalogRef: 'JPL Horizons 599',
-      ...NO_POSITION,
-      blurb:
-        'The largest planet, its disc crossed by two dark cloud belts. The four Galilean moons ' +
-        'change places from one night to the next.',
+      designation: 'JUPITER', name: 'Jupiter', objectType: 'planet', rarity: 'rare',
+      targetId: 'jupiter', catalogRef: 'JPL Horizons 599', ...NO_POSITION,
+      blurb: 'The giant. More than a thousand Earths would fit inside, and its Great Red Spot is a storm older than any country.',
     },
     body(arcsecFromKmAtAu(142_984, 4.2)),
   ),
   authorCard(
     {
-      designation: 'GREAT-RED-SPOT', name: 'Great Red Spot', objectType: 'atmospheric feature',
-      rarity: 'rare', targetId: 'jupiter', catalogRef: 'Jupiter, South Tropical Zone',
-      ...NO_POSITION,
-      blurb:
-        'A storm in Jupiter’s southern hemisphere, watched continuously since 1831 and shrinking ' +
-        'for most of that time. It is on the visible face for about five hours of every ten.',
-    },
-    // Its short axis, north to south.
-    body(arcsecFromKmAtAu(11_000, 4.2)),
-  ),
-  authorCard(
-    {
-      designation: 'EUROPA', name: 'Europa', objectType: 'moon of Jupiter', rarity: 'epic',
-      targetId: 'jupiter', catalogRef: 'JPL Horizons 502',
-      ...NO_POSITION,
-      blurb:
-        'An ice shell over a salt-water ocean, 3,122 km across. At Jupiter’s distance its disc is ' +
-        'about one arcsecond, finer than the Tbilisi air allows; Node 01 records it as a point of ' +
-        'light beside the planet.',
-    },
-    body(arcsecFromKmAtAu(3_122, 4.2), 5.3),
-  ),
-  authorCard(
-    {
-      designation: 'SATURN', name: 'Saturn', objectType: 'planet', rarity: 'legendary',
-      targetId: 'saturn', catalogRef: 'JPL Horizons 699',
-      ...NO_POSITION,
-      blurb:
-        'Smaller in the eyepiece than anyone expects, and unmistakable. The rings turned edge-on ' +
-        'to Earth in March 2025 and are opening again.',
+      designation: 'SATURN', name: 'Saturn', objectType: 'planet', rarity: 'epic',
+      targetId: 'saturn', catalogRef: 'JPL Horizons 699', ...NO_POSITION,
+      blurb: 'The ringed planet. The rings are ice, some pieces as small as sand, some as big as houses.',
     },
     body(arcsecFromKmAtAu(120_536, 8.5)),
   ),
   authorCard(
     {
-      designation: 'PLUTO', name: 'Pluto', objectType: 'dwarf planet', rarity: 'legendary',
-      targetId: 'pluto', catalogRef: 'JPL Horizons 999',
-      ...NO_POSITION,
-      blurb:
-        'Found on photographic plates in 1930. At 35 AU its disc is a tenth of an arcsecond; a ' +
-        'stacked frame could show it as one faint star among many, but not as a world.',
+      designation: 'PLUTO', name: 'Pluto', objectType: 'dwarf planet', rarity: 'rare',
+      targetId: 'pluto', catalogRef: 'JPL Horizons 999', ...NO_POSITION,
+      blurb: 'The small world at the edge, with a giant ice heart on its surface. A year there lasts 248 of ours.',
     },
     body(arcsecFromKmAtAu(2_377, 35), 14.5),
+  ),
+  authorCard(
+    {
+      designation: 'HALLEY', name: "Halley's Comet", objectType: 'comet', rarity: 'epic',
+      targetId: 'halley', catalogRef: '1P/Halley', ...NO_POSITION,
+      blurb: 'The famous comet that returns every 76 years. Next time it lights up our sky is 2061.',
+    },
+    // Near aphelion: far, dark and small.
+    body(null, 25),
   ),
 
   // Stars.
   authorCard(
     {
-      designation: 'ALBIREO', name: 'Albireo', objectType: 'double star', rarity: 'rare',
-      targetId: 'albireo', catalogRef: 'HIP 95947 (β Cygni)',
-      raHours: albireo.ra, decDeg: albireo.dec, ...OFF_MOON,
-      blurb:
-        'A gold star and a blue one, 34 arcseconds apart at the foot of the Swan. Whether the two ' +
-        'are bound to each other or only share a line of sight is still argued.',
+      designation: 'SIRIUS', name: 'Sirius', objectType: 'star', rarity: 'common',
+      targetId: 'sirius', catalogRef: 'HIP 32349 (α Canis Majoris)',
+      raHours: sirius.raHours, decDeg: sirius.decDeg, ...OFF_MOON,
+      blurb: 'The brightest star in the night sky, the Dog Star. It has a tiny white-dwarf companion.',
     },
-    { resolveArcsec: 34.4, magnitude: albireo.mag, sizeArcmin: null },
+    sirius.optics,
   ),
   authorCard(
     {
-      designation: 'MIZAR', name: 'Mizar', objectType: 'double star', rarity: 'common',
-      targetId: 'mizar', catalogRef: 'HIP 65378 (ζ Ursae Majoris)',
-      raHours: mizar.ra, decDeg: mizar.dec, ...OFF_MOON,
-      blurb:
-        'The bend of the Plough’s handle. In a telescope it splits into two stars 14 arcseconds ' +
-        'apart; in 1857 it became the first double star ever photographed.',
+      designation: 'POLARIS', name: 'Polaris', objectType: 'star', rarity: 'common',
+      targetId: 'polaris', catalogRef: 'HIP 11767 (α Ursae Minoris)',
+      raHours: polaris.raHours, decDeg: polaris.decDeg, ...OFF_MOON,
+      blurb: 'The North Star. The whole sky turns around it, which is how sailors found their way home.',
     },
-    { resolveArcsec: 14.4, magnitude: mizar.mag, sizeArcmin: null },
+    polaris.optics,
   ),
   authorCard(
     {
-      designation: 'CANOPUS', name: 'Canopus', objectType: 'star', rarity: 'rare',
-      targetId: 'canopus', catalogRef: 'HIP 30438 (α Carinae)',
-      raHours: canopus.ra, decDeg: canopus.dec, ...OFF_MOON,
-      blurb:
-        'The second-brightest star in the night sky. It lies too far south to rise over Tbilisi ' +
-        'at all.',
+      designation: 'BETELGEUSE', name: 'Betelgeuse', objectType: 'red supergiant', rarity: 'rare',
+      targetId: 'betelgeuse', catalogRef: 'HIP 27989 (α Orionis)',
+      raHours: betelgeuse.raHours, decDeg: betelgeuse.decDeg, ...OFF_MOON,
+      blurb: 'Orion’s red shoulder, a star so big it would swallow Jupiter’s orbit. One day it will explode.',
     },
-    { resolveArcsec: null, magnitude: canopus.mag, sizeArcmin: null },
+    betelgeuse.optics,
   ),
 
   // Deep sky.
   authorCard(
     {
-      designation: 'M42', name: 'Orion Nebula', objectType: 'emission nebula', rarity: 'common',
+      designation: 'M42', name: 'Orion Nebula', objectType: 'nebula', rarity: 'common',
       targetId: 'm42', catalogRef: 'M42 (NGC 1976)',
       raHours: m42.raHours, decDeg: m42.decDeg, ...OFF_MOON,
-      blurb:
-        'The nearest large nursery of stars, about 1,350 light-years away. The four stars of the ' +
-        'Trapezium at its heart light the gas around them.',
+      blurb: 'A cloud where new stars are being born, 1,350 light-years away. You can see it with bare eyes.',
     },
     m42.optics,
   ),
   authorCard(
     {
-      designation: 'M13', name: 'Hercules Cluster', objectType: 'globular cluster', rarity: 'common',
-      targetId: 'm13', catalogRef: 'M13 (NGC 6205)',
-      raHours: m13.raHours, decDeg: m13.decDeg, ...OFF_MOON,
-      blurb:
-        'Several hundred thousand old stars in a ball about 150 light-years wide, 22,000 ' +
-        'light-years away. In 1974 the Arecibo radio message was sent in its direction.',
+      designation: 'M45', name: 'Pleiades', objectType: 'star cluster', rarity: 'common',
+      targetId: 'm45', catalogRef: 'M45 (Seven Sisters)',
+      raHours: m45.raHours, decDeg: m45.decDeg, ...OFF_MOON,
+      blurb: 'The Seven Sisters, young blue stars travelling together. Almost every culture has a story about them.',
     },
-    m13.optics,
+    m45.optics,
   ),
   authorCard(
     {
-      designation: 'M57', name: 'Ring Nebula', objectType: 'planetary nebula', rarity: 'epic',
-      targetId: 'm57', catalogRef: 'M57 (NGC 6720)',
-      raHours: m57.raHours, decDeg: m57.decDeg, ...OFF_MOON,
-      blurb:
-        'The outer layers of a dying star, blown off and lit by the white dwarf left at the centre. ' +
-        'Small and bright enough to hold its shape under a city sky.',
+      designation: 'M31', name: 'Andromeda Galaxy', objectType: 'galaxy', rarity: 'rare',
+      targetId: 'm31', catalogRef: 'M31 (NGC 224)',
+      raHours: m31.raHours, decDeg: m31.decDeg, ...OFF_MOON,
+      blurb: 'Our neighbour galaxy, a trillion stars 2.5 million light-years away. It is on its way to meet us.',
     },
-    m57.optics,
+    m31.optics,
   ),
   authorCard(
     {
-      designation: 'M101', name: 'Pinwheel Galaxy', objectType: 'spiral galaxy', rarity: 'epic',
-      targetId: 'm101', catalogRef: 'M101 (NGC 5457)',
-      raHours: m101.raHours, decDeg: m101.decDeg, ...OFF_MOON,
-      blurb:
-        'A spiral seen face-on, 21 million light-years away. Its light is spread so thin that a ' +
-        'city sky swallows the arms; it needs a dark site and hours of exposure.',
+      designation: 'M16', name: 'Pillars of Creation', objectType: 'nebula', rarity: 'epic',
+      targetId: 'm16', catalogRef: 'M16 (NGC 6611), Eagle Nebula',
+      // 18h 18m 48s, −13° 49′.
+      raHours: 18.3133, decDeg: -13.8167, ...OFF_MOON,
+      blurb: 'Towers of gas and dust in the Eagle Nebula, each light-years tall, with stars forming at their tips.',
     },
-    m101.optics,
+    { resolveArcsec: null, magnitude: 6.0, sizeArcmin: { major: 7, minor: 7 } },
   ),
   authorCard(
     {
-      designation: 'NGC5139', name: 'Omega Centauri', objectType: 'globular cluster', rarity: 'epic',
-      targetId: 'ngc5139', catalogRef: 'NGC 5139 (Harris 2010)',
-      // 13h 26m 47.2s, −47° 28′ 46″.
-      raHours: 13.4465, decDeg: -47.4795, ...OFF_MOON,
-      blurb:
-        'The largest globular cluster of the Milky Way, some ten million stars, 17,000 light-years ' +
-        'away. From Tbilisi it grazes the southern horizon, under a degree up at best.',
+      designation: 'M87', name: 'M87 Black Hole', objectType: 'black hole', rarity: 'legendary',
+      targetId: 'm87', catalogRef: 'M87* (Event Horizon Telescope, 2019)',
+      // 12h 30m 49s, +12° 23′.
+      raHours: 12.5137, decDeg: 12.3911, ...OFF_MOON,
+      blurb: 'The first black hole ever photographed, 6.5 billion times the mass of the Sun. It took a telescope the size of Earth.',
     },
-    { resolveArcsec: null, magnitude: 3.9, sizeArcmin: { major: 36, minor: 36 } },
+    // The ring is 42 micro-arcseconds across.
+    { resolveArcsec: 0.000042, magnitude: 8.6, sizeArcmin: null },
   ),
+
+  // Fiction. Original designs; no sky has them.
+  authorFiction({
+    designation: 'TWIN-SUN', name: 'Twin-Sun World', objectType: 'fictional world', rarity: 'rare',
+    catalogRef: 'Sidera fiction 01',
+    blurb: 'A desert planet with two suns. Every evening has two sunsets.',
+  }),
+  authorFiction({
+    designation: 'TIDE-WORLD', name: 'Tide World', objectType: 'fictional world', rarity: 'common',
+    catalogRef: 'Sidera fiction 02',
+    blurb: 'A planet made of ocean, where the tides rise higher than mountains.',
+  }),
+  authorFiction({
+    designation: 'RING-HABITAT', name: 'The Ring Habitat', objectType: 'fictional habitat', rarity: 'epic',
+    catalogRef: 'Sidera fiction 03',
+    blurb: 'A world built as a ring around a star, with sky, sea and forests on the inside.',
+  }),
+  authorFiction({
+    designation: 'UNIT-7', name: 'Unit-7', objectType: 'fictional robot', rarity: 'common',
+    catalogRef: 'Sidera fiction 04',
+    blurb: 'A small service robot left alone on a quiet world. It still waters its one plant.',
+  }),
+  authorFiction({
+    designation: 'SENTINEL', name: 'The Sentinel', objectType: 'fictional robot', rarity: 'rare',
+    catalogRef: 'Sidera fiction 05',
+    blurb: 'A tall machine that has watched the same horizon for ten thousand years.',
+  }),
+  authorFiction({
+    designation: 'BLACK-SLAB', name: 'The Black Slab', objectType: 'fictional artifact', rarity: 'epic',
+    catalogRef: 'Sidera fiction 06',
+    blurb: 'A perfect black block no one made. It appears when the planets line up.',
+  }),
+  authorFiction({
+    designation: 'DERELICT', name: 'The Derelict', objectType: 'fictional starship', rarity: 'rare',
+    catalogRef: 'Sidera fiction 07',
+    blurb: 'A vast ship drifting between stars. A few of its lights are still on.',
+  }),
+  authorFiction({
+    designation: 'WORMHOLE', name: 'The Wormhole', objectType: 'fictional phenomenon', rarity: 'legendary',
+    catalogRef: 'Sidera fiction 08',
+    blurb: 'A doorway through space. Look into it and you see a galaxy on the other side.',
+  }),
 ];
 
 export const SET_001_CARD_BY_DESIGNATION = new Map(SET_001_CARDS.map((c) => [c.seed.designation, c]));

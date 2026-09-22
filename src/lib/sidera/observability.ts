@@ -110,7 +110,7 @@ export function observability(subject: ObservabilitySubject, node: ObservatoryNo
     if (highest < LIMITS.minAltitudeDeg) {
       return {
         status: 'not_available',
-        reason: `Culminates at ${highest.toFixed(1)}° from ${node.site}, under the ${LIMITS.minAltitudeDeg}° floor.`,
+        reason: `Never climbs high enough over ${node.site}: ${highest.toFixed(0)}° at best, and Node 01 needs ${LIMITS.minAltitudeDeg}°.`,
       };
     }
   }
@@ -118,7 +118,7 @@ export function observability(subject: ObservabilitySubject, node: ObservatoryNo
   if (subject.resolveArcsec !== null && subject.resolveArcsec < limit) {
     return {
       status: 'not_available',
-      reason: `${formatArcsec(subject.resolveArcsec)} across, under the ${limit.toFixed(1)}" the site resolves.`,
+      reason: `Too small to see from Earth's surface: ${formatArcsec(subject.resolveArcsec)} across, and the air blurs anything under ${limit.toFixed(1)}".`,
     };
   }
 
@@ -128,7 +128,7 @@ export function observability(subject: ObservabilitySubject, node: ObservatoryNo
     if (subject.magnitude > faintest) {
       return {
         status: 'not_available',
-        reason: `Magnitude ${subject.magnitude.toFixed(1)}, fainter than the ${faintest.toFixed(1)} a ${subs} x ${exposureSec} s stack reaches at Bortle ${node.bortle}.`,
+        reason: `Too faint: magnitude ${subject.magnitude.toFixed(1)}, and Node 01 reaches ${faintest.toFixed(1)} under a city sky.`,
       };
     }
   }
@@ -139,7 +139,7 @@ export function observability(subject: ObservabilitySubject, node: ObservatoryNo
     if (surface > floor) {
       return {
         status: 'not_available',
-        reason: `Mean surface brightness ${surface.toFixed(1)} mag/arcsec², under a Bortle ${node.bortle} sky it needs ${floor.toFixed(1)} or brighter.`,
+        reason: `Spread too thin to show through a city sky (surface brightness ${surface.toFixed(1)}; it needs ${floor.toFixed(1)}).`,
       };
     }
   }
@@ -149,14 +149,14 @@ export function observability(subject: ObservabilitySubject, node: ObservatoryNo
     if (subject.sizeArcmin.major > MAX_FIELDS_ACROSS * widest) {
       return {
         status: 'not_available',
-        reason: `${subject.sizeArcmin.major}' across, more than ${MAX_FIELDS_ACROSS} times the widest ${widest.toFixed(0)}' field.`,
+        reason: `Too big to fit: ${subject.sizeArcmin.major}' across, more than ${MAX_FIELDS_ACROSS} times Node 01's widest view.`,
       };
     }
   }
 
   const target = SIM_TARGET_BY_ID.get(subject.targetId);
   if (!target) {
-    return { status: 'not_available', reason: `${node.name} does not carry the target '${subject.targetId}'.` };
+    return { status: 'not_available', reason: `Not on Node 01's list of targets yet.` };
   }
 
   if (
@@ -165,10 +165,10 @@ export function observability(subject: ObservabilitySubject, node: ObservatoryNo
     subject.resolveArcsec !== null &&
     subject.resolveArcsec >= DEDICATED_ELEMENTS * limit
   ) {
-    return { status: 'dedicated', reason: `A bright target ${DEDICATED_ELEMENTS} or more resolution elements across.` };
+    return { status: 'dedicated', reason: `A showcase: bright and large, Node 01 photographs it often.` };
   }
 
-  return { status: 'eligible', reason: `${node.name} can record it.` };
+  return { status: 'eligible', reason: `Node 01 can photograph it from ${node.site}.` };
 }
 
 function formatArcsec(arcsec: number): string {

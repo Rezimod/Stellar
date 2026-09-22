@@ -24,10 +24,11 @@ function seeded(text: string) {
   return resume(h);
 }
 
-type Kind = 'lunar' | 'planet' | 'moon' | 'star' | 'deepsky';
+type Kind = 'lunar' | 'planet' | 'moon' | 'star' | 'deepsky' | 'fiction';
 
 function kindOf(objectType: string): Kind {
   const t = objectType.toLowerCase();
+  if (t.startsWith('fictional')) return 'fiction';
   if (t.includes('lunar')) return 'lunar';
   if (t.includes('planet') || t.includes('atmospheric')) return 'planet';
   if (t.includes('moon')) return 'moon';
@@ -55,7 +56,7 @@ export default function CardArt({ designation, className = '' }: { designation: 
   const p = paletteFor(designation);
   const rand = seeded(designation);
   const id = `art-${designation.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
-  const solar = kind === 'lunar' || kind === 'planet' || kind === 'moon';
+  const solar = kind === 'lunar' || kind === 'planet';
 
   const lines = titleLines(name);
   const longest = Math.max(...lines.map((l) => l.length));

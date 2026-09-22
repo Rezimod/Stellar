@@ -33,6 +33,7 @@ export default async function HomePage() {
 
   let onSale: Awaited<ReturnType<typeof capsulesOnSale>> = [];
   let remaining = new Map<string, number>();
+  const leftByRarity = new Map<string, number>();
   let tonight: string | null = null;
   if (db) {
     try {
@@ -42,7 +43,10 @@ export default async function HomePage() {
         nightRow(db, siteNightDate(node.timezone, new Date())),
       ]);
       onSale = sale;
-      if (supply) remaining = new Map(supply.cards.map((c) => [c.designation, c.remaining]));
+      if (supply) {
+        remaining = new Map(supply.cards.map((c) => [c.designation, c.remaining]));
+        for (const c of supply.cards) leftByRarity.set(c.rarity, (leftByRarity.get(c.rarity) ?? 0) + c.remaining);
+      }
       if (night) {
         const [row] = await db.select({ designation: card.designation }).from(card).where(eq(card.id, night.cardId));
         tonight = row?.designation ?? null;
@@ -70,7 +74,7 @@ export default async function HomePage() {
 
   const count = (key: string) => `${cards.filter((c) => c.group === key).length}`;
   const groups: FloorGroup[] = [
-    { key: 'all', label: 'All', cover: 'M57', count: String(cards.length) },
+    { key: 'all', label: 'All', cover: 'M87', count: String(cards.length) },
     ...SET_GROUPS.map((g) => ({ key: g.key, label: g.short, cover: g.cover, count: count(g.key) })),
   ];
 
@@ -132,7 +136,10 @@ export default async function HomePage() {
                   <span className="sd-shop__odds-row">
                     <span className="sd-shop__dot" />
                     <span className="sd-shop__rarity">{rarityInfo(r).label}</span>
-                    <span className="sd-shop__worth">${DIRECT_CARD_PRICE_USD[r]} a card</span>
+                    <span className="sd-shop__worth">
+                      ${DIRECT_CARD_PRICE_USD[r]} a card
+                      {leftByRarity.has(r) && ` · ${leftByRarity.get(r)!.toLocaleString('en-US')} left`}
+                    </span>
                     <span className="sd-shop__pct">{pct < 1 ? pct.toFixed(1) : Math.round(pct)}%</span>
                   </span>
                   <span className="sd-shop__bar">

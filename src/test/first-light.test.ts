@@ -123,7 +123,7 @@ describe('the sky at a moment', () => {
   });
 
   it('says nothing rather than guessing at a target it does not carry', () => {
-    expect(skyAt({ place: tbilisi, at, targetId: 'betelgeuse' }).target).toBeNull();
+    expect(skyAt({ place: tbilisi, at, targetId: 'vega' }).target).toBeNull();
   });
 
   it('is the same sky whichever way you ask for it — the arithmetic is not random', () => {
@@ -203,7 +203,7 @@ describe('the hour the object was highest', () => {
 
   it('refuses a target it does not carry', () => {
     expect(
-      bestMomentOn({ place, date: new Date('2019-03-14T21:00:00Z'), targetId: 'betelgeuse' }),
+      bestMomentOn({ place, date: new Date('2019-03-14T21:00:00Z'), targetId: 'vega' }),
     ).toBeNull();
   });
 });

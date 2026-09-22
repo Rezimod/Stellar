@@ -124,7 +124,7 @@ describe('an unattended capture', () => {
   });
 
   it('refuses a target the instrument does not carry, for good', async () => {
-    const result = await sim.capture(node, { targetId: 'betelgeuse' }, NIGHT);
+    const result = await sim.capture(node, { targetId: 'vega' }, NIGHT);
     expect(result.ok).toBe(false);
     if (result.ok) return;
     // No night fixes this, so it must not cycle through the queue forever.

@@ -41,7 +41,7 @@ describe('what Node 01 cannot record', () => {
     expect(europa).toBeGreaterThan(resolvingPowerArcsec(node.instrument));
     const verdict = observability(subject({ targetId: 'jupiter', resolveArcsec: europa, magnitude: 5.3 }), node);
     expect(verdict.status).toBe('not_available');
-    expect(verdict.reason).toMatch(/1\.0" across, under the 2\.6"/);
+    expect(verdict.reason).toMatch(/1\.0" across, and the air blurs anything under 2\.6"/);
   });
 
   it('cannot see the Apollo 11 descent stage', () => {
@@ -54,7 +54,7 @@ describe('what Node 01 cannot record', () => {
     for (const decDeg of [-52.696, -47.4795]) {
       const verdict = observability(subject({ targetId: 'm42', decDeg }), node);
       expect(verdict.status).toBe('not_available');
-      expect(verdict.reason).toMatch(/Culminates at .* under the 20° floor/);
+      expect(verdict.reason).toMatch(/Never climbs high enough over .*, and Node 01 needs 20°/);
     }
     // -28° culminates at about 20.3°, just inside.
     expect(observability(subject({ targetId: 'm42', decDeg: -28 }), node).status).toBe('eligible');
@@ -63,7 +63,7 @@ describe('what Node 01 cannot record', () => {
   it('cannot record a point fainter than its deepest unattended stack reaches', () => {
     const verdict = observability(subject({ targetId: 'm57', magnitude: 17.5 }), node);
     expect(verdict.status).toBe('not_available');
-    expect(verdict.reason).toContain('60 x 8 s stack');
+    expect(verdict.reason).toMatch(/Too faint: magnitude 17\.5, and Node 01 reaches/);
   });
 
   it('loses a low-surface-brightness galaxy to the city sky', () => {
@@ -89,18 +89,18 @@ describe('what Node 01 cannot record', () => {
       node,
     );
     expect(verdict.status).toBe('not_available');
-    expect(verdict.reason).toMatch(/200' across, more than 3 times the widest 41' field/);
+    expect(verdict.reason).toMatch(/Too big to fit: 200' across, more than 3 times/);
   });
 
   it('does not fake a target its capture path does not carry', () => {
     const verdict = observability(subject({ targetId: 'm51', decDeg: 47.195 }), node);
     expect(verdict.status).toBe('not_available');
-    expect(verdict.reason).toContain("does not carry the target 'm51'");
+    expect(verdict.reason).toBe("Not on Node 01's list of targets yet.");
   });
 
   it('gives the physical reason before the missing target', () => {
     const verdict = observability(subject({ targetId: 'canopus', decDeg: -52.696 }), node);
-    expect(verdict.reason).toMatch(/^Culminates/);
+    expect(verdict.reason).toMatch(/^Never climbs/);
   });
 });
 

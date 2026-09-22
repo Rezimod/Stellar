@@ -38,7 +38,7 @@ describe('what a photograph costs', () => {
   });
 
   it('refuses to price something it does not sell', () => {
-    expect(priceTetriFor('betelgeuse')).toBeNull();
+    expect(priceTetriFor('vega')).toBeNull();
   });
 });
 
@@ -104,7 +104,7 @@ describe('planning a request into the night', () => {
   });
 
   it('refuses a target this network does not carry', () => {
-    expect(plan(new Set(), 'betelgeuse')).toBeNull();
+    expect(plan(new Set(), 'vega')).toBeNull();
   });
 
   it('returns nothing when the window is too short to contain a slot', () => {

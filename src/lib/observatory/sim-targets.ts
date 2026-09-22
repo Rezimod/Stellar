@@ -73,6 +73,16 @@ export const SIM_TARGETS: SimTarget[] = [
     expect: 'Two stars 34 arcseconds apart, one gold and one blue. Split cleanly.' },
   { frameSpan: 3.0, id: 'mizar', brightness: 'bright', name: 'Mizar', kind: 'fixed', ra: 13.399, dec: 54.925, sizeArcmin: 0.24,
     expect: 'Splits into two white stars 14 arcseconds apart. Alcor is 12 arcminutes off, at the edge of the field.' },
+  { frameSpan: 4.0, id: 'sirius', brightness: 'bright', name: 'Sirius', kind: 'fixed', ra: 6.752, dec: -16.716, sizeArcmin: 0.1,
+    expect: 'A blazing point low in the south. It twinkles in every colour through the thick air near the horizon.' },
+  { frameSpan: 4.0, id: 'polaris', brightness: 'bright', name: 'Polaris', kind: 'fixed', ra: 2.53, dec: 89.264, sizeArcmin: 0.1,
+    expect: 'One steady yellow-white star, with a faint companion 18 arcseconds away.' },
+  { frameSpan: 4.0, id: 'betelgeuse', brightness: 'bright', name: 'Betelgeuse', kind: 'fixed', ra: 5.919, dec: 7.407, sizeArcmin: 0.1,
+    expect: 'A point of deep orange. The colour is the whole picture.' },
+  { frameSpan: 1.0, id: 'm45', brightness: 'faint', name: 'Pleiades', kind: 'fixed', ra: 3.79, dec: 24.117, sizeArcmin: 110,
+    expect: 'Larger than the field: the brightest sisters and a haze of blue around them.' },
+  { frameSpan: 1.2, id: 'm16', brightness: 'faint', name: 'Eagle Nebula', kind: 'fixed', ra: 18.3133, dec: -13.8167, sizeArcmin: 7,
+    expect: 'A faint glow with a young cluster. The pillars need a long stack to show at all.' },
 ];
 
 export const SIM_TARGET_BY_ID = new Map(SIM_TARGETS.map((t) => [t.id, t]));

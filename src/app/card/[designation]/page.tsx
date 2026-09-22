@@ -117,6 +117,7 @@ export default async function CardPage({ params }: { params: Promise<{ designati
           <SideraBuyCard
             designation={seed.designation}
             name={seed.name}
+            rarity={rarity}
             priceUsd={priceUsd}
             available={available}
             released={released}
