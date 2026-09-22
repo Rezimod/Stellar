@@ -1797,7 +1797,8 @@
       "proof": "How it is proved",
       "requests": "Requests",
       "simulator": "Simulator",
-      "telescope": "Telescope"
+      "telescope": "Telescope",
+      "live": "Live"
     },
     "simulator": {
       "hold": "Hold a slot on {name}",
