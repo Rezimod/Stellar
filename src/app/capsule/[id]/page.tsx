@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import CardPlate from '@/components/sidera/CardPlate';
 import SideraOpen from '@/components/sidera/SideraOpen';
 import SideraShell from '@/components/sidera/SideraShell';
+import SideraView from '@/components/sidera/SideraView';
 import SideraVerify from '@/components/sidera/SideraVerify';
 import DataRow from '@/components/sidera/ui/DataRow';
 import Rule from '@/components/sidera/ui/Rule';
@@ -68,6 +69,7 @@ export default async function CapsuleRecordPage({ params }: { params: Promise<{ 
 
   return (
     <SideraShell>
+      <SideraView step="capsule" />
       <section className="sd-container sd-page">
         <Link href="/capsules/log" className="sd-back">
           The log

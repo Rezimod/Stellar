@@ -801,8 +801,48 @@ export const nightlyTarget = pgTable('nightly_target', {
   decisionBasis: text('decision_basis').notNull(),
   /** Set once, when that night's photograph exists. */
   captureId: uuid('capture_id'),
+  /** The instant the object stands highest inside the envelope — when the node would work it. */
+  plannedAt: timestamp('planned_at', { withTimezone: true }),
+  /** Forecast cloud cover, percent, at the site for that hour, as known when decided. */
+  cloudForecast: integer('cloud_forecast'),
+  /** Set when the night is lost to weather; the card rolls forward to the next night. */
+  lostAt: timestamp('lost_at', { withTimezone: true }),
+  lostReason: text('lost_reason'),
 }, (t) => [
   index('nightly_target_card_idx').on(t.cardId, t.nightDate),
+])
+
+// Sidera voting (Phase 8). Holders vote for the night's card among those Node
+// 01 can photograph that night. One vote per holder per night, changeable
+// until the night is decided; the weight is fixed when cast, from the
+// editions held then (VOTE_WEIGHT in economics.ts).
+//
+//   ALTER TABLE nightly_target ADD COLUMN IF NOT EXISTS planned_at timestamptz;
+//   ALTER TABLE nightly_target ADD COLUMN IF NOT EXISTS cloud_forecast integer;
+//   ALTER TABLE nightly_target ADD COLUMN IF NOT EXISTS lost_at timestamptz;
+//   ALTER TABLE nightly_target ADD COLUMN IF NOT EXISTS lost_reason text;
+//
+//   CREATE TABLE IF NOT EXISTS card_vote (
+//     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+//     card_id uuid NOT NULL,
+//     wallet text NOT NULL,
+//     night_date date NOT NULL,
+//     weight integer NOT NULL,
+//     created_at timestamptz NOT NULL DEFAULT now()
+//   );
+//   CREATE UNIQUE INDEX IF NOT EXISTS card_vote_wallet_night_unique
+//     ON card_vote (wallet, night_date);
+//   CREATE INDEX IF NOT EXISTS card_vote_night_idx ON card_vote (night_date, card_id);
+export const cardVote = pgTable('card_vote', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  cardId: uuid('card_id').notNull(),
+  wallet: text('wallet').notNull(),
+  nightDate: date('night_date').notNull(),
+  weight: integer('weight').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+}, (t) => [
+  uniqueIndex('card_vote_wallet_night_unique').on(t.wallet, t.nightDate),
+  index('card_vote_night_idx').on(t.nightDate, t.cardId),
 ])
 
 // Sidera capsules (Phase 5). A capsule is committed to when it is listed: its

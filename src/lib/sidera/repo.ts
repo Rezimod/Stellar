@@ -74,7 +74,7 @@ export async function allocateEdition(
  */
 export async function decideNightlyTarget(
   db: Db,
-  input: { nightDate: string; cardId: string; decisionBasis: string },
+  input: Pick<typeof nightlyTarget.$inferInsert, 'nightDate' | 'cardId' | 'decisionBasis' | 'plannedAt' | 'cloudForecast'>,
 ): Promise<typeof nightlyTarget.$inferSelect> {
   await db.insert(nightlyTarget).values(input).onConflictDoNothing({ target: nightlyTarget.nightDate })
   const [row] = await db.select().from(nightlyTarget).where(eq(nightlyTarget.nightDate, input.nightDate))

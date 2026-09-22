@@ -13,6 +13,7 @@ const ROUTES = [
   '/capsules',
   '/capsules/log',
   '/collection',
+  '/tonight',
   '/sky',
   '/observatory',
   '/first-light',

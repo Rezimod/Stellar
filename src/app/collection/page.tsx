@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import CollectionWallet from '@/components/sidera/CollectionWallet'
 import HolderCollection from '@/components/sidera/HolderCollection'
 import SideraShell from '@/components/sidera/SideraShell'
+import SideraView from '@/components/sidera/SideraView'
 import DataRow from '@/components/sidera/ui/DataRow'
 import { getDb } from '@/lib/db'
 import { holderView, type HolderEdition } from '@/lib/sidera/repo'
@@ -56,6 +57,7 @@ export default async function CollectionPage({
 
   return (
     <SideraShell>
+      <SideraView step="collection" />
       <section className="sd-container sd-page">
         <div className="sd-page__head">
           <div>

@@ -56,6 +56,7 @@ export const sideraBuyRateLimit = { limit: (id: string) => makeLimit('3600 s', 2
 export const sideraConfirmRateLimit = { limit: (id: string) => makeLimit('60 s', 30, 'rl:sidera:confirm').limit(id) };
 export const sideraOpenRateLimit = { limit: (id: string) => makeLimit('60 s', 20, 'rl:sidera:open').limit(id) };
 export const sideraLogRateLimit = { limit: (id: string) => makeLimit('60 s', 60, 'rl:sidera:log').limit(id) };
+export const sideraVoteRateLimit = { limit: (id: string) => makeLimit('60 s', 10, 'rl:sidera:vote').limit(id) };
 
 // Daily ceilings (24h sliding) — bound the worst-case AI cost / token
 // issuance per user even if the per-minute / per-hour limits are saturated.

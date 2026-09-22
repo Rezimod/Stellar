@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import CardPlate from '@/components/sidera/CardPlate';
 import SideraBuyCard from '@/components/sidera/SideraBuyCard';
 import SideraShell from '@/components/sidera/SideraShell';
+import SideraView from '@/components/sidera/SideraView';
 import DataRow, { type Datum } from '@/components/sidera/ui/DataRow';
 import ObservationStatusMark from '@/components/sidera/ui/ObservationStatusMark';
 import Rule from '@/components/sidera/ui/Rule';
@@ -73,6 +74,7 @@ export default async function CardPage({ params }: { params: Promise<{ designati
 
   return (
     <SideraShell>
+      <SideraView step="card" />
       <section className="sd-container sd-page">
         <p className="sd-crumb sd-label">
           <Link href="/set/001">Set 001</Link>

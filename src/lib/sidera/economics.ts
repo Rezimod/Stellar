@@ -118,3 +118,15 @@ export function capsuleEconomics(costs: CapsuleCosts, price = CAPSULE_PRICE_GEL)
     contributionMarginRate: contributionMarginGel / price,
   };
 }
+
+/**
+ * PROVISIONAL (Gate 4). What one held edition adds to its holder's vote for
+ * the night's card, by the edition's rarity. A holder's weight is the sum over
+ * every edition they hold; holding nothing, they have no vote.
+ */
+export const VOTE_WEIGHT: Record<Rarity, number> = {
+  common: 1,
+  rare: 2,
+  epic: 5,
+  legendary: 20,
+};

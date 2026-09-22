@@ -24,6 +24,10 @@
     {
       "path": "/api/sidera/capsules/release",
       "schedule": "40 3 * * *"
+    },
+    {
+      "path": "/api/cron/sidera-night",
+      "schedule": "0 13 * * *"
     }
   ]
 }

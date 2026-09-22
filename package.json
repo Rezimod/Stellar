@@ -18,6 +18,7 @@
     "sidera:lifecycle": "npx tsx scripts/sidera-lifecycle.ts",
     "sidera:seed": "npx tsx scripts/sidera-seed-set.ts",
     "sidera:capsules": "npx tsx scripts/sidera-capsule-demo.ts",
+    "sidera:funnel": "npx tsx scripts/sidera-funnel.ts",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "setup:stars": "npx tsx scripts/import-star-catalog.ts",

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import CardPlate from '@/components/sidera/CardPlate';
 import SideraShell from '@/components/sidera/SideraShell';
+import SideraView from '@/components/sidera/SideraView';
 import DataRow from '@/components/sidera/ui/DataRow';
 import { getDb } from '@/lib/db';
 import { SET_001, SET_001_CARDS } from '@/lib/sets/set-001';
@@ -48,6 +49,7 @@ export default async function Set001Page({
 
   return (
     <SideraShell>
+      <SideraView step="set" />
       <section className="sd-container sd-page">
         <div className="sd-page__head">
           <div>

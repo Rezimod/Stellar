@@ -3,6 +3,7 @@ import { getDb } from '@/lib/db';
 import { analyticsEvent } from '@/lib/schema';
 import { trackRateLimit, checkRateLimit } from '@/lib/rate-limit';
 import { isValidPublicKey } from '@/lib/validate';
+import { INVITE_COOKIE } from '@/lib/invite';
 
 export const runtime = 'nodejs';
 
@@ -23,6 +24,7 @@ const ALLOWED = new Set([
   'quiz_completed',
   'marketplace_view',
   'product_view',
+  'sidera_view',
 ]);
 
 const PROPS_MAX_BYTES = 4096;
@@ -58,6 +60,12 @@ export async function POST(req: NextRequest) {
 
   let props: unknown = body.props ?? null;
   if (props != null && JSON.stringify(props).length > PROPS_MAX_BYTES) props = null;
+  // The beta's invite code rides on its httpOnly cookie, which the client
+  // cannot read; the server attaches it so the funnel splits by invitation.
+  const invite = req.cookies.get(INVITE_COOKIE)?.value;
+  if (event.startsWith('sidera_') && invite) {
+    props = { ...(props && typeof props === 'object' ? props : {}), invite: invite.slice(0, 64) };
+  }
 
   try {
     await db.insert(analyticsEvent).values({

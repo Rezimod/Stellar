@@ -123,3 +123,24 @@ most reversible option; each needs a yes/no from Rezi.
     the owner:** expand the renderer to the planets, or keep the drawn plates
     for every card and commission an illustrator. The drawn plates stay live
     until that is decided.
+
+## Phase 8
+
+22. **Where the invite gate closes.** The gate is live only while
+    `SIDERA_INVITE_CODES` is set on the Vercel project, and it covers pages
+    only: APIs, the on-chain metadata routes and static art stay open, so a
+    capsule bought by an invited holder still reveals and verifies. Setting
+    it on production closes sidera.stellarr.club to search and to anyone
+    without a link, the Gate 3 stranger included — they need an
+    `/invite/<code>` link. Took the reversible option: the code ships with
+    the gate off until the variable is set. **For the owner:** the codes, and
+    when to switch it on.
+
+23. **How much a vote weighs, and how far a lost night carries.** Each held
+    edition adds `VOTE_WEIGHT` by its rarity (1 / 2 / 5 / 20, in
+    `economics.ts`, PROVISIONAL until Gate 4); holding nothing, there is no
+    vote. A night lost to cloud carries its card one night only, and only if
+    its object is up then; after that the vote decides again. A clear night
+    with no photograph — Node 01 commissioning — is not lost and carries
+    nothing. **For the owner:** the weights, and whether a lost card should
+    keep carrying until it is photographed.

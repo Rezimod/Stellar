@@ -5,6 +5,7 @@ import HeroShowcase from "@/components/sidera/HeroShowcase";
 import CountUp from "@/components/sidera/ui/CountUp";
 import Rise from "@/components/sidera/ui/Rise";
 import SideraShell from "@/components/sidera/SideraShell";
+import SideraView from "@/components/sidera/SideraView";
 import DataRow from "@/components/sidera/ui/DataRow";
 import { getDb } from "@/lib/db";
 import { getNode } from "@/lib/observatory/nodes";
@@ -74,6 +75,7 @@ export default async function HomePage() {
 
   return (
     <SideraShell>
+      <SideraView step="landing" />
       <section className="sd-hero">
         <div className="sd-sky" aria-hidden="true" />
         <div className="sd-container sd-hero__grid">

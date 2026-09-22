@@ -23,7 +23,8 @@ export type TrackEvent =
   | 'observation_started'
   | 'quiz_completed'
   | 'marketplace_view'
-  | 'product_view';
+  | 'product_view'
+  | 'sidera_view';
 
 const ANON_KEY = 'stellar_anon_id';
 

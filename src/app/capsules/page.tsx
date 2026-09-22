@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import SideraBuyCapsule from '@/components/sidera/SideraBuyCapsule';
 import SideraShell from '@/components/sidera/SideraShell';
+import SideraView from '@/components/sidera/SideraView';
 import DataRow from '@/components/sidera/ui/DataRow';
 import RarityMark from '@/components/sidera/ui/RarityMark';
 import { getDb } from '@/lib/db';
@@ -31,6 +32,7 @@ export default async function CapsulesPage() {
 
   return (
     <SideraShell>
+      <SideraView step="capsules" />
       <section className="sd-hero" style={{ paddingBottom: 24 }}>
         <div className="sd-sky" aria-hidden="true" />
         <div className="sd-container">

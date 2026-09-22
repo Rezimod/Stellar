@@ -86,44 +86,65 @@ function withinAvailability(node: ObservatoryNode, at: Date): boolean {
   return from <= to ? hours >= from && hours < to : hours >= from || hours < to
 }
 
-export function pickTonightsTarget<C extends Candidate>(
+export type Observable<C extends Candidate> = Omit<TonightsTarget<C>, 'decisionBasis'>
+
+/**
+ * Every card Node 01 could photograph on `night`, each at the instant its
+ * object stands highest inside the envelope, highest first. A card whose
+ * object never clears the envelope that night is not in the list.
+ */
+export function observableTonight<C extends Candidate>(
   cards: C[],
   node: ObservatoryNode,
   night: string,
-): TonightsTarget<C> | null {
-  const candidates = cards
-    .filter((c) => c.observationStatus === 'eligible' || c.observationStatus === 'dedicated')
-    .filter((c) => SIM_TARGET_BY_ID.has(c.targetId))
-    // Settled order, so a tie is decided the same way every time it is asked.
-    .sort((a, b) => a.designation.localeCompare(b.designation))
-
+): Observable<C>[] {
   const samples = nightSamples(node, night)
-
-  let best: Omit<TonightsTarget<C>, 'decisionBasis'> | null = null
-  for (const c of candidates) {
+  const out: Observable<C>[] = []
+  for (const c of candidatesOf(cards)) {
     const target = SIM_TARGET_BY_ID.get(c.targetId)!
+    let best: Observable<C> | null = null
     for (const at of samples) {
       const position = targetAltAz(target, node, at)
       if (!evaluateSafety(node, position, at).ok) continue
-      if (!best || position.altitude > best.altitudeDeg) {
-        best = { card: c, at, altitudeDeg: position.altitude }
-      }
+      if (!best || position.altitude > best.altitudeDeg) best = { card: c, at, altitudeDeg: position.altitude }
     }
+    if (best) out.push(best)
   }
-  if (!best) return null
+  // Stable sort over the settled order, so a tie is decided the same way every time it is asked.
+  return out.sort((a, b) => b.altitudeDeg - a.altitudeDeg)
+}
 
+function candidatesOf<C extends Candidate>(cards: C[]): C[] {
+  return cards
+    .filter((c) => c.observationStatus === 'eligible' || c.observationStatus === 'dedicated')
+    .filter((c) => SIM_TARGET_BY_ID.has(c.targetId))
+    .sort((a, b) => a.designation.localeCompare(b.designation))
+}
+
+/** How an object stands on the night, in words: "Saturn reaches 41.2° at 23:15 local time at Tbilisi". */
+export function standing(o: Observable<Candidate>, node: ObservatoryNode): string {
   const localTime = new Intl.DateTimeFormat('en-GB', {
     timeZone: node.timezone,
     hour: '2-digit',
     minute: '2-digit',
     hourCycle: 'h23',
-  }).format(best.at)
+  }).format(o.at)
+  return `${SIM_TARGET_BY_ID.get(o.card.targetId)!.name} reaches ${o.altitudeDeg.toFixed(1)}° at ${localTime} local time at ${node.site}`
+}
+
+export function pickTonightsTarget<C extends Candidate>(
+  cards: C[],
+  node: ObservatoryNode,
+  night: string,
+): TonightsTarget<C> | null {
+  const candidates = candidatesOf(cards)
+  const [best] = observableTonight(cards, node, night)
+  if (!best) return null
 
   return {
     ...best,
     decisionBasis:
-      `${best.card.designation}: ${SIM_TARGET_BY_ID.get(best.card.targetId)!.name} reaches ` +
-      `${best.altitudeDeg.toFixed(1)}° at ${localTime} local time at ${node.site}, the highest safe altitude ` +
+      `${best.card.designation}: ${standing(best, node)}, the highest safe altitude ` +
       `among ${candidates.length} observable ${candidates.length === 1 ? 'card' : 'cards'} ` +
       `on the night of ${night}.`,
   }
