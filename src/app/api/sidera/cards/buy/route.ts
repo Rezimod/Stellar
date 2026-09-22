@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
-import { isValidPublicKey } from '@/lib/validate';
-import { assertOwnsWallet, verifyPrivy } from '@/lib/api-auth';
+import { verifyPrivy } from '@/lib/api-auth';
 import { paused } from '@/lib/kill-switch';
 import { sideraBuyRateLimit } from '@/lib/rate-limit';
 import { isRarity } from '@/lib/rarity';
 import { DIRECT_CARD_PRICE_USD } from '@/lib/sidera/economics';
 import { cardAvailability, createCardOrder, usdToSol, merchantWallet, newPaymentReference, paymentUrl } from '@/lib/sidera/orders';
-import { limited } from '@/lib/sidera/route-guards';
+import { holderWallet, limited, NO_LINKED_WALLET } from '@/lib/sidera/route-guards';
 import { SolPriceUnavailableError } from '@/lib/sol-price';
 
 export const runtime = 'nodejs';
@@ -27,17 +26,14 @@ export async function POST(req: NextRequest) {
   if (!privyId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const body = (await req.json().catch(() => null)) as { walletAddress?: unknown; designation?: unknown } | null;
-  const walletAddress = body?.walletAddress;
+  const named = body?.walletAddress;
   const designation = body?.designation;
-  if (typeof walletAddress !== 'string' || !isValidPublicKey(walletAddress)) {
-    return NextResponse.json({ error: 'Valid walletAddress required' }, { status: 400 });
-  }
   if (typeof designation !== 'string' || !/^[A-Z0-9-]{1,40}$/.test(designation)) {
     return NextResponse.json({ error: 'designation required' }, { status: 400 });
   }
-  if (!(await assertOwnsWallet(privyId, walletAddress))) {
-    return NextResponse.json({ error: 'Wallet does not match session' }, { status: 403 });
-  }
+  // The wallet is the one Privy lists for this session; the page's choice is only a preference.
+  const walletAddress = await holderWallet(privyId, named);
+  if (!walletAddress) return NextResponse.json({ error: NO_LINKED_WALLET }, { status: 403 });
   const l = await limited(sideraBuyRateLimit, walletAddress);
   if (l) return l;
 

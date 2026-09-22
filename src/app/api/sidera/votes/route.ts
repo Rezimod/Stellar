@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { assertOwnsWallet, verifyPrivy } from '@/lib/api-auth';
+import { verifyPrivy } from '@/lib/api-auth';
 import { getDb } from '@/lib/db';
 import { paused } from '@/lib/kill-switch';
 import { getNode } from '@/lib/observatory/nodes';
 import { sideraVoteRateLimit } from '@/lib/rate-limit';
 import { allCards, castVote, voteWeight, votingNight } from '@/lib/sidera/night';
-import { limited } from '@/lib/sidera/route-guards';
+import { holderWallet, limited, NO_LINKED_WALLET } from '@/lib/sidera/route-guards';
 import { observableTonight } from '@/lib/sidera/target';
-import { isValidPublicKey } from '@/lib/validate';
 
 export const runtime = 'nodejs';
 
@@ -24,16 +23,13 @@ export async function POST(req: NextRequest) {
   if (!privyId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const body = (await req.json().catch(() => null)) as Record<string, unknown> | null;
-  const { walletAddress, designation } = body ?? {};
-  if (typeof walletAddress !== 'string' || !isValidPublicKey(walletAddress)) {
-    return NextResponse.json({ error: 'Valid walletAddress required' }, { status: 400 });
-  }
+  const { walletAddress: named, designation } = body ?? {};
   if (typeof designation !== 'string' || designation.length > 32) {
     return NextResponse.json({ error: 'designation required' }, { status: 400 });
   }
-  if (!(await assertOwnsWallet(privyId, walletAddress))) {
-    return NextResponse.json({ error: 'Wallet does not match session' }, { status: 403 });
-  }
+  // The wallet is the one Privy lists for this session; the page's choice is only a preference.
+  const walletAddress = await holderWallet(privyId, named);
+  if (!walletAddress) return NextResponse.json({ error: NO_LINKED_WALLET }, { status: 403 });
   const l = await limited(sideraVoteRateLimit, walletAddress);
   if (l) return l;
 

@@ -5,6 +5,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyCronSecret } from '@/lib/cron-auth';
 import { getSessionWalletAddresses, verifyPrivy } from '@/lib/api-auth';
+import { isValidPublicKey } from '@/lib/validate';
 import { checkRateLimit } from '@/lib/rate-limit';
 
 /** A lowercase RFC 4122 UUID, exactly: what every capsule and order id is. */
@@ -16,8 +17,13 @@ export function isUuid(value: unknown): value is string {
 
 type Limiter = { limit: (id: string) => Promise<{ success: boolean; remaining: number; reset: number }> };
 
-/** A 429 when the caller is over the limit, a 503 when the limiter cannot be reached; null to proceed. */
+/**
+ * A 429 when the caller is over the limit, a 503 when the limiter cannot be
+ * reached; null to proceed. A deployment with no Redis configured at all has
+ * no limiter to reach, and proceeds.
+ */
 export async function limited(limiter: Limiter, id: string): Promise<NextResponse | null> {
+  if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) return null;
   try {
     const { success, reset } = await checkRateLimit(limiter, id);
     if (success) return null;
@@ -41,3 +47,16 @@ export async function isSideraAdmin(req: NextRequest): Promise<boolean> {
   if (!privyId) return false;
   return (await getSessionWalletAddresses(privyId)).some((w) => admins.has(w));
 }
+
+/**
+ * The holder's Solana wallet, as Privy lists it for this session — never one
+ * the page merely names. The page's choice is used when it is linked; any
+ * other linked Solana wallet otherwise. Null when the session has none.
+ */
+export async function holderWallet(privyId: string, named?: unknown): Promise<string | null> {
+  const linked = (await getSessionWalletAddresses(privyId)).filter((a) => isValidPublicKey(a));
+  if (typeof named === 'string' && linked.includes(named)) return named;
+  return linked[0] ?? null;
+}
+
+export const NO_LINKED_WALLET = 'This account has no Solana wallet linked to it yet. Sign out, then sign in again to create one.';

@@ -4,14 +4,16 @@ import { NextRequest } from 'next/server';
 
 const mocks = vi.hoisted(() => ({
   privy: vi.fn(),
-  owns: vi.fn(),
+  linked: vi.fn(),
   db: vi.fn(),
   rate: vi.fn(),
   weight: vi.fn(),
   cast: vi.fn(),
   observable: vi.fn(),
 }));
-vi.mock('@/lib/api-auth', () => ({ verifyPrivy: mocks.privy, assertOwnsWallet: mocks.owns }));
+vi.mock('@/lib/api-auth', () => ({ verifyPrivy: mocks.privy, getSessionWalletAddresses: mocks.linked }));
+process.env.UPSTASH_REDIS_REST_URL = 'https://redis.test';
+process.env.UPSTASH_REDIS_REST_TOKEN = 'test';
 vi.mock('@/lib/db', () => ({ getDb: mocks.db }));
 vi.mock('@/lib/rate-limit', () => ({ checkRateLimit: mocks.rate, sideraVoteRateLimit: {} }));
 vi.mock('@/lib/sidera/night', () => ({
@@ -37,7 +39,7 @@ function vote(designation: string) {
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.privy.mockResolvedValue('did:privy:holder');
-  mocks.owns.mockResolvedValue(true);
+  mocks.linked.mockResolvedValue([WALLET]);
   mocks.db.mockReturnValue({});
   mocks.rate.mockResolvedValue({ success: true, remaining: 9, reset: 0 });
   mocks.observable.mockReturnValue([{ card: { id: 'c-saturn', designation: 'SATURN' } }]);
@@ -64,7 +66,7 @@ it('records a holder’s weighted vote for the voting night', async () => {
   expect(mocks.cast).toHaveBeenCalledWith({}, { wallet: WALLET, cardId: 'c-saturn', night: '2026-09-20', weight: 7 });
 });
 
-it('refuses another holder’s wallet', async () => {
-  mocks.owns.mockResolvedValue(false);
+it('refuses a session with no Solana wallet linked', async () => {
+  mocks.linked.mockResolvedValue([]);
   expect((await vote('SATURN')).status).toBe(403);
 });

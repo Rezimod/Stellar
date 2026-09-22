@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
-import { isValidPublicKey } from '@/lib/validate';
-import { assertOwnsWallet, verifyPrivy } from '@/lib/api-auth';
+import { verifyPrivy } from '@/lib/api-auth';
 import { paused } from '@/lib/kill-switch';
 import { sideraBuyRateLimit } from '@/lib/rate-limit';
 import { purchaseCapsule, readCapsule } from '@/lib/sidera/capsule';
 import { usdToSol, merchantWallet, newPaymentReference, paymentUrl } from '@/lib/sidera/orders';
 import { isHex32, verifyPurchaseSignature } from '@/lib/sidera/randomness';
-import { isUuid, limited } from '@/lib/sidera/route-guards';
+import { isUuid, holderWallet, limited, NO_LINKED_WALLET } from '@/lib/sidera/route-guards';
 import { SolPriceUnavailableError } from '@/lib/sol-price';
 
 export const runtime = 'nodejs';
@@ -32,18 +31,15 @@ export async function POST(req: NextRequest) {
   if (!privyId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const body = (await req.json().catch(() => null)) as Record<string, unknown> | null;
-  const { walletAddress, capsuleId, commitment, nonce, signature } = body ?? {};
-  if (typeof walletAddress !== 'string' || !isValidPublicKey(walletAddress)) {
-    return NextResponse.json({ error: 'Valid walletAddress required' }, { status: 400 });
-  }
+  const { walletAddress: named, capsuleId, commitment, nonce, signature } = body ?? {};
   if (!isUuid(capsuleId)) return NextResponse.json({ error: 'capsuleId required' }, { status: 400 });
   if (!isHex32(commitment)) return NextResponse.json({ error: 'commitment must be 64 lowercase hex characters' }, { status: 400 });
   if (!isHex32(nonce)) return NextResponse.json({ error: 'nonce must be 64 lowercase hex characters' }, { status: 400 });
   if (signature !== undefined && typeof signature !== 'string') return NextResponse.json({ error: 'signature must be base58' }, { status: 400 });
 
-  if (!(await assertOwnsWallet(privyId, walletAddress))) {
-    return NextResponse.json({ error: 'Wallet does not match session' }, { status: 403 });
-  }
+  // The wallet is the one Privy lists for this session; the page's choice is only a preference.
+  const walletAddress = await holderWallet(privyId, named);
+  if (!walletAddress) return NextResponse.json({ error: NO_LINKED_WALLET }, { status: 403 });
   const l = await limited(sideraBuyRateLimit, walletAddress);
   if (l) return l;
 

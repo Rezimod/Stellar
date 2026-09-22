@@ -5,6 +5,7 @@ import { NextRequest } from 'next/server';
 const mocks = vi.hoisted(() => ({
   privy: vi.fn(),
   owns: vi.fn(),
+  linked: vi.fn(),
   db: vi.fn(),
   rate: vi.fn(),
   readCapsule: vi.fn(),
@@ -20,7 +21,9 @@ const mocks = vi.hoisted(() => ({
   createCardOrder: vi.fn(),
   orderRows: [] as Array<Record<string, unknown>>,
 }));
-vi.mock('@/lib/api-auth', () => ({ verifyPrivy: mocks.privy, assertOwnsWallet: mocks.owns, getSessionWalletAddresses: vi.fn(async () => []) }));
+vi.mock('@/lib/api-auth', () => ({ verifyPrivy: mocks.privy, assertOwnsWallet: mocks.owns, getSessionWalletAddresses: mocks.linked }));
+process.env.UPSTASH_REDIS_REST_URL = 'https://redis.test';
+process.env.UPSTASH_REDIS_REST_TOKEN = 'test';
 vi.mock('@/lib/db', () => ({ getDb: mocks.db }));
 vi.mock('@/lib/rate-limit', () => ({
   checkRateLimit: mocks.rate, sideraOpenRateLimit: {}, sideraBuyRateLimit: {}, sideraConfirmRateLimit: {}, sideraLogRateLimit: {},
@@ -69,6 +72,7 @@ beforeEach(() => {
   delete process.env.STELLAR_PAUSED;
   mocks.privy.mockResolvedValue('privy-holder');
   mocks.owns.mockResolvedValue(true);
+  mocks.linked.mockResolvedValue([HOLDER]);
   mocks.rate.mockResolvedValue({ success: true, remaining: 1, reset: Date.now() + 60_000 });
   mocks.readCapsule.mockResolvedValue(bought);
   mocks.openCapsule.mockResolvedValue({ ok: true, alreadyOpened: false, secret: HEX, pulls: [] });
@@ -143,9 +147,18 @@ describe('buying a capsule', () => {
     expect(mocks.purchaseCapsule).not.toHaveBeenCalled();
   });
 
-  it('refuses a wallet the session does not hold', async () => {
-    mocks.owns.mockResolvedValue(false);
-    expect((await buy(post('/api/sidera/capsules/buy', body))).status).toBe(403);
+  it('buys for the wallet the session holds, whatever wallet the page names', async () => {
+    mocks.readCapsule.mockResolvedValue({ ...bought, state: 'listed' });
+    mocks.purchaseCapsule.mockResolvedValue({ ok: false, reason: 'not_listed' });
+    await buy(post('/api/sidera/capsules/buy', { ...body, walletAddress: '9'.repeat(44) }));
+    expect(mocks.purchaseCapsule).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ wallet: HOLDER }));
+  });
+
+  it('refuses a session with no Solana wallet linked', async () => {
+    mocks.linked.mockResolvedValue([]);
+    const res = await buy(post('/api/sidera/capsules/buy', body));
+    expect(res.status).toBe(403);
+    expect((await res.json()).error).toMatch(/no Solana wallet linked/);
     expect(mocks.purchaseCapsule).not.toHaveBeenCalled();
   });
 
