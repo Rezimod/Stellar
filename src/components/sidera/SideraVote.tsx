@@ -3,12 +3,12 @@
 import { useState } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
 import { AuthModal } from '@/components/auth/AuthModal';
-import { useStellarUser } from '@/hooks/useStellarUser';
+import { useSideraHolder } from './useSideraHolder';
 
 /** A holder's vote for one card of the night. Casting again for another card moves the vote. */
 export default function SideraVote({ designation, name }: { designation: string; name: string }) {
   const { getAccessToken } = usePrivy();
-  const { authenticated, ready, address } = useStellarUser();
+  const { authenticated, ready, address } = useSideraHolder();
   const [authOpen, setAuthOpen] = useState(false);
   const [state, setState] = useState<{ busy: boolean; note: string }>({ busy: false, note: '' });
 

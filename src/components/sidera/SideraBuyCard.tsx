@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
 import { AuthModal } from '@/components/auth/AuthModal';
-import { useStellarUser } from '@/hooks/useStellarUser';
+import { useSideraHolder } from './useSideraHolder';
 import SideraPay, { type Confirmation, type SideraOrder } from './SideraPay';
 
 /**
@@ -25,7 +25,7 @@ export default function SideraBuyCard({
   released: boolean;
 }) {
   const { getAccessToken } = usePrivy();
-  const { authenticated, ready, address } = useStellarUser();
+  const { authenticated, ready, address } = useSideraHolder();
   const [authOpen, setAuthOpen] = useState(false);
   const [order, setOrder] = useState<SideraOrder | null>(null);
   const [done, setDone] = useState<Confirmation | null>(null);

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePrivy } from '@privy-io/react-auth';
 import { AuthModal } from '@/components/auth/AuthModal';
-import { useStellarUser } from '@/hooks/useStellarUser';
+import { useSideraHolder } from './useSideraHolder';
 import SideraPay, { type SideraOrder } from './SideraPay';
 import SideraReveal, { type Draw } from './SideraReveal';
 import DataRow from './ui/DataRow';
@@ -39,7 +39,7 @@ export default function SideraBuyCapsule({
   cardsPerCapsule: number;
 }) {
   const { getAccessToken } = usePrivy();
-  const { authenticated, ready, address } = useStellarUser();
+  const { authenticated, ready, address } = useSideraHolder();
   const [authOpen, setAuthOpen] = useState(false);
   const [order, setOrder] = useState<SideraOrder | null>(null);
   const [receipt, setReceipt] = useState<Receipt | null>(null);

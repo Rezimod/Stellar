@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { AuthModal } from '@/components/auth/AuthModal'
-import { useStellarUser } from '@/hooks/useStellarUser'
+import { useSideraHolder } from './useSideraHolder'
 
 /**
  * The Collection is read by wallet. A signed-in holder never has to type
@@ -13,7 +13,7 @@ import { useStellarUser } from '@/hooks/useStellarUser'
  */
 export default function CollectionWallet() {
   const router = useRouter()
-  const { ready, authenticated, address } = useStellarUser()
+  const { ready, authenticated, address } = useSideraHolder()
   const [authOpen, setAuthOpen] = useState(false)
   const [typed, setTyped] = useState('')
 

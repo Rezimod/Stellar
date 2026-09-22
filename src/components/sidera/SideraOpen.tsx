@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
 import { AuthModal } from '@/components/auth/AuthModal';
-import { useStellarUser } from '@/hooks/useStellarUser';
+import { useSideraHolder } from './useSideraHolder';
 import SideraReveal, { type Draw } from './SideraReveal';
 
 /**
@@ -16,7 +16,7 @@ import SideraReveal, { type Draw } from './SideraReveal';
  */
 export default function SideraOpen({ capsuleId }: { capsuleId: string }) {
   const { getAccessToken } = usePrivy();
-  const { authenticated, ready } = useStellarUser();
+  const { authenticated, ready } = useSideraHolder();
   const [authOpen, setAuthOpen] = useState(false);
   const [draw, setDraw] = useState<Draw | null>(null);
   const [busy, setBusy] = useState(false);
