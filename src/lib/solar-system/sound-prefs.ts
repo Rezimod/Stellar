@@ -79,3 +79,19 @@ export function onSoundChange(listener: (on: boolean, level: number) => void): (
   listeners.add(listener);
   return () => { listeners.delete(listener); };
 }
+
+let audioWarmed = false;
+
+/** The browser's first AudioContext starts its audio service: 1.2 s on the
+ *  main thread on a Mac, every one after it well under a millisecond. Made
+ *  (and closed) once under a loading screen, so the first sound of the
+ *  session — the launch swell, mid-flight — does not stop the frame. */
+export function warmAudioService() {
+  if (audioWarmed || typeof AudioContext === 'undefined') return;
+  audioWarmed = true;
+  try {
+    void new AudioContext().close();
+  } catch {
+    // No audio device: every mix is silent anyway.
+  }
+}

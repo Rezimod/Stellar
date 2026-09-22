@@ -11,6 +11,7 @@ import { registerServiceWorker } from '@/game/sw';
 import { currentQuality, governedQuality, onQualityChange, setDetectedQuality, stepQualityDown } from '@/game/quality';
 import { CosmicLoader } from '@/components/solar-system/CosmicLoader';
 import { useLoadingTips } from '@/components/solar-system/useLoadingTips';
+import { warmAudioService } from '@/lib/solar-system/sound-prefs';
 import { GameWorld } from './GameWorld';
 import { TitleScreen } from './TitleScreen';
 import { PauseMenu } from './PauseMenu';
@@ -58,7 +59,7 @@ export default function GameShell() {
   const [loaderFading, setLoaderFading] = useState(false);
   const wasLoading = useRef(false);
   useEffect(() => {
-    if (state === 'loading') { wasLoading.current = true; setLoaderFading(false); return; }
+    if (state === 'loading') { warmAudioService(); wasLoading.current = true; setLoaderFading(false); return; }
     if (!wasLoading.current) return;
     wasLoading.current = false;
     setLoaderFading(true);
