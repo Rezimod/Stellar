@@ -64,7 +64,6 @@
   --font-display: var(--sd-display);
   --font-body: var(--sd-sans);
   --font-cta: var(--sd-sans);
-  --font-mono: var(--sd-mono);
 
   --sd-stars:
     radial-gradient(1.2px 1.2px at 23px 41px, rgba(255, 255, 255, 0.9), transparent 60%),
@@ -797,3 +796,122 @@ html:has(.sidera) #stellar-main { padding-top: 0; padding-bottom: 0; }
 .sd-ledger--hash dd { word-break: break-all; max-width: 44ch; }
 @media (min-width: 1100px) { .sd-grid--five { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 20px; } }
 @media (max-width: 639px) { .sd-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 20px; } }
+
+/* ── The floor ────────────────────────────────────────────────── */
+/* Home: the set on a shelf to browse, and the capsule on a counter beside it. */
+.sd-shop { width: 100%; max-width: 1480px; margin-inline: auto; padding: 20px var(--sd-gutter) 0; display: grid; gap: 20px; align-items: start; }
+@media (min-width: 1100px) { .sd-shop { grid-template-columns: minmax(0, 1fr) 380px; gap: 24px; padding-top: 24px; } }
+@media (max-width: 1099px) { .sd-shop__panel { order: -1; } }
+
+.sd-floor { min-width: 0; }
+.sd-floor__bar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 18px; }
+@media (min-width: 1100px) { .sd-floor__bar { flex-wrap: nowrap; } }
+.sd-floor__tabs { display: flex; gap: 8px; overflow-x: auto; flex: 1 1 auto; min-width: 0; padding-bottom: 2px; scrollbar-width: none; }
+.sd-floor__tab {
+  display: inline-flex; align-items: center; gap: 12px; flex: 0 0 auto;
+  padding: 7px 12px 7px 8px; min-height: 52px; border-radius: 12px;
+  border: 1px solid var(--sd-rule); background: rgba(255, 255, 255, 0.03);
+  color: var(--sd-ink-2); font: 500 14px/1 var(--sd-sans); cursor: pointer; white-space: nowrap;
+  transition: border-color var(--sd-dur-fast) var(--sd-ease), background var(--sd-dur-fast) var(--sd-ease), color var(--sd-dur-fast) var(--sd-ease);
+}
+.sd-floor__tab:hover { border-color: var(--sd-rule-strong); color: var(--sd-ink); }
+.sd-floor__tab[aria-selected='true'] { border-color: var(--sd-ink-3); background: rgba(255, 255, 255, 0.08); color: var(--sd-ink); }
+.sd-floor__thumb { width: 26px; aspect-ratio: 63 / 88; border-radius: 4px; }
+.sd-floor__count { font-family: var(--sd-mono); font-size: 12px; color: var(--sd-ink-3); padding: 2px 7px; border-radius: 6px; background: rgba(255, 255, 255, 0.06); }
+.sd-floor__tab[aria-selected='true'] .sd-floor__count { color: var(--sd-accent); }
+.sd-floor__search { display: flex; align-items: center; gap: 10px; flex: 0 1 250px; min-width: 170px; height: 44px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--sd-rule); background: rgba(255, 255, 255, 0.03); color: var(--sd-ink-3); }
+.sd-floor__search:focus-within { border-color: var(--sd-accent); }
+.sd-floor__search input { flex: 1; min-width: 0; background: none; border: 0; outline: none; color: var(--sd-ink); font: 500 14px var(--sd-sans); }
+.sd-floor__search input::placeholder { color: var(--sd-ink-4); }
+@media (max-width: 639px) { .sd-floor__search { flex-basis: 100%; } }
+
+.sd-floor__grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 14px; }
+@media (min-width: 640px) { .sd-floor__grid { grid-template-columns: repeat(auto-fill, minmax(196px, 1fr)); gap: 16px; } }
+
+/* A tile: the pill, the art on the light of its rarity, the name, one line, the price. */
+.sd-tile {
+  --r: var(--sd-rarity-common);
+  position: relative; display: flex; flex-direction: column; gap: 8px; height: 100%;
+  padding: 12px 14px 14px; border-radius: 16px; text-decoration: none; color: inherit;
+  border: 1px solid var(--sd-rule); background: linear-gradient(180deg, #0f1a38, #0a1229);
+  transition: border-color var(--sd-dur-fast) var(--sd-ease), transform var(--sd-dur-fast) var(--sd-ease), box-shadow var(--sd-dur-fast) var(--sd-ease);
+}
+.sd-tile[data-rarity='rare'] { --r: var(--sd-rarity-rare); }
+.sd-tile[data-rarity='epic'] { --r: var(--sd-rarity-epic); }
+.sd-tile[data-rarity='legendary'] { --r: var(--sd-rarity-legendary); }
+.sd-tile:hover { border-color: color-mix(in srgb, var(--r) 45%, transparent); transform: translateY(-3px); box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45); }
+.sd-tile__pills { position: absolute; top: 12px; left: 12px; z-index: 2; display: flex; flex-direction: column; align-items: flex-start; gap: 5px; }
+.sd-pill {
+  --r: var(--sd-rarity-common);
+  display: inline-flex; align-items: center; gap: 6px; padding: 4px 9px; border-radius: 7px;
+  font: 700 12px/1 var(--sd-mono); letter-spacing: 0.1em; text-transform: uppercase;
+  background: var(--r); color: #0a1229;
+}
+.sd-pill[data-rarity='rare'] { --r: var(--sd-rarity-rare); }
+.sd-pill[data-rarity='epic'] { --r: var(--sd-rarity-epic); }
+.sd-pill[data-rarity='legendary'] { --r: var(--sd-rarity-legendary); }
+.sd-pill--tag { background: rgba(10, 18, 41, 0.85); color: var(--sd-accent); border: 1px solid color-mix(in srgb, var(--sd-accent) 40%, transparent); }
+.sd-pill--tag::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+.sd-tile__stage {
+  position: relative; display: grid; place-items: center; aspect-ratio: 1 / 1; margin: 0 -4px;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--r) 34%, transparent), transparent 78%);
+}
+.sd-tile__art { width: 62%; aspect-ratio: 63 / 88; border-radius: 8px; box-shadow: 0 14px 30px rgba(0, 0, 0, 0.55); transition: transform var(--sd-dur-base) var(--sd-ease); }
+.sd-tile:hover .sd-tile__art { transform: translateY(-4px) scale(1.03); }
+.sd-tile__name { font: 700 15px/1.2 var(--sd-sans); letter-spacing: 0.02em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 4px; }
+.sd-tile__foot { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.sd-tile__sub { font-size: 13px; color: var(--sd-ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.sd-tile__price { font: 700 16px/1 var(--sd-sans); color: var(--sd-ink); flex: 0 0 auto; }
+
+/* The counter: the sealed capsule, the price, the button, the odds. */
+.sd-shop__panel {
+  border: 1px solid var(--sd-rule); border-radius: 20px; padding: 16px 20px 20px;
+  background: linear-gradient(180deg, #0f1a3a, #0a1229 60%);
+}
+@media (min-width: 1100px) { .sd-shop__panel { position: sticky; top: calc(var(--sd-bar-h) + 16px); max-height: calc(100dvh - var(--sd-bar-h) - 32px); overflow-y: auto; scrollbar-width: none; } }
+.sd-shop__machine { position: relative; display: grid; place-items: center; height: 280px; margin: 0 -4px 12px; border-radius: 14px; overflow: hidden;
+  background: var(--sd-stars) 0 0 / 340px 300px, radial-gradient(60% 60% at 50% 55%, rgba(255, 179, 71, 0.22), transparent 70%), #070e22; }
+.sd-shop__rays { position: absolute; inset: -40%; background: repeating-conic-gradient(from 0deg at 50% 55%, rgba(255, 210, 150, 0.07) 0deg 4deg, transparent 4deg 14deg); mask-image: radial-gradient(circle at 50% 55%, #000 0%, transparent 55%); animation: sd-spin 60s linear infinite; }
+@keyframes sd-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .sd-shop__rays { animation: none; } }
+.sd-shop__machine .sd-sealed { height: 240px; width: 100%; }
+.sd-shop__machine .sd-sealed__card { width: 150px; }
+.sd-shop__machine .sd-sealed__card:nth-child(1) { transform: rotate(-12deg) translateX(-44px); }
+.sd-shop__machine .sd-sealed__card:nth-child(2) { transform: rotate(8deg) translateX(40px); }
+.sd-shop__machine .sd-sealed__mark { font-size: 17px; }
+.sd-shop__opening { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.sd-shop__price { display: inline-flex; align-items: baseline; gap: 6px; padding: 6px 12px; border-radius: 10px; border: 1px solid var(--sd-rule-strong); font: 700 20px/1 var(--sd-sans); }
+.sd-shop__price small { font: 500 11px var(--sd-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--sd-ink-3); }
+.sd-shop__title { font: 700 22px/1.15 var(--sd-sans); letter-spacing: 0.02em; text-transform: uppercase; margin: 10px 0 16px; padding-bottom: 16px; border-bottom: 1px solid var(--sd-rule); }
+.sd-shop__buy .sd-section { margin-top: 0; }
+.sd-shop__buy .sd-pay__actions > .sd-btn { flex: 1 1 100%; }
+.sd-shop__buy .sd-pay__actions > .sd-data { display: none; }
+.sd-shop__soldout { width: 100%; color: #ff8f7a; border-color: rgba(255, 110, 90, 0.4); background: rgba(255, 90, 70, 0.08); letter-spacing: 0.14em; text-transform: uppercase; font-family: var(--sd-mono); }
+.sd-shop__rehearsal { margin: 10px 0 0; text-align: center; font: 500 12px var(--sd-mono); color: var(--sd-ink-3); }
+.sd-shop__h { font: 700 14px var(--sd-sans); letter-spacing: 0.08em; text-transform: uppercase; margin: 22px 0 12px; padding-top: 18px; border-top: 1px solid var(--sd-rule); }
+.sd-shop__odds { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+.sd-shop__odds li { --r: var(--sd-rarity-common); display: grid; gap: 7px; }
+.sd-shop__odds li[data-rarity='rare'] { --r: var(--sd-rarity-rare); }
+.sd-shop__odds li[data-rarity='epic'] { --r: var(--sd-rarity-epic); }
+.sd-shop__odds li[data-rarity='legendary'] { --r: var(--sd-rarity-legendary); }
+.sd-shop__odds-row { display: flex; align-items: baseline; gap: 8px; font-size: 14px; }
+.sd-shop__dot { width: 7px; height: 7px; border-radius: 50%; background: var(--r); align-self: center; }
+.sd-shop__rarity { color: var(--sd-ink); font-weight: 600; }
+.sd-shop__worth { color: var(--sd-ink-3); font-size: 13px; }
+.sd-shop__pct { margin-left: auto; font: 500 13px var(--sd-mono); color: var(--sd-ink-2); }
+.sd-shop__bar { height: 3px; border-radius: 3px; background: var(--sd-rule); overflow: hidden; }
+.sd-shop__bar > span { display: block; height: 100%; border-radius: 3px; background: var(--r); }
+.sd-shop__foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--sd-rule); }
+.sd-shop__chip { padding: 6px 12px; border-radius: 8px; border: 1px solid var(--sd-rule-strong); font: 700 11px var(--sd-mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--sd-ink); text-decoration: none; }
+.sd-shop__chip:hover { border-color: var(--sd-accent); color: var(--sd-accent); }
+.sd-tile--dim { opacity: 0.5; }
+.sd-tile--dim .sd-tile__art { filter: grayscale(0.7); }
+.sd-tile--dim:hover { opacity: 0.85; }
+@media (max-width: 1099px) {
+  .sd-shop__machine { height: 190px; }
+  .sd-shop__machine .sd-sealed { height: 170px; }
+  .sd-shop__machine .sd-sealed__card { width: 104px; }
+  .sd-shop__machine .sd-sealed__mark { font-size: 12px; letter-spacing: 0.24em; }
+  .sd-shop__machine .sd-sealed__hash { display: none; }
+  .sd-shop__h, .sd-shop__odds { display: none; }
+}

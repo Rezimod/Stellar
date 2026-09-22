@@ -1,216 +1,158 @@
-import type { Metadata } from "next";
-import Link from "next/link";
-import CardPlate from "@/components/sidera/CardPlate";
-import HeroShowcase from "@/components/sidera/HeroShowcase";
-import CountUp from "@/components/sidera/ui/CountUp";
-import Rise from "@/components/sidera/ui/Rise";
-import SideraShell from "@/components/sidera/SideraShell";
-import SideraView from "@/components/sidera/SideraView";
-import Chapter from "@/components/sidera/ui/Chapter";
-import DataRow from "@/components/sidera/ui/DataRow";
-import { getDb } from "@/lib/db";
-import { getNode } from "@/lib/observatory/nodes";
-import type { Rarity } from "@/lib/rarity";
-import { SET_001_CARDS } from "@/lib/sets/set-001";
-import { capsulesOnSale } from "@/lib/sidera/capsule";
-import { CAPSULE_PRICE_USD, CARDS_PER_CAPSULE } from "@/lib/sidera/economics";
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import { eq } from 'drizzle-orm';
+import ShopFloor, { type FloorCard, type FloorGroup } from '@/components/sidera/ShopFloor';
+import SideraBuyCapsule from '@/components/sidera/SideraBuyCapsule';
+import SideraShell from '@/components/sidera/SideraShell';
+import SideraView from '@/components/sidera/SideraView';
+import { getDb } from '@/lib/db';
+import { getNode } from '@/lib/observatory/nodes';
+import { RARITIES, rarityInfo, type Rarity } from '@/lib/rarity';
+import { card } from '@/lib/schema';
+import { SET_GROUPS, groupOf } from '@/lib/sets/groups';
+import { SET_001, SET_001_CARDS } from '@/lib/sets/set-001';
+import { capsulesOnSale, readSetSupply } from '@/lib/sidera/capsule';
+import { CAPSULE_PRICE_USD, CARDS_PER_CAPSULE, DIRECT_CARD_PRICE_USD, RARITY_ODDS_BPS } from '@/lib/sidera/economics';
+import { nightRow } from '@/lib/sidera/night';
+import { simulatedPayments } from '@/lib/sidera/orders';
+import { siteNightDate } from '@/lib/sidera/target';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: "Sidera — the night sky, issued in editions",
+  title: 'Sidera — the night sky, issued in editions',
   description:
-    "Twenty real objects, each held as a numbered edition. A telescope in Tbilisi photographs one of them a night, and everyone holding that card gets the photograph.",
+    'Twenty real objects, each held as a numbered edition. A telescope in Tbilisi photographs one of them a night, and everyone holding that card gets the photograph.',
 };
 
-const STEPS = [
-  {
-    n: "01",
-    title: "Open a capsule",
-    body: "Three numbered cards, each a real object. Every draw can be checked.",
-  },
-  {
-    n: "02",
-    title: "Holders pick the night",
-    body: "The Collection chooses what Node 01 points at.",
-  },
-  {
-    n: "03",
-    title: "The photograph joins the card",
-    body: "One capture goes to every edition of that card.",
-  },
-];
-
-const SHOWCASE = ["SATURN", "M42", "TYCHO", "EUROPA", "JUPITER", "M57", "MARS", "PLUTO"];
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 export default async function HomePage() {
-  const node = getNode("tbilisi-01");
-  const showcase = SHOWCASE.flatMap((d) => {
-    const c = SET_001_CARDS.find((x) => x.seed.designation === d);
-    return c
-      ? [
-          {
-            designation: c.seed.designation,
-            name: c.seed.name,
-            rarity: c.seed.rarity as Rarity,
-            artUrl: c.seed.artUrl,
-          },
-        ]
-      : [];
-  });
-
+  const node = getNode('tbilisi-01')!;
   const db = getDb();
-  let onSale = 0;
+
+  let onSale: Awaited<ReturnType<typeof capsulesOnSale>> = [];
+  let remaining = new Map<string, number>();
+  let tonight: string | null = null;
   if (db) {
     try {
-      onSale = (await capsulesOnSale(db)).length;
-    } catch {
-      onSale = 0;
+      const [sale, supply, night] = await Promise.all([
+        capsulesOnSale(db),
+        readSetSupply(db, SET_001.code),
+        nightRow(db, siteNightDate(node.timezone, new Date())),
+      ]);
+      onSale = sale;
+      if (supply) remaining = new Map(supply.cards.map((c) => [c.designation, c.remaining]));
+      if (night) {
+        const [row] = await db.select({ designation: card.designation }).from(card).where(eq(card.id, night.cardId));
+        tonight = row?.designation ?? null;
+      }
+    } catch (err) {
+      console.error('[sidera] cannot read the floor', err);
     }
   }
 
-  const editions = SET_001_CARDS.reduce(
-    (sum, c) => sum + c.seed.editionSize,
-    0,
-  );
+  // Scarcest first, the way a shelf puts its best stock at eye level.
+  const cards: FloorCard[] = SET_001_CARDS.map(({ seed }) => {
+    const rarity = seed.rarity as Rarity;
+    const left = remaining.get(seed.designation) ?? seed.editionSize;
+    return {
+      designation: seed.designation,
+      name: seed.name,
+      rarity,
+      objectType: seed.objectType,
+      group: groupOf(seed.objectType),
+      sub: `${cap(seed.objectType)} · ${left} of ${seed.editionSize} left`,
+      price: `$${DIRECT_CARD_PRICE_USD[rarity]}`,
+      tag: seed.designation === tonight ? 'Tonight' : undefined,
+    };
+  }).sort((a, b) => RARITIES.indexOf(b.rarity) - RARITIES.indexOf(a.rarity));
+
+  const count = (key: string) => `${cards.filter((c) => c.group === key).length}`;
+  const groups: FloorGroup[] = [
+    { key: 'all', label: 'All', cover: 'M57', count: String(cards.length) },
+    ...SET_GROUPS.map((g) => ({ key: g.key, label: g.short, cover: g.cover, count: count(g.key) })),
+  ];
+
+  const next = onSale[0];
 
   return (
     <SideraShell>
       <SideraView step="landing" />
-      <section className="sd-hero">
-        <div className="sd-sky" aria-hidden="true" />
-        <div className="sd-container">
-          <div className="sd-rail">
-            <span>Nº 01 · Sidera</span>
-            {node && (
-              <span>
-                Node 01 · {node.lat.toFixed(2)}° N {node.lon.toFixed(2)}° E
+      <div className="sd-shop">
+        <ShopFloor cards={cards} groups={groups} />
+
+        <aside className="sd-shop__panel" aria-label="Open a capsule">
+          <div className="sd-shop__machine" aria-hidden="true">
+            <span className="sd-shop__rays" />
+            <div className="sd-sealed">
+              <span className="sd-sealed__card" />
+              <span className="sd-sealed__card" />
+              <span className="sd-sealed__card sd-sealed__card--front">
+                <span className="sd-sealed__mark">Sidera</span>
+                <span className="sd-sealed__label">Sealed · {CARDS_PER_CAPSULE} cards</span>
+                {next && <span className="sd-sealed__hash">{next.commitment.slice(0, 24)}…</span>}
               </span>
-            )}
-          </div>
-          <div className="sd-hero__grid">
-            <div>
-              <p className="sd-eyebrow">Set 001 · Node 01 commissioning</p>
-              <h1 className="sd-mega">
-                The night sky, issued in <span className="sd-accent-word">editions</span>.
-              </h1>
-              <p className="sd-hero__sub">
-                Twenty real objects, each a numbered edition. When Node 01 photographs one, every holder of that card
-                gets the frame.
-              </p>
-              <div className="sd-hero__cta">
-                <Link href="/capsules" className="sd-btn sd-btn--primary">
-                  Open a capsule — ${CAPSULE_PRICE_USD}
-                </Link>
-                <Link href="/tonight" className="sd-btn">
-                  Tonight’s sky
-                </Link>
-              </div>
-            </div>
-
-            <HeroShowcase cards={showcase} />
-          </div>
-
-          <div className="sd-stats">
-            <div>
-              <div className="sd-stat__n">
-                <CountUp value={SET_001_CARDS.length} />
-              </div>
-              <div className="sd-stat__l">Objects in Set 001</div>
-            </div>
-            <div>
-              <div className="sd-stat__n">
-                <CountUp value={editions} />
-              </div>
-              <div className="sd-stat__l">Numbered editions</div>
-            </div>
-            <div>
-              <div className="sd-stat__n">
-                <CountUp value={onSale || CARDS_PER_CAPSULE} />
-              </div>
-              <div className="sd-stat__l">{onSale ? "Capsules on sale" : "Cards per capsule"}</div>
-            </div>
-            <div>
-              <div className="sd-stat__n">1</div>
-              <div className="sd-stat__l">Object photographed a night</div>
             </div>
           </div>
-        </div>
-      </section>
 
-      <Rise>
-        <section className="sd-container sd-chapter-block">
-          <Chapter n="01" title="Three cards, one telescope" />
-          <ol className="sd-steps">
-            {STEPS.map((s) => (
-              <li key={s.n}>
-                <span className="sd-step__n">{s.n}</span>
-                <h3>{s.title}</h3>
-                <p>{s.body}</p>
-              </li>
-            ))}
-          </ol>
-        </section>
-      </Rise>
+          <div className="sd-shop__opening">
+            <span className="sd-label">You are opening</span>
+            <span className="sd-shop__price">
+              ${CAPSULE_PRICE_USD} <small>{CARDS_PER_CAPSULE} cards</small>
+            </span>
+          </div>
+          <h2 className="sd-shop__title">
+            Set 001 capsule{next ? ` · No. ${String(next.sequence).padStart(3, '0')}` : ''}
+          </h2>
 
-      <Rise>
-        <section className="sd-container sd-chapter-block">
-          <Chapter n="02" title="In the set" aside={`${SET_001_CARDS.length} objects`} />
-          <ul className="sd-grid">
-            {SET_001_CARDS.slice(0, 8).map((c) => (
-              <li key={c.seed.designation}>
-                <CardPlate
-                  designation={c.seed.designation}
-                  name={c.seed.name}
-                  rarity={c.seed.rarity as Rarity}
-                  artUrl={c.seed.artUrl}
-                  href={`/card/${c.seed.designation}`}
-                  data={[{ label: "Editions", value: `${c.seed.editionSize} editions` }]}
-                />
-              </li>
-            ))}
-          </ul>
-          <Link href="/set/001" className="sd-btn" style={{ marginTop: 28 }}>
-            All twenty
-          </Link>
-        </section>
-      </Rise>
-
-      {node && (
-        <Rise>
-          <section className="sd-container sd-chapter-block">
-            <Chapter n="03" title="The instrument" aside="Commissioning" />
-            <div className="sd-split">
-              <p className="sd-statement">
-                Node 01, {node.site}. One telescope, one object a night, chosen by the people holding the cards.
-              </p>
-              <DataRow
-                layout="stacked"
-                items={[
-                  { label: "Optics", value: node.instrument.optics },
-                  { label: "Aperture", value: `${node.instrument.apertureMm} mm` },
-                  { label: "Camera", value: node.instrument.camera },
-                  { label: "Sky", value: `Bortle ${node.bortle}` },
-                ]}
+          <div className="sd-shop__buy">
+            {next ? (
+              <SideraBuyCapsule
+                capsuleId={next.id}
+                sequence={next.sequence}
+                commitment={next.commitment}
+                priceUsd={next.priceUsd}
+                cardsPerCapsule={next.cardsPerCapsule}
               />
-            </div>
-          </section>
-        </Rise>
-      )}
+            ) : (
+              <button type="button" className="sd-btn sd-shop__soldout" disabled>
+                Sold out
+              </button>
+            )}
+            {simulatedPayments() && <p className="sd-shop__rehearsal">Rehearsal — no payment is taken.</p>}
+          </div>
 
-      <Rise>
-        <section className="sd-container sd-chapter-block sd-closer">
-          <h2 className="sd-mega">Every draw is in the log.</h2>
-          <div className="sd-hero__cta">
-            <Link href="/capsules" className="sd-btn sd-btn--primary">
-              Open a capsule
-            </Link>
-            <Link href="/capsules/log" className="sd-btn">
-              Read the log
+          <h3 className="sd-shop__h">Pull odds</h3>
+          <ul className="sd-shop__odds">
+            {[...RARITIES].reverse().map((r) => {
+              const pct = RARITY_ODDS_BPS[r] / 100;
+              return (
+                <li key={r} data-rarity={r}>
+                  <span className="sd-shop__odds-row">
+                    <span className="sd-shop__dot" />
+                    <span className="sd-shop__rarity">{rarityInfo(r).label}</span>
+                    <span className="sd-shop__worth">${DIRECT_CARD_PRICE_USD[r]} a card</span>
+                    <span className="sd-shop__pct">{pct < 1 ? pct.toFixed(1) : Math.round(pct)}%</span>
+                  </span>
+                  <span className="sd-shop__bar">
+                    <span style={{ width: `${Math.max(pct, 1.5)}%` }} />
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+
+          <div className="sd-shop__foot">
+            <span className="sd-label">
+              {onSale.length} {onSale.length === 1 ? 'capsule' : 'capsules'} on sale
+            </span>
+            <Link href="/capsules/log" className="sd-shop__chip">
+              Verifiable draw
             </Link>
           </div>
-        </section>
-      </Rise>
+        </aside>
+      </div>
     </SideraShell>
   );
 }

@@ -1,13 +1,15 @@
 import type { Metadata } from 'next';
-import CardPlate from '@/components/sidera/CardPlate';
+import ShopCard from '@/components/sidera/ShopCard';
 import SideraShell from '@/components/sidera/SideraShell';
 import SideraView from '@/components/sidera/SideraView';
 import Chapter from '@/components/sidera/ui/Chapter';
 import DataRow from '@/components/sidera/ui/DataRow';
 import PageHead from '@/components/sidera/ui/PageHead';
 import { getDb } from '@/lib/db';
+import { SET_GROUPS } from '@/lib/sets/groups';
 import { SET_001, SET_001_CARDS } from '@/lib/sets/set-001';
 import { readSetSupply } from '@/lib/sidera/capsule';
+import { DIRECT_CARD_PRICE_USD } from '@/lib/sidera/economics';
 import { holderView } from '@/lib/sidera/repo';
 import type { Rarity } from '@/lib/rarity';
 
@@ -22,13 +24,6 @@ const pad = (n: number) => String(n).padStart(3, '0');
 
 type Supply = { allocated: number; editionSize: number };
 
-/** The set in the order a night is observed: the Moon, the planets, the stars, then the deep sky. */
-const GROUPS: Array<{ title: string; types: string[] }> = [
-  { title: 'The Moon', types: ['lunar crater', 'lunar landing site'] },
-  { title: 'Planets and their worlds', types: ['planet', 'atmospheric feature', 'moon of Jupiter', 'dwarf planet'] },
-  { title: 'Stars', types: ['double star', 'star'] },
-  { title: 'The deep sky', types: ['emission nebula', 'planetary nebula', 'globular cluster', 'spiral galaxy'] },
-];
 
 export default async function Set001Page({
   searchParams,
@@ -78,29 +73,27 @@ export default async function Set001Page({
         />
       </PageHead>
 
-      {GROUPS.map((g, gi) => {
+      {SET_GROUPS.map((g, gi) => {
         const cards = SET_001_CARDS.filter((c) => g.types.includes(c.seed.objectType));
         return (
           <section key={g.title} className="sd-container sd-chapter-block">
             <Chapter n={String(gi + 1).padStart(2, '0')} title={g.title} aside={`${cards.length} ${cards.length === 1 ? 'card' : 'cards'}`} />
-            <ul className="sd-grid sd-grid--five">
+            <ul className="sd-floor__grid">
               {cards.map((c) => {
                 const s = supply?.get(c.seed.designation);
                 const mine = held?.get(c.seed.designation);
-                const outlined = held !== null && mine === undefined;
+                const rarity = c.seed.rarity as Rarity;
+                const left = s ? s.editionSize - s.allocated : c.seed.editionSize;
                 return (
                   <li key={c.seed.designation}>
-                    <CardPlate
+                    <ShopCard
                       designation={c.seed.designation}
                       name={c.seed.name}
-                      rarity={c.seed.rarity as Rarity}
-                      artUrl={outlined ? null : c.seed.artUrl}
-                      href={`/card/${c.seed.designation}`}
-                      data={[
-                        mine !== undefined
-                          ? { label: 'Edition', value: `No. ${pad(mine)}` }
-                          : { label: 'Editions', value: s ? `${s.allocated} of ${s.editionSize}` : `${c.seed.editionSize} editions` },
-                      ]}
+                      rarity={rarity}
+                      sub={`${c.seed.objectType.charAt(0).toUpperCase()}${c.seed.objectType.slice(1)} · ${left} of ${c.seed.editionSize} left`}
+                      price={`$${DIRECT_CARD_PRICE_USD[rarity]}`}
+                      tag={mine !== undefined ? `No. ${pad(mine)}` : held !== null ? 'Not held' : undefined}
+                      dim={held !== null && mine === undefined}
                     />
                   </li>
                 );
@@ -111,7 +104,7 @@ export default async function Set001Page({
       })}
 
       {wallet && held === null && (
-        <p className="sd-container sd-note">The Collection cannot be read at the moment, so every card is shown with its plate.</p>
+        <p className="sd-container sd-note">The Collection cannot be read at the moment, so every card is shown as held by no one.</p>
       )}
     </SideraShell>
   );
