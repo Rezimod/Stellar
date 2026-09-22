@@ -641,7 +641,7 @@
     "pending": "Pending"
   },
   "authModal": {
-    "aria": "Sign in to Stellar",
+    "aria": "Sign in to Sidera",
     "close": "Close",
     "welcome": "Welcome to Stellar",
     "subtitle": "Sign in to start observing the night sky.",

@@ -51,7 +51,7 @@ export function SolanaWalletProvider({ children }: { children: ReactNode }) {
           theme: 'dark',
           accentColor: '#FFB347',
           logo: '/brand/logo-mark.svg',
-          loginMessage: 'Sign in to Stellar',
+          loginMessage: 'Sign in to Sidera',
           showWalletLoginFirst: false,
           walletChainType: 'solana-only',
           walletList: ['phantom', 'solflare', 'backpack', 'detected_solana_wallets'],

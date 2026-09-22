@@ -2,7 +2,9 @@
 
 import { X } from 'lucide-react';
 import { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useTranslations } from 'next-intl';
+import { usePrivy } from '@privy-io/react-auth';
 import { useStellarAuth } from '@/hooks/useStellarAuth';
 
 interface AuthModalProps {
@@ -13,6 +15,12 @@ interface AuthModalProps {
 export function AuthModal({ open, onClose }: AuthModalProps) {
   const { loginWithEmail, connectWallet } = useStellarAuth();
   const t = useTranslations('authModal');
+  const { authenticated } = usePrivy();
+
+  // Signing in happens in Privy's own window; once the session exists this one has done its job.
+  useEffect(() => {
+    if (open && authenticated) onClose();
+  }, [open, authenticated, onClose]);
 
   useEffect(() => {
     if (!open) return;
@@ -30,7 +38,8 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
 
   if (!open) return null;
 
-  return (
+  // On the body, so a header with a backdrop filter cannot trap the fixed overlay inside itself.
+  return createPortal(
     <div
       className="fixed inset-0 z-[60] flex items-center justify-center bg-canvas/70 backdrop-blur-sm"
       onClick={onClose}
@@ -136,5 +145,5 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
 
       </div>
     </div>
-  );
+  , document.body);
 }

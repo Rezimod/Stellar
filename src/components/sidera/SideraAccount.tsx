@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useStellarAuth } from '@/hooks/useStellarAuth';
 import { useDisplayProfile } from '@/hooks/useDisplayProfile';
 import { AuthModal } from '@/components/auth/AuthModal';
+import { useSideraHolder } from './useSideraHolder';
 
 /**
  * The account control from the global Nav — same Privy session, same sign-in
@@ -14,7 +15,10 @@ import { AuthModal } from '@/components/auth/AuthModal';
 export default function SideraAccount() {
   const router = useRouter();
   const { logout } = useStellarAuth();
-  const { authenticated, ready, displayName } = useDisplayProfile();
+  // Signed in means a Privy session — the same test every Sidera button and
+  // route applies — not a browser wallet that happened to connect on its own.
+  const { authenticated, ready } = useSideraHolder();
+  const { displayName } = useDisplayProfile();
   const [authOpen, setAuthOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
