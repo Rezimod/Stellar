@@ -2,7 +2,8 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import SideraShell from '@/components/sidera/SideraShell';
 import DataRow from '@/components/sidera/ui/DataRow';
-import Rule from '@/components/sidera/ui/Rule';
+import Chapter from '@/components/sidera/ui/Chapter';
+import PageHead from '@/components/sidera/ui/PageHead';
 import { getDb } from '@/lib/db';
 import { auditLog, type LogRow } from '@/lib/sidera/audit';
 import { readFullLog } from '@/lib/sidera/capsule';
@@ -53,49 +54,49 @@ export default async function LogPage() {
 
   return (
     <SideraShell>
-      <section className="sd-container sd-page">
-        <div className="sd-page__head">
-          <div>
-            <p className="sd-eyebrow">Append only</p>
-            <h1 className="sd-page__title">The log</h1>
-          </div>
-        </div>
-        <p className="sd-lede">
-          Every capsule listed, bought, opened, released and withdrawn — numbered in the order it happened, never
-          rewritten. A capsule quietly removed would leave its number behind, and the reading below is what goes
-          looking for the hole.
-        </p>
-
+      <PageHead
+        index="03"
+        section={
+          <>
+            <Link href="/capsules">Capsules</Link> / Log
+          </>
+        }
+        meta="Append only"
+        eyebrow="Nothing is taken on trust"
+        title="The log."
+        sub="Every capsule listed, bought, opened, released and withdrawn, numbered in the order it happened and never rewritten. A capsule quietly removed would leave its number behind."
+      >
         {audit && (
-          <div className="sd-section">
-            <DataRow
-              items={[
-                { label: 'Listed', value: audit.listed },
-                { label: 'Bought', value: audit.purchased },
-                { label: 'Opened', value: audit.opened },
-                { label: 'Verified', value: `${audit.verified} / ${audit.opened}` },
-                { label: 'Flags', value: audit.flags.length },
-              ]}
-            />
-            {audit.flags.length > 0 && (
-              <ul className="sd-section sd-data">
-                {audit.flags.map((f, i) => (
-                  <li key={i}>
-                    {f.kind}: {f.detail}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
+          <DataRow
+            className="sd-facts"
+            items={[
+              { label: 'Listed', value: audit.listed },
+              { label: 'Bought', value: audit.purchased },
+              { label: 'Opened', value: audit.opened },
+              { label: 'Verified', value: `${audit.verified} / ${audit.opened}` },
+              { label: 'Flags', value: audit.flags.length },
+            ]}
+          />
         )}
+        {audit && audit.flags.length > 0 && (
+          <ul className="sd-alert">
+            {audit.flags.map((f, i) => (
+              <li key={i}>
+                {f.kind}: {f.detail}
+              </li>
+            ))}
+          </ul>
+        )}
+      </PageHead>
 
-        <Rule />
+      <section className="sd-container sd-chapter-block">
+        <Chapter n="01" title="Entries" aside={entries ? `${entries.length} logged` : undefined} />
 
         {entries === null && <p className="sd-note">The log cannot be read at the moment.</p>}
         {entries?.length === 0 && <p className="sd-note">Nothing has been logged yet.</p>}
         {newestFirst.length > 0 && (
-          <div className="sd-scroll sd-section">
-            <table className="sd-log">
+          <div className="sd-scroll">
+            <table className="sd-log sd-log--mid">
               <thead>
                 <tr>
                   <th scope="col">Seq</th>

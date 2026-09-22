@@ -5,6 +5,7 @@ import HolderCollection from '@/components/sidera/HolderCollection'
 import SideraShell from '@/components/sidera/SideraShell'
 import SideraView from '@/components/sidera/SideraView'
 import DataRow from '@/components/sidera/ui/DataRow'
+import PageHead from '@/components/sidera/ui/PageHead'
 import { getDb } from '@/lib/db'
 import { holderView, type HolderEdition } from '@/lib/sidera/repo'
 
@@ -42,6 +43,7 @@ export default async function CollectionPage({
       const photographed = editions.filter((e) => e.latest).length
       summary = (
         <DataRow
+          className="sd-facts"
           items={[
             { label: 'Holder', value: `${wallet.slice(0, 4)}…${wallet.slice(-4)}` },
             { label: 'Cards', value: editions.length },
@@ -58,14 +60,17 @@ export default async function CollectionPage({
   return (
     <SideraShell>
       <SideraView step="collection" />
-      <section className="sd-container sd-page">
-        <div className="sd-page__head">
-          <div>
-            <p className="sd-eyebrow">Holder</p>
-            <h1 className="sd-page__title">Collection</h1>
-          </div>
-        </div>
-        {summary && <div className="sd-section">{summary}</div>}
+      <PageHead
+        index="05"
+        section="Collection"
+        meta={wallet ? `${wallet.slice(0, 4)}…${wallet.slice(-4)}` : 'Holder'}
+        eyebrow="Holder"
+        title="Your Collection."
+        sub="Every edition you hold, and every photograph Node 01 has taken of it."
+      >
+        {summary}
+      </PageHead>
+      <section className="sd-container sd-chapter-block" style={{ marginTop: 24 }}>
         {body}
       </section>
     </SideraShell>

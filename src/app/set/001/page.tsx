@@ -2,7 +2,9 @@ import type { Metadata } from 'next';
 import CardPlate from '@/components/sidera/CardPlate';
 import SideraShell from '@/components/sidera/SideraShell';
 import SideraView from '@/components/sidera/SideraView';
+import Chapter from '@/components/sidera/ui/Chapter';
 import DataRow from '@/components/sidera/ui/DataRow';
+import PageHead from '@/components/sidera/ui/PageHead';
 import { getDb } from '@/lib/db';
 import { SET_001, SET_001_CARDS } from '@/lib/sets/set-001';
 import { readSetSupply } from '@/lib/sidera/capsule';
@@ -19,6 +21,14 @@ export const metadata: Metadata = {
 const pad = (n: number) => String(n).padStart(3, '0');
 
 type Supply = { allocated: number; editionSize: number };
+
+/** The set in the order a night is observed: the Moon, the planets, the stars, then the deep sky. */
+const GROUPS: Array<{ title: string; types: string[] }> = [
+  { title: 'The Moon', types: ['lunar crater', 'lunar landing site'] },
+  { title: 'Planets and their worlds', types: ['planet', 'atmospheric feature', 'moon of Jupiter', 'dwarf planet'] },
+  { title: 'Stars', types: ['double star', 'star'] },
+  { title: 'The deep sky', types: ['emission nebula', 'planetary nebula', 'globular cluster', 'spiral galaxy'] },
+];
 
 export default async function Set001Page({
   searchParams,
@@ -50,52 +60,59 @@ export default async function Set001Page({
   return (
     <SideraShell>
       <SideraView step="set" />
-      <section className="sd-container sd-page">
-        <div className="sd-page__head">
-          <div>
-            <p className="sd-eyebrow">The first set</p>
-            <h1 className="sd-page__title">Set 001</h1>
-          </div>
-          <p className="sd-label">{SET_001.status === 'draft' ? 'In preparation' : 'On sale'}</p>
-        </div>
-        <div className="sd-section" style={{ marginTop: 28 }}>
-          <DataRow
-            items={[
-              { label: 'Cards', value: SET_001_CARDS.length },
-              { label: 'Editions', value: totalEditions.toLocaleString('en-GB') },
-              { label: 'Observable', value: `${observable} / ${SET_001_CARDS.length}` },
-              { label: 'Node', value: '01 · commissioning' },
-            ]}
-          />
-        </div>
-        <ul className="sd-grid sd-section">
-          {SET_001_CARDS.map((c) => {
-            const s = supply?.get(c.seed.designation);
-            const mine = held?.get(c.seed.designation);
-            const outlined = held !== null && mine === undefined;
-            return (
-              <li key={c.seed.designation}>
-                <CardPlate
-                  designation={c.seed.designation}
-                  name={c.seed.name}
-                  rarity={c.seed.rarity as Rarity}
-                  artUrl={outlined ? null : c.seed.artUrl}
-                  href={`/card/${c.seed.designation}`}
-                  data={[
-                    mine !== undefined
-                      ? { label: 'Edition', value: `No. ${pad(mine)}` }
-                      : { label: 'Editions', value: s ? `${s.allocated} of ${s.editionSize}` : `${c.seed.editionSize} editions` },
-                  ]}
-                />
-              </li>
-            );
-          })}
-        </ul>
+      <PageHead
+        index="02"
+        section="Set 001"
+        meta={SET_001.status === 'draft' ? 'In preparation' : 'On sale'}
+        eyebrow="The first set"
+        title="Twenty objects."
+        sub="The Moon, the planets, three stars and the deep sky. Each one a numbered edition."
+      >
+        <DataRow
+          className="sd-facts"
+          items={[
+            { label: 'Cards', value: SET_001_CARDS.length },
+            { label: 'Editions', value: totalEditions.toLocaleString('en-GB') },
+            { label: 'Observable', value: `${observable} / ${SET_001_CARDS.length}` },
+          ]}
+        />
+      </PageHead>
 
-        {wallet && held === null && (
-          <p className="sd-note">The Collection cannot be read at the moment, so every card is shown with its plate.</p>
-        )}
-      </section>
+      {GROUPS.map((g, gi) => {
+        const cards = SET_001_CARDS.filter((c) => g.types.includes(c.seed.objectType));
+        return (
+          <section key={g.title} className="sd-container sd-chapter-block">
+            <Chapter n={String(gi + 1).padStart(2, '0')} title={g.title} aside={`${cards.length} ${cards.length === 1 ? 'card' : 'cards'}`} />
+            <ul className="sd-grid sd-grid--five">
+              {cards.map((c) => {
+                const s = supply?.get(c.seed.designation);
+                const mine = held?.get(c.seed.designation);
+                const outlined = held !== null && mine === undefined;
+                return (
+                  <li key={c.seed.designation}>
+                    <CardPlate
+                      designation={c.seed.designation}
+                      name={c.seed.name}
+                      rarity={c.seed.rarity as Rarity}
+                      artUrl={outlined ? null : c.seed.artUrl}
+                      href={`/card/${c.seed.designation}`}
+                      data={[
+                        mine !== undefined
+                          ? { label: 'Edition', value: `No. ${pad(mine)}` }
+                          : { label: 'Editions', value: s ? `${s.allocated} of ${s.editionSize}` : `${c.seed.editionSize} editions` },
+                      ]}
+                    />
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        );
+      })}
+
+      {wallet && held === null && (
+        <p className="sd-container sd-note">The Collection cannot be read at the moment, so every card is shown with its plate.</p>
+      )}
     </SideraShell>
   );
 }

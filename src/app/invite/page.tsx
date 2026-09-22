@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import SideraShell from '@/components/sidera/SideraShell';
+import PageHead from '@/components/sidera/ui/PageHead';
 
 export const metadata: Metadata = {
   title: 'Sidera — closed beta',
@@ -10,16 +11,7 @@ export const metadata: Metadata = {
 export default function InvitePage() {
   return (
     <SideraShell>
-      <section className="sd-hero">
-        <div className="sd-sky" aria-hidden="true" />
-        <div className="sd-container">
-          <p className="sd-eyebrow">Closed beta</p>
-          <h1 className="sd-display" style={{ maxWidth: '14ch' }}>
-            By invitation.
-          </h1>
-          <p className="sd-hero__sub">Sidera opens through an invitation link.</p>
-        </div>
-      </section>
+      <PageHead index="00" section="Closed beta" meta="Sidera" eyebrow="Closed beta" title="By invitation." sub="Sidera opens through an invitation link." />
     </SideraShell>
   );
 }

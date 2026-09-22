@@ -6,6 +6,7 @@ import CountUp from "@/components/sidera/ui/CountUp";
 import Rise from "@/components/sidera/ui/Rise";
 import SideraShell from "@/components/sidera/SideraShell";
 import SideraView from "@/components/sidera/SideraView";
+import Chapter from "@/components/sidera/ui/Chapter";
 import DataRow from "@/components/sidera/ui/DataRow";
 import { getDb } from "@/lib/db";
 import { getNode } from "@/lib/observatory/nodes";
@@ -78,59 +79,68 @@ export default async function HomePage() {
       <SideraView step="landing" />
       <section className="sd-hero">
         <div className="sd-sky" aria-hidden="true" />
-        <div className="sd-container sd-hero__grid">
-          <div>
-            <p className="sd-eyebrow">Set 001 · Node 01 commissioning</p>
-            <h1 className="sd-display">
-              The night sky,
-              <br />
-              issued in{" "}
-              <span style={{ color: "var(--sd-accent)" }}>editions</span>.
-            </h1>
-            <p className="sd-hero__sub">
-              Twenty real objects, each a numbered edition. When Node 01
-              photographs one, every holder of that card gets the frame.
-            </p>
-            <div className="sd-hero__cta">
-              <Link href="/capsules" className="sd-btn sd-btn--primary">
-                Open a capsule — {CAPSULE_PRICE_GEL} GEL
-              </Link>
-              <Link href="/set/001" className="sd-btn">
-                See all twenty
-              </Link>
-            </div>
-            <div className="sd-stats">
-              <div>
-                <div className="sd-stat__n">
-                  <CountUp value={SET_001_CARDS.length} />
-                </div>
-                <div className="sd-stat__l">Objects in Set 001</div>
-              </div>
-              <div>
-                <div className="sd-stat__n">
-                  <CountUp value={editions} />
-                </div>
-                <div className="sd-stat__l">Numbered editions</div>
-              </div>
-              <div>
-                <div className="sd-stat__n">
-                  <CountUp value={onSale || CARDS_PER_CAPSULE} />
-                </div>
-                <div className="sd-stat__l">
-                  {onSale ? "Capsules on sale" : "Cards per capsule"}
-                </div>
+        <div className="sd-container">
+          <div className="sd-rail">
+            <span>Nº 01 · Sidera</span>
+            {node && (
+              <span>
+                Node 01 · {node.lat.toFixed(2)}° N {node.lon.toFixed(2)}° E
+              </span>
+            )}
+          </div>
+          <div className="sd-hero__grid">
+            <div>
+              <p className="sd-eyebrow">Set 001 · Node 01 commissioning</p>
+              <h1 className="sd-mega">
+                The night sky, issued in <span className="sd-accent-word">editions</span>.
+              </h1>
+              <p className="sd-hero__sub">
+                Twenty real objects, each a numbered edition. When Node 01 photographs one, every holder of that card
+                gets the frame.
+              </p>
+              <div className="sd-hero__cta">
+                <Link href="/capsules" className="sd-btn sd-btn--primary">
+                  Open a capsule — {CAPSULE_PRICE_GEL} GEL
+                </Link>
+                <Link href="/tonight" className="sd-btn">
+                  Tonight’s sky
+                </Link>
               </div>
             </div>
+
+            <HeroShowcase cards={showcase} />
           </div>
 
-          <HeroShowcase cards={showcase} />
+          <div className="sd-stats">
+            <div>
+              <div className="sd-stat__n">
+                <CountUp value={SET_001_CARDS.length} />
+              </div>
+              <div className="sd-stat__l">Objects in Set 001</div>
+            </div>
+            <div>
+              <div className="sd-stat__n">
+                <CountUp value={editions} />
+              </div>
+              <div className="sd-stat__l">Numbered editions</div>
+            </div>
+            <div>
+              <div className="sd-stat__n">
+                <CountUp value={onSale || CARDS_PER_CAPSULE} />
+              </div>
+              <div className="sd-stat__l">{onSale ? "Capsules on sale" : "Cards per capsule"}</div>
+            </div>
+            <div>
+              <div className="sd-stat__n">1</div>
+              <div className="sd-stat__l">Object photographed a night</div>
+            </div>
+          </div>
         </div>
       </section>
 
-      <section className="sd-band">
-        <div className="sd-container">
-          <p className="sd-eyebrow">How it works</p>
-          <h2 className="sd-page__title">Three cards, one telescope</h2>
+      <Rise>
+        <section className="sd-container sd-chapter-block">
+          <Chapter n="01" title="Three cards, one telescope" />
           <ol className="sd-steps">
             {STEPS.map((s) => (
               <li key={s.n}>
@@ -140,48 +150,13 @@ export default async function HomePage() {
               </li>
             ))}
           </ol>
-        </div>
-      </section>
-
-      {node && (
-        <Rise>
-          <section className="sd-container sd-section">
-            <div className="sd-panel">
-              <p className="sd-eyebrow">The instrument</p>
-              <h2 className="sd-name">
-                Node 01 — {node.name}, {node.site}
-              </h2>
-              <div className="sd-section" style={{ marginTop: 28 }}>
-                <DataRow
-                  items={[
-                    { label: "Status", value: "Commissioning" },
-                    { label: "Optics", value: node.instrument.optics },
-                    {
-                      label: "Aperture",
-                      value: `${node.instrument.apertureMm} mm`,
-                    },
-                    { label: "Camera", value: node.instrument.camera },
-                    { label: "Sky", value: `Bortle ${node.bortle}` },
-                  ]}
-                />
-              </div>
-            </div>
-          </section>
-        </Rise>
-      )}
+        </section>
+      </Rise>
 
       <Rise>
-        <section className="sd-container sd-section">
-          <div className="sd-page__head">
-            <div>
-              <p className="sd-eyebrow">Set 001</p>
-              <h2 className="sd-page__title">What is in the set</h2>
-            </div>
-            <Link href="/set/001" className="sd-btn">
-              All twenty
-            </Link>
-          </div>
-          <ul className="sd-grid sd-section">
+        <section className="sd-container sd-chapter-block">
+          <Chapter n="02" title="In the set" aside={`${SET_001_CARDS.length} objects`} />
+          <ul className="sd-grid">
             {SET_001_CARDS.slice(0, 8).map((c) => (
               <li key={c.seed.designation}>
                 <CardPlate
@@ -190,36 +165,49 @@ export default async function HomePage() {
                   rarity={c.seed.rarity as Rarity}
                   artUrl={c.seed.artUrl}
                   href={`/card/${c.seed.designation}`}
-                  data={[
-                    {
-                      label: "Editions",
-                      value: `${c.seed.editionSize} editions`,
-                    },
-                  ]}
+                  data={[{ label: "Editions", value: `${c.seed.editionSize} editions` }]}
                 />
               </li>
             ))}
           </ul>
+          <Link href="/set/001" className="sd-btn" style={{ marginTop: 28 }}>
+            All twenty
+          </Link>
         </section>
       </Rise>
 
-      <Rise>
-        <section className="sd-band">
-          <div className="sd-container" style={{ textAlign: "center" }}>
-            <h2
-              className="sd-display"
-              style={{ maxWidth: "18ch", marginInline: "auto" }}
-            >
-              Every draw is in the log.
-            </h2>
-            <div className="sd-hero__cta" style={{ justifyContent: "center" }}>
-              <Link href="/capsules" className="sd-btn sd-btn--primary">
-                Open a capsule
-              </Link>
-              <Link href="/capsules/log" className="sd-btn">
-                Read the log
-              </Link>
+      {node && (
+        <Rise>
+          <section className="sd-container sd-chapter-block">
+            <Chapter n="03" title="The instrument" aside="Commissioning" />
+            <div className="sd-split">
+              <p className="sd-statement">
+                Node 01, {node.site}. One telescope, one object a night, chosen by the people holding the cards.
+              </p>
+              <DataRow
+                layout="stacked"
+                items={[
+                  { label: "Optics", value: node.instrument.optics },
+                  { label: "Aperture", value: `${node.instrument.apertureMm} mm` },
+                  { label: "Camera", value: node.instrument.camera },
+                  { label: "Sky", value: `Bortle ${node.bortle}` },
+                ]}
+              />
             </div>
+          </section>
+        </Rise>
+      )}
+
+      <Rise>
+        <section className="sd-container sd-chapter-block sd-closer">
+          <h2 className="sd-mega">Every draw is in the log.</h2>
+          <div className="sd-hero__cta">
+            <Link href="/capsules" className="sd-btn sd-btn--primary">
+              Open a capsule
+            </Link>
+            <Link href="/capsules/log" className="sd-btn">
+              Read the log
+            </Link>
           </div>
         </section>
       </Rise>

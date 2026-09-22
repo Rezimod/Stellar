@@ -16,7 +16,7 @@ import TonightPage from '@/app/tonight/page';
 const base: TonightView = {
   night: '2026-09-20',
   decided: null,
-  voting: { night: '2026-09-20', carried: null, candidates: [] },
+  voting: { night: '2026-09-20', carried: null, window: null, candidates: [] },
   recent: [],
 };
 
@@ -33,12 +33,13 @@ beforeEach(() => {
 it('opens the vote before the night is decided', async () => {
   const html = await render({
     ...base,
-    voting: { ...base.voting, candidates: [{ designation: 'SATURN', name: 'Saturn', altitudeDeg: 41.2, at: '2026-09-20T19:15:00Z', votes: 12 }] },
+    voting: { ...base.voting, candidates: [{ designation: 'SATURN', name: 'Saturn', rarity: 'legendary', altitudeDeg: 41.2, at: '2026-09-20T19:15:00Z', votes: 12, track: [] }] },
   });
-  expect(html).toContain('Not yet decided.');
-  expect(html).toContain('Vote · night of 20 September');
-  expect(html).toContain('41° · 23:15');
-  expect(html).toContain('>12<');
+  expect(html).toContain('Leading the vote');
+  expect(html).toContain('<h1 class="sd-mega">Saturn</h1>');
+  expect(html).toContain('The vote · 20 September');
+  expect(html).toContain('41° at 23:15');
+  expect(html).toContain('Decided at 17:00 Tbilisi time');
 });
 
 it('says plainly that a cloudy night was lost, and what takes the next', async () => {
@@ -54,10 +55,10 @@ it('says plainly that a cloudy night was lost, and what takes the next', async (
       cloudForecast: 20,
       capture: null,
     },
-    voting: { night: '2026-09-21', carried: null, candidates: [] },
+    voting: { night: '2026-09-21', carried: null, window: null, candidates: [] },
     recent: [{ night: '2026-09-19', designation: 'TYCHO', name: 'Tycho', result: 'lost', lostReason: 'Cloud cover at Tbilisi, Georgia was 96% at 22:30 local time, over the 70% limit.' }],
   });
-  expect(html).toContain('The night of 19 September was lost to cloud. Cloud cover at Tbilisi, Georgia was 96% at 22:30 local time, over the 70% limit.');
+  expect(html).toContain('19 September was lost to cloud.</strong> Cloud cover at Tbilisi, Georgia was 96% at 22:30 local time, over the 70% limit.');
   expect(html).toContain('carried from the night of 2026-09-19');
   expect(html).toContain('Lost to cloud');
   expect(html).toContain('Node 01 is commissioning. No photograph is taken yet.');
@@ -77,7 +78,7 @@ it('prints the capture beneath a photographed night', async () => {
       capture: { capturedAt: '2026-09-20T19:02:11Z', nodeId: 'tbilisi-01', provenance: 'instrument', exposureSec: 0.02, subs: 400, opticalTrain: 'barlow2x' },
     },
   });
-  expect(html).toContain('2026-09-20 19:02');
+  expect(html).toContain('19:02 UTC');
   expect(html).toContain('400 × 0.02 s');
   expect(html).not.toContain('commissioning. No photograph');
 });

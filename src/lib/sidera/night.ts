@@ -19,7 +19,8 @@ import { isRarity } from '@/lib/rarity'
 import type { Db } from './attach'
 import { VOTE_WEIGHT } from './economics'
 import { decideNightlyTarget } from './repo'
-import { observableTonight, siteNightDate, standing, type Observable } from './target'
+import { SIM_TARGET_BY_ID, targetAltAz } from '@/lib/observatory/sim-targets'
+import { observableTonight, siteDarkWindow, siteNightDate, standing, type Observable } from './target'
 
 type CardRow = typeof card.$inferSelect
 type NightRow = typeof nightlyTarget.$inferSelect
@@ -196,9 +197,33 @@ export type TonightView = {
     night: string
     /** The card that takes the night regardless of votes, carried from a night lost to cloud. */
     carried: string | null
-    candidates: Array<{ designation: string; name: string; altitudeDeg: number; at: string; votes: number }>
+    /** The dark window of that night — the span the sky chart draws. */
+    window: { dusk: string; dawn: string } | null
+    candidates: Array<{
+      designation: string
+      name: string
+      rarity: string
+      altitudeDeg: number
+      at: string
+      votes: number
+      /** Altitude through the dark window, every half hour: the object's path across the night. */
+      track: Array<{ at: string; alt: number }>
+    }>
   }
   recent: Array<{ night: string; designation: string; name: string; result: 'photographed' | 'lost' | 'none'; lostReason: string | null }>
+}
+
+const TRACK_STEP_MS = 30 * 60_000
+
+function trackOf(targetId: string, node: ObservatoryNode, dusk: Date | null, dawn: Date | null) {
+  const target = SIM_TARGET_BY_ID.get(targetId)
+  if (!target || !dusk || !dawn) return []
+  const out: Array<{ at: string; alt: number }> = []
+  for (let t = dusk.getTime(); t <= dawn.getTime(); t += TRACK_STEP_MS) {
+    const at = new Date(t)
+    out.push({ at: at.toISOString(), alt: Math.round(targetAltAz(target, node, at).altitude * 10) / 10 })
+  }
+  return out
 }
 
 /** Everything /tonight prints, in one read. */
@@ -242,18 +267,22 @@ export async function tonightView(db: Db, node: ObservatoryNode, now: Date): Pro
   const carriedCard = before?.lostAt ? observable.find((o) => o.card.id === before.cardId) : undefined
 
   const recent = await recentNights(db, night)
+  const dark = siteDarkWindow(node, vNight)
   return {
     night,
     decided,
     voting: {
       night: vNight,
       carried: carriedCard?.card.designation ?? null,
+      window: dark.duskStart && dark.dawnEnd ? { dusk: dark.duskStart.toISOString(), dawn: dark.dawnEnd.toISOString() } : null,
       candidates: observable.map((o) => ({
         designation: o.card.designation,
         name: o.card.name,
+        rarity: o.card.rarity,
         altitudeDeg: o.altitudeDeg,
         at: o.at.toISOString(),
         votes: votes.get(o.card.id) ?? 0,
+        track: trackOf(o.card.targetId, node, dark.duskStart, dark.dawnEnd),
       })),
     },
     recent: recent.map((r) => ({
