@@ -155,6 +155,8 @@
 .sidera .sd-node-cta__list li { display: flex; align-items: center; gap: 10px; color: var(--sd-ink-2); }
 .sidera .sd-node-cta__list li::before { content: ''; width: 5px; height: 5px; flex: none; transform: rotate(45deg); border: 1px solid var(--sd-accent); }
 .sidera .sd-node-cta__btn { margin-top: 32px; display: inline-flex; }
+.sidera .sd-node-cta .sd-links { margin-top: 32px; }
+.sidera .sd-node-cta .sd-links .sd-node-cta__btn { margin-top: 0; }
 .sidera .sd-node-cta__paddle { justify-self: center; width: min(100%, 260px); }
 .sidera .sd-node-cta__paddle svg { display: block; width: 100%; height: auto; overflow: visible; }
 .sidera .sd-paddle__ring { fill: none; stroke: var(--sd-rule-strong); }

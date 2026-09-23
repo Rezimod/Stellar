@@ -217,9 +217,14 @@ export default async function NodePage() {
                 <li>Stacking you can watch converge</li>
                 <li>Any hour of tonight, on the site clock</li>
               </ul>
-              <Link href="/node/simulator" className="sd-btn sd-btn--primary sd-node-cta__btn">
-                Open the simulator
-              </Link>
+              <div className="sd-links">
+                <Link href="/node/simulator" className="sd-btn sd-btn--primary sd-node-cta__btn">
+                  Open the simulator
+                </Link>
+                <Link href="/node/telescope" className="sd-btn sd-node-cta__btn">
+                  Telescope console
+                </Link>
+              </div>
             </div>
             <div className="sd-node-cta__paddle" aria-hidden="true">
               <svg viewBox="0 0 200 200">
