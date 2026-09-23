@@ -22,7 +22,7 @@ export const dynamic = 'force-dynamic';
 export const metadata: Metadata = {
   title: 'Sidera — the night sky, issued in editions',
   description:
-    'Twenty real objects, each held as a numbered edition. A telescope in Tbilisi photographs one of them a night, and everyone holding that card gets the photograph.',
+    'Twenty-four cards, each held as a numbered edition. A telescope in Tbilisi photographs one real object a night, and everyone holding that card gets the photograph.',
 };
 
 export default async function HomePage() {
@@ -79,7 +79,7 @@ export default async function HomePage() {
   const next = onSale[0];
 
   return (
-    <SideraShell>
+    <SideraShell title="Sidera">
       <SideraView step="landing" />
       <div className="sd-shop">
         <ShopFloor cards={cards} groups={groups} />

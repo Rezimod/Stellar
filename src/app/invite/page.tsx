@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function InvitePage() {
   return (
-    <SideraShell>
+    <SideraShell title="Closed beta">
       <section className="sd-container sd-top">
         <div className="sd-gate">
           <p className="sd-eyebrow">Closed beta</p>

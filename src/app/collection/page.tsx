@@ -61,7 +61,7 @@ export default async function CollectionPage({
   }
 
   return (
-    <SideraShell>
+    <SideraShell title="Collection">
       <SideraView step="collection" />
       <section className="sd-container sd-top">
         {summary}

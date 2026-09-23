@@ -132,7 +132,7 @@
 
 .sd-datarow { display: flex; flex-wrap: wrap; column-gap: 28px; row-gap: 10px; margin: 0; font-family: var(--sd-mono); font-size: 13px; line-height: 1.4; font-variant-numeric: tabular-nums; }
 .sd-datarow > div { display: flex; gap: 8px; min-width: 0; align-items: baseline; }
-.sd-datarow dt { color: var(--sd-ink-3); text-transform: uppercase; letter-spacing: 0.12em; font-size: 11px; }
+.sd-datarow dt { color: var(--sd-ink-3); text-transform: uppercase; letter-spacing: 0.12em; font-size: 12px; }
 .sd-datarow dd { margin: 0; color: var(--sd-ink); }
 .sd-datarow--stacked { flex-direction: column; row-gap: 0; }
 .sd-datarow--stacked > div { justify-content: space-between; padding: 9px 0; gap: 12px; }
@@ -143,7 +143,7 @@
 .sd-rarity, .sd-status {
   display: inline-flex; align-items: center; gap: 7px;
   padding: 5px 10px; border-radius: 999px;
-  font-family: var(--sd-mono); font-size: 11px; line-height: 1;
+  font-family: var(--sd-mono); font-size: 12px; line-height: 1;
   letter-spacing: 0.12em; text-transform: uppercase; white-space: nowrap;
   border: 1px solid currentColor;
 }
@@ -340,7 +340,7 @@
 .sd-capsule { border: 1px solid var(--sd-rule); background: var(--sd-plate); border-radius: var(--sd-radius); padding: 22px; margin-bottom: 18px; }
 .sd-capsule:hover { border-color: var(--sd-rule-strong); }
 .sd-log { width: 100%; border-collapse: collapse; font-family: var(--sd-mono); font-size: 13px; font-variant-numeric: tabular-nums; }
-.sd-log th { text-align: left; color: var(--sd-ink-3); text-transform: uppercase; letter-spacing: 0.12em; font-size: 11px; font-weight: 500; padding: 10px 16px 10px 0; border-bottom: 1px solid var(--sd-rule-strong); }
+.sd-log th { text-align: left; color: var(--sd-ink-3); text-transform: uppercase; letter-spacing: 0.12em; font-size: 12px; font-weight: 500; padding: 10px 16px 10px 0; border-bottom: 1px solid var(--sd-rule-strong); }
 .sd-log td { padding: 12px 16px 12px 0; border-bottom: 1px solid var(--sd-rule); color: var(--sd-ink-2); vertical-align: top; }
 .sd-log td:first-child, .sd-log th:first-child { color: var(--sd-ink); }
 .sd-scroll { overflow-x: auto; }
@@ -716,7 +716,7 @@
   radial-gradient(70% 55% at 12% 22%, rgba(94, 234, 212, 0.08) 0%, transparent 62%); }
 .sd-stats { display: flex; flex-wrap: wrap; gap: 32px 56px; padding-top: 36px; margin-top: 40px; border-top: 1px solid var(--sd-rule); }
 .sd-stat__n { font-family: var(--sd-sans); font-weight: 600; font-size: clamp(32px, 5vw, 56px); line-height: 1; letter-spacing: -0.04em; }
-.sd-stat__l { font-family: var(--sd-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sd-ink-3); margin-top: 10px; }
+.sd-stat__l { font-family: var(--sd-mono); font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sd-ink-3); margin-top: 10px; }
 .sd-steps { list-style: none; margin: 32px 0 0; padding: 0; display: grid; gap: 20px; }
 @media (min-width: 860px) { .sd-steps { grid-template-columns: repeat(3, 1fr); gap: 24px; } }
 .sd-steps li { position: relative; padding: 20px 0 0; border-top: 1px solid var(--sd-rule-strong); }
@@ -754,7 +754,7 @@ html:has(.sidera) #stellar-main { padding-top: 0; padding-bottom: 0; }
    the words on the left read like the head of a catalogue plate. */
 .sd-poster { position: relative; padding-block: 28px 32px; overflow: hidden; }
 @media (min-width: 900px) { .sd-poster { padding-block: 36px 48px; } }
-.sd-rail { position: relative; z-index: 2; display: flex; justify-content: space-between; gap: 16px; padding-bottom: 14px; margin-bottom: 40px; border-bottom: 1px solid var(--sd-rule); font-family: var(--sd-mono); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--sd-ink-3); }
+.sd-rail { position: relative; z-index: 2; display: flex; justify-content: space-between; gap: 16px; padding-bottom: 14px; margin-bottom: 40px; border-bottom: 1px solid var(--sd-rule); font-family: var(--sd-mono); font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--sd-ink-3); }
 @media (min-width: 900px) { .sd-rail { margin-bottom: 64px; } }
 .sd-poster__grid { position: relative; display: grid; gap: 48px; align-items: center; }
 @media (min-width: 960px) { .sd-poster__grid { grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr); gap: 32px; } }
@@ -839,7 +839,7 @@ html:has(.sidera) #stellar-main { padding-top: 0; padding-bottom: 0; }
 .sd-ballot__bar { display: block; height: 3px; border-radius: 3px; background: var(--sd-rule); overflow: hidden; margin-top: 4px; }
 .sd-ballot__bar > span { display: block; height: 100%; min-width: 3px; border-radius: 3px; background: var(--sd-accent); }
 .sd-ballot__votes { grid-area: votes; display: flex; flex-direction: column; align-items: flex-end; font-family: var(--sd-mono); font-size: 22px; line-height: 1; font-variant-numeric: tabular-nums; }
-.sd-ballot__votes small { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sd-ink-3); margin-top: 6px; }
+.sd-ballot__votes small { font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sd-ink-3); margin-top: 6px; }
 .sd-ballot__act { grid-area: act; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
 .sd-ballot__act .sd-btn { min-height: 44px; padding: 10px 20px; }
 .sd-ballot__act .sd-data { max-width: 26ch; text-align: right; }
@@ -851,7 +851,7 @@ html:has(.sidera) #stellar-main { padding-top: 0; padding-bottom: 0; }
 .sd-nights__art { aspect-ratio: 63 / 88; border-radius: 10px; border: 1px solid var(--sd-rule); transition: transform var(--sd-dur-fast) var(--sd-ease), border-color var(--sd-dur-fast) var(--sd-ease); }
 .sd-nights__item a:hover .sd-nights__art { transform: translateY(-3px); border-color: var(--sd-rule-strong); }
 .sd-nights__name { font-weight: 600; font-size: 15px; }
-.sd-nights__result { font-family: var(--sd-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sd-ink-3); }
+.sd-nights__result { font-family: var(--sd-mono); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sd-ink-3); }
 .sd-nights__item[data-result='photographed'] .sd-nights__result { color: var(--sd-teal); }
 .sd-nights__item[data-result='lost'] .sd-nights__result { color: var(--sd-accent); }
 .sd-nights__item[data-result='lost'] .sd-nights__art { opacity: 0.55; filter: grayscale(0.6); }
@@ -891,8 +891,8 @@ html:has(.sidera) #stellar-main { padding-top: 0; padding-bottom: 0; }
   animation: sd-float 7s ease-in-out infinite;
 }
 .sd-sealed__mark { font-family: var(--sd-display); font-weight: 600; font-size: 22px; letter-spacing: 0.3em; text-transform: uppercase; }
-.sd-sealed__label { font-family: var(--sd-mono); font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sd-accent); }
-.sd-sealed__hash { font-family: var(--sd-mono); font-size: 10px; letter-spacing: 0.04em; color: var(--sd-ink-3); word-break: break-all; }
+.sd-sealed__label { font-family: var(--sd-mono); font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sd-accent); }
+.sd-sealed__hash { font-family: var(--sd-mono); font-size: 12px; letter-spacing: 0.04em; color: var(--sd-ink-3); word-break: break-all; }
 @keyframes sd-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 @media (prefers-reduced-motion: reduce) { .sd-sealed__card--front { animation: none; } }
 
@@ -996,7 +996,7 @@ html:has(.sidera) #stellar-main { padding-top: 0; padding-bottom: 0; }
 .sd-shop__machine .sd-sealed__mark { font-size: 17px; }
 .sd-shop__opening { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .sd-shop__price { display: inline-flex; align-items: baseline; gap: 6px; padding: 6px 12px; border-radius: 10px; border: 1px solid var(--sd-rule-strong); font: 700 20px/1 var(--sd-sans); }
-.sd-shop__price small { font: 500 11px var(--sd-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--sd-ink-3); }
+.sd-shop__price small { font: 500 12px var(--sd-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--sd-ink-3); }
 .sd-shop__title { font: 700 22px/1.15 var(--sd-sans); letter-spacing: 0.02em; text-transform: uppercase; margin: 10px 0 16px; padding-bottom: 16px; border-bottom: 1px solid var(--sd-rule); }
 .sd-shop__buy .sd-section { margin-top: 0; }
 .sd-shop__buy .sd-pay__actions > .sd-btn { flex: 1 1 100%; }
@@ -1017,7 +1017,7 @@ html:has(.sidera) #stellar-main { padding-top: 0; padding-bottom: 0; }
 .sd-shop__bar { height: 3px; border-radius: 3px; background: var(--sd-rule); overflow: hidden; }
 .sd-shop__bar > span { display: block; height: 100%; border-radius: 3px; background: var(--r); }
 .sd-shop__foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--sd-rule); }
-.sd-shop__chip { padding: 6px 12px; border-radius: 8px; border: 1px solid var(--sd-rule-strong); font: 700 11px var(--sd-mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--sd-ink); text-decoration: none; }
+.sd-shop__chip { padding: 6px 12px; border-radius: 8px; border: 1px solid var(--sd-rule-strong); font: 700 12px var(--sd-mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--sd-ink); text-decoration: none; }
 .sd-shop__chip:hover { border-color: var(--sd-accent); color: var(--sd-accent); }
 .sd-tile--dim { opacity: 0.5; }
 .sd-tile--dim .sd-tile__art { filter: grayscale(0.7); }
@@ -1046,7 +1046,7 @@ html:has(.sidera) #stellar-main { padding-top: 0; padding-bottom: 0; }
   transition: border-color var(--sd-dur-fast) var(--sd-ease), background var(--sd-dur-fast) var(--sd-ease);
 }
 .sd-chip strong { font: 700 16px/1 var(--sd-sans); }
-.sd-chip span { font: 600 11px/1 var(--sd-mono); letter-spacing: 0.16em; text-transform: uppercase; color: var(--sd-ink-3); }
+.sd-chip span { font: 600 12px/1 var(--sd-mono); letter-spacing: 0.16em; text-transform: uppercase; color: var(--sd-ink-3); }
 .sd-chip:hover { border-color: var(--sd-ink-3); background: rgba(255, 255, 255, 0.07); }
 .sd-chip--cta { font: 600 15px var(--sd-sans); background: var(--sd-accent); border-color: transparent; color: #1a1207; }
 .sd-chip--cta:hover { background: var(--sd-accent-hi); border-color: transparent; }
@@ -1069,9 +1069,9 @@ html:has(.sidera) #stellar-main { padding-top: 0; padding-bottom: 0; }
 @keyframes sd-menu-in { from { opacity: 0; transform: translateY(-6px) scale(0.98); } to { opacity: 1; transform: none; } }
 .sd-menu__head, .sd-menu__id { display: flex; align-items: baseline; justify-content: space-between; padding: 0 12px; }
 .sd-menu__big { font: 700 26px/1 var(--sd-sans); }
-.sd-menu__big small { font: 600 11px var(--sd-mono); letter-spacing: 0.16em; text-transform: uppercase; color: var(--sd-ink-3); }
+.sd-menu__big small { font: 600 12px var(--sd-mono); letter-spacing: 0.16em; text-transform: uppercase; color: var(--sd-ink-3); }
 .sd-menu__note { margin: 8px 12px 16px; font-size: 13px; color: var(--sd-ink-3); }
-.sd-menu__copy { background: none; border: 1px solid var(--sd-rule); border-radius: 6px; padding: 3px 8px; color: var(--sd-ink-2); font: 600 11px var(--sd-mono); letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; }
+.sd-menu__copy { background: none; border: 1px solid var(--sd-rule); border-radius: 6px; padding: 3px 8px; color: var(--sd-ink-2); font: 600 12px var(--sd-mono); letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; }
 .sd-menu__copy:hover { border-color: var(--sd-accent); color: var(--sd-accent); }
 .sd-menu__addr { margin: 8px 12px 14px; font: 500 12px/1.5 var(--sd-mono); color: var(--sd-ink-2); word-break: break-all; }
 .sd-menu__rule { height: 1px; background: var(--sd-rule); margin: 0 4px 6px; }
@@ -1137,3 +1137,12 @@ html:has(.sidera) #stellar-main { padding-top: 0; padding-bottom: 0; }
 .sd-gate .sd-lede { margin-inline: auto; }
 .sd-gate .sd-pay__actions { justify-content: center; }
 .sd-gate__or { margin: 22px 0 0; font-family: var(--sd-mono); font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--sd-ink-3); }
+
+/* Terms, privacy, contact: a reading measure inside the Sidera frame. */
+.sd-legal { max-width: 760px; padding-bottom: 72px; }
+.sd-legal .sd-chapter-block { margin-top: 44px; }
+.sd-legal p, .sd-legal li { color: var(--sd-ink-2); font-size: 16px; line-height: 1.65; max-width: 64ch; margin: 0; }
+.sd-legal ul { margin: 0; padding-left: 20px; display: grid; gap: 8px; }
+.sd-legal a { color: var(--sd-ink); text-decoration: underline; text-underline-offset: 4px; text-decoration-color: var(--sd-ink-4); }
+.sd-legal a:hover { text-decoration-color: var(--sd-accent); }
+.sd-legal__ledger { margin-top: 32px; }

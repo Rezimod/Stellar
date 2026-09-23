@@ -1,93 +1,31 @@
-import { ExternalLink, Mail } from 'lucide-react';
 import type { Metadata } from 'next';
+import SideraShell from '@/components/sidera/SideraShell';
+import DataRow from '@/components/sidera/ui/DataRow';
 
 export const metadata: Metadata = {
-  title: 'Contact — Stellar Astronomy Team',
-  description:
-    'Get in touch with the Stellar astronomy team — questions, partnerships, press or support. Reach us by email or through our community channels.',
+  title: 'Contact — Sidera',
+  description: 'How to reach the people behind Sidera and Node 01.',
   alternates: { canonical: '/contact' },
 };
 
-const channels = [
-  {
-    label: 'Email',
-    value: 'info@astroman.ge',
-    href: 'mailto:info@astroman.ge',
-    note: 'General questions, partnerships, press.',
-    icon: Mail,
-    external: false,
-  },
-  {
-    label: 'X',
-    value: '@StellarClub26',
-    href: 'https://x.com/StellarClub26',
-    note: 'Updates, sky alerts, behind-the-scenes.',
-    external: true,
-  },
-  {
-    label: 'GitHub',
-    value: 'Rezimod/Stellar',
-    href: 'https://github.com/Rezimod/Stellar',
-    note: 'Bugs and feature requests welcome.',
-    external: true,
-  },
-  {
-    label: 'Astroman store',
-    value: 'astroman.ge',
-    href: 'https://astroman.ge',
-    note: 'Physical store in Tbilisi, Georgia.',
-    external: true,
-  },
-];
-
 export default function ContactPage() {
-  const intro = 'Stellar is built in Tbilisi by Rezi, the founder of Astroman. The fastest way to reach us is email. We read everything, even if a reply takes a day or two.';
-  const eyebrow = 'Talk to us';
-  const title = 'Contact';
-
   return (
-    <div className="max-w-2xl mx-auto px-4 sm:px-6 py-12 sm:py-20 text-text-primary">
-      <p className="text-xs uppercase tracking-[0.2em] text-text-muted mb-3">{eyebrow}</p>
-      <h1 className="font-display text-3xl sm:text-4xl mb-3">{title}</h1>
-      <p className="text-text-primary/70 text-[15px] leading-relaxed mb-10 max-w-prose">
-        {intro}
-      </p>
-
-      <ul className="flex flex-col gap-3">
-        {channels.map((c) => {
-          const Icon = c.icon;
-          return (
-            <li key={c.label}>
-              <a
-                href={c.href}
-                target={c.external ? '_blank' : undefined}
-                rel={c.external ? 'noopener noreferrer' : undefined}
-                className="group flex items-start gap-4 rounded-xl px-4 py-4 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] transition-colors"
-              >
-                {Icon && (
-                  <span className="mt-0.5 text-text-primary/60 group-hover:text-text-primary transition-colors">
-                    <Icon size={18} strokeWidth={1.6} />
-                  </span>
-                )}
-                <span className="flex-1 min-w-0">
-                  <span className="flex items-center gap-1.5">
-                    <span className="text-[11px] uppercase tracking-[0.18em] text-text-muted">
-                      {c.label}
-                    </span>
-                    {c.external && (
-                      <ExternalLink size={11} className="text-text-muted opacity-60" />
-                    )}
-                  </span>
-                  <span className="block font-display text-lg text-text-primary mt-0.5 break-all">
-                    {c.value}
-                  </span>
-                  <span className="block text-sm text-text-primary/55 mt-1">{c.note}</span>
-                </span>
-              </a>
-            </li>
-          );
-        })}
-      </ul>
-    </div>
+    <SideraShell title="Contact">
+      <article className="sd-container sd-top sd-legal">
+        <p className="sd-lede">
+          Sidera is run by Astroman in Tbilisi. Email is the fastest way to reach us; a reply can take a day or two. For a
+          payment, include the transaction signature.
+        </p>
+        <DataRow
+          layout="stacked"
+          className="sd-legal__ledger"
+          items={[
+            { label: 'Email', value: <a href="mailto:info@astroman.ge">info@astroman.ge</a> },
+            { label: 'Store', value: <a href="https://astroman.ge" target="_blank" rel="noopener noreferrer">astroman.ge</a> },
+            { label: 'Node 01', value: 'Tbilisi, Georgia · commissioning' },
+          ]}
+        />
+      </article>
+    </SideraShell>
   );
 }

@@ -1,8 +1,10 @@
+import type { ReactNode } from 'react';
+
 export type Datum = {
   /** Short, printed in capitals: "RA", "Dec", "Mag", "Edition", "Node". */
   label: string;
   /** Already formatted — "05h 35m 17s", "−05° 23′", "017 / 250", "01". */
-  value: string | number;
+  value: ReactNode;
 };
 
 type DataRowProps = {

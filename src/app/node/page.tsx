@@ -80,7 +80,7 @@ export default async function NodePage() {
   const sunNow = getSunAltitude(base.lat, base.lon, now);
 
   return (
-    <SideraShell>
+    <SideraShell title="Node 01">
       <section className="sd-poster sd-top sd-node-head">
         <div className="sd-sky" aria-hidden="true" />
         <div className="sd-node-orbit" aria-hidden="true">

@@ -34,7 +34,7 @@ export default async function CapsulesPage() {
   const sealed = onSale?.[0];
 
   return (
-    <SideraShell>
+    <SideraShell title="Capsules">
       <SideraView step="capsules" />
       <section className="sd-container sd-top">
         <div className="sd-capsule-top">

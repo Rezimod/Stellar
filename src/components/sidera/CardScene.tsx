@@ -680,7 +680,9 @@ export default function CardScene({ designation, kind, p, id, seed, lat, lon }: 
   const body = `url(#${id}-body)`;
 
   const Scene = SCENES[designation];
-  if (Scene) return <Scene p={p} id={id} rand={rand} body={body} />;
+  // Called, not mounted: a scene of its own would render with a generator this
+  // render already advanced, and draw something else than the server did.
+  if (Scene) return Scene({ p, id, rand, body });
 
   if (kind === 'lunar') {
     const fx = CX + (lon ?? 0) * 0.78;

@@ -77,7 +77,7 @@ export default async function LogPage() {
   const newestFirst = entries ? [...entries].sort((a, b) => b.seq - a.seq) : [];
 
   return (
-    <SideraShell>
+    <SideraShell title="Capsule log">
       <section className="sd-container sd-top">
         {audit && (
           <DataRow

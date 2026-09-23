@@ -15,9 +15,10 @@ import SideraAccount from './SideraAccount';
  * (src/styles/sidera-tokens.css) and hides the legacy Stellar nav, footer,
  * bottom tabs and starfield while the page is on screen. Legacy pages are
  * untouched. Content goes inside `.sd-container` for the 16px gutter and the
- * 1040px measure, unless a section is meant to run full-bleed.
+ * 1040px measure, unless a section is meant to run full-bleed. A page with no
+ * visible heading passes `title`, read out as its h1.
  */
-export default function SideraShell({ children }: { children: ReactNode }) {
+export default function SideraShell({ children, title }: { children: ReactNode; title?: string }) {
   return (
     <div className="sidera">
       <header className="sd-bar">
@@ -32,6 +33,7 @@ export default function SideraShell({ children }: { children: ReactNode }) {
         </div>
       </header>
 
+      {title && <h1 className="sr-only">{title}</h1>}
       {children}
 
       <footer className="sd-foot">

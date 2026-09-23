@@ -1,78 +1,71 @@
-import Link from 'next/link';
 import type { Metadata } from 'next';
+import Link from 'next/link';
+import SideraShell from '@/components/sidera/SideraShell';
+import Chapter from '@/components/sidera/ui/Chapter';
 
 export const metadata: Metadata = {
-  title: 'Terms of Service — Stellar Astronomy App',
-  description:
-    'The terms of service governing your use of Stellar — the gamified astronomy app by Astroman. Read the rules for accounts and rewards.',
+  title: 'Terms — Sidera',
+  description: 'The terms for holding Sidera cards and opening capsules.',
   alternates: { canonical: '/terms' },
 };
 
 export default function TermsPage() {
-
   return (
-    <div className="max-w-2xl mx-auto px-4 sm:px-6 py-12 sm:py-20 text-text-primary">
-      <p className="text-xs uppercase tracking-[0.2em] text-text-muted mb-3">Legal</p>
-      <h1 className="font-display text-3xl sm:text-4xl mb-2">Terms</h1>
-      <p className="text-text-muted text-sm mb-10">Last updated July 22, 2026</p>
+    <SideraShell title="Terms">
+      <article className="sd-container sd-top sd-legal">
+        <p className="sd-label">Last updated 23 September 2026</p>
 
-      <div className="flex flex-col gap-6 text-[15px] leading-relaxed text-text-primary/80">
-        <p>
-          Stellar is provided as-is by the Astroman team. By using the app you agree to the points below. They’re short on purpose.
-        </p>
-
-        <section className="flex flex-col gap-2">
-          <h2 className="font-display text-xl text-text-primary">What Stellar is</h2>
+        <section className="sd-chapter-block">
+          <Chapter n="01" title="What Sidera is" />
           <p>
-            A planning and observation companion for anyone curious about the night sky — smartphone users, casual stargazers, telescope owners alike. We forecast sky conditions, track planets, create permanent digital records for verified observations, and let you redeem rewards for real telescopes and optics from Astroman and partner dealers.
+            Sidera is a set of collectible cards, each a numbered edition of an object in the sky or a work of fiction. It is run
+            by Astroman, Tbilisi. Node 01, the telescope that photographs the night&rsquo;s card, is commissioning: until it is
+            operational, no photograph is promised.
           </p>
         </section>
 
-        <section className="flex flex-col gap-2">
-          <h2 className="font-display text-xl text-text-primary">Your account</h2>
+        <section className="sd-chapter-block">
+          <Chapter n="02" title="Your account" />
           <p>
-            You sign in with email or a social account through Privy. We auto-create a wallet for you and cover network fees while the app is in beta. Don’t share your account, and don’t use Stellar if you’re under 13 without a parent or guardian.
+            You sign in through Privy with email or a wallet. Your cards are held against the Solana wallet on that account.
+            Keep the account to yourself; whoever controls it controls the cards.
           </p>
         </section>
 
-        <section className="flex flex-col gap-2">
-          <h2 className="font-display text-xl text-text-primary">Digital records</h2>
+        <section className="sd-chapter-block">
+          <Chapter n="03" title="Capsules and cards" />
           <p>
-            The certified records created in Stellar are records of your own observations. They have no guaranteed financial value and we make no promise of secondary-market liquidity. Stars points are an in-app reward and may be reset, recalculated, or sunset at any time during beta.
+            A capsule holds three cards, drawn under the published odds and committed by hash before it goes on sale. The public{' '}
+            <Link href="/capsules/log">log</Link> records every listing, sale and opening, and anyone can recompute a draw after
+            it is opened. A card bought directly is the next free edition of that card. Prices are shown in US dollars and
+            charged in SOL at the rate quoted at checkout; a quote holds for fifteen minutes.
           </p>
         </section>
 
-        <section className="flex flex-col gap-2">
-          <h2 className="font-display text-xl text-text-primary">Marketplace orders</h2>
+        <section className="sd-chapter-block">
+          <Chapter n="04" title="What a card is not" />
           <p>
-            {'Physical product orders are fulfilled by the listed dealer (Astroman, Celestron, Levenhuk, Bresser). The dealer’s own warranty, return, and shipping policy applies. Stellar is the storefront, not the seller of record — see our '}
-            <Link href="/returns" className="underline underline-offset-4">Returns</Link>
-            {' page for detail.'}
+            A card is a record of an edition in this collection. It carries no promise of financial value, resale or return.
+            Buy a capsule for the cards and the night photographs, not as an investment.
           </p>
         </section>
 
-        <section className="flex flex-col gap-2">
-          <h2 className="font-display text-xl text-text-primary">Acceptable use</h2>
-          <ul className="list-disc pl-5 flex flex-col gap-1.5">
-            <li>Don&rsquo;t spoof observations or upload images that aren&rsquo;t yours.</li>
-            <li>Don&rsquo;t scrape, reverse-engineer, or abuse the API.</li>
-            <li>Don&rsquo;t use Stellar to harass other observers or spam markets.</li>
-          </ul>
-          <p className="mt-1">We can suspend accounts that break these rules.</p>
-        </section>
-
-        <section className="flex flex-col gap-2">
-          <h2 className="font-display text-xl text-text-primary">Changes</h2>
+        <section className="sd-chapter-block">
+          <Chapter n="05" title="When something goes wrong" />
           <p>
-            We’ll update these terms as the product evolves. Material changes will be announced in-app. Continued use after a change means you accept it.
+            If a payment lands and nothing is delivered, because a card sold out between order and payment or a capsule was
+            withdrawn, write to us with the transaction and we will refund it by hand. Opened capsules are final.
           </p>
         </section>
 
-        <p className="pt-6 text-text-muted text-sm">
-          {'Questions? See '}
-          <Link href="/contact" className="underline underline-offset-4">Contact</Link>.
-        </p>
-      </div>
-    </div>
+        <section className="sd-chapter-block">
+          <Chapter n="06" title="Changes" />
+          <p>
+            These terms change as Sidera does. The date above moves when they do, and continuing to use Sidera after a change
+            means accepting it. Questions go to <Link href="/contact">Contact</Link>.
+          </p>
+        </section>
+      </article>
+    </SideraShell>
   );
 }

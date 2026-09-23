@@ -52,7 +52,7 @@ export default async function Set001Page({
   const observable = SET_001_CARDS.filter((c) => c.seed.observationStatus !== 'not_available').length;
 
   return (
-    <SideraShell>
+    <SideraShell title="Set 001">
       <SideraView step="set" />
       <section className="sd-container sd-top">
         <DataRow

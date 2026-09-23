@@ -33,7 +33,7 @@ export default async function CapsuleRecordPage({ params }: { params: Promise<{ 
   const db = getDb();
   if (!db) {
     return (
-      <SideraShell>
+      <SideraShell title="Capsule">
         <section className="sd-container sd-top">
           <p className="sd-note">The record cannot be read at the moment.</p>
         </section>
@@ -67,7 +67,7 @@ export default async function CapsuleRecordPage({ params }: { params: Promise<{ 
       : null;
 
   return (
-    <SideraShell>
+    <SideraShell title={sequence !== null ? `Capsule ${String(sequence).padStart(3, '0')}` : 'Capsule'}>
       <SideraView step="capsule" />
       <section className="sd-container sd-top">
         <nav aria-label="Breadcrumb" className="sd-crumb sd-data">

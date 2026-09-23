@@ -1,68 +1,56 @@
-import Link from 'next/link';
 import type { Metadata } from 'next';
+import Link from 'next/link';
+import SideraShell from '@/components/sidera/SideraShell';
+import Chapter from '@/components/sidera/ui/Chapter';
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy — Stellar Astronomy App',
-  description:
-    'How Stellar collects, uses and protects your data — including location, observations and wallet information. Your privacy, explained plainly.',
+  title: 'Privacy — Sidera',
+  description: 'What Sidera keeps about a holder, why, and how to remove it.',
   alternates: { canonical: '/privacy' },
 };
 
 export default function PrivacyPage() {
-
   return (
-    <div className="max-w-2xl mx-auto px-4 sm:px-6 py-12 sm:py-20 text-text-primary">
-      <p className="text-xs uppercase tracking-[0.2em] text-text-muted mb-3">Legal</p>
-      <h1 className="font-display text-3xl sm:text-4xl mb-2">Privacy</h1>
-      <p className="text-text-muted text-sm mb-10">Last updated July 22, 2026</p>
+    <SideraShell title="Privacy">
+      <article className="sd-container sd-top sd-legal">
+        <p className="sd-label">Last updated 23 September 2026</p>
 
-      <div className="flex flex-col gap-6 text-[15px] leading-relaxed text-text-primary/80">
-        <p>
-          Stellar is built by the Astroman team in Tbilisi. We try to collect as little data as possible. This page explains what we keep, why, and how to remove it.
-        </p>
-
-        <section className="flex flex-col gap-2">
-          <h2 className="font-display text-xl text-text-primary">What we store</h2>
-          <ul className="list-disc pl-5 flex flex-col gap-1.5">
-            <li>The email or social login you sign in with (handled by Privy).</li>
-            <li>The wallet address auto-created for your account.</li>
-            <li>Your observations: target, timestamp, approximate location, and the proof image you uploaded.</li>
-            <li>Optional profile data you enter yourself (telescope, username, avatar).</li>
+        <section className="sd-chapter-block">
+          <Chapter n="01" title="What we keep" />
+          <ul>
+            <li>The email or wallet you sign in with, through Privy.</li>
+            <li>The Solana wallet address your cards are held against.</li>
+            <li>Your orders, the capsules you opened, the cards you hold and the votes you cast.</li>
+            <li>Which pages were viewed, without your name, to see where people stop.</li>
           </ul>
         </section>
 
-        <section className="flex flex-col gap-2">
-          <h2 className="font-display text-xl text-text-primary">What we don’t store</h2>
-          <ul className="list-disc pl-5 flex flex-col gap-1.5">
-            <li>Wallet recovery phrases or private keys — these stay with Privy, never with us.</li>
-            <li>Payment card details — these go directly to our payment processor.</li>
-            <li>Continuous location data — we only read GPS when you ask us to.</li>
+        <section className="sd-chapter-block">
+          <Chapter n="02" title="What we never hold" />
+          <ul>
+            <li>Private keys or recovery phrases. They stay with Privy or your wallet.</li>
+            <li>Card details. Payment is made in SOL from your wallet.</li>
+            <li>Your location. The sky is computed for Node 01 in Tbilisi, not for you.</li>
           </ul>
         </section>
 
-        <section className="flex flex-col gap-2">
-          <h2 className="font-display text-xl text-text-primary">Third-party services</h2>
+        <section className="sd-chapter-block">
+          <Chapter n="03" title="Who else sees it" />
           <p>
-            We use Privy for authentication and embedded wallets, Neon and Supabase for storage, Vercel for hosting, Anthropic (Claude) for the ASTRA assistant, Google (Gemini) to check observation photos, Open-Meteo for weather, and Helius for Solana RPC. Each only receives the minimum it needs to do its job.
+            Privy for sign-in, Neon for the database, Vercel for hosting, and the Solana network for payments. Each receives only
+            what it needs. Payments on Solana, and the capsule log, are public by design.
           </p>
         </section>
 
-        <section className="flex flex-col gap-2">
-          <h2 className="font-display text-xl text-text-primary">Your data, your call</h2>
+        <section className="sd-chapter-block">
+          <Chapter n="04" title="Removing it" />
           <p>
-            {'You can delete your account and everything tied to it by emailing '}
-            <a href="mailto:info@astroman.ge" className="underline underline-offset-4">
-              info@astroman.ge
-            </a>
-            . Some records — your certified observations and related transactions — live on a public, permanent ledger and can’t be deleted by us, but we will remove every other copy we control.
+            Write to <a href="mailto:info@astroman.ge">info@astroman.ge</a> from the account&rsquo;s email and we will delete
+            everything we hold about you. Payments already on Solana, and your capsules&rsquo; lines in the public log, cannot be
+            removed; the log keeps no name. More on <Link href="/contact">Contact</Link>.
           </p>
         </section>
-
-        <p className="pt-6 text-text-muted text-sm">
-          {'Questions? See '}
-          <Link href="/contact" className="underline underline-offset-4">Contact</Link>.
-        </p>
-      </div>
-    </div>
+      </article>
+    </SideraShell>
   );
 }

@@ -60,7 +60,7 @@ it('keeps a sealed capsule sealed on its public record', async () => {
   mocks.readFullLog.mockResolvedValue([listed]);
   const html = await render(ID);
   expect(html).toContain('Sealed until it is opened');
-  expect(html).not.toContain('Checks out');
+  expect(html).not.toContain('Draw recomputes');
 });
 
 it('offers the way back into a capsule bought but never opened', async () => {
@@ -79,7 +79,7 @@ it('shows the draws and the verdict once a capsule is opened', async () => {
   expect(mocks.verifyCapsule).toHaveBeenCalledWith(
     expect.objectContaining({ commitment: 'a'.repeat(64), nonce: 'b'.repeat(64), capsuleId: ID, secret: 'd'.repeat(64) }),
   );
-  expect(html).toContain('Checks out');
+  expect(html).toContain('Draw recomputes');
   expect(html).toContain('TYCHO');
   expect(html).toContain('012');
 });
@@ -88,7 +88,7 @@ it('reports a capsule that does not check out, with the reason', async () => {
   mocks.verifyCapsule.mockReturnValue({ ok: false, problems: ['the secret does not match the commitment'] });
   mocks.readFullLog.mockResolvedValue([listed, purchased, opened]);
   const html = await render(ID);
-  expect(html).toContain('Does not check out');
+  expect(html).toContain('Draw does not recompute');
   expect(html).toContain('the secret does not match the commitment');
 });
 
@@ -106,7 +106,7 @@ it('lists the log newest first, with its audit', async () => {
   const html = renderToStaticMarkup(await LogPage());
   const rows = html.slice(html.indexOf('<tbody'));
   expect(rows.indexOf('Opened')).toBeLessThan(rows.indexOf('Listed'));
-  expect(html).toContain('Verified');
+  expect(html).toContain('Recomputed');
   expect(html).toContain(`/capsule/${ID}`);
 });
 

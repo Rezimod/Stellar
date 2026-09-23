@@ -37,9 +37,9 @@ it('opens the vote before the night is decided', async () => {
   });
   expect(html).toContain('Leading the vote');
   expect(html).toContain('<h1 class="sd-mega">Saturn</h1>');
-  expect(html).toContain('The vote · 20 September');
+  expect(html).toContain('Vote · 20 September');
   expect(html).toContain('41° at 23:15');
-  expect(html).toContain('Decided at 17:00 Tbilisi time');
+  expect(html).toContain('lock tonight’s card at 17:00 Tbilisi time');
 });
 
 it('says plainly that a cloudy night was lost, and what takes the next', async () => {
