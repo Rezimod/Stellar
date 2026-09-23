@@ -179,7 +179,8 @@
 .sd-navlink[aria-current="page"] { color: var(--sd-ink); }
 @media (max-width: 719px) {
   .sd-bar__inner { grid-template-columns: 1fr auto; grid-template-areas: "mark account" "links links"; padding-top: 12px; }
-  .sd-bar__links { gap: 22px; border-top: 1px solid var(--sd-rule); margin-top: 12px; overflow-x: auto; }
+  .sd-bar__links { gap: 14px; border-top: 1px solid var(--sd-rule); margin-top: 12px; overflow-x: auto; }
+  .sd-bar__links .sd-navlink { font-size: 14px; }
 }
 .sd-foot { border-top: 1px solid var(--sd-rule); margin-top: 96px; padding-block: 32px 40px; }
 .sd-foot__inner { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 14px 24px; color: var(--sd-ink-3); }

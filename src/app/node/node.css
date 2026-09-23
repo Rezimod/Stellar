@@ -1,0 +1,221 @@
+/* Node 01 — the telescope page and its simulator. Scoped to .sidera, like
+   every Sidera rule; the legacy /observatory routes never load this file. */
+
+/* ── Head ─────────────────────────────────────────────────────── */
+.sidera .sd-node-head { padding-bottom: 8px; }
+.sidera .sd-node-head__grid { position: relative; z-index: 2; display: grid; gap: 28px; align-items: end; }
+@media (min-width: 960px) { .sidera .sd-node-head__grid { grid-template-columns: minmax(0, 1fr) auto; gap: 48px; } }
+.sidera .sd-node-head__facts { margin-top: 0; }
+
+/* Orbits: hairline ellipses turning slowly behind the title, one body on each. */
+.sidera .sd-node-orbit { position: absolute; right: -12%; top: -8%; width: min(78vw, 820px); aspect-ratio: 1; pointer-events: none; z-index: 0; opacity: 0.9; }
+.sidera .sd-node-orbit span { position: absolute; inset: 0; border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.06); animation: sd-orbit 140s linear infinite; }
+.sidera .sd-node-orbit span:nth-child(2) { inset: 14%; border-color: rgba(255, 255, 255, 0.075); animation-duration: 96s; animation-direction: reverse; }
+.sidera .sd-node-orbit span:nth-child(3) { inset: 30%; border-color: rgba(255, 179, 71, 0.12); border-style: dashed; animation-duration: 70s; }
+.sidera .sd-node-orbit span::after { content: ''; position: absolute; top: 50%; left: -3px; width: 5px; height: 5px; margin-top: -2.5px; border-radius: 50%; background: rgba(255, 255, 255, 0.7); }
+.sidera .sd-node-orbit span:nth-child(3)::after { background: var(--sd-accent); }
+@keyframes sd-orbit { to { transform: rotate(360deg); } }
+
+/* ── The scope ────────────────────────────────────────────────── */
+.sidera .sd-scope { position: relative; z-index: 2; margin-top: 40px; }
+@media (min-width: 900px) { .sidera .sd-scope { margin-top: 56px; } }
+.sidera .sd-scope__stage { position: relative; }
+.sidera .sd-scope__frame {
+  position: relative; aspect-ratio: 16 / 9; overflow: hidden; isolation: isolate;
+  border-radius: calc(var(--sd-radius) + 8px);
+  border: 1px solid var(--sd-rule-strong);
+  background: #03060f;
+  box-shadow: 0 60px 120px -48px rgba(0, 0, 0, 0.85);
+}
+.sidera .sd-scope__sky { position: absolute; inset: 0; }
+.sidera .sd-scope__sky canvas { width: 100% !important; height: 100% !important; border-radius: 0 !important; }
+.sidera .sd-scope__vignette { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(75% 95% at 50% 50%, transparent 58%, rgba(2, 4, 12, 0.72) 100%); }
+
+.sidera .sd-scope__reticle { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; fill: none; }
+.sidera .sd-scope__reticle line, .sidera .sd-scope__reticle circle, .sidera .sd-scope__reticle path { vector-effect: non-scaling-stroke; stroke-width: 1px; }
+.sidera .sd-scope__ring { transform-box: fill-box; transform-origin: center; animation: sd-orbit 360s linear infinite; }
+.sidera .sd-scope__ring circle { stroke: rgba(255, 255, 255, 0.14); }
+.sidera .sd-scope__ring line { stroke: rgba(255, 255, 255, 0.22); }
+.sidera .sd-scope__ring line.is-long { stroke: rgba(255, 255, 255, 0.5); }
+.sidera .sd-scope__cross line { stroke: rgba(255, 255, 255, 0.42); }
+.sidera .sd-scope__brackets path { stroke: rgba(255, 255, 255, 0.55); }
+.sidera .sd-scope__scale line { stroke: rgba(255, 255, 255, 0.7); }
+
+.sidera .sd-scope__hud { position: absolute; z-index: 2; display: flex; flex-direction: column; gap: 4px; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9); }
+.sidera .sd-scope__hud--tl { top: 7.5%; left: 5.2%; align-items: flex-start; }
+.sidera .sd-scope__hud--tr { top: 7.5%; right: 5.2%; align-items: flex-end; }
+.sidera .sd-scope__hud--bl { bottom: 8%; left: 5.2%; }
+.sidera .sd-scope__small { font-family: var(--sd-mono); font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--sd-ink-2); }
+.sidera .sd-scope__tag {
+  display: inline-flex; align-items: center; gap: 8px; padding: 5px 12px 5px 10px; border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--sd-accent) 45%, transparent);
+  background: rgba(3, 6, 15, 0.55); backdrop-filter: blur(8px);
+  font-family: var(--sd-mono); font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sd-accent);
+}
+.sidera .sd-scope__dot { width: 6px; height: 6px; border-radius: 50%; background: var(--sd-accent); animation: sd-blink 2.4s ease-in-out infinite; }
+@keyframes sd-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
+.sidera .sd-scope__clock { font-family: var(--sd-mono); font-size: clamp(16px, 2.2vw, 26px); font-weight: 500; letter-spacing: 0.02em; color: var(--sd-ink); font-variant-numeric: tabular-nums; line-height: 1; }
+.sidera .sd-scope__name { font-family: var(--sd-sans); font-weight: 600; font-size: clamp(18px, 3.2vw, 40px); letter-spacing: -0.035em; line-height: 1; color: var(--sd-ink); }
+.sidera .sd-scope__scale-label { position: absolute; z-index: 2; left: 50%; bottom: 9%; transform: translateX(-50%); font-family: var(--sd-mono); font-size: 12px; letter-spacing: 0.1em; color: var(--sd-ink-2); text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9); }
+
+.sidera .sd-scope__exposure { position: absolute; z-index: 2; left: 0; bottom: 0; height: 2px; width: 100%; transform-origin: left; background: linear-gradient(90deg, transparent, var(--sd-accent)); animation: sd-sub var(--sub, 4s) linear infinite; }
+@keyframes sd-sub { from { transform: scaleX(0); opacity: 0.9; } 92% { opacity: 0.9; } to { transform: scaleX(1); opacity: 0; } }
+
+.sidera .sd-scope__empty { position: absolute; inset: 0; display: grid; place-items: center; margin: 0; padding: 24px; text-align: center; color: var(--sd-ink-2); font-family: var(--sd-mono); font-size: 13px; }
+
+.sidera .sd-scope__coords { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 14px 0 0; }
+.sidera .sd-scope__coords div { min-width: 0; }
+.sidera .sd-scope__coords dt { font-family: var(--sd-mono); font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sd-ink-3); }
+.sidera .sd-scope__coords dd { margin: 3px 0 0; font-family: var(--sd-mono); font-size: 12px; color: var(--sd-ink); font-variant-numeric: tabular-nums; white-space: nowrap; }
+@media (min-width: 900px) {
+  .sidera .sd-scope__coords {
+    position: absolute; z-index: 3; right: 5.2%; bottom: 8%; margin: 0;
+    grid-template-columns: repeat(2, auto); gap: 8px 22px; text-align: right;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+  }
+  .sidera .sd-scope__coords dd { font-size: 13px; }
+}
+@media (max-width: 639px) {
+  .sidera .sd-scope__hud--bl, .sidera .sd-scope__scale-label, .sidera .sd-scope__scale { display: none; }
+  .sidera .sd-scope__small { font-size: 12px; }
+  .sidera .sd-scope__tag { padding: 3px 9px 3px 8px; font-size: 12px; }
+  .sidera .sd-scope__frame { border-radius: var(--sd-radius); }
+}
+
+.sidera .sd-scope__caption { display: flex; flex-wrap: wrap; gap: 6px 0; margin-top: 16px; color: var(--sd-ink-3); }
+.sidera .sd-scope__caption span:not(:last-child)::after { content: '·'; margin-inline: 12px; color: var(--sd-ink-4); }
+.sidera .sd-scope__caption span:first-child { color: var(--sd-ink-2); }
+
+.sidera .sd-scope__rail { display: flex; gap: 10px; margin-top: 22px; padding-bottom: 6px; overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: thin; }
+.sidera .sd-scope__pick {
+  position: relative; flex: 0 0 auto; scroll-snap-align: start;
+  display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 8px 18px 8px 8px;
+  border-radius: var(--sd-radius); border: 1px solid var(--sd-rule); background: var(--sd-plate);
+  color: var(--sd-ink); cursor: pointer; text-align: left; font: inherit;
+  transition: border-color var(--sd-dur-fast) var(--sd-ease), background var(--sd-dur-fast) var(--sd-ease), transform var(--sd-dur-fast) var(--sd-ease);
+}
+.sidera .sd-scope__pick:hover { background: var(--sd-plate-hover); border-color: var(--sd-rule-strong); }
+.sidera .sd-scope__pick[aria-pressed='true'] { border-color: color-mix(in srgb, var(--sd-accent) 70%, transparent); background: linear-gradient(180deg, rgba(255, 179, 71, 0.1), rgba(255, 179, 71, 0.03)); }
+.sidera .sd-scope__thumb { width: 44px; height: 44px; border-radius: 10px; overflow: hidden; flex: none; background: #03060f; }
+.sidera .sd-scope__thumb > * { width: 100%; height: 100%; }
+.sidera .sd-scope__thumb img, .sidera .sd-scope__thumb svg { width: 100%; height: 100%; object-fit: cover; display: block; }
+.sidera .sd-scope__pick-text { display: flex; flex-direction: column; gap: 2px; }
+.sidera .sd-scope__pick-name { font-weight: 600; font-size: 15px; letter-spacing: -0.01em; white-space: nowrap; }
+.sidera .sd-scope__pick-data { font-family: var(--sd-mono); font-size: 12px; color: var(--sd-ink-3); white-space: nowrap; }
+.sidera .sd-scope__pick-flag { position: absolute; top: -8px; right: 10px; padding: 1px 8px; border-radius: 999px; background: var(--sd-accent); color: #1a1206; font-family: var(--sd-mono); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; }
+
+/* ── The instrument ───────────────────────────────────────────── */
+.sidera .sd-node-instrument { display: grid; gap: 36px; }
+@media (min-width: 960px) { .sidera .sd-node-instrument { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 56px; align-items: start; } }
+.sidera .sd-optic { margin: 0; border: 1px solid var(--sd-rule); border-radius: calc(var(--sd-radius) + 6px); padding: 20px 12px; background: linear-gradient(180deg, rgba(10, 23, 53, 0.45), rgba(5, 11, 29, 0.85)); overflow-x: auto; }
+.sidera .sd-optic svg { display: block; width: 100%; min-width: 560px; height: auto; }
+.sidera .sd-optic__tube { stroke: var(--sd-rule-strong); stroke-width: 1; }
+.sidera .sd-optic__axis { stroke: var(--sd-ink-4); stroke-width: 1; stroke-dasharray: 3 7; }
+.sidera .sd-optic__ray { fill: none; stroke: rgba(255, 227, 163, 0.22); stroke-width: 1.2; }
+.sidera .sd-optic__photon { fill: none; stroke: var(--sd-accent); stroke-width: 2; stroke-linecap: round; stroke-dasharray: 3 97; animation: sd-photon 4.8s linear infinite; }
+.sidera .sd-optic g:nth-of-type(3) .sd-optic__photon { animation-delay: -1.2s; }
+.sidera .sd-optic g:nth-of-type(4) .sd-optic__photon { animation-delay: -2.4s; }
+.sidera .sd-optic g:nth-of-type(5) .sd-optic__photon { animation-delay: -3.6s; }
+@keyframes sd-photon { from { stroke-dashoffset: 100; } to { stroke-dashoffset: 0; } }
+.sidera .sd-optic__glass { stroke: var(--sd-teal); stroke-width: 2.5; opacity: 0.7; }
+.sidera .sd-optic__secondary { fill: var(--sd-ink-2); }
+.sidera .sd-optic__mirror { fill: none; stroke: var(--sd-ink); stroke-width: 3; stroke-linecap: round; }
+.sidera .sd-optic__hole { stroke: #03060f; stroke-width: 5; }
+.sidera .sd-optic__camera { fill: rgba(255, 255, 255, 0.06); stroke: var(--sd-rule-strong); }
+.sidera .sd-optic__focus { fill: var(--sd-accent); }
+.sidera .sd-optic__labels text { fill: var(--sd-ink-3); font-family: var(--sd-mono); font-size: 15px; letter-spacing: 0.08em; text-transform: uppercase; }
+
+/* ── The night ────────────────────────────────────────────────── */
+.sidera .sd-nightband { margin: 0; border: 1px solid var(--sd-rule); border-radius: calc(var(--sd-radius) + 6px); padding: 16px 12px 10px; background: linear-gradient(180deg, rgba(10, 23, 53, 0.4), rgba(5, 11, 29, 0.85)); overflow-x: auto; }
+.sidera .sd-nightband svg { display: block; width: 100%; min-width: 680px; height: auto; font-family: var(--sd-mono); }
+.sidera .sd-nightband text { fill: var(--sd-ink-3); font-size: 12px; letter-spacing: 0.06em; }
+.sidera .sd-nightband__dark { fill: rgba(94, 234, 212, 0.035); }
+.sidera .sd-nightband__horizon { stroke: var(--sd-ink-4); stroke-dasharray: 2 6; }
+.sidera .sd-nightband__sun { fill: none; stroke: var(--sd-accent); stroke-width: 1.6; stroke-linecap: round; }
+.sidera .sd-nightband__edge line { stroke: var(--sd-rule-strong); }
+.sidera .sd-nightband__edge text { fill: var(--sd-ink-2); }
+.sidera .sd-nightband__hours rect { fill: rgba(94, 234, 212, 0.55); }
+.sidera .sd-nightband__pin line { stroke: rgba(94, 234, 212, 0.5); stroke-dasharray: 2 4; }
+.sidera .sd-nightband__pin path { fill: var(--sd-teal); }
+.sidera .sd-nightband__pin text { fill: var(--sd-teal); }
+.sidera .sd-nightband__now line { stroke: var(--sd-ink); stroke-width: 1; }
+.sidera .sd-nightband__now circle { fill: var(--sd-ink); }
+.sidera .sd-nightband__now text { fill: var(--sd-ink); }
+.sidera .sd-nightband__ticks text { fill: var(--sd-ink-3); }
+
+/* ── Take the controls ────────────────────────────────────────── */
+.sidera .sd-node-cta {
+  position: relative; display: grid; gap: 32px; align-items: center; overflow: hidden;
+  padding: 32px 24px; border-radius: calc(var(--sd-radius) + 8px); border: 1px solid var(--sd-rule-strong);
+  background:
+    var(--sd-stars) 0 0 / 340px 300px,
+    radial-gradient(80% 120% at 85% 50%, rgba(19, 39, 90, 0.9), transparent 70%),
+    var(--sd-deep);
+}
+@media (min-width: 860px) { .sidera .sd-node-cta { grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr); padding: 48px 56px; } }
+.sidera .sd-node-cta__lead { margin: 0; font-size: clamp(19px, 2.4vw, 24px); line-height: 1.45; letter-spacing: -0.015em; color: var(--sd-ink); max-width: 36ch; }
+.sidera .sd-node-cta__list { list-style: none; margin: 24px 0 0; padding: 0; display: grid; gap: 10px; }
+@media (min-width: 560px) { .sidera .sd-node-cta__list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.sidera .sd-node-cta__list li { display: flex; align-items: center; gap: 10px; color: var(--sd-ink-2); }
+.sidera .sd-node-cta__list li::before { content: ''; width: 5px; height: 5px; flex: none; transform: rotate(45deg); border: 1px solid var(--sd-accent); }
+.sidera .sd-node-cta__btn { margin-top: 32px; display: inline-flex; }
+.sidera .sd-node-cta__paddle { justify-self: center; width: min(100%, 260px); }
+.sidera .sd-node-cta__paddle svg { display: block; width: 100%; height: auto; overflow: visible; }
+.sidera .sd-paddle__ring { fill: none; stroke: var(--sd-rule-strong); }
+.sidera .sd-paddle__ring--dim { stroke: rgba(255, 179, 71, 0.3); stroke-dasharray: 2 5; transform-origin: 100px 100px; animation: sd-orbit 60s linear infinite; }
+.sidera .sd-paddle__key { fill: var(--sd-ink-2); }
+.sidera .sd-paddle__trk { fill: rgba(255, 255, 255, 0.04); stroke: var(--sd-rule-strong); }
+.sidera .sd-node-cta__paddle text { fill: var(--sd-ink-3); font-family: var(--sd-mono); font-size: 12px; letter-spacing: 0.16em; }
+
+.sidera .sd-node-last { margin-bottom: 96px; }
+
+/* ── The simulator, in Sidera's colours ───────────────────────── */
+.sidera .sd-sim-rail { border-bottom: 1px solid var(--sd-rule); background: rgba(5, 11, 29, 0.6); }
+.sidera .sd-sim-rail__inner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 24px; min-height: 48px; }
+.sidera .sd-sim-rail .sd-crumb { margin: 0; }
+
+.sidera .obs.sd-sim.sd-sim {
+  --text: #ffffff;
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.74);
+  --text-muted: rgba(255, 255, 255, 0.54);
+  --surface: rgba(255, 255, 255, 0.045);
+  --surface-hover: rgba(255, 255, 255, 0.085);
+  --accent: var(--sd-accent);
+  --accent-text: var(--sd-accent);
+  --accent-dim: rgba(255, 179, 71, 0.1);
+  --accent-border: rgba(255, 179, 71, 0.3);
+  --seafoam: var(--sd-teal);
+  --teal-text: var(--sd-teal);
+  --obs-label: rgba(255, 255, 255, 0.54);
+  --obs-rule: rgba(255, 255, 255, 0.1);
+  --obs-rule-strong: rgba(255, 255, 255, 0.2);
+  --obs-float: rgba(7, 15, 36, 0.74);
+  --obs-float-border: rgba(255, 255, 255, 0.1);
+  --obs-float-inner: rgba(255, 255, 255, 0.045);
+  --obs-radius: calc(var(--sd-radius) + 4px);
+  --obs-radius-sm: var(--sd-radius-sm);
+  color: var(--sd-ink);
+}
+.sidera .sd-sim .obs-live { min-height: calc(100dvh - var(--sd-bar-h) - 49px); }
+.sidera .sd-sim .obs-live__sky::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(80% 90% at 50% 50%, transparent 60%, rgba(2, 4, 12, 0.6) 100%); }
+
+.sidera .sd-sim-how { display: grid; gap: 20px; max-width: 72ch; }
+@media (min-width: 960px) { .sidera .sd-sim-how { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: none; gap: 48px; } }
+.sidera .sd-sim-how p { margin: 0; color: var(--sd-ink-2); font-size: 16px; line-height: 1.7; }
+
+@media (prefers-reduced-motion: reduce) {
+  .sidera .sd-node-orbit span, .sidera .sd-scope__ring, .sidera .sd-scope__dot, .sidera .sd-scope__exposure,
+  .sidera .sd-optic__photon, .sidera .sd-paddle__ring--dim { animation: none; }
+  .sidera .sd-scope__exposure { display: none; }
+}
+
+.sidera .sd-node-head__title { white-space: nowrap; font-size: clamp(64px, 15vw, 188px); }
+.sidera .sd-node-head__grid .sd-poster__sub { margin-top: 20px; }
+.sidera .sd-node-instrument > *, .sidera .sd-node-head__grid > * { min-width: 0; }
+@media (max-width: 639px) {
+  .sidera .sd-scope__hud--tl .sd-scope__small, .sidera .sd-scope__hud--tr .sd-scope__small { display: none; }
+}
+/* The clock owns the top-right corner; the panels start clear of it. */
+@media (min-width: 900px) { .sidera .sd-sim .obs-live__body { padding-top: 7.75rem; } }
+@media (min-width: 1280px) { .sidera .sd-sim .obs-live__body { padding-top: 8.5rem; } }
