@@ -46,7 +46,16 @@ function titleLines(name: string): string[] {
   return [words.slice(0, mid).join(' '), words.slice(mid).join(' ')];
 }
 
-export default function CardArt({ designation, className = '' }: { designation: string; className?: string }) {
+export default function CardArt({
+  designation,
+  className = '',
+  bare = false,
+}: {
+  designation: string;
+  className?: string;
+  /** Drop the caption and fiducials, for art that sits inside a card frame that prints its own. */
+  bare?: boolean;
+}) {
   const card = SET_001_CARD_BY_DESIGNATION.get(designation);
   const name = card?.seed.name ?? designation;
   const objectType = card?.seed.objectType ?? 'deep-sky object';
@@ -107,7 +116,7 @@ export default function CardArt({ designation, className = '' }: { designation: 
       className={className}
       role="img"
       aria-label={`${name}, drawn plate`}
-      preserveAspectRatio="xMidYMin slice"
+      preserveAspectRatio={bare ? 'xMidYMid slice' : 'xMidYMin slice'}
     >
       <defs>
         <radialGradient id={`${id}-sky`} cx="50%" cy="34%" r="88%">
@@ -165,6 +174,8 @@ export default function CardArt({ designation, className = '' }: { designation: 
       <rect width="200" height="280" fill={`url(#${id}-vignette)`} />
       <rect width="200" height="116" fill={`url(#${id}-scrim)`} />
 
+      {!bare && (
+        <>
       {/* The caption, set the way a plate is captioned: class, name, set. */}
       <text
         x="100"
@@ -229,6 +240,8 @@ export default function CardArt({ designation, className = '' }: { designation: 
         <path d="M12 268 h12 M12 268 v-12" />
         <path d="M188 268 h-12 M188 268 v-12" />
       </g>
+        </>
+      )}
     </svg>
   );
 }

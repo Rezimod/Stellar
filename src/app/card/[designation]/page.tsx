@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import CardPlate from '@/components/sidera/CardPlate';
+import SideraCard from '@/components/sidera/SideraCard';
+import SideraCardStage from '@/components/sidera/SideraCardStage';
 import SideraBuyCard from '@/components/sidera/SideraBuyCard';
 import SideraShell from '@/components/sidera/SideraShell';
 import SideraView from '@/components/sidera/SideraView';
@@ -16,6 +17,7 @@ import { SET_001_CARD_BY_DESIGNATION } from '@/lib/sets/set-001';
 import { DIRECT_CARD_PRICE_USD } from '@/lib/sidera/economics';
 import type { ObservationStatus } from '@/lib/sidera/observability';
 import { cardAvailability } from '@/lib/sidera/orders';
+import { SURVEYED } from '@/lib/sidera/plate/objects';
 
 export const dynamic = 'force-dynamic';
 
@@ -86,17 +88,13 @@ export default async function CardPage({ params }: { params: Promise<{ designati
             <span className="sd-poster__ghost" aria-hidden="true">
               {seed.designation}
             </span>
-            <div className="sd-tilt">
-              <CardPlate
-                size="lg"
-                designation={seed.designation}
-                name={seed.name}
-                rarity={rarity}
-                artUrl={seed.artUrl}
-                data={[{ label: 'Editions', value: allocated === null ? `${seed.editionSize} editions` : `${allocated} of ${seed.editionSize}` }]}
-              />
-              {isRendered(seed.artUrl) && <p className="sd-label sd-figure__note">Rendered from mission maps · awaiting Node 01</p>}
-            </div>
+            <SideraCardStage
+              front={<SideraCard designation={seed.designation} />}
+              back={<SideraCard designation={seed.designation} side="back" />}
+            />
+            {isRendered(seed.artUrl) && !SURVEYED.includes(seed.designation) && (
+              <p className="sd-label sd-figure__note">Rendered from mission maps · awaiting Node 01</p>
+            )}
           </figure>
 
           <div>

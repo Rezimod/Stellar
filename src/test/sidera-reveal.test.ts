@@ -45,3 +45,10 @@ it('prints the draw’s own provenance so it can be checked', () => {
   expect(html).toContain('client fedcba98');
   expect(html).toContain('/capsules/log');
 });
+
+it('shows a Set 001 card as the printed card, with its edition in plain text', () => {
+  const html = render([card('SATURN', 'epic', 0)]);
+  expect(html).toContain('sd-card');
+  expect(html).toContain('SATURN · No. 003');
+  expect(html).toContain('edition 3 of 30');
+});

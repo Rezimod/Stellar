@@ -2,10 +2,11 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import CardPlate from './CardPlate';
-import type { Rarity } from '@/lib/rarity';
-import { RARITIES, isRarity, rarityInfo } from '@/lib/rarity';
+import SideraCard from './SideraCard';
 import { PLACEHOLDER_ART } from '@/lib/sets/build';
 import { SET_001_CARD_BY_DESIGNATION } from '@/lib/sets/set-001';
+import type { Rarity } from '@/lib/rarity';
+import { RARITIES, isRarity, rarityInfo } from '@/lib/rarity';
 
 export type RevealedCard = {
   drawIndex: number;
@@ -234,17 +235,28 @@ export default function SideraReveal({ draw }: { draw: Draw }) {
                     <span className="sd-sealed__mark">Sidera</span>
                   </div>
                   <div className="sd-flip__front">
-                    <CardPlate
-                      size="sm"
-                      designation={c.designation}
-                      name={c.name}
-                      rarity={rarity}
-                      artUrl={SET_001_CARD_BY_DESIGNATION.get(c.designation)?.seed.artUrl ?? PLACEHOLDER_ART}
-                      href={`/card/${c.designation}`}
-                      data={[{ label: 'Edition', value: `No. ${pad(c.editionNumber)}` }]}
-                    />
+                    {SET_001_CARD_BY_DESIGNATION.has(c.designation) ? (
+                      <a href={`/card/${c.designation}`} className="sd-card-link">
+                        <SideraCard designation={c.designation} edition={c.editionNumber} />
+                      </a>
+                    ) : (
+                      <CardPlate
+                        size="sm"
+                        designation={c.designation}
+                        name={c.name}
+                        rarity={rarity}
+                        artUrl={PLACEHOLDER_ART}
+                        href={`/card/${c.designation}`}
+                        data={[{ label: 'Edition', value: `No. ${pad(c.editionNumber)}` }]}
+                      />
+                    )}
                   </div>
                 </div>
+                {SET_001_CARD_BY_DESIGNATION.has(c.designation) && (
+                  <p className="sd-data sd-reveal__edition">
+                    {c.name} · No. {pad(c.editionNumber)}
+                  </p>
+                )}
               </li>
             );
           })}

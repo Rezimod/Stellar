@@ -1146,3 +1146,85 @@ html:has(.sidera) #stellar-main { padding-top: 0; padding-bottom: 0; }
 .sd-legal a { color: var(--sd-ink); text-decoration: underline; text-underline-offset: 4px; text-decoration-color: var(--sd-ink-4); }
 .sd-legal a:hover { text-decoration-color: var(--sd-accent); }
 .sd-legal__ledger { margin-top: 32px; }
+
+/* ─── The card as an object (SideraCard, SideraCardStage) ──────────────────
+   A 63 × 88 card: an art window of three layers, a frame in the rarity's
+   metal, then foil, glitter and glare. --px/--py (0–1) are the light and the
+   tilt; SideraCardStage writes them, anything else leaves them centred.
+   --sd-foil and --sd-glitter are set per rarity by the card itself. */
+.sidera { --px: 0.5; --py: 0.5; }
+.sd-card {
+  position: relative; width: 100%; aspect-ratio: 630 / 880;
+  border-radius: 4.76% / 3.41%; overflow: hidden; isolation: isolate;
+  background: #080d1e; color: var(--sd-ink);
+  box-shadow: 0 40px 90px -30px rgba(0, 0, 0, 0.95);
+}
+.sd-card[data-rarity='epic'], .sd-card[data-rarity='legendary'] {
+  box-shadow: 0 0 0 1px rgba(255, 226, 160, 0.08), 0 40px 90px -30px rgba(0, 0, 0, 0.95);
+}
+.sd-card__window {
+  position: absolute; left: 3.81%; top: 2.73%; width: 92.38%; height: 70.45%;
+  border-radius: 3.09% / 2.9%; overflow: hidden; background: #02040a;
+}
+.sd-card__window[data-full] { height: 94.55%; border-radius: 3.09% / 2.16%; }
+.sd-card__layer { position: absolute; inset: -3%; transition: transform var(--sd-dur-base) var(--sd-ease); }
+.sd-card__layer > svg, .sd-card__layer > img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.sd-card__drawn { width: 100%; height: 100%; }
+.sd-card__layer--sky { transform: translate(calc((var(--px) - 0.5) * -14px), calc((var(--py) - 0.5) * -14px)); }
+.sd-card__layer--object { transform: translate(calc((var(--px) - 0.5) * 5px), calc((var(--py) - 0.5) * 5px)); }
+.sd-card__layer--survey { transform: translate(calc((var(--px) - 0.5) * 18px), calc((var(--py) - 0.5) * 18px)); }
+.sd-card__svg { position: absolute; inset: 0; }
+.sd-card__svg > svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.sd-card__foil {
+  position: absolute; inset: 0; pointer-events: none; mix-blend-mode: color-dodge; opacity: var(--sd-foil);
+  background: linear-gradient(115deg, transparent 30%, #ff6ad5 38%, #ffd36e 43%, #6affc8 48%, #6ad2ff 53%, #b36aff 58%, #ff6ad5 63%, transparent 71%);
+  background-size: 300% 300%;
+  background-position: calc(var(--px) * 100%) calc(var(--py) * 100%);
+}
+.sd-card__glitter { position: absolute; inset: 0; pointer-events: none; mix-blend-mode: color-dodge; opacity: var(--sd-glitter); }
+.sd-card__glitter > svg { width: 100%; height: 100%; display: block; }
+.sd-card__glare {
+  position: absolute; inset: 0; pointer-events: none; mix-blend-mode: soft-light;
+  background: radial-gradient(circle at calc(var(--px) * 100%) calc(var(--py) * 100%), rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.12) 26%, transparent 55%);
+}
+
+.sd-stage { position: relative; display: flex; flex-direction: column; align-items: center; gap: 28px; width: 100%; max-width: var(--sd-stage-w, 460px); margin-inline: auto; }
+.sd-stage__hold { position: relative; width: 100%; perspective: 1700px; touch-action: pan-y; z-index: 1; }
+.sd-stage__tilt { transform-style: preserve-3d; will-change: transform; }
+.sd-stage__hold.is-idle .sd-stage__tilt { animation: sd-card-sway 11s ease-in-out infinite; }
+.sd-stage__hold.is-idle .sd-card__foil { animation: sd-card-foil 11s ease-in-out infinite; }
+.sd-stage__hold.is-live .sd-stage__tilt {
+  transform: rotateX(calc((0.5 - var(--py)) * 22deg)) rotateY(calc((var(--px) - 0.5) * 28deg)) scale(1.035);
+  transition: transform 120ms ease-out;
+}
+.sd-stage__hold.is-live .sd-card__layer { transition: transform 120ms ease-out; }
+.sd-stage__flip { position: relative; aspect-ratio: 630 / 880; transform-style: preserve-3d; transition: transform 1s var(--sd-ease); }
+.sd-stage__flip.is-over { transform: rotateY(180deg); }
+.sd-stage__face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.sd-stage__face--back { transform: rotateY(180deg); }
+.sd-stage__shadow {
+  display: block; width: 84%; height: 40px; margin-top: -40px; border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.75), transparent); opacity: 0.6;
+  transition: transform 300ms ease-out, opacity 300ms;
+}
+.sd-stage__shadow.is-live { transform: translateX(calc((0.5 - var(--px)) * 40px)) scaleX(0.9); opacity: 0.8; }
+@keyframes sd-card-sway {
+  0%, 100% { transform: rotateX(7deg) rotateY(-11deg); }
+  50% { transform: rotateX(-4deg) rotateY(11deg); }
+}
+@keyframes sd-card-foil {
+  0%, 100% { background-position: 0% 20%; }
+  50% { background-position: 100% 80%; }
+}
+@media (hover: none) { .sd-stage__hold.is-idle .sd-stage__tilt { animation-duration: 14s; } }
+@media (prefers-reduced-motion: reduce) {
+  .sd-stage__hold.is-idle .sd-stage__tilt, .sd-stage__hold.is-idle .sd-card__foil { animation: none; }
+  .sd-stage__hold.is-live .sd-stage__tilt { transform: none; }
+  .sd-card__layer { transition: none; transform: none; }
+  .sd-stage__flip { transition: opacity 200ms; }
+}
+.sd-card-link { display: block; border-radius: 4.76% / 3.41%; }
+.sd-card-link:focus-visible { outline: 2px solid var(--sd-focus); outline-offset: 4px; }
+.sd-flip__front:has(.sd-card) { border-radius: 4.76% / 3.41%; }
+.sd-cardhero__plate .sd-stage { --sd-stage-w: 440px; z-index: 1; }
+.sd-reveal__edition { margin: 12px 0 0; text-align: center; color: var(--sd-ink-2); }
