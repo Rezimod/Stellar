@@ -47,6 +47,18 @@ it('renders an edition that has not been observed yet', async () => {
   expect(html).toContain('Not yet photographed');
 });
 
+it('keeps an edition whose card has left the set, by its number', async () => {
+  mocks.holderView.mockResolvedValue([
+    {
+      editionId: 'e2', designation: 'TYCHO', name: 'Tycho', editionNumber: 4, editionSize: 100, rarity: 'rare',
+      observationStatus: 'eligible', latest: null, history: [],
+    },
+  ]);
+  const html = await render('holder-1');
+  expect(html).toContain('sdc-card--blank');
+  expect(html).toContain('No. 004');
+});
+
 it('captions an observed card with the capture data', async () => {
   const capture = { id: 'c1', targetName: 'The Moon', capturedAt: '2026-09-20T16:17:07.790Z', provenance: 'simulated', nodeId: 'tbilisi-01' };
   mocks.holderView.mockResolvedValue([

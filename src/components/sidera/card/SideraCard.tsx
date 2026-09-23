@@ -1,7 +1,7 @@
 'use client';
 
 import { useId, useRef, useState } from 'react';
-import { plateFor } from '@/lib/sidera/plate';
+import { editionLabel, plateFor } from '@/lib/sidera/plate';
 import CardBack from './CardBack';
 import CardFront from './CardFront';
 import './sidera-card.css';
@@ -24,7 +24,17 @@ export default function SideraCard({ designation, edition, capture, commitment, 
   const u = `sd${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
   const stage = useRef<HTMLDivElement>(null);
   const [over, setOver] = useState(false);
-  if (!plate) return null;
+  const ed = editionLabel(edition);
+  // An edition of a card no longer in the set: its number, on a blank card.
+  if (!plate)
+    return (
+      <div className="sdc">
+        <div className="sdc-card sdc-card--blank">
+          <span>{designation}</span>
+          {edition != null && <span>No. {ed}</span>}
+        </div>
+      </div>
+    );
 
   const set = (px: number, py: number, live: boolean) => {
     const el = stage.current;
@@ -49,7 +59,7 @@ export default function SideraCard({ designation, edition, capture, commitment, 
       >
         <div className="sdc-tilt">
           <div className={`sdc-flip${over ? ' is-over' : ''}`}>
-            <div className="sdc-face" role="img" aria-label={`${plate.name}, ${plate.rname}, Set 001 number ${plate.num}`}>
+            <div className="sdc-face" role="img" aria-label={`${plate.name}, ${plate.rname}, Set 001 number ${plate.num}${edition != null ? `, edition ${ed} of ${plate.of}` : ''}`}>
               <CardFront plate={plate} edition={edition} capture={capture} u={u} />
             </div>
             {hero && (
@@ -60,6 +70,7 @@ export default function SideraCard({ designation, edition, capture, commitment, 
           </div>
         </div>
       </div>
+      {hero && <span className="sdc-shadow" aria-hidden="true" />}
       {hero && (
         <button type="button" className="sd-btn sd-btn--primary sdc-turn" onClick={() => setOver((v) => !v)}>
           {over ? 'Turn it back' : 'Turn it over'}
