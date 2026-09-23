@@ -19,28 +19,29 @@ const render = (cards: RevealedCard[]) =>
   );
 
 it('pitches the descent to the scarcest card in the capsule', () => {
-  const html = render([card('TYCHO', 'rare', 0), card('SATURN', 'legendary', 1), card('PLATO', 'common', 2)]);
+  const html = render([card('M31', 'rare', 0), card('SATURN', 'legendary', 1), card('MOON', 'common', 2)]);
   expect(html).toContain('sd-reveal--legendary');
   expect(html).not.toContain('sd-reveal--common');
 });
 
 it('falls the shortest way when nothing scarce came out', () => {
-  expect(render([card('PLATO', 'common', 0)])).toContain('sd-reveal--common');
+  expect(render([card('MOON', 'common', 0)])).toContain('sd-reveal--common');
 });
 
 it('prints the edition number it was allocated', () => {
-  expect(render([card('TYCHO', 'rare', 0)])).toContain('No. 003');
+  expect(render([card('M31', 'rare', 0)])).toContain('>003</text>');
 });
 
 it('draws the commonest card first so the last one out is the best', () => {
-  const html = render([card('SATURN', 'legendary', 0), card('PLATO', 'common', 1), card('TYCHO', 'rare', 2)]);
-  expect(html.indexOf('PLATO')).toBeLessThan(html.indexOf('TYCHO'));
-  expect(html.indexOf('TYCHO')).toBeLessThan(html.indexOf('SATURN'));
+  const html = render([card('SATURN', 'legendary', 0), card('MOON', 'common', 1), card('M31', 'rare', 2)]);
+  const at = (d: string) => html.indexOf(`/card/${d}"`);
+  expect(at('MOON')).toBeLessThan(at('M31'));
+  expect(at('M31')).toBeLessThan(at('SATURN'));
   expect(html).toContain('sd-reveal__card--best');
 });
 
 it('prints the draw’s own provenance so it can be checked', () => {
-  const html = render([card('TYCHO', 'rare', 0)]);
+  const html = render([card('M31', 'rare', 0)]);
   expect(html).toContain('seed abcdef01');
   expect(html).toContain('client fedcba98');
   expect(html).toContain('/capsules/log');

@@ -29,8 +29,8 @@ it('renders an edition that has not been observed yet', async () => {
   mocks.holderView.mockResolvedValue([
     {
       editionId: 'e1',
-      designation: 'TYCHO',
-      name: 'Tycho',
+      designation: 'M31',
+      name: 'Andromeda Galaxy',
       editionNumber: 1,
       editionSize: 10,
       rarity: 'rare',
@@ -42,8 +42,8 @@ it('renders an edition that has not been observed yet', async () => {
 
   const html = await render('holder-1');
   expect(mocks.holderView).toHaveBeenCalledWith({}, 'holder-1');
-  expect(html).toContain('TYCHO');
-  expect(html).toContain('No. 001');
+  expect(html).toContain('M31');
+  expect(html).toContain('>001</text>');
   expect(html).toContain('Not yet photographed');
 });
 
@@ -51,7 +51,7 @@ it('captions an observed card with the capture data', async () => {
   const capture = { id: 'c1', targetName: 'The Moon', capturedAt: '2026-09-20T16:17:07.790Z', provenance: 'simulated', nodeId: 'tbilisi-01' };
   mocks.holderView.mockResolvedValue([
     {
-      editionId: 'e1', designation: 'TYCHO', name: 'Tycho', editionNumber: 1, editionSize: 10, rarity: 'rare',
+      editionId: 'e1', designation: 'M31', name: 'Andromeda Galaxy', editionNumber: 1, editionSize: 10, rarity: 'rare',
       observationStatus: 'eligible', latest: capture, history: [{ ...capture, nightDate: '2026-09-20' }],
     },
   ]);

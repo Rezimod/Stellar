@@ -1,8 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import SideraCard from '@/components/sidera/SideraCard';
-import SideraCardStage from '@/components/sidera/SideraCardStage';
+import CardPlate from '@/components/sidera/CardPlate';
 import SideraBuyCard from '@/components/sidera/SideraBuyCard';
 import SideraShell from '@/components/sidera/SideraShell';
 import SideraView from '@/components/sidera/SideraView';
@@ -12,12 +11,10 @@ import Chapter from '@/components/sidera/ui/Chapter';
 import { getDb } from '@/lib/db';
 import { formatDec, formatRa } from '@/lib/observatory/telescope-targets';
 import { rarityInfo, type Rarity } from '@/lib/rarity';
-import { isRendered } from '@/lib/sets/build';
 import { SET_001_CARD_BY_DESIGNATION } from '@/lib/sets/set-001';
 import { DIRECT_CARD_PRICE_USD } from '@/lib/sidera/economics';
 import type { ObservationStatus } from '@/lib/sidera/observability';
 import { cardAvailability } from '@/lib/sidera/orders';
-import { SURVEYED } from '@/lib/sidera/plate/objects';
 
 export const dynamic = 'force-dynamic';
 
@@ -88,13 +85,7 @@ export default async function CardPage({ params }: { params: Promise<{ designati
             <span className="sd-poster__ghost" aria-hidden="true">
               {seed.designation}
             </span>
-            <SideraCardStage
-              front={<SideraCard designation={seed.designation} eager />}
-              back={<SideraCard designation={seed.designation} side="back" />}
-            />
-            {isRendered(seed.artUrl) && !SURVEYED.includes(seed.designation) && (
-              <p className="sd-label sd-figure__note">Rendered from mission maps · awaiting Node 01</p>
-            )}
+            <CardPlate size="lg" hero designation={seed.designation} />
           </figure>
 
           <div>

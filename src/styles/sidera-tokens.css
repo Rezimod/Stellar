@@ -230,45 +230,13 @@
 .sd-input:focus { border-color: var(--sd-accent); outline: none; }
 
 /* ── Card plate ───────────────────────────────────────────────── */
-/* A card is 63:88 — the trading-card ratio, so a plate reads as a card before
-   anything on it is legible. The frame takes whatever height the caption leaves.
-   `size` scales the type and the padding; the plate still fills its grid cell,
-   capped, so the grid stays the layout authority. */
-.sd-plate {
-  --sd-plate-pad: 16px;
-  --sd-plate-name: 17px;
-  --sd-plate-cap: 300px;
-  aspect-ratio: 63 / 88;
-  max-width: var(--sd-plate-cap);
-  margin-inline: auto;
-  background: var(--sd-plate); border: 1px solid var(--sd-rule);
-  border-radius: var(--sd-radius); overflow: hidden;
-  display: flex; flex-direction: column;
-  transition: border-color var(--sd-dur-fast) var(--sd-ease),
-              background var(--sd-dur-fast) var(--sd-ease),
-              transform var(--sd-dur-fast) var(--sd-ease);
-}
-.sd-plate[data-size='sm'] { --sd-plate-pad: 11px; --sd-plate-name: 14px; --sd-plate-cap: 180px; }
-.sd-plate[data-size='lg'] { --sd-plate-pad: 20px; --sd-plate-name: 22px; --sd-plate-cap: 400px; }
-/* Legendary carries a second rule inside the first: a mount, not a glow. */
-.sd-plate[data-rarity='legendary'] {
-  box-shadow: inset 0 0 0 3px var(--sd-canvas),
-              inset 0 0 0 4px color-mix(in srgb, var(--sd-rarity-legendary) 55%, transparent);
-}
-.sd-plate--outline { background: transparent; border-style: dashed; border-color: var(--sd-ink-4); }
-.sd-plate__frame { flex: 1 1 auto; min-height: 0; background: radial-gradient(120% 90% at 50% 15%, #16254a 0%, #060c1d 70%); display: flex; align-items: center; justify-content: center; overflow: hidden; }
-.sd-plate__frame img, .sd-plate__frame svg { width: 100%; height: 100%; object-fit: cover; display: block; }
-.sd-plate__body { flex: 0 0 auto; padding: calc(var(--sd-plate-pad) * 0.75) var(--sd-plate-pad) var(--sd-plate-pad); display: flex; flex-direction: column; gap: 4px; border-top: 1px solid var(--sd-rule); }
-.sd-plate__meta { display: flex; align-items: center; gap: 8px; margin: 0; font-family: var(--sd-mono); font-size: 12px; font-variant-numeric: tabular-nums; color: var(--sd-ink-3); }
-.sd-plate__meta .sd-rarity { padding: 0; background: none; border: 0; }
-.sd-plate__name { font-family: var(--sd-sans); font-weight: 600; font-size: var(--sd-plate-name); line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: -0.015em; margin: 0; color: var(--sd-ink); }
-.sd-plate__marks { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0; }
-.sd-plate__link { display: block; text-decoration: none; color: inherit; }
-@media (hover: hover) {
-  .sd-plate__link:hover .sd-plate { border-color: var(--sd-rule-strong); background: var(--sd-plate-hover); transform: translateY(-3px); }
-  .sd-plate__link:hover .sd-plate--outline { background: var(--sd-plate); }
-}
-.sd-plate__link:focus-within .sd-plate { border-color: var(--sd-rule-strong); background: var(--sd-plate-hover); }
+/* A card is 63:88. It fills its grid cell up to a cap, so the grid stays the layout authority. */
+.sd-cardplate { --sd-card-cap: 300px; width: 100%; max-width: var(--sd-card-cap); margin-inline: auto; }
+.sd-cardplate[data-size='sm'] { --sd-card-cap: 220px; }
+.sd-cardplate[data-size='lg'] { --sd-card-cap: 420px; }
+@media (max-width: 1023px) { .sd-cardplate[data-size='lg'] { --sd-card-cap: 320px; } }
+.sd-cardplate__link { display: block; text-decoration: none; color: inherit; border-radius: 4.76% / 3.41%; }
+.sd-cardplate__link:focus-visible { outline: 2px solid var(--sd-focus); outline-offset: 4px; }
 
 .sd-grid { display: grid; align-items: start; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; list-style: none; margin: 0; padding: 0; }
 .sd-grid.sd-section { margin-top: 40px; }
@@ -278,24 +246,6 @@
 .sd-card-page { display: grid; gap: 32px; margin-top: 28px; }
 @media (min-width: 1024px) { .sd-card-page { grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr); gap: 64px; align-items: center; } }
 .sd-card-page__col { max-width: 520px; }
-
-/* The one card on the site that is lit and held: a slow turn, one deep
-   shadow. It stops under the pointer so it can actually be read. */
-.sd-tilt { perspective: 1200px; }
-@media (max-width: 1023px) { .sd-tilt .sd-plate { --sd-plate-cap: 250px; } }
-.sd-tilt .sd-plate { box-shadow: 0 40px 80px rgba(0, 0, 0, 0.55); animation: sd-tilt 9s ease-in-out infinite; }
-.sd-tilt .sd-plate[data-rarity='legendary'] {
-  box-shadow: inset 0 0 0 3px var(--sd-canvas),
-              inset 0 0 0 4px color-mix(in srgb, var(--sd-rarity-legendary) 55%, transparent),
-              0 40px 80px rgba(0, 0, 0, 0.55);
-}
-@keyframes sd-tilt {
-  0%, 100% { transform: rotateY(-6deg) rotateX(2deg); }
-  50% { transform: rotateY(6deg) rotateX(-2deg); }
-}
-@media (hover: hover) { .sd-tilt:hover .sd-plate { animation-play-state: paused; } }
-@media (hover: none) { .sd-tilt .sd-plate { animation: none; } }
-@media (prefers-reduced-motion: reduce) { .sd-tilt .sd-plate { animation: none; } }
 
 /* Breadcrumb: where this card sits in the set, printed like a shelf mark. */
 .sd-crumb { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; margin: 0 0 18px; }
@@ -471,7 +421,7 @@
 }
 .sd-reveal__card--best { --sd-lift: -20px; --sd-extra: var(--sd-hold); flex-basis: 232px; }
 .sd-reveal__card:focus-visible { outline: 2px solid var(--sd-focus); outline-offset: 6px; border-radius: var(--sd-radius); }
-.sd-reveal__card .sd-plate { max-width: none; }
+.sd-reveal__card .sd-cardplate { max-width: none; }
 /* Scarce cards sit on their own light once they have turned. */
 .sd-reveal__card[data-rarity='rare'], .sd-reveal__card[data-rarity='epic'], .sd-reveal__card[data-rarity='legendary'] { --sd-glow: var(--sd-rarity-rare); }
 .sd-reveal__card[data-rarity='epic'] { --sd-glow: var(--sd-rarity-epic); }
@@ -484,7 +434,7 @@
 .sd-reveal__card[data-rarity='rare']::after { opacity: 0; animation-name: sd-fade-half; }
 
 .sd-flip { position: relative; transform-style: preserve-3d; animation: sd-turn 820ms cubic-bezier(0.3, 0.7, 0.2, 1) calc(var(--sd-at) + 380ms) both; }
-.sd-flip__front { position: relative; backface-visibility: hidden; border-radius: var(--sd-radius); overflow: hidden; }
+.sd-flip__front { position: relative; backface-visibility: hidden; border-radius: 4.76% / 3.41%; overflow: hidden; }
 /* The foil: one pass of light across the face, just after it turns. */
 .sd-flip__front::after {
   content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 2; mix-blend-mode: screen;
@@ -494,14 +444,9 @@
 }
 .sd-flip__back {
   position: absolute; inset: 0; z-index: 1; transform: rotateY(180deg); backface-visibility: hidden;
-  display: grid; place-items: center; border-radius: var(--sd-radius);
-  border: 1px solid color-mix(in srgb, var(--sd-heat) 55%, transparent);
+  border-radius: 4.76% / 3.41%;
   box-shadow: 0 0 30px color-mix(in srgb, var(--sd-heat) 30%, transparent);
-  background:
-    repeating-linear-gradient(135deg, rgba(255, 179, 71, 0.07) 0 1px, transparent 1px 9px),
-    radial-gradient(120% 90% at 50% 10%, #1d3264 0%, #070e22 75%);
 }
-.sd-flip__back .sd-sealed__mark { font-size: 15px; }
 
 /* The best card is lit by what it came out of. A legendary one is crowned. */
 .sd-reveal__aura {
@@ -651,8 +596,6 @@
   .sd-reveal { --sd-impact-y: 104px; }
   .sd-reveal__card { flex-basis: 30%; }
   .sd-reveal__card--best { flex-basis: 34%; }
-  .sd-reveal__card .sd-plate__name { font-size: 12px; }
-  .sd-reveal__card .sd-plate__body { padding: 8px; }
   .sd-reveal__rays { width: 600px; height: 600px; margin: -300px 0 0 -300px; }
   .sd-reveal__provenance { border-radius: 14px; }
 }
@@ -698,9 +641,7 @@
   transform: translate(-50%, -50%) scale(0.6); opacity: 0; z-index: 0;
 }
 @media (min-width: 900px) { .sd-showcase__slot { width: 290px; } }
-.sd-showcase__slot .sd-plate { max-width: none; background: color-mix(in srgb, var(--sd-ink) 5%, var(--sd-canvas)); }
 .sd-showcase__slot[data-pos='0'] { transform: translate(-50%, calc(-50% - 10px)); opacity: 1; z-index: 3; }
-.sd-showcase__slot[data-pos='0'] .sd-plate { box-shadow: 0 40px 80px rgba(0, 0, 0, 0.55); }
 .sd-showcase__slot[data-pos='-1'] { transform: translate(-112%, -50%) scale(0.78) rotateY(14deg); opacity: 0.55; z-index: 2; }
 .sd-showcase__slot[data-pos='1'] { transform: translate(12%, -50%) scale(0.78) rotateY(-14deg); opacity: 0.55; z-index: 2; }
 .sd-showcase__slot[data-pos='-2'] { transform: translate(-150%, -50%) scale(0.6) rotateY(20deg); opacity: 0; z-index: 1; }
@@ -775,7 +716,7 @@ html:has(.sidera) #stellar-main { padding-top: 0; padding-bottom: 0; }
 
 .sd-poster__object { position: relative; display: grid; place-items: center; min-height: 340px; overflow: hidden; padding-block: 24px; }
 .sd-poster__object .sd-tilt { position: relative; z-index: 1; width: min(100%, 340px); }
-.sd-poster__object .sd-plate { --sd-plate-cap: 340px; }
+.sd-poster__object .sd-cardplate { --sd-card-cap: 340px; }
 .sd-poster__ghost {
   position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
   font-family: var(--sd-display); font-weight: 700; white-space: nowrap; pointer-events: none;
@@ -814,9 +755,8 @@ html:has(.sidera) #stellar-main { padding-top: 0; padding-bottom: 0; }
 .sd-skychart__now text { fill: var(--sd-accent); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; }
 
 /* A card's art on its own, cropped to the object. */
-.sd-art { display: block; overflow: hidden; background: radial-gradient(120% 90% at 50% 15%, #16254a 0%, #060c1d 70%); }
-.sd-art img, .sd-art svg { display: block; width: 100%; height: 100%; object-fit: cover; }
-.sd-art--render { background: #000; }
+.sd-art { position: relative; display: block; overflow: hidden; background: #02040a; }
+.sd-art img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; }
 
 /* The ballot: a ranked list, each object with its share of the night. */
 .sd-ballot { list-style: none; margin: 24px 0 0; padding: 0; display: grid; gap: 10px; }
@@ -943,19 +883,8 @@ html:has(.sidera) #stellar-main { padding-top: 0; padding-bottom: 0; }
 .sd-floor__grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 14px; }
 @media (min-width: 640px) { .sd-floor__grid { grid-template-columns: repeat(auto-fill, minmax(196px, 1fr)); gap: 16px; } }
 
-/* A tile: the pill, the art on the light of its rarity, the name, one line, the price. */
-.sd-tile {
-  --r: var(--sd-rarity-common);
-  position: relative; display: flex; flex-direction: column; gap: 8px; height: 100%;
-  padding: 12px 14px 14px; border-radius: 16px; text-decoration: none; color: inherit;
-  border: 1px solid var(--sd-rule); background: linear-gradient(180deg, #0f1a38, #0a1229);
-  transition: border-color var(--sd-dur-fast) var(--sd-ease), transform var(--sd-dur-fast) var(--sd-ease), box-shadow var(--sd-dur-fast) var(--sd-ease);
-}
-.sd-tile[data-rarity='rare'] { --r: var(--sd-rarity-rare); }
-.sd-tile[data-rarity='epic'] { --r: var(--sd-rarity-epic); }
-.sd-tile[data-rarity='legendary'] { --r: var(--sd-rarity-legendary); }
-.sd-tile:hover { border-color: color-mix(in srgb, var(--r) 45%, transparent); transform: translateY(-3px); box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45); }
-.sd-tile__pills { position: absolute; top: 12px; left: 12px; z-index: 2; display: flex; flex-direction: column; align-items: flex-start; gap: 5px; }
+/* A tile: the card itself, then one line and the price. */
+.sd-tile { display: flex; flex-direction: column; gap: 12px; height: 100%; text-decoration: none; color: inherit; }
 .sd-pill {
   --r: var(--sd-rarity-common);
   display: inline-flex; align-items: center; gap: 6px; padding: 4px 9px; border-radius: 7px;
@@ -967,15 +896,8 @@ html:has(.sidera) #stellar-main { padding-top: 0; padding-bottom: 0; }
 .sd-pill[data-rarity='legendary'] { --r: var(--sd-rarity-legendary); }
 .sd-pill--tag { background: rgba(10, 18, 41, 0.85); color: var(--sd-accent); border: 1px solid color-mix(in srgb, var(--sd-accent) 40%, transparent); }
 .sd-pill--tag::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
-.sd-tile__stage {
-  position: relative; display: grid; place-items: center; aspect-ratio: 1 / 1; margin: 0 -4px;
-  background: radial-gradient(closest-side, color-mix(in srgb, var(--r) 34%, transparent), transparent 78%);
-}
-.sd-tile__art { width: 62%; aspect-ratio: 63 / 88; border-radius: 8px; box-shadow: 0 14px 30px rgba(0, 0, 0, 0.55); transition: transform var(--sd-dur-base) var(--sd-ease); }
-.sd-tile:hover .sd-tile__art { transform: translateY(-4px) scale(1.03); }
-.sd-tile__name { font: 700 15px/1.2 var(--sd-sans); letter-spacing: 0.02em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 4px; }
-.sd-tile__foot { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
-.sd-tile__sub { font-size: 13px; color: var(--sd-ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.sd-tile__foot { display: flex; align-items: center; padding: 0 4px; justify-content: space-between; gap: 10px; }
+.sd-tile__sub { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--sd-ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 .sd-tile__price { font: 700 16px/1 var(--sd-sans); color: var(--sd-ink); flex: 0 0 auto; }
 
 /* The counter: the sealed capsule, the price, the button, the odds. */
@@ -1020,7 +942,7 @@ html:has(.sidera) #stellar-main { padding-top: 0; padding-bottom: 0; }
 .sd-shop__chip { padding: 6px 12px; border-radius: 8px; border: 1px solid var(--sd-rule-strong); font: 700 12px var(--sd-mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--sd-ink); text-decoration: none; }
 .sd-shop__chip:hover { border-color: var(--sd-accent); color: var(--sd-accent); }
 .sd-tile--dim { opacity: 0.5; }
-.sd-tile--dim .sd-tile__art { filter: grayscale(0.7); }
+.sd-tile--dim .sdc-card { filter: grayscale(0.7); }
 .sd-tile--dim:hover { opacity: 0.85; }
 @media (max-width: 1099px) {
   .sd-shop__machine { height: 190px; }
@@ -1109,7 +1031,7 @@ html:has(.sidera) #stellar-main { padding-top: 0; padding-bottom: 0; }
 .sd-cardhero > * { min-width: 0; }
 .sd-cardhero__plate { position: relative; display: grid; place-items: center; padding-block: 12px; }
 .sd-cardhero__plate .sd-tilt { position: relative; z-index: 1; width: min(100%, 360px); }
-.sd-cardhero__plate .sd-plate { --sd-plate-cap: 360px; }
+.sd-cardhero__plate .sd-cardplate { --sd-card-cap: 440px; }
 .sd-cardhero__plate .sd-poster__ghost { font-size: clamp(56px, 9vw, 132px); }
 .sd-cardhero__name { font-family: var(--sd-sans); font-weight: 600; font-size: clamp(40px, 6.4vw, 76px); line-height: 0.95; letter-spacing: -0.045em; margin: 0; }
 .sd-cardhero__blurb { color: var(--sd-ink-2); font-size: 17px; line-height: 1.6; max-width: 46ch; margin: 18px 0 0; }

@@ -25,7 +25,7 @@ const geist = Geist({
 const jetbrainsMono = JetBrains_Mono({
   subsets: ['latin'],
   variable: '--font-mono',
-  weight: ['400', '700'],
+  weight: ['400', '500', '700'],
   display: 'swap',
 });
 // Homepage hero display face — Space Grotesk (hero-only; not a global token).

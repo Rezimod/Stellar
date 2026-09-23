@@ -2,11 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import CardPlate from './CardPlate';
-import SideraCard from './SideraCard';
-import { PLACEHOLDER_ART } from '@/lib/sets/build';
-import { SET_001_CARD_BY_DESIGNATION } from '@/lib/sets/set-001';
+import CardBack from './card/CardBack';
 import type { Rarity } from '@/lib/rarity';
 import { RARITIES, isRarity, rarityInfo } from '@/lib/rarity';
+import { plateFor } from '@/lib/sidera/plate';
 
 export type RevealedCard = {
   drawIndex: number;
@@ -29,6 +28,11 @@ export type Draw = {
 };
 
 const pad = (n: number) => String(n).padStart(3, '0');
+
+function SealedBack({ designation, u }: { designation: string; u: string }) {
+  const plate = plateFor(designation);
+  return plate ? <CardBack plate={plate} sealed u={u} /> : null;
+}
 const rarityOf = (c: RevealedCard): Rarity => (isRarity(c.rarity) ? (c.rarity as Rarity) : 'common');
 
 /** How long the stone takes to arrive, by the scarcest thing it carries. */
@@ -232,31 +236,12 @@ export default function SideraReveal({ draw }: { draw: Draw }) {
                 )}
                 <div className="sd-flip">
                   <div className="sd-flip__back" aria-hidden="true">
-                    <span className="sd-sealed__mark">Sidera</span>
+                    <SealedBack designation={c.designation} u={`rv${i}`} />
                   </div>
                   <div className="sd-flip__front">
-                    {SET_001_CARD_BY_DESIGNATION.has(c.designation) ? (
-                      <a href={`/card/${c.designation}`} className="sd-card-link">
-                        <SideraCard designation={c.designation} edition={c.editionNumber} />
-                      </a>
-                    ) : (
-                      <CardPlate
-                        size="sm"
-                        designation={c.designation}
-                        name={c.name}
-                        rarity={rarity}
-                        artUrl={PLACEHOLDER_ART}
-                        href={`/card/${c.designation}`}
-                        data={[{ label: 'Edition', value: `No. ${pad(c.editionNumber)}` }]}
-                      />
-                    )}
+                    <CardPlate size="sm" designation={c.designation} edition={c.editionNumber} href={`/card/${c.designation}`} />
                   </div>
                 </div>
-                {SET_001_CARD_BY_DESIGNATION.has(c.designation) && (
-                  <p className="sd-data sd-reveal__edition">
-                    {c.name} · No. {pad(c.editionNumber)}
-                  </p>
-                )}
               </li>
             );
           })}

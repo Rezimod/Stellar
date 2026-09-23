@@ -11,7 +11,6 @@ import DataRow, { type Datum } from '@/components/sidera/ui/DataRow';
 import { getDb } from '@/lib/db';
 import { getNode } from '@/lib/observatory/nodes';
 import { isRarity, type Rarity } from '@/lib/rarity';
-import { SET_001_CARD_BY_DESIGNATION } from '@/lib/sets/set-001';
 import { addDays, tonightView, type TonightView } from '@/lib/sidera/night';
 
 export const dynamic = 'force-dynamic';
@@ -59,7 +58,6 @@ export default async function TonightPage() {
   const lead = d
     ? { designation: d.designation, name: d.name, rarity: rarityOf(d.rarity) }
     : leading && { designation: leading.designation, name: leading.name, rarity: rarityOf(leading.rarity) };
-  const leadSeed = lead ? SET_001_CARD_BY_DESIGNATION.get(lead.designation)?.seed : undefined;
 
   const facts: Datum[] = d
     ? [
@@ -130,17 +128,7 @@ export default async function TonightPage() {
                 <span className="sd-poster__ghost" aria-hidden="true">
                   {lead.designation}
                 </span>
-                <div className="sd-tilt">
-                  <CardPlate
-                    size="lg"
-                    designation={lead.designation}
-                    name={lead.name}
-                    rarity={lead.rarity}
-                    artUrl={leadSeed?.artUrl ?? null}
-                    href={`/card/${lead.designation}`}
-                    data={leadSeed ? [{ label: 'Editions', value: `${leadSeed.editionSize} editions` }] : []}
-                  />
-                </div>
+                <CardPlate size="lg" designation={lead.designation} href={`/card/${lead.designation}`} />
               </div>
             )}
           </div>

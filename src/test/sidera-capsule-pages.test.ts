@@ -39,7 +39,7 @@ const opened = {
     draws: 3,
     oddsBps: { common: 7900, rare: 1650, epic: 400, legendary: 50 },
     supply: [],
-    pulls: [{ drawIndex: 0, designation: 'TYCHO', rarity: 'rare', editionNumber: 12 }],
+    pulls: [{ drawIndex: 0, designation: 'M31', rarity: 'rare', editionNumber: 12 }],
   },
 };
 
@@ -80,8 +80,8 @@ it('shows the draws and the verdict once a capsule is opened', async () => {
     expect.objectContaining({ commitment: 'a'.repeat(64), nonce: 'b'.repeat(64), capsuleId: ID, secret: 'd'.repeat(64) }),
   );
   expect(html).toContain('Draw recomputes');
-  expect(html).toContain('TYCHO');
-  expect(html).toContain('012');
+  expect(html).toContain('M31');
+  expect(html).toContain('>012</text>');
 });
 
 it('reports a capsule that does not check out, with the reason', async () => {

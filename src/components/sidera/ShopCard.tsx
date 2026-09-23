@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import SideraCard from './SideraCard';
+import SideraCard from './card/SideraCard';
 import type { Rarity } from '@/lib/rarity';
 
 export type ShopCardProps = {
@@ -15,20 +15,16 @@ export type ShopCardProps = {
   dim?: boolean;
 };
 
-/**
- * A card on the floor: the printed card itself, then one line and the price.
- * The card already carries its name and rarity, so the tile does not repeat them.
- */
+/** A card on the floor: the card itself, then one line and the price. */
 export default function ShopCard({ designation, name, rarity, sub, price, tag, dim }: ShopCardProps) {
   return (
-    <Link href={`/card/${designation}`} className={dim ? 'sd-tile sd-tile--card sd-tile--dim' : 'sd-tile sd-tile--card'} data-rarity={rarity}>
-      <SideraCard designation={designation} detail="tile" className="sd-tile__card" />
+    <Link href={`/card/${designation}`} className={dim ? 'sd-tile sd-tile--dim' : 'sd-tile'} data-rarity={rarity} aria-label={`${name}, ${price}`}>
+      <SideraCard designation={designation} />
       <span className="sd-tile__foot">
         <span className="sd-tile__sub">
-          <span className="sr-only">{name} · </span>
+          {tag && <span className="sd-pill sd-pill--tag">{tag}</span>}
           {sub}
         </span>
-        {tag && <span className="sd-pill sd-pill--tag">{tag}</span>}
         <span className="sd-tile__price">{price}</span>
       </span>
     </Link>

@@ -1,13 +1,8 @@
 import CardPlate from './CardPlate'
-import SideraCard from './SideraCard'
 import Caption from './ui/Caption'
 import type { Rarity } from '@/lib/rarity'
-import { PLACEHOLDER_ART } from '@/lib/sets/build'
-import { SET_001_CARD_BY_DESIGNATION } from '@/lib/sets/set-001'
 import { rarityInfo } from '@/lib/rarity'
 import type { CaptureSummary, HolderEdition } from '@/lib/sidera/repo'
-
-const pad = (n: number) => String(n).padStart(3, '0')
 
 function captureParts(capture: CaptureSummary): string[] {
   return [
@@ -38,25 +33,7 @@ export default function HolderCollection({ editions }: { editions: HolderEdition
       <ul className="sd-grid">
         {ordered.map((e) => (
           <li key={e.editionId}>
-            {SET_001_CARD_BY_DESIGNATION.has(e.designation) ? (
-              <>
-                <a href={`/card/${e.designation}`} className="sd-card-link">
-                  <SideraCard designation={e.designation} edition={e.editionNumber} detail="tile" />
-                </a>
-                <p className="sd-data sd-collection__edition">
-                  {e.name} · No. {pad(e.editionNumber)}
-                </p>
-              </>
-            ) : (
-              <CardPlate
-                designation={e.designation}
-                name={e.name}
-                rarity={e.rarity as Rarity}
-                artUrl={PLACEHOLDER_ART}
-                href={`/card/${e.designation}`}
-                data={[{ label: 'Edition', value: `No. ${pad(e.editionNumber)}` }]}
-              />
-            )}
+            <CardPlate designation={e.designation} edition={e.editionNumber} href={`/card/${e.designation}`} />
             {e.latest ? (
               <Caption as="p" parts={captureParts(e.latest)} />
             ) : (

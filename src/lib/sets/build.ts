@@ -39,8 +39,6 @@ export const PLACEHOLDER_ART = '/cards/placeholder.svg';
  *  art, not a Node 01 frame. Everything else is drawn from its record. */
 const RENDERED = new Set(['SATURN', 'MARS', 'JUPITER', 'VENUS']);
 
-export const isRendered = (artUrl: string | null | undefined) => Boolean(artUrl?.endsWith('.webp') && artUrl.startsWith('/cards/'));
-
 export function subjectOf(facts: Pick<CardSeed, 'targetId' | 'decDeg'>, optics: CardOptics): ObservabilitySubject {
   return { targetId: facts.targetId, decDeg: facts.decDeg ?? null, ...optics };
 }

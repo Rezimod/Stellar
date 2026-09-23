@@ -9,9 +9,6 @@ import SideraVerify from '@/components/sidera/SideraVerify';
 import DataRow from '@/components/sidera/ui/DataRow';
 import Chapter from '@/components/sidera/ui/Chapter';
 import { getDb } from '@/lib/db';
-import { isRarity, type Rarity } from '@/lib/rarity';
-import { PLACEHOLDER_ART } from '@/lib/sets/build';
-import { SET_001_CARD_BY_DESIGNATION } from '@/lib/sets/set-001';
 import type { OpenedOutcome } from '@/lib/sidera/audit';
 import { readFullLog } from '@/lib/sidera/capsule';
 import { verifyCapsule } from '@/lib/sidera/randomness';
@@ -24,7 +21,6 @@ export const metadata: Metadata = {
   description: 'One capsule’s public record: what was committed to, what was drawn, and whether it checks out.',
 };
 
-const pad = (n: number) => String(n).padStart(3, '0');
 
 export default async function CapsuleRecordPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -119,21 +115,11 @@ export default async function CapsuleRecordPage({ params }: { params: Promise<{ 
           <div className="sd-chapter-block">
             <Chapter n="02" title="Drawn" />
             <ul className="sd-grid">
-              {outcome.pulls.map((p) => {
-                const authored = SET_001_CARD_BY_DESIGNATION.get(p.designation);
-                return (
-                  <li key={p.drawIndex}>
-                    <CardPlate
-                      designation={p.designation}
-                      name={authored?.seed.name ?? p.designation}
-                      rarity={isRarity(p.rarity) ? (p.rarity as Rarity) : 'common'}
-                      artUrl={authored?.seed.artUrl ?? PLACEHOLDER_ART}
-                      href={`/card/${p.designation}`}
-                      data={[{ label: 'Edition', value: `No. ${pad(p.editionNumber)}` }]}
-                    />
-                  </li>
-                );
-              })}
+              {outcome.pulls.map((p) => (
+                <li key={p.drawIndex}>
+                  <CardPlate designation={p.designation} edition={p.editionNumber} href={`/card/${p.designation}`} />
+                </li>
+              ))}
             </ul>
           </div>
         )}
