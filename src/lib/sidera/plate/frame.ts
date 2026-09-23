@@ -109,7 +109,7 @@ function border(u: string, r: Rarity, micro: string) {
       `<path d="${rr(6, 6, 618, 868, 27)} ${rr(19, 19, 592, 842, 21)}" fill="url(#${u}gui)" fill-rule="evenodd"/>` +
       `<path d="${rr(2.5, 2.5, 625, 875, 28)}" fill="none" stroke="url(#${u}metal)" stroke-width="2.6"/>` +
       `<path d="${rr(19.5, 19.5, 591, 841, 20.5)}" fill="none" stroke="url(#${u}metal)" stroke-width=".8"/>` +
-      `<text fill="${ink}" opacity=".7" style="${MONO};font-size:5.4px;letter-spacing:.9px"><textPath href="#${u}mp">${esc(micro.repeat(12))}</textPath></text>`,
+      `<text fill="${ink}" opacity=".7" style="${MONO};font-size:5.4px;letter-spacing:.9px"><textPath href="#${u}mp">${esc(micro.repeat(8))}</textPath></text>`,
   };
 }
 

@@ -1228,3 +1228,27 @@ html:has(.sidera) #stellar-main { padding-top: 0; padding-bottom: 0; }
 .sd-flip__front:has(.sd-card) { border-radius: 4.76% / 3.41%; }
 .sd-cardhero__plate .sd-stage { --sd-stage-w: 440px; z-index: 1; }
 .sd-reveal__edition { margin: 12px 0 0; text-align: center; color: var(--sd-ink-2); }
+
+/* Cards in a grid: the printed card is the tile. Hovering lifts it and sweeps
+   the light across the foil; --px/--py are registered so they can transition. */
+@property --px { syntax: '<number>'; inherits: true; initial-value: 0.5; }
+@property --py { syntax: '<number>'; inherits: true; initial-value: 0.5; }
+.sd-tile--card { padding: 0; border: 0; background: none; gap: 12px; box-shadow: none; }
+.sd-tile--card:hover { transform: none; box-shadow: none; }
+.sd-tile--card .sd-tile__card { transition: transform var(--sd-dur-base) var(--sd-ease), box-shadow var(--sd-dur-base) var(--sd-ease), --px 900ms var(--sd-ease), --py 900ms var(--sd-ease); }
+.sd-tile--card:hover .sd-tile__card, .sd-tile--card:focus-visible .sd-tile__card,
+.sd-card-link:hover .sd-card, .sd-card-link:focus-visible .sd-card {
+  --px: 0.85; --py: 0.2; transform: translateY(-6px);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--r, #9aa7c7) 40%, transparent), 0 34px 70px -24px rgba(0, 0, 0, 0.95);
+}
+.sd-card-link .sd-card { transition: transform var(--sd-dur-base) var(--sd-ease), box-shadow var(--sd-dur-base) var(--sd-ease), --px 900ms var(--sd-ease), --py 900ms var(--sd-ease); }
+.sd-tile--card .sd-tile__foot { align-items: center; padding-inline: 2px; }
+.sd-tile--card .sd-pill--tag { flex: 0 0 auto; }
+.sd-tile--dim .sd-tile__card { filter: grayscale(0.7); }
+.sd-collection__edition { margin: 12px 0 4px; color: var(--sd-ink-2); }
+@media (prefers-reduced-motion: reduce) {
+  .sd-tile--card .sd-tile__card, .sd-card-link .sd-card { transition: none; }
+  .sd-tile--card:hover .sd-tile__card, .sd-card-link:hover .sd-card { transform: none; }
+}
+.sd-tile--card .sd-card__foil { opacity: calc(var(--sd-foil) * 0.55); transition: opacity 900ms var(--sd-ease); }
+.sd-tile--card:hover .sd-card__foil, .sd-tile--card:focus-visible .sd-card__foil { opacity: var(--sd-foil); }

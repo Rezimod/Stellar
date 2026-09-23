@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { SET_001_CARDS } from '@/lib/sets/set-001';
 import { backSvg, cardFace, frameSvg } from '@/lib/sidera/plate/frame';
-import { SURVEYED, surveyPlate } from '@/lib/sidera/plate/objects';
+import { FULL_ART, SURVEYED, plateFile, plateUrl, surveyPlate } from '@/lib/sidera/plate/objects';
 
 const ids = (svg: string) => [...svg.matchAll(/ id="([^"]+)"/g)].map((m) => m[1]);
 const refs = (svg: string) => [...svg.matchAll(/url\(#([^)]+)\)|href="#([^"]+)"/g)].map((m) => m[1] ?? m[2]);
 
 describe('survey plates', () => {
   it('draws the four surveyed cards, and nothing for the rest', () => {
-    expect(SURVEYED.sort()).toEqual(['M31', 'M87', 'MOON', 'SATURN']);
+    expect([...SURVEYED].sort()).toEqual(['M31', 'M87', 'MOON', 'SATURN']);
     expect(surveyPlate('JUPITER', 'x')).toBeNull();
   });
 
@@ -63,5 +63,23 @@ describe('card frame', () => {
     const back = backSvg(cardFace(fiction.seed.designation, null, false)!, 'b');
     expect(back).toContain('exists in no sky');
     expect(back).not.toContain('receives the image');
+  });
+});
+
+describe('plate files', () => {
+  it('serves sky and object as standalone SVG documents with no text in them', () => {
+    for (const d of SURVEYED) {
+      for (const l of ['sky', 'object'] as const) {
+        const svg = plateFile(d, l)!;
+        expect(svg.startsWith('<svg xmlns="http://www.w3.org/2000/svg" width="582"')).toBe(true);
+        expect(svg).not.toContain('<text');
+      }
+    }
+    expect(plateFile('JUPITER', 'sky')).toBeNull();
+    expect(plateUrl('SATURN', 'object')).toBe('/cards/plate/SATURN-object.svg');
+  });
+
+  it('knows which cards run to the edge without drawing them', () => {
+    for (const d of SURVEYED) expect(FULL_ART.has(d)).toBe(surveyPlate(d, 'z')!.full);
   });
 });

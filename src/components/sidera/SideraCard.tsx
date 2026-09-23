@@ -4,13 +4,17 @@ import { rarityInfo } from '@/lib/rarity';
 import { isRendered } from '@/lib/sets/build';
 import { SET_001_CARD_BY_DESIGNATION } from '@/lib/sets/set-001';
 import { FINISH, backSvg, cardFace, frameSvg } from '@/lib/sidera/plate/frame';
-import { surveyPlate } from '@/lib/sidera/plate/objects';
+import { FULL_ART, SURVEYED, plateUrl, surveyPlate } from '@/lib/sidera/plate/objects';
 
 export type SideraCardProps = {
   designation: string;
   /** The holder's edition number. Null prints the edition size. */
   edition?: number | null;
   side?: 'front' | 'back';
+  /** 'tile' leaves out the survey callouts, which are too small to read in a grid. */
+  detail?: 'full' | 'tile';
+  /** Load the art at once: the card a page is about. Grids load it as it scrolls in. */
+  eager?: boolean;
   className?: string;
 };
 
@@ -28,11 +32,14 @@ const GLITTER = (u: string) =>
  * It holds no state. Tilt and flip come from SideraCardStage, through the
  * --px/--py custom properties and the stage's classes.
  */
-export default function SideraCard({ designation, edition = null, side = 'front', className = '' }: SideraCardProps) {
+export default function SideraCard({ designation, edition = null, side = 'front', detail = 'full', eager = false, className = '' }: SideraCardProps) {
   const u = 'c' + useId().replace(/[^a-zA-Z0-9]/g, '');
   const seed = SET_001_CARD_BY_DESIGNATION.get(designation)?.seed;
-  const plate = surveyPlate(designation, u);
-  const face = cardFace(designation, edition, plate?.full ?? false);
+  // Sky and object are fetched as files; only the survey, which is text in the page's fonts, is
+  // inlined, and only at full detail, so a grid never draws a plate it would throw away.
+  const surveyed = SURVEYED.includes(designation);
+  const survey = surveyed && detail === 'full' && side === 'front' ? surveyPlate(designation, u)?.survey : null;
+  const face = cardFace(designation, edition, FULL_ART.has(designation));
   if (!seed || !face) return null;
 
   const info = rarityInfo(face.rarity);
@@ -56,11 +63,15 @@ export default function SideraCard({ designation, edition = null, side = 'front'
   return (
     <div className={`sd-card ${className}`.trim()} data-rarity={face.rarity} role="img" aria-label={label} style={style}>
       <div className="sd-card__window" data-full={face.full ? '' : undefined}>
-        {plate ? (
+        {surveyed ? (
           <>
-            <div className="sd-card__layer sd-card__layer--sky" dangerouslySetInnerHTML={{ __html: plate.sky }} />
-            <div className="sd-card__layer sd-card__layer--object" dangerouslySetInnerHTML={{ __html: plate.object }} />
-            <div className="sd-card__layer sd-card__layer--survey" dangerouslySetInnerHTML={{ __html: plate.survey }} />
+            <div className="sd-card__layer sd-card__layer--sky">
+              <img src={plateUrl(designation, 'sky')} alt="" decoding="async" loading={eager ? 'eager' : 'lazy'} />
+            </div>
+            <div className="sd-card__layer sd-card__layer--object">
+              <img src={plateUrl(designation, 'object')} alt="" decoding="async" loading={eager ? 'eager' : 'lazy'} />
+            </div>
+            {survey && <div className="sd-card__layer sd-card__layer--survey" dangerouslySetInnerHTML={{ __html: survey }} />}
           </>
         ) : (
           <div className="sd-card__layer sd-card__layer--object">

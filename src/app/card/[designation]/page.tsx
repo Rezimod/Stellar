@@ -89,7 +89,7 @@ export default async function CardPage({ params }: { params: Promise<{ designati
               {seed.designation}
             </span>
             <SideraCardStage
-              front={<SideraCard designation={seed.designation} />}
+              front={<SideraCard designation={seed.designation} eager />}
               back={<SideraCard designation={seed.designation} side="back" />}
             />
             {isRendered(seed.artUrl) && !SURVEYED.includes(seed.designation) && (

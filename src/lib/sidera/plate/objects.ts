@@ -368,6 +368,9 @@ const DRAW: Record<string, (u: string) => PlateLayers> = { MOON: moon, M31: andr
 /** The designations that have a survey plate. Every other card keeps its drawn art inside the same frame. */
 export const SURVEYED = Object.keys(DRAW);
 
+/** Surveyed cards whose art runs to the card's edge. */
+export const FULL_ART: ReadonlySet<string> = new Set(['M87']);
+
 const cache = new Map<string, PlateLayers>();
 
 /** A card's plate layers, or null where none is drawn yet. `u` prefixes every id. */
@@ -382,4 +385,17 @@ export function surveyPlate(designation: string, u: string): PlateLayers | null 
     cache.set(key, hit);
   }
   return hit;
+}
+
+export type PlateFileLayer = 'sky' | 'object';
+
+/** The URL a plate layer is served from (see src/app/cards/plate). */
+export const plateUrl = (designation: string, layer: PlateFileLayer) => `/cards/plate/${designation}-${layer}.svg`;
+
+/** A plate layer as a standalone SVG document: namespaced, and sized so an <img> knows its shape. */
+export function plateFile(designation: string, layer: PlateFileLayer): string | null {
+  const plate = surveyPlate(designation, 'p');
+  if (!plate) return null;
+  const h = plate.full ? HF : H;
+  return plate[layer].replace('<svg width="100%" height="100%"', `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${h}"`);
 }
