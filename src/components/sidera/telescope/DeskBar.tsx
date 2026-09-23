@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import Link from 'next/link';
 import { ChevronsUpDown, CircleHelp, Clock, PanelRightClose, PanelRightOpen, Unplug } from 'lucide-react';
 import type { Station } from '@/lib/observatory/sim-stations';
 import StationList from './StationList';
@@ -56,11 +55,7 @@ export default function DeskBar({
   return (
     <div className="sdt-bar">
       <div className="sdt-bar__inner">
-        <nav aria-label="Breadcrumb" className="sd-crumb sdt-bar__crumb">
-          <Link href="/node">Node 01</Link>
-          <span aria-hidden="true">/</span>
-          <strong>Telescope</strong>
-        </nav>
+        <p className="sdt-bar__crumb sd-label">Observatory</p>
 
         <div className="sdt-menu" ref={menuRef}>
           <button type="button" className="sdt-menu__button" aria-haspopup="listbox" aria-expanded={menuOpen} onClick={() => onMenu(!menuOpen)}>

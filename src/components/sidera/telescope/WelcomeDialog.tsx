@@ -18,7 +18,7 @@ const WAYS = [
     title: 'Node 01',
     text: 'The Tbilisi telescope that photographs one card a night, with its optics laid out.',
     points: ['Tonight at the eyepiece', 'The light path', 'The night band'],
-    href: '/node',
+    href: '/node/about',
     photo: '/sky/targets/moon.jpg',
   },
   {
@@ -42,10 +42,10 @@ const WAYS = [
 /** The first thing a visitor sees: what this is, and the four doors into it. */
 export default function WelcomeDialog({ onClose }: { onClose: () => void }) {
   return (
-    <DeskModal title="The telescope console" onClose={onClose} wide>
+    <DeskModal title="The observatory" onClose={onClose} wide>
       <div className="sdt-welcome__head">
         <p className="sd-label">Node 01 · commissioning</p>
-        <h2 className="sdt-modal__title">The telescope console</h2>
+        <h2 className="sdt-modal__title">The observatory</h2>
         <p className="sdt-modal__lead">
           Every frame here is computed from the real sky at the station you connect to, and labelled as simulated. Node 01&rsquo;s
           own photographs go to the holders of the night&rsquo;s card.

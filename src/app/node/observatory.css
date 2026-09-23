@@ -1,4 +1,4 @@
-/* The telescope console. Scoped to .sidera like every Sidera rule; the legacy
+/* The observatory console. Scoped to .sidera like every Sidera rule; the legacy
    /observatory/telescope page has its own file and never loads this one. */
 
 .sidera .sdt { --sdt-bar: 60px; --sdt-panel: 384px; --sdt-glass: rgba(10, 18, 42, 0.72); --sdt-view-bg: #03060f; --sdt-go: #5eead4; --sdt-no: #ff7a6b; position: relative; }

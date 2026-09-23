@@ -16,7 +16,7 @@ export default function EmptyView({ onSelect, onGuide }: { onSelect: () => void;
       </button>
       <div className="sdt-empty__links">
         <button type="button" onClick={onGuide}>A frame in ten minutes<Info size={14} aria-hidden="true" /></button>
-        <Link href="/node">About Node 01<Info size={14} aria-hidden="true" /></Link>
+        <Link href="/node/about">About Node 01<Info size={14} aria-hidden="true" /></Link>
       </div>
     </div>
   );

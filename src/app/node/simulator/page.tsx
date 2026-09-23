@@ -23,7 +23,7 @@ export default async function NodeSimulatorPage() {
       <div className="sd-sim-rail">
         <div className="sd-container sd-sim-rail__inner">
           <nav aria-label="Breadcrumb" className="sd-crumb">
-            <Link href="/node">Node 01</Link>
+            <Link href="/node">Observatory</Link>
             <span aria-hidden="true">/</span>
             <strong>Simulator</strong>
           </nav>
