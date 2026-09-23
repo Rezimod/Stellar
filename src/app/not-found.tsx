@@ -1,5 +1,8 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import SideraShell from '@/components/sidera/SideraShell';
+
+export const metadata: Metadata = { title: 'Not found — Sidera', robots: { index: false } };
 
 export default function NotFound() {
   return (
