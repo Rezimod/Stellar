@@ -36,7 +36,7 @@ export default async function NodeSimulatorPage() {
       </div>
 
       <section className="sd-container sd-chapter-block sd-node-last">
-        <Chapter n="01" title="How the frame is built" />
+        <Chapter n="01" title="How the frame is computed" />
         <div className="sd-sim-how">
           <p>
             Public-domain NASA and ESA imagery supplies the object. Everything else is computed: it is scaled to its true angular

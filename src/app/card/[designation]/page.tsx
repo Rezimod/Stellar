@@ -8,7 +8,6 @@ import SideraView from '@/components/sidera/SideraView';
 import DataRow, { type Datum } from '@/components/sidera/ui/DataRow';
 import ObservationStatusMark from '@/components/sidera/ui/ObservationStatusMark';
 import Chapter from '@/components/sidera/ui/Chapter';
-import PageHead from '@/components/sidera/ui/PageHead';
 import { getDb } from '@/lib/db';
 import { formatDec, formatRa } from '@/lib/observatory/telescope-targets';
 import { rarityInfo, type Rarity } from '@/lib/rarity';
@@ -76,19 +75,14 @@ export default async function CardPage({ params }: { params: Promise<{ designati
   return (
     <SideraShell>
       <SideraView step="card" />
-      <PageHead
-        index="02"
-        section={
-          <>
-            <Link href="/set/001">Set 001</Link> / {seed.designation}
-          </>
-        }
-        meta={allocated ? `No. ${allocated} of ${seed.editionSize}` : `${seed.editionSize} editions`}
-        eyebrow={`${seed.objectType} · ${rarityInfo(rarity).label}`}
-        title={seed.name}
-        sub={seed.blurb}
-        object={
-          <figure className="sd-poster__object sd-figure">
+      <section className="sd-container sd-top">
+        <nav aria-label="Breadcrumb" className="sd-crumb sd-data">
+          <Link href="/set/001">Set 001</Link>
+          <span aria-hidden="true">/</span>
+          <strong>{seed.designation}</strong>
+        </nav>
+        <div className="sd-cardhero">
+          <figure className="sd-cardhero__plate sd-figure">
             <span className="sd-poster__ghost" aria-hidden="true">
               {seed.designation}
             </span>
@@ -104,54 +98,54 @@ export default async function CardPage({ params }: { params: Promise<{ designati
               {isRendered(seed.artUrl) && <p className="sd-label sd-figure__note">Rendered from mission maps · awaiting Node 01</p>}
             </div>
           </figure>
-        }
-      >
-        <DataRow
-          className="sd-facts"
-          items={[
-            ...position,
-            { label: 'Price', value: `$${priceUsd}` },
-          ]}
-        />
-        <div className="sd-buy">
-          <SideraBuyCard
-            designation={seed.designation}
-            name={seed.name}
-            rarity={rarity}
-            priceUsd={priceUsd}
-            available={available}
-            released={released}
-          />
-        </div>
-      </PageHead>
 
-      <section className="sd-container sd-chapter-block">
-        <div className="sd-split">
           <div>
-            <Chapter n="01" title="Record" />
+            <p className="sd-eyebrow">
+              {seed.objectType} · {rarityInfo(rarity).label}
+            </p>
+            <h1 className="sd-cardhero__name">{seed.name}</h1>
+            <p className="sd-cardhero__blurb">{seed.blurb}</p>
             <DataRow
-              layout="stacked"
+              className="sd-facts"
               items={[
-                { label: 'Object', value: seed.objectType },
-                { label: 'Rarity', value: rarityInfo(rarity).label },
-                { label: 'Catalogue', value: seed.catalogRef },
-                ...position,
-                { label: 'Editions', value: allocated === null ? String(seed.editionSize) : `${allocated} / ${seed.editionSize}` },
+                { label: 'Supply', value: `${seed.editionSize - (allocated ?? 0)} of ${seed.editionSize} left` },
                 { label: 'Price', value: `$${priceUsd}` },
               ]}
             />
-          </div>
-          <div>
-            <Chapter n="02" title="Observation" />
-            <p className="sd-plate__marks">
+            <div className="sd-buy">
+              <SideraBuyCard
+                designation={seed.designation}
+                name={seed.name}
+                rarity={rarity}
+                priceUsd={priceUsd}
+                available={available}
+                released={released}
+              />
+            </div>
+            <div className="sd-cardhero__obs">
               <ObservationStatusMark status={seed.observationStatus as ObservationStatus} />
-            </p>
-            <p className="sd-data" style={{ marginTop: 14 }}>{card.observability.reason}</p>
-            <Link href="/tonight" className="sd-link sd-data" style={{ display: 'inline-block', marginTop: 18 }}>
-              What Node 01 photographs tonight
-            </Link>
+              <span className="sd-data">{card.observability.reason}</span>
+              <Link href="/tonight" className="sd-link sd-data">
+                Tonight at Node 01
+              </Link>
+            </div>
           </div>
         </div>
+      </section>
+
+      <section className="sd-container sd-chapter-block">
+        <Chapter n="01" title="Record" aside={seed.catalogRef} />
+        <DataRow
+          layout="stacked"
+          items={[
+            { label: 'Object', value: seed.objectType },
+            { label: 'Rarity', value: rarityInfo(rarity).label },
+            { label: 'Catalogue', value: seed.catalogRef },
+            ...position,
+            { label: 'Editions issued', value: allocated === null ? `0 / ${seed.editionSize}` : `${allocated} / ${seed.editionSize}` },
+            { label: 'Direct price', value: `$${priceUsd}` },
+          ]}
+        />
       </section>
     </SideraShell>
   );

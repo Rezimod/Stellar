@@ -81,7 +81,7 @@ export default async function NodePage() {
 
   return (
     <SideraShell>
-      <section className="sd-poster sd-node-head">
+      <section className="sd-poster sd-top sd-node-head">
         <div className="sd-sky" aria-hidden="true" />
         <div className="sd-node-orbit" aria-hidden="true">
           <span />
@@ -89,40 +89,16 @@ export default async function NodePage() {
           <span />
         </div>
         <div className="sd-container">
-          <div className="sd-rail">
-            <span>Nº 05 · Node 01</span>
-            <span>
-              {base.lat.toFixed(2)}° N {base.lon.toFixed(2)}° E · Bortle {base.bortle}
-            </span>
-          </div>
-
-          <div className="sd-poster__copy">
-            <p className="sd-eyebrow">Commissioning · {base.site}</p>
-            <h1 className="sd-mega sd-node-head__title">Node 01</h1>
-          </div>
-          <div className="sd-node-head__grid">
-            <div>
-              <p className="sd-poster__sub">
-                The telescope the collection points. Each clear night it photographs one card, and every holder of that card
-                receives the image. Until it is commissioned, the frame below is computed, not captured.
-              </p>
-            </div>
-            <DataRow
-              className="sd-facts sd-node-head__facts"
-              items={[
-                { label: 'Aperture', value: `${instrument.apertureMm} mm` },
-                {
-                  label: 'Focal length',
-                  value: `${instrument.focalLengthMm} mm`,
-                },
-                {
-                  label: 'Camera',
-                  value: instrument.camera.replace('ZWO ', ''),
-                },
-                { label: 'Status', value: base.status },
-              ]}
-            />
-          </div>
+          <DataRow
+            className="sd-strip"
+            items={[
+              { label: 'Aperture', value: `${instrument.apertureMm} mm` },
+              { label: 'Focal length', value: `${instrument.focalLengthMm} mm` },
+              { label: 'Site', value: `${base.site.split(',')[0]} · Bortle ${base.bortle}` },
+              { label: 'Status', value: base.status },
+            ]}
+          />
+          <p className="sd-strip-note">One card a night, chosen by holders · the image goes to every holder of that card</p>
 
           <NodeScope
             node={base}
@@ -141,7 +117,7 @@ export default async function NodePage() {
       </section>
 
       <section className="sd-container sd-chapter-block">
-        <Chapter n="01" title="The instrument" aside={instrument.optics} />
+        <Chapter n="01" title="Instrument" aside={instrument.optics} />
         <Rise>
           <div className="sd-node-instrument">
             <div className="sd-node-instrument__figure">
@@ -184,7 +160,7 @@ export default async function NodePage() {
 
       {dark.duskStart && dark.dawnEnd && (
         <section className="sd-container sd-chapter-block">
-          <Chapter n="02" title="The night at the node" aside={`${localTime(dark.duskStart)} – ${localTime(dark.dawnEnd)}`} />
+          <Chapter n="02" title="Night at the node" aside={`${localTime(dark.duskStart)} – ${localTime(dark.dawnEnd)}`} />
           <Rise>
             <div>
               <NightBand
@@ -227,7 +203,7 @@ export default async function NodePage() {
       )}
 
       <section className="sd-container sd-chapter-block sd-node-last">
-        <Chapter n="03" title="Take the controls" aside="Simulator" />
+        <Chapter n="03" title="Simulator" aside="Hands on" />
         <Rise>
           <div className="sd-node-cta">
             <div className="sd-node-cta__copy">

@@ -8,7 +8,6 @@ import SideraView from '@/components/sidera/SideraView';
 import SideraVerify from '@/components/sidera/SideraVerify';
 import DataRow from '@/components/sidera/ui/DataRow';
 import Chapter from '@/components/sidera/ui/Chapter';
-import PageHead from '@/components/sidera/ui/PageHead';
 import { getDb } from '@/lib/db';
 import { isRarity, type Rarity } from '@/lib/rarity';
 import { PLACEHOLDER_ART } from '@/lib/sets/build';
@@ -35,8 +34,7 @@ export default async function CapsuleRecordPage({ params }: { params: Promise<{ 
   if (!db) {
     return (
       <SideraShell>
-        <section className="sd-container sd-page">
-          <h1 className="sd-page__title">Capsule</h1>
+        <section className="sd-container sd-top">
           <p className="sd-note">The record cannot be read at the moment.</p>
         </section>
       </SideraShell>
@@ -71,23 +69,26 @@ export default async function CapsuleRecordPage({ params }: { params: Promise<{ 
   return (
     <SideraShell>
       <SideraView step="capsule" />
-      <PageHead
-        index="03"
-        section={
-          <>
-            <Link href="/capsules/log">Log</Link> / Capsule {sequence ?? ''}
-          </>
-        }
-        meta="Public record"
-        eyebrow="Public record"
-        title={`Capsule ${sequence ?? ''}`}
-      >
-        <p className="sd-verdict" style={{ marginTop: 24 }}>
-          {verification ? (verification.ok ? 'Checks out' : 'Does not check out') : closed ? (closed.event === 'voided' ? 'Withdrawn' : 'Released') : opened ? 'Opened' : purchased ? 'Bought, not opened' : 'On sale'}
+      <section className="sd-container sd-top">
+        <nav aria-label="Breadcrumb" className="sd-crumb sd-data">
+          <Link href="/capsules/log">Log</Link>
+          <span aria-hidden="true">/</span>
+          <strong>Capsule {sequence ?? ''}</strong>
+        </nav>
+        <DataRow
+          className="sd-strip"
+          items={[
+            { label: 'Capsule', value: sequence === null ? '—' : String(sequence).padStart(3, '0') },
+            { label: 'Cards', value: outcome ? outcome.pulls.length : '—' },
+            { label: 'Listed', value: listed ? `${listed.at.slice(0, 10)}` : '—' },
+          ]}
+        />
+        <p className="sd-verdict" style={{ marginTop: 20 }}>
+          {verification ? (verification.ok ? 'Draw recomputes' : 'Draw does not recompute') : closed ? (closed.event === 'voided' ? 'Withdrawn' : 'Released') : opened ? 'Opened' : purchased ? 'Bought, not opened' : 'On sale'}
         </p>
-      </PageHead>
+      </section>
       <section className="sd-container sd-chapter-block">
-        <Chapter n="01" title="What was fixed, and when" />
+        <Chapter n="01" title="Commitment" />
         <DataRow
           layout="stacked"
           className="sd-ledger--hash"
@@ -116,7 +117,7 @@ export default async function CapsuleRecordPage({ params }: { params: Promise<{ 
 
         {outcome && (
           <div className="sd-chapter-block">
-            <Chapter n="02" title="What came out" />
+            <Chapter n="02" title="Drawn" />
             <ul className="sd-grid">
               {outcome.pulls.map((p) => {
                 const authored = SET_001_CARD_BY_DESIGNATION.get(p.designation);
@@ -142,9 +143,9 @@ export default async function CapsuleRecordPage({ params }: { params: Promise<{ 
         )}
 
         <div className="sd-chapter-block">
-          <Chapter n="03" title="Check it yourself" />
+          <Chapter n="03" title="Recompute it" />
         </div>
-        <p className="sd-note">The secret was fixed before the sale, the nonce by the buyer after. Together they recompute every draw.</p>
+        <p className="sd-note">Secret committed before the sale, nonce set by the buyer after. Together they reproduce every draw.</p>
         <SideraVerify capsuleId={id} />
       </section>
     </SideraShell>

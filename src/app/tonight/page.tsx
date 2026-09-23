@@ -79,15 +79,9 @@ export default async function TonightPage() {
     <SideraShell>
       <SideraView step="tonight" />
 
-      <section className="sd-poster">
+      <section className="sd-poster sd-top">
         <div className="sd-sky" aria-hidden="true" />
         <div className="sd-container">
-          <div className="sd-rail">
-            <span>Nº 04 · Tonight</span>
-            <span>
-              Node 01 · {node.lat.toFixed(2)}° N {node.lon.toFixed(2)}° E
-            </span>
-          </div>
 
           <div className="sd-poster__grid">
             <div className="sd-poster__copy">
@@ -101,13 +95,13 @@ export default async function TonightPage() {
                   </span>
                 </p>
               )}
-              <p className="sd-eyebrow">{d ? 'Tonight’s card' : leading ? (cast ? 'Leading the vote' : 'Highest tonight') : 'Tonight'}</p>
+              <p className="sd-eyebrow">{d ? 'Tonight’s card' : leading ? (cast ? 'Leading the vote' : 'Highest tonight') : 'Node 01'}</p>
               <h1 className="sd-mega">{lead ? lead.name : 'A quiet sky.'}</h1>
               <p className="sd-poster__sub">
                 {d
                   ? d.basis
                   : lead
-                    ? 'Decided at 17:00 Tbilisi time, from the holders’ votes.'
+                    ? 'Holders’ votes lock tonight’s card at 17:00 Tbilisi time.'
                     : 'Nothing in the set clears the horizon for Node 01.'}
               </p>
               {facts.length > 0 && <DataRow className="sd-facts" items={facts} />}
@@ -157,7 +151,7 @@ export default async function TonightPage() {
         <section className="sd-container sd-chapter-block">
           <Chapter
             n="01"
-            title="The sky over Node 01"
+            title="Sky over Node 01"
             aside={`${localTime(view.voting.window.dusk)} – ${localTime(view.voting.window.dawn)}`}
           />
           <TonightSkyChart
@@ -174,7 +168,7 @@ export default async function TonightPage() {
         <section className="sd-container sd-chapter-block">
           <Chapter
             n="02"
-            title={`The vote · ${nightLabel(view.voting.night)}`}
+            title={`Vote · ${nightLabel(view.voting.night)}`}
             aside={`${cast} weighted ${cast === 1 ? 'vote' : 'votes'}`}
           />
           {view.voting.carried ? (
@@ -185,7 +179,7 @@ export default async function TonightPage() {
             <p className="sd-note">Nothing in the set clears the horizon for Node 01 that night.</p>
           ) : (
             <>
-              <p className="sd-note">Holders vote. Each card held adds weight by its rarity.</p>
+              <p className="sd-strip-note">One vote per holder · weighted by the rarity of every card held</p>
               <ol className="sd-ballot">
                 {candidates.map((c, i) => {
                   const share = cast ? c.votes / cast : 0;

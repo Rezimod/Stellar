@@ -37,14 +37,13 @@ export default function SideraBuyCard({
   const [placing, setPlacing] = useState(false);
 
   if (!released) {
-    return <p className="sd-note">Set 001 is not on sale yet. Nothing in it can be bought, by capsule or on its own.</p>;
+    return <p className="sd-note">Direct sale opens when Set 001 is released. Until then, every card comes out of a capsule.</p>;
   }
 
   if (!available) {
     return (
       <p className="sd-note">
-        No edition of {name} can be sold on its own right now. Every remaining edition is owed to a capsule, or the card
-        is complete.
+        No direct edition of {name} right now: the remaining supply is reserved for capsules, or the card is complete.
       </p>
     );
   }
@@ -103,7 +102,7 @@ export default function SideraBuyCard({
       <div className="sd-pay__actions">
         {ready && authenticated ? (
           <button type="button" className="sd-btn sd-btn--primary" onClick={place} disabled={placing}>
-            {placing ? 'Placing' : `Buy this one outright — $${priceUsd}`}
+            {placing ? 'Placing' : `Buy direct — $${priceUsd}`}
           </button>
         ) : (
           <button type="button" className="sd-btn sd-btn--primary" onClick={() => setAuthOpen(true)}>

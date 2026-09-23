@@ -3,9 +3,8 @@ import Link from 'next/link';
 import SideraShell from '@/components/sidera/SideraShell';
 import DataRow from '@/components/sidera/ui/DataRow';
 import Chapter from '@/components/sidera/ui/Chapter';
-import PageHead from '@/components/sidera/ui/PageHead';
 import { getDb } from '@/lib/db';
-import { auditLog, type LogRow } from '@/lib/sidera/audit';
+import { auditLog, type AuditFlag, type LogRow } from '@/lib/sidera/audit';
 import { readFullLog } from '@/lib/sidera/capsule';
 
 export const dynamic = 'force-dynamic';
@@ -23,6 +22,31 @@ const EVENT: Record<LogRow['event'], string> = {
   released: 'Released',
   refund_due: 'Refund due',
   card_sold: 'Card sold',
+};
+
+/** Each flag the audit can raise, in words. */
+const FLAG: Record<AuditFlag['kind'], string> = {
+  sequence_gap: 'A capsule number is missing',
+  duplicate_listing: 'A capsule number is listed twice',
+  unlisted_event: 'An event for a capsule never listed',
+  out_of_order: 'Events out of order',
+  commitment_changed: 'Commitment changed after listing',
+  nonce_changed: 'Nonce changed after purchase',
+  opened_without_purchase: 'Opened without a purchase',
+  purchased_not_opened: 'Bought, not yet opened',
+  voided_after_purchase: 'Withdrawn after purchase',
+  released_early: 'Released before its window closed',
+  released_while_paid: 'Released while paid for',
+  edition_duplicate: 'One edition issued twice',
+  verification_failed: 'Draw does not recompute',
+  awaiting_payment: 'Awaiting payment',
+  simulated_payment: 'Rehearsal sale',
+  released_unpaid: 'Released unpaid',
+  voided_sold_out: 'Withdrawn, set sold out',
+  withdrawn_unsold: 'Withdrawn unsold',
+  refund_due: 'Refund due',
+  edition_check_skipped: 'Edition check skipped',
+  editions_outside_log: 'Editions issued outside the log',
 };
 
 function detail(row: LogRow): string {
@@ -54,40 +78,36 @@ export default async function LogPage() {
 
   return (
     <SideraShell>
-      <PageHead
-        index="03"
-        section={
-          <>
-            <Link href="/capsules">Capsules</Link> / Log
-          </>
-        }
-        meta="Append only"
-        eyebrow="Nothing is taken on trust"
-        title="The log."
-        sub="Every capsule listed, bought, opened, released and withdrawn, numbered in the order it happened and never rewritten. A capsule quietly removed would leave its number behind."
-      >
+      <section className="sd-container sd-top">
         {audit && (
           <DataRow
-            className="sd-facts"
+            className="sd-strip"
             items={[
               { label: 'Listed', value: audit.listed },
               { label: 'Bought', value: audit.purchased },
               { label: 'Opened', value: audit.opened },
-              { label: 'Verified', value: `${audit.verified} / ${audit.opened}` },
+              { label: 'Recomputed', value: `${audit.verified} / ${audit.opened}` },
               { label: 'Flags', value: audit.flags.length },
             ]}
           />
         )}
+        <p className="sd-strip-note">Append-only · every event numbered in order · a removed capsule would leave a gap</p>
         {audit && audit.flags.length > 0 && (
-          <ul className="sd-alert">
+          <ul className="sd-flags">
             {audit.flags.map((f, i) => (
-              <li key={i}>
-                {f.kind}: {f.detail}
+              <li key={i} data-serious={f.kind !== 'purchased_not_opened'}>
+                {f.capsuleSequence !== undefined &&
+                  (f.capsuleId ? (
+                    <Link href={`/capsule/${f.capsuleId}`}>Capsule {f.capsuleSequence}</Link>
+                  ) : (
+                    <span>Capsule {f.capsuleSequence}</span>
+                  ))}
+                <span>{FLAG[f.kind]}</span>
               </li>
             ))}
           </ul>
         )}
-      </PageHead>
+      </section>
 
       <section className="sd-container sd-chapter-block">
         <Chapter n="01" title="Entries" aside={entries ? `${entries.length} logged` : undefined} />

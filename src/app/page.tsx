@@ -25,8 +25,6 @@ export const metadata: Metadata = {
     'Twenty real objects, each held as a numbered edition. A telescope in Tbilisi photographs one of them a night, and everyone holding that card gets the photograph.',
 };
 
-const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
-
 export default async function HomePage() {
   const node = getNode('tbilisi-01')!;
   const db = getDb();
@@ -66,7 +64,7 @@ export default async function HomePage() {
       rarity,
       objectType: seed.objectType,
       group: groupOf(seed.objectType),
-      sub: `${cap(seed.objectType)} · ${left} of ${seed.editionSize} left`,
+      sub: `${left} of ${seed.editionSize} left`,
       price: `$${DIRECT_CARD_PRICE_USD[rarity]}`,
       tag: seed.designation === tonight ? 'Tonight' : undefined,
     };
@@ -101,7 +99,7 @@ export default async function HomePage() {
           </div>
 
           <div className="sd-shop__opening">
-            <span className="sd-label">You are opening</span>
+            <span className="sd-label">Next capsule</span>
             <span className="sd-shop__price">
               ${CAPSULE_PRICE_USD} <small>{CARDS_PER_CAPSULE} cards</small>
             </span>
@@ -124,10 +122,10 @@ export default async function HomePage() {
                 Sold out
               </button>
             )}
-            {simulatedPayments() && <p className="sd-shop__rehearsal">Rehearsal — no payment is taken.</p>}
+            {simulatedPayments() && <p className="sd-shop__rehearsal">Rehearsal · no payment is taken</p>}
           </div>
 
-          <h3 className="sd-shop__h">Pull odds</h3>
+          <h3 className="sd-shop__h">Odds per card</h3>
           <ul className="sd-shop__odds">
             {[...RARITIES].reverse().map((r) => {
               const pct = RARITY_ODDS_BPS[r] / 100;
@@ -155,7 +153,7 @@ export default async function HomePage() {
               {onSale.length} {onSale.length === 1 ? 'capsule' : 'capsules'} on sale
             </span>
             <Link href="/capsules/log" className="sd-shop__chip">
-              Verifiable draw
+              Provably fair · log
             </Link>
           </div>
         </aside>

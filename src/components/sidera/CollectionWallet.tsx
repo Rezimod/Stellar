@@ -25,14 +25,15 @@ export default function CollectionWallet() {
 
   return (
     <>
-      <p className="sd-lede">Sign in to see what you hold — or name any holder and read theirs. A Collection is public, like the log.</p>
+      <p className="sd-lede">Your editions and every photograph Node 01 takes of them. Collections are public, like the log.</p>
       <div className="sd-pay__actions sd-section">
         <button type="button" className="sd-btn sd-btn--primary" onClick={() => setAuthOpen(true)} disabled={!ready}>
           {ready ? 'Sign in' : 'Reading the account'}
         </button>
       </div>
+      <p className="sd-gate__or">or read any holder</p>
       <form
-        className="sd-pay__actions sd-section"
+        className="sd-pay__actions"
         onSubmit={(e) => {
           e.preventDefault()
           const wallet = typed.trim()

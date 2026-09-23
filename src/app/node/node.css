@@ -3,10 +3,6 @@
 
 /* ── Head ─────────────────────────────────────────────────────── */
 .sidera .sd-node-head { padding-bottom: 8px; }
-.sidera .sd-node-head__grid { position: relative; z-index: 2; display: grid; gap: 28px; align-items: end; }
-@media (min-width: 960px) { .sidera .sd-node-head__grid { grid-template-columns: minmax(0, 1fr) auto; gap: 48px; } }
-.sidera .sd-node-head__facts { margin-top: 0; }
-
 /* Orbits: hairline ellipses turning slowly behind the title, one body on each. */
 .sidera .sd-node-orbit { position: absolute; right: -12%; top: -8%; width: min(78vw, 820px); aspect-ratio: 1; pointer-events: none; z-index: 0; opacity: 0.9; }
 .sidera .sd-node-orbit span { position: absolute; inset: 0; border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.06); animation: sd-orbit 140s linear infinite; }
@@ -210,9 +206,7 @@
   .sidera .sd-scope__exposure { display: none; }
 }
 
-.sidera .sd-node-head__title { white-space: nowrap; font-size: clamp(64px, 15vw, 188px); }
-.sidera .sd-node-head__grid .sd-poster__sub { margin-top: 20px; }
-.sidera .sd-node-instrument > *, .sidera .sd-node-head__grid > * { min-width: 0; }
+.sidera .sd-node-instrument > * { min-width: 0; }
 @media (max-width: 639px) {
   .sidera .sd-scope__hud--tl .sd-scope__small, .sidera .sd-scope__hud--tr .sd-scope__small { display: none; }
 }

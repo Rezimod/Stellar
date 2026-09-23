@@ -4,7 +4,6 @@ import SideraShell from '@/components/sidera/SideraShell';
 import SideraView from '@/components/sidera/SideraView';
 import Chapter from '@/components/sidera/ui/Chapter';
 import DataRow from '@/components/sidera/ui/DataRow';
-import PageHead from '@/components/sidera/ui/PageHead';
 import { getDb } from '@/lib/db';
 import { SET_GROUPS } from '@/lib/sets/groups';
 import { SET_001, SET_001_CARDS } from '@/lib/sets/set-001';
@@ -17,7 +16,7 @@ export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'Set 001',
-  description: 'Twenty objects: the Moon, the planets, three stars and five deep-sky objects, each a numbered edition.',
+  description: 'Twenty-four cards: the Moon, the planets, stars, the deep sky and eight works of fiction, each a numbered edition.',
 };
 
 const pad = (n: number) => String(n).padStart(3, '0');
@@ -55,29 +54,23 @@ export default async function Set001Page({
   return (
     <SideraShell>
       <SideraView step="set" />
-      <PageHead
-        index="02"
-        section="Set 001"
-        meta={SET_001.status === 'draft' ? 'In preparation' : 'On sale'}
-        eyebrow="The first set"
-        title="Twenty objects."
-        sub="The Moon, the planets, three stars and the deep sky. Each one a numbered edition."
-      >
+      <section className="sd-container sd-top">
         <DataRow
-          className="sd-facts"
+          className="sd-strip"
           items={[
             { label: 'Cards', value: SET_001_CARDS.length },
             { label: 'Editions', value: totalEditions.toLocaleString('en-GB') },
-            { label: 'Observable', value: `${observable} / ${SET_001_CARDS.length}` },
+            { label: 'Node 01 can shoot', value: `${observable} of ${SET_001_CARDS.length}` },
+            { label: 'Status', value: SET_001.status === 'draft' ? 'Pre-release' : 'Released' },
           ]}
         />
-      </PageHead>
+      </section>
 
       {SET_GROUPS.map((g, gi) => {
         const cards = SET_001_CARDS.filter((c) => g.types.includes(c.seed.objectType));
         return (
           <section key={g.title} className="sd-container sd-chapter-block">
-            <Chapter n={String(gi + 1).padStart(2, '0')} title={g.title} aside={`${cards.length} ${cards.length === 1 ? 'card' : 'cards'}`} />
+            <Chapter n={String(gi + 1).padStart(2, '0')} title={g.short} aside={`${cards.length} ${cards.length === 1 ? 'card' : 'cards'}`} />
             <ul className="sd-floor__grid">
               {cards.map((c) => {
                 const s = supply?.get(c.seed.designation);
@@ -90,7 +83,7 @@ export default async function Set001Page({
                       designation={c.seed.designation}
                       name={c.seed.name}
                       rarity={rarity}
-                      sub={`${c.seed.objectType.charAt(0).toUpperCase()}${c.seed.objectType.slice(1)} · ${left} of ${c.seed.editionSize} left`}
+                      sub={`${left} of ${c.seed.editionSize} left`}
                       price={`$${DIRECT_CARD_PRICE_USD[rarity]}`}
                       tag={mine !== undefined ? `No. ${pad(mine)}` : held !== null ? 'Not held' : undefined}
                       dim={held !== null && mine === undefined}

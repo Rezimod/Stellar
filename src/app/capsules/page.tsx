@@ -5,7 +5,6 @@ import SideraShell from '@/components/sidera/SideraShell';
 import SideraView from '@/components/sidera/SideraView';
 import Chapter from '@/components/sidera/ui/Chapter';
 import DataRow from '@/components/sidera/ui/DataRow';
-import PageHead from '@/components/sidera/ui/PageHead';
 import RarityMark from '@/components/sidera/ui/RarityMark';
 import { getDb } from '@/lib/db';
 import { RARITIES } from '@/lib/rarity';
@@ -37,14 +36,8 @@ export default async function CapsulesPage() {
   return (
     <SideraShell>
       <SideraView step="capsules" />
-      <PageHead
-        index="03"
-        section="Capsules"
-        meta={`Set 001 · $${CAPSULE_PRICE_USD} a capsule`}
-        eyebrow="Three cards inside"
-        title="Sealed before it is sold."
-        sub="The outcome is fixed before the sale, and anyone can check it after."
-        object={
+      <section className="sd-container sd-top">
+        <div className="sd-capsule-top">
           <div className="sd-sealed" aria-hidden="true">
             <span className="sd-sealed__card" />
             <span className="sd-sealed__card" />
@@ -54,23 +47,27 @@ export default async function CapsulesPage() {
               {sealed && <span className="sd-sealed__hash">{sealed.commitment.slice(0, 24)}…</span>}
             </span>
           </div>
-        }
-      >
-        <DataRow
-          className="sd-facts"
-          items={[
-            { label: 'Cards', value: CARDS_PER_CAPSULE },
-            { label: 'On sale', value: onSale?.length ?? '—' },
-            { label: 'Quote stands', value: `${ORDER_WINDOW_MINUTES} min` },
-          ]}
-        />
-        {simulatedPayments() && (
-          <p className="sd-note">Rehearsal: no payment is taken, and the log marks every sale made this way.</p>
-        )}
-      </PageHead>
+          <div>
+            <DataRow
+              className="sd-strip"
+              items={[
+                { label: 'Price', value: `$${CAPSULE_PRICE_USD}` },
+                { label: 'Cards', value: CARDS_PER_CAPSULE },
+                { label: 'On sale', value: onSale?.length ?? '—' },
+                { label: 'Quote holds', value: `${ORDER_WINDOW_MINUTES} min` },
+              ]}
+            />
+            <p className="sd-capsule-top__line">
+              Three cards, committed by hash before the sale. Your nonce seals the draw; anyone can recompute it after
+              opening.
+            </p>
+            {simulatedPayments() && <p className="sd-strip-note">Rehearsal · no payment is taken · every sale is marked in the log</p>}
+          </div>
+        </div>
+      </section>
 
       <section className="sd-container sd-chapter-block">
-        <Chapter n="01" title="The odds, on every draw" aside="Provisional" />
+        <Chapter n="01" title="Odds per card" aside="Provisional" />
         <ul className="sd-oddsboard">
           {RARITIES.map((r) => (
             <li key={r} data-rarity={r}>
@@ -79,7 +76,7 @@ export default async function CapsulesPage() {
             </li>
           ))}
         </ul>
-        <p className="sd-note">The odds are logged with every capsule opened under them.</p>
+        <p className="sd-strip-note">Logged with every capsule opened under them</p>
       </section>
 
       <section className="sd-container sd-chapter-block">
@@ -114,14 +111,13 @@ export default async function CapsulesPage() {
         </div>
       </section>
 
-      <section className="sd-container sd-chapter-block sd-closer">
-        <h2 className="sd-mega">Every capsule ever listed is in the log.</h2>
-        <div className="sd-hero__cta">
+      <section className="sd-container">
+        <div className="sd-links">
           <Link href="/capsules/log" className="sd-btn">
-            Read the log
+            Public log
           </Link>
           <Link href="/set/001" className="sd-btn">
-            See what you can pull
+            Every card you can pull
           </Link>
         </div>
       </section>

@@ -1082,3 +1082,58 @@ html:has(.sidera) #stellar-main { padding-top: 0; padding-bottom: 0; }
 }
 .sd-menu a span, .sd-menu > button span { color: var(--sd-ink-3); font: 500 13px var(--sd-mono); }
 .sd-menu a:hover, .sd-menu > button:hover { background: rgba(255, 255, 255, 0.06); }
+
+/* ── Content first ────────────────────────────────────────────── */
+/* No page opens on a headline. A page opens on its content; a section is
+   named by one quiet label on a hairline, never a title. */
+.sd-top { padding-top: 28px; }
+@media (min-width: 900px) { .sd-top { padding-top: 40px; } }
+.sd-chapter-block { margin-top: 56px; }
+@media (min-width: 900px) { .sd-chapter-block { margin-top: 72px; } }
+.sd-chapter { align-items: center; gap: 14px; margin-bottom: 20px; }
+.sd-chapter__n { font-size: 12px; }
+.sd-chapter__title { font-family: var(--sd-mono); font-weight: 500; font-size: 12px; line-height: 1.4; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sd-ink-2); }
+@media (max-width: 639px) { .sd-chapter { flex-wrap: nowrap; } .sd-chapter__rule { display: block; } .sd-chapter__aside { flex-basis: auto; } }
+
+/* The strip: a page's figures in one line, the first thing on it. */
+.sd-strip { display: flex; flex-wrap: wrap; gap: 14px 40px; margin: 0; padding: 0 0 20px; border-bottom: 1px solid var(--sd-rule); }
+.sd-strip > div { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.sd-strip dt { font-family: var(--sd-mono); font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--sd-ink-3); }
+.sd-strip dd { margin: 0; font-family: var(--sd-mono); font-size: clamp(18px, 2.2vw, 24px); font-weight: 500; letter-spacing: -0.01em; color: var(--sd-ink); font-variant-numeric: tabular-nums; }
+@media (max-width: 639px) { .sd-strip { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 20px; } }
+.sd-strip-note { margin: 14px 0 0; font-family: var(--sd-mono); font-size: 12px; letter-spacing: 0.06em; color: var(--sd-ink-3); }
+
+/* A card, on its own page: the plate first, then only what explains it. */
+.sd-cardhero { display: grid; gap: 36px; align-items: center; }
+@media (min-width: 960px) { .sd-cardhero { grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr); gap: 72px; } }
+.sd-cardhero > * { min-width: 0; }
+.sd-cardhero__plate { position: relative; display: grid; place-items: center; padding-block: 12px; }
+.sd-cardhero__plate .sd-tilt { position: relative; z-index: 1; width: min(100%, 360px); }
+.sd-cardhero__plate .sd-plate { --sd-plate-cap: 360px; }
+.sd-cardhero__plate .sd-poster__ghost { font-size: clamp(56px, 9vw, 132px); }
+.sd-cardhero__name { font-family: var(--sd-sans); font-weight: 600; font-size: clamp(40px, 6.4vw, 76px); line-height: 0.95; letter-spacing: -0.045em; margin: 0; }
+.sd-cardhero__blurb { color: var(--sd-ink-2); font-size: 17px; line-height: 1.6; max-width: 46ch; margin: 18px 0 0; }
+.sd-cardhero .sd-facts { margin-top: 26px; }
+.sd-cardhero .sd-buy, .sd-cardhero .sd-pay__actions { margin-top: 22px; }
+.sd-cardhero__obs { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin-top: 26px; padding-top: 20px; border-top: 1px solid var(--sd-rule); }
+.sd-cardhero__obs .sd-data { color: var(--sd-ink-3); }
+
+/* Capsules: the sealed object beside its figures. */
+.sd-capsule-top { display: grid; gap: 32px; align-items: center; }
+@media (min-width: 900px) { .sd-capsule-top { grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); gap: 64px; } }
+.sd-capsule-top > * { min-width: 0; }
+.sd-capsule-top .sd-sealed { margin-inline: auto; }
+.sd-capsule-top__line { margin: 22px 0 0; font-size: 17px; line-height: 1.55; color: var(--sd-ink-2); max-width: 44ch; }
+.sd-links { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+
+/* The log's flags, in words. */
+.sd-flags { list-style: none; margin: 18px 0 0; padding: 0; display: grid; gap: 8px; }
+.sd-flags li { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: baseline; padding: 10px 14px; border: 1px solid var(--sd-rule); border-radius: var(--sd-radius-sm); background: var(--sd-plate); font-family: var(--sd-mono); font-size: 13px; color: var(--sd-ink-2); }
+.sd-flags li[data-serious='true'] { border-color: color-mix(in srgb, var(--sd-accent) 40%, transparent); }
+.sd-flags a { color: var(--sd-ink); }
+
+/* Signed out, the Collection is one panel: sign in, or read any holder. */
+.sd-gate { max-width: 560px; margin-inline: auto; text-align: center; padding: 40px 24px; border: 1px solid var(--sd-rule-strong); border-radius: calc(var(--sd-radius) + 8px); background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.015)); }
+.sd-gate .sd-lede { margin-inline: auto; }
+.sd-gate .sd-pay__actions { justify-content: center; }
+.sd-gate__or { margin: 22px 0 0; font-family: var(--sd-mono); font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--sd-ink-3); }
