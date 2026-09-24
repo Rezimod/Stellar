@@ -71,6 +71,11 @@ describe('reading poses off the wire', () => {
     expect(readPose({ id: 'x', n: 1, s: 'flight', p: [1, 2] })!.p).toBeUndefined();
     expect(readPose({ id: 'x', n: 1, s: 'flight', p: [1, NaN, 2] })!.p).toBeUndefined();
     expect(readPose({ id: 'x', n: 1, s: 'flight', k: 'deathstar' })!.k).toBeUndefined();
+    expect(readPose({ id: '', n: 1, s: 'orbit' })).toBeNull();
+    expect(readPose({ id: 'x'.repeat(129), n: 1, s: 'orbit' })).toBeNull();
+    expect(readPose({ id: 'x', n: NaN, s: 'orbit' })).toBeNull();
+    expect(readPose({ id: 'x', n: -1, s: 'orbit' })).toBeNull();
+    expect(readPose({ id: 'x', n: 1.5, s: 'orbit' })).toBeNull();
   });
 });
 

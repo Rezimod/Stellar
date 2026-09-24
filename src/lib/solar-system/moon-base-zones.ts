@@ -73,7 +73,14 @@ function padMarkings(): THREE.CanvasTexture {
   c.width = n; c.height = n;
   const ctx = c.getContext('2d')!;
   const mid = n / 2;
-  ctx.fillStyle = '#3c3a36';
+  ctx.fillStyle = '#5a5751';
+  ctx.fillRect(0, 0, n, n);
+  // Regolith blown back over the plates: dust thick at the rim, thinnest under the engines.
+  const dust = ctx.createRadialGradient(mid, mid, mid * 0.2, mid, mid, mid);
+  dust.addColorStop(0, 'rgba(150,146,138,0.05)');
+  dust.addColorStop(0.7, 'rgba(150,146,138,0.28)');
+  dust.addColorStop(1, 'rgba(160,156,148,0.55)');
+  ctx.fillStyle = dust;
   ctx.fillRect(0, 0, n, n);
   // Sintered plates, laid in rings.
   ctx.strokeStyle = 'rgba(20,20,20,0.5)';
@@ -432,7 +439,7 @@ export function buildZones(
     kit.cyl(g, PAD_R, PAD_R + 0.25, 0.16, m.carbon, 0, -0.03, 0, 48).castShadow = false;
     const marks = padMarkings();
     padTexture = marks;
-    const face = noShadow(kit.mesh(g, new THREE.CircleGeometry(PAD_R - 0.1, 48), own(new THREE.MeshStandardMaterial({ map: marks, roughness: 0.92, metalness: 0.05 })), 0, 0.055, 0));
+    const face = noShadow(kit.mesh(g, new THREE.CircleGeometry(PAD_R - 0.1, 48), own(new THREE.MeshStandardMaterial({ map: marks, roughness: 0.96, metalness: 0.0 })), 0, 0.055, 0));
     face.rotation.x = -Math.PI / 2;
     // The rim the dust is swept off, and the tie-down rings round it.
     noShadow(kit.mesh(g, new THREE.TorusGeometry(PAD_R - 0.05, 0.07, 4, 48), m.hazard, 0, 0.06, 0)).rotation.x = Math.PI / 2;

@@ -162,14 +162,14 @@ function starPoints(frame: SkyFrame, faint: number, band: number): THREE.Points 
     const a = s.ra * 15 * DEG; const d = s.dec * DEG;
     // No air: magnitude sets the light, and the brightest are a touch bigger, never a blob.
     const bright = Math.pow(10, -0.4 * (s.mag - 1.2)) * 0.9;
-    put(Math.cos(d) * Math.cos(a), Math.cos(d) * Math.sin(a), Math.sin(d), Math.min(2.2, bright), 2.2 + Math.max(0, 1.5 - s.mag) * 0.5, r());
+    put(Math.cos(d) * Math.cos(a), Math.cos(d) * Math.sin(a), Math.sin(d), Math.min(2.6, bright), 2.4 + Math.max(0, 2.0 - s.mag) * 0.7, r());
   }
   for (let i = 0; i < faint; i++) {
     const u = r() * 2 - 1; const a = r() * Math.PI * 2; const q = Math.sqrt(1 - u * u);
     // Magnitudes 2.5…6.5, many more faint than bright.
     const mag = 6.5 - 4 * Math.pow(r(), 2.6);
     // A gentler curve than the true one: a screen cannot show a sixth magnitude star honestly.
-    put(q * Math.cos(a), q * Math.sin(a), u, 0.6 * Math.pow(10, -0.25 * (mag - 2.5)), 1.3 + (6.5 - mag) * 0.12, r());
+    put(q * Math.cos(a), q * Math.sin(a), u, 0.72 * Math.pow(10, -0.24 * (mag - 2.5)), 1.3 + (6.5 - mag) * 0.14, r());
   }
   const gal = new THREE.Vector3();
   const back = EQ_TO_GAL.clone().transpose();
@@ -267,7 +267,7 @@ export function makeMoonSky(sunDir: THREE.Vector3, stars: { faint: number; band:
       camera.getWorldDirection(fwd);
       const sunIn = THREE.MathUtils.smoothstep(fwd.dot(sunDir), Math.cos(42 * DEG), Math.cos(14 * DEG));
       const earthIn = THREE.MathUtils.smoothstep(fwd.dot(frame.earthDir), Math.cos(30 * DEG), Math.cos(6 * DEG));
-      const want = Math.max(0.12, 1 - sunIn * 0.85 - earthIn * 0.35);
+      const want = Math.max(0.12, 1 - sunIn * 0.85 - earthIn * 0.25);
       fade += (want - fade) * (1 - Math.exp(-dt * 3));
       starMat.uniforms.uFade.value = fade;
       starMat.uniforms.uPx.value = pixelRatio;

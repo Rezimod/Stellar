@@ -138,7 +138,8 @@ export function readPose(raw: unknown): PoseMsg | null {
   const nums = (v: unknown, len: number) => (Array.isArray(v) && v.length === len && v.every((x) => typeof x === 'number' && Number.isFinite(x)) ? (v as number[]) : undefined);
   const str = (v: unknown) => (typeof v === 'string' && v.length <= 40 ? v : undefined);
   const num = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? v : undefined);
-  if (typeof r.id !== 'string' || typeof r.n !== 'number') return null;
+  if (typeof r.id !== 'string' || !r.id || r.id.length > 128) return null;
+  if (typeof r.n !== 'number' || !Number.isSafeInteger(r.n) || r.n < 0) return null;
   if (r.s !== 'orbit' && r.s !== 'flight' && r.s !== 'surface') return null;
   const k = r.k === 'kestrel' || r.k === 'xfoil' || r.k === 'endurance' ? r.k : undefined;
   return { id: r.id, n: r.n, s: r.s, w: str(r.w), b: str(r.b), p: nums(r.p, 3), q: nums(r.q, 4), k, e: nums(r.e, 3), y: num(r.y), v: num(r.v) };

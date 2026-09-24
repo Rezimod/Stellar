@@ -115,10 +115,10 @@ export const MARS: WorldProfile = {
     halo: 0x9fc4ff, haloOpacity: 0.18, haloScale: 300,
   },
   sky: {
-    zenith: c(0.40, 0.27, 0.17), horizon: c(0.80, 0.57, 0.37),
+    zenith: c(0.36, 0.25, 0.17), horizon: c(0.70, 0.52, 0.37),
     glow: c(0.55, 0.68, 0.95), glowPower: 14,
-    fillSky: 0xc9987a, fillGround: 0x6e3f2a, fill: 0.62,
-    fog: 0xc8936a, fogNear: 120, fogFar: 1350,
+    fillSky: 0xb48d72, fillGround: 0x5e3a28, fill: 0.58,
+    fog: 0xb5825f, fogNear: 70, fogFar: 1100,
     stars: 0,
     aurora: false,
     moons: [
@@ -128,9 +128,9 @@ export const MARS: WorldProfile = {
     stars2: [],
   },
   ground: {
-    plain: [0.72, 0.42, 0.24], dark: [0.30, 0.20, 0.15], pale: [0.90, 0.72, 0.52],
-    rockA: 0x5a4238, rockB: 0xb8865e,
-    dust: [0.78, 0.50, 0.32], dunes: 1.0, craters: 22, relief: 9,
+    plain: [0.60, 0.39, 0.26], dark: [0.27, 0.18, 0.14], pale: [0.78, 0.64, 0.50],
+    rockA: 0x4e3b33, rockB: 0x9c7a5c,
+    dust: [0.66, 0.46, 0.32], dunes: 1.0, craters: 22, relief: 9,
     water: null, seed: 4311,
   },
   ambientC: -61,

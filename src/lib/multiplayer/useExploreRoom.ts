@@ -114,6 +114,7 @@ export function useExploreRoom(link: RoomLink, opts: { name: string; epochMs: nu
     const room = client.channel(`explore-room-${code}`, link.self.id);
     roomRef.current = room;
     let firstSync = true;
+    let memberIds = new Set<string>();
     room.onStatus((s) => {
       setJoined(s === 'joined');
       if (s === 'joined') room.track({ ...meta });
@@ -122,6 +123,7 @@ export function useExploreRoom(link: RoomLink, opts: { name: string; epochMs: nu
       const members = firstMetas(state).map(({ key, meta: m }) => ({
         id: key, name: str(m.name, '?'), scene: scene(m.scene), world: str(m.world), joinedAt: num(m.joinedAt), epoch: num(m.epoch), self: key === link.self.id,
       })).sort((a, b) => a.joinedAt - b.joinedAt);
+      memberIds = new Set(members.map((m) => m.id));
       const mine = members.findIndex((m) => m.self);
       if (mine >= ROOM_MAX) {
         setError('full');
@@ -143,9 +145,10 @@ export function useExploreRoom(link: RoomLink, opts: { name: string; epochMs: nu
     });
     room.onBroadcast('pose', (payload) => {
       const msg = readPose(payload);
-      if (!msg || msg.id === link.self.id) return;
+      if (!msg || msg.id === link.self.id || !memberIds.has(msg.id)) return;
       let peer = link.peers.get(msg.id);
       if (!peer) {
+        if (link.peers.size >= ROOM_MAX - 1) return;
         peer = { id: msg.id, name: '', samples: [], lastSeq: -1 };
         link.peers.set(msg.id, peer);
       }

@@ -53,6 +53,7 @@ export function MoonSurface({ onReturn, room, paused, onProgress, onPauseRequest
   /** Bumped when the GPU drops the context; the scene is rebuilt on the surface. */
   const [glGeneration, setGlGeneration] = useState(0);
   const [gpuLost, setGpuLost] = useState(false);
+  const [gpuFailed, setGpuFailed] = useState(false);
   const resumeRef = useRef(false);
   const [help, setHelp] = useState(false);
   const [menu, setMenu] = useState(false);
@@ -174,18 +175,25 @@ export function MoonSurface({ onReturn, room, paused, onProgress, onPauseRequest
     let rebuildTimer = 0;
     const tt = (key: string, values?: Record<string, string | number>) => tRef.current(key, values);
     onProgressRef.current?.('build');
-    const handle = makeMoonSurface(mount, {
-      room,
-      startOnSurface: resumeRef.current,
-      onContextLost: () => {
-        setGpuLost(true);
-        rebuildTimer = window.setTimeout(() => {
-          resumeRef.current = true;
-          setGpuLost(false);
-          setGlGeneration((g) => g + 1);
-        }, 1200);
-      },
-    });
+    let handle: MoonSurfaceHandle;
+    try {
+      handle = makeMoonSurface(mount, {
+        room,
+        startOnSurface: resumeRef.current,
+        onContextLost: () => {
+          setGpuLost(true);
+          rebuildTimer = window.setTimeout(() => {
+            resumeRef.current = true;
+            setGpuLost(false);
+            setGlGeneration((g) => g + 1);
+          }, 1200);
+        },
+      });
+    } catch {
+      setGpuFailed(true);
+      onProgressRef.current?.('ready');
+      return;
+    }
     handleRef.current = handle;
     onProgressRef.current?.('compile');
     let readyReported = false;
@@ -556,8 +564,13 @@ export function MoonSurface({ onReturn, room, paused, onProgress, onPauseRequest
   return (
     <div ref={rootRef} className="moon-surface" data-world="moon" data-phase="descent" data-ready="false" data-immersive={immersive}>
       <div ref={mountRef} className="moon-surface__canvas" />
-      {(gpuLost || !onProgress) && <CosmicLoader className={gpuLost ? 'moon-surface__loader is-forced' : 'moon-surface__loader'} variant="descent"
-        label={gpuLost ? tl('gpu') : tl('moon')} detail={gpuLost ? undefined : tl('moonDetail')} tips={tips} />}
+      {(gpuLost || gpuFailed || !onProgress) && <CosmicLoader className={gpuLost || gpuFailed ? 'moon-surface__loader is-forced' : 'moon-surface__loader'} variant="descent"
+        label={gpuLost || gpuFailed ? tl('gpu') : tl('moon')} detail={gpuLost || gpuFailed ? undefined : tl('moonDetail')} tips={tips} />}
+      {gpuFailed && (
+        <button type="button" className="moon-hud__key earth-hud__retry" onClick={onReturn}>
+          <Rocket size={18} aria-hidden /><span>{t('returnOrbit')}</span>
+        </button>
+      )}
       <div className="moon-hud">
         <div className="moon-hud__visor" aria-hidden />
         <div ref={blackRef} className="moon-hud__black" aria-hidden />

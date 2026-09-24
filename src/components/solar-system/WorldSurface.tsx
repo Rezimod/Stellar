@@ -50,6 +50,7 @@ export function WorldSurface({ world, onReturn, room, paused, onProgress, onPaus
   const [touch, setTouch] = useState(false);
   const [glGeneration, setGlGeneration] = useState(0);
   const [gpuLost, setGpuLost] = useState(false);
+  const [gpuFailed, setGpuFailed] = useState(false);
   const resumeRef = useRef(false);
   const [help, setHelp] = useState(false);
   const [menu, setMenu] = useState(false);
@@ -166,19 +167,26 @@ export function WorldSurface({ world, onReturn, room, paused, onProgress, onPaus
     const tt = (key: string, values?: Record<string, string | number>) => tRef.current(key, values);
     const ttw = (key: string, values?: Record<string, string | number>) => twRef.current(key, values);
     onProgressRef.current?.('build');
-    const handle = makeWorldSurface(mount, world, {
-      room,
-      earth: earthData ?? undefined,
-      startOnSurface: resumeRef.current,
-      onContextLost: () => {
-        setGpuLost(true);
-        rebuildTimer = window.setTimeout(() => {
-          resumeRef.current = true;
-          setGpuLost(false);
-          setGlGeneration((g) => g + 1);
-        }, 1200);
-      },
-    });
+    let handle: WorldSurfaceHandle;
+    try {
+      handle = makeWorldSurface(mount, world, {
+        room,
+        earth: earthData ?? undefined,
+        startOnSurface: resumeRef.current,
+        onContextLost: () => {
+          setGpuLost(true);
+          rebuildTimer = window.setTimeout(() => {
+            resumeRef.current = true;
+            setGpuLost(false);
+            setGlGeneration((g) => g + 1);
+          }, 1200);
+        },
+      });
+    } catch {
+      setGpuFailed(true);
+      onProgressRef.current?.('ready');
+      return;
+    }
     handleRef.current = handle;
     onProgressRef.current?.('compile');
     let readyReported = false;
@@ -437,9 +445,9 @@ export function WorldSurface({ world, onReturn, room, paused, onProgress, onPaus
   return (
     <div ref={rootRef} className={`moon-surface moon-surface--${world}`} data-world={world} data-phase="descent" data-ready="false" data-immersive={immersive}>
       <div ref={mountRef} className="moon-surface__canvas" />
-      {(gpuLost || earthError || !onProgress) && <CosmicLoader className={gpuLost || earthError ? 'moon-surface__loader is-forced' : 'moon-surface__loader'} variant="descent" body={world}
-        label={gpuLost ? tl('gpu') : earthError ? tw('loadError') : tw('loading')} detail={gpuLost || earthError ? undefined : tw('loadingDetail')} tips={tips} />}
-      {earthError && (
+      {(gpuLost || gpuFailed || earthError || !onProgress) && <CosmicLoader className={gpuLost || gpuFailed || earthError ? 'moon-surface__loader is-forced' : 'moon-surface__loader'} variant="descent" body={world}
+        label={gpuLost || gpuFailed ? tl('gpu') : earthError ? tw('loadError') : tw('loading')} detail={gpuLost || gpuFailed || earthError ? undefined : tw('loadingDetail')} tips={tips} />}
+      {(gpuFailed || earthError) && (
         <button type="button" className="moon-hud__key earth-hud__retry" onClick={onReturn}>
           <Rocket size={18} aria-hidden /><span>{t('returnOrbit')}</span>
         </button>

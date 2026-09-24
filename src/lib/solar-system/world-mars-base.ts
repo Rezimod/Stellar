@@ -52,7 +52,7 @@ export function makeMarsBase(kit: Kit, heightAt: (x: number, z: number) => numbe
   const owned: THREE.Material[] = [];
   const textures: THREE.Texture[] = [];
   const at = (x: number, z: number) => heightAt(x, z);
-  const berm = new THREE.MeshStandardMaterial({ color: 0x9a5a34, roughness: 1, metalness: 0, normalMap: M.regolith.normalMap, normalScale: new THREE.Vector2(0.6, 0.6) });
+  const berm = new THREE.MeshStandardMaterial({ color: 0x66493a, roughness: 1, metalness: 0, normalMap: M.regolith.normalMap, normalScale: new THREE.Vector2(1.1, 1.1) });
   owned.push(berm);
   let flagCloth: { pos: THREE.BufferAttribute; geom: THREE.PlaneGeometry; x: number; z: number } | null = null;
   const collide = (x: number, z: number, r: number) => colliders.push({ x, z, r });
