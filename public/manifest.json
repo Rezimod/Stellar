@@ -1,7 +1,7 @@
 {
-  "name": "Stellar",
-  "short_name": "Stellar",
-  "description": "Observe the night sky. Earn Stars. Collect your discoveries.",
+  "name": "Sidera",
+  "short_name": "Sidera",
+  "description": "The night sky, issued in editions.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#000000",

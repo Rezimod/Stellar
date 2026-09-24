@@ -51,6 +51,13 @@ it('prints how many editions of a card are allocated', async () => {
   expect(html).toContain('93 of 100 left');
 });
 
+it('takes the set’s status from the database', async () => {
+  mocks.readSetSupply.mockResolvedValue({ set: 'SET001', status: 'released', owedDraws: 0, cards: [] });
+  expect(await renderSet()).toContain('Released');
+  mocks.readSetSupply.mockResolvedValue({ set: 'SET001', status: 'draft', owedDraws: 0, cards: [] });
+  expect(await renderSet()).toContain('Pre-release');
+});
+
 it('draws a card the holder does not own as an outline, and their own with its number', async () => {
   mocks.holderView.mockResolvedValue([
     { editionId: 'e1', designation: 'JUPITER', name: 'Jupiter', editionNumber: 4, editionSize: 100, rarity: 'rare', observationStatus: 'eligible', latest: null, history: [] },

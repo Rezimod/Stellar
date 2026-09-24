@@ -34,11 +34,15 @@ export default async function Set001Page({
 
   const db = getDb();
   let supply: Map<string, Supply> | null = null;
+  let status: string = SET_001.status;
   let held: Map<string, number> | null = null;
   if (db) {
     try {
       const read = await readSetSupply(db, SET_001.code);
-      if (read) supply = new Map(read.cards.map((c) => [c.designation, { allocated: c.allocated, editionSize: c.editionSize }]));
+      if (read) {
+        status = read.status;
+        supply = new Map(read.cards.map((c) => [c.designation, { allocated: c.allocated, editionSize: c.editionSize }]));
+      }
       if (wallet) {
         const mine = await holderView(db, wallet);
         held = new Map(mine.map((e) => [e.designation, e.editionNumber]));
@@ -61,7 +65,7 @@ export default async function Set001Page({
             { label: 'Cards', value: SET_001_CARDS.length },
             { label: 'Editions', value: totalEditions.toLocaleString('en-GB') },
             { label: 'Node 01 can shoot', value: `${observable} of ${SET_001_CARDS.length}` },
-            { label: 'Status', value: SET_001.status === 'draft' ? 'Pre-release' : 'Released' },
+            { label: 'Status', value: status === 'released' ? 'Released' : 'Pre-release' },
           ]}
         />
       </section>

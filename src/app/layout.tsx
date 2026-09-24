@@ -70,11 +70,10 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: {
-    default: 'Stellar — Observe the Night Sky, Earn Rewards, Collect Discoveries',
+    default: 'Sidera — the night sky, issued in editions',
     template: '%s',
   },
-  metadataBase: new URL('https://stellarr.club'),
-  alternates: { canonical: '/' },
+  metadataBase: new URL('https://sidera.stellarr.club'),
   robots: {
     index: true,
     follow: true,
@@ -84,27 +83,14 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'Stellar',
+    title: 'Sidera',
   },
   openGraph: {
-    title: 'Stellar — Your default astronomy app',
-    url: 'https://stellarr.club',
-    siteName: 'Stellar',
-    images: ['/opengraph-image'],
+    siteName: 'Sidera',
+    type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Stellar — Your default astronomy app',
-    images: ['/opengraph-image'],
-    creator: '@StellarClub26',
-  },
-  other: {
-    'fc:frame': 'vNext',
-    'fc:frame:image': 'https://stellarr.club/opengraph-image',
-    'fc:frame:image:aspect_ratio': '1.91:1',
-    'fc:frame:button:1': "Tonight's Sky →",
-    'fc:frame:button:1:action': 'link',
-    'fc:frame:button:1:target': 'https://stellarr.club',
   },
 };
 
@@ -119,7 +105,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <link rel="preconnect" href="https://api.open-meteo.com" />
         <link rel="dns-prefetch" href="https://astroman.ge" />
         <link rel="dns-prefetch" href="https://explorer-api.walletconnect.com" />
-        <meta name="apple-mobile-web-app-title" content="Stellar" />
+        <meta name="apple-mobile-web-app-title" content="Sidera" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         {/* Prevent theme flash — read localStorage before first paint */}
         <script dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem('stellar_theme');if(t==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}})()` }} />

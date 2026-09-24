@@ -114,7 +114,7 @@ export async function readSupply(db: Db, setId: string): Promise<SupplyRow[]> {
 
 /** The public edition counts of a set, by code, and the draws owed to unopened capsules. */
 export async function readSetSupply(db: Db, code: string) {
-  const { rows } = (await db.execute(sql`SELECT id FROM card_set WHERE code = ${code}`)) as Rows<{ id: string }>;
+  const { rows } = (await db.execute(sql`SELECT id, status FROM card_set WHERE code = ${code}`)) as Rows<{ id: string; status: string }>;
   if (!rows[0]) return null;
   const supply = await readSupply(db, rows[0].id);
   const { rows: owed } = (await db.execute(sql`
@@ -123,6 +123,7 @@ export async function readSetSupply(db: Db, code: string) {
   `)) as Rows<{ draws: number | string }>;
   return {
     set: code,
+    status: rows[0].status,
     owedDraws: Number(owed[0]?.draws ?? 0),
     cards: supply.map((s) => ({
       designation: s.designation,

@@ -144,3 +144,18 @@ most reversible option; each needs a yes/no from Rezi.
     with no photograph — Node 01 commissioning — is not lost and carries
     nothing. **For the owner:** the weights, and whether a lost card should
     keep carrying until it is photographed.
+
+## Audit fixes (2026-09-24)
+
+24. **Retired Stellar pages and SEO, ahead of Phase 9.** The plan leaves
+    redirects and SEO to Phase 9, after Gate 4. An audit found every Sidera
+    page telling search engines and link previews that it was the Stellar
+    home (canonical, og:title, og:image, sitemap, robots all pointed at
+    stellarr.club), and Stellar's /sky, /shop, /profile and the rest live on
+    sidera.stellarr.club. The owner asked for the fix now. Took the
+    reversible option: metadata, sitemap and robots name Sidera, and
+    `src/middleware.ts` sends the retired pages to their Sidera counterpart
+    with a temporary (307) redirect, one list to edit. Nothing is deleted.
+    Still reachable: /nfts (the legacy observation view), /observatory/*
+    (operator tools), /m/* and /api/*. **For the owner:** whether any
+    redirected page should stay, and when to make the redirects permanent.

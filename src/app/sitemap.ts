@@ -1,29 +1,22 @@
 import type { MetadataRoute } from 'next';
+import { SET_001_CARDS } from '@/lib/sets/set-001';
 
-const BASE = 'https://stellarr.club';
+const BASE = 'https://sidera.stellarr.club';
 
-/**
- * Public, indexable routes. App-internal/auth-gated routes (settings, profile)
- * are intentionally excluded and also disallowed in robots.txt.
- */
+/** Sidera's public pages: the shop, the set, every card, and the pages around them. */
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
   const routes: Array<{ path: string; changeFrequency: MetadataRoute.Sitemap[number]['changeFrequency']; priority: number }> = [
     { path: '/', changeFrequency: 'daily', priority: 1.0 },
-    { path: '/sky', changeFrequency: 'weekly', priority: 0.9 },
-    { path: '/observatory', changeFrequency: 'daily', priority: 0.9 },
-    { path: '/first-light', changeFrequency: 'weekly', priority: 0.7 },
-    { path: '/star', changeFrequency: 'weekly', priority: 0.6 },
-    { path: '/marketplace', changeFrequency: 'weekly', priority: 0.7 },
-    { path: '/moon', changeFrequency: 'daily', priority: 0.6 },
-    { path: '/faq', changeFrequency: 'monthly', priority: 0.6 },
+    { path: '/set/001', changeFrequency: 'weekly', priority: 0.9 },
+    ...SET_001_CARDS.map((c) => ({ path: `/card/${c.seed.designation}`, changeFrequency: 'weekly' as const, priority: 0.8 })),
+    { path: '/capsules', changeFrequency: 'daily', priority: 0.8 },
+    { path: '/tonight', changeFrequency: 'daily', priority: 0.8 },
+    { path: '/node', changeFrequency: 'weekly', priority: 0.6 },
+    { path: '/capsules/log', changeFrequency: 'daily', priority: 0.5 },
     { path: '/contact', changeFrequency: 'monthly', priority: 0.4 },
     { path: '/terms', changeFrequency: 'monthly', priority: 0.3 },
     { path: '/privacy', changeFrequency: 'monthly', priority: 0.3 },
-    { path: '/cookie-policy', changeFrequency: 'monthly', priority: 0.3 },
-    { path: '/accessibility', changeFrequency: 'monthly', priority: 0.3 },
-    { path: '/returns', changeFrequency: 'monthly', priority: 0.3 },
-    { path: '/security-policy', changeFrequency: 'monthly', priority: 0.3 },
   ];
 
   return routes.map((r) => ({
