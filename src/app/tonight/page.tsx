@@ -9,6 +9,7 @@ import TonightSkyChart from '@/components/sidera/TonightSkyChart';
 import Chapter from '@/components/sidera/ui/Chapter';
 import DataRow, { type Datum } from '@/components/sidera/ui/DataRow';
 import { getDb } from '@/lib/db';
+import { CLOUD_LIMIT } from '@/lib/observatory/adapter';
 import { getNode } from '@/lib/observatory/nodes';
 import { isRarity, type Rarity } from '@/lib/rarity';
 import { addDays, tonightView, type TonightView } from '@/lib/sidera/night';
@@ -103,6 +104,11 @@ export default async function TonightPage() {
                     : 'Nothing in the set clears the horizon for Node 01.'}
               </p>
               {facts.length > 0 && <DataRow className="sd-facts" items={facts} />}
+              {d && !d.capture && d.cloudForecast !== null && d.cloudForecast > CLOUD_LIMIT && (
+                <p className="sd-alert">
+                  <strong>Cloud is forecast over the {CLOUD_LIMIT}% limit.</strong> If it holds at {d.plannedAt ? localTime(d.plannedAt) : 'the planned hour'}, the night is lost and {d.name} is carried to the next night, if it is up.
+                </p>
+              )}
               {lastLost && (
                 <p className="sd-alert">
                   <strong>{nightLabel(lastLost.night)} was lost to cloud.</strong> {lastLost.lostReason}

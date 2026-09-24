@@ -30,12 +30,10 @@ export default function ShopCard({ designation, name, rarity, sub, price, tag, d
       <span className="sd-tile__stage">
         <span className="sd-tile__glow" aria-hidden="true" />
         <SideraCard designation={designation} />
+        {tag && <span className="sd-pill sd-pill--tag sd-tile__tag">{tag}</span>}
       </span>
       <span className="sd-tile__foot">
-        <span className="sd-tile__sub">
-          {tag && <span className="sd-pill sd-pill--tag">{tag}</span>}
-          {sub}
-        </span>
+        <span className="sd-tile__sub">{sub}</span>
         <span className="sd-tile__price">{price}</span>
       </span>
     </Link>

@@ -103,6 +103,7 @@ export default async function LogPage() {
                     <span>Capsule {f.capsuleSequence}</span>
                   ))}
                 <span>{FLAG[f.kind]}</span>
+                {f.kind !== 'purchased_not_opened' && <span className="sd-flags__detail">{f.detail}</span>}
               </li>
             ))}
           </ul>

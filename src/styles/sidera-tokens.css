@@ -202,6 +202,11 @@
 .sd-back:hover { color: var(--sd-accent); }
 .sd-link { color: var(--sd-accent); text-decoration: none; border-bottom: 1px solid color-mix(in srgb, var(--sd-accent) 40%, transparent); }
 .sd-link:hover { border-bottom-color: var(--sd-accent); }
+/* Text links stay small on screen but take a finger-sized hit area. */
+@media (pointer: coarse) {
+  .sd-link, .sd-crumb a, .sd-flags a { position: relative; }
+  .sd-link::after, .sd-crumb a::after, .sd-flags a::after { content: ''; position: absolute; inset: -12px -8px; }
+}
 
 /* Buttons — one hot primary, everything else quiet */
 .sd-btn {
@@ -987,6 +992,7 @@ html:has(.sidera) #stellar-main { padding-top: 0; padding-bottom: 0; }
 .sd-pill--tag { background: rgba(10, 18, 41, 0.85); color: var(--sd-accent); border: 1px solid color-mix(in srgb, var(--sd-accent) 40%, transparent); }
 .sd-pill--tag::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
 .sd-tile__foot { display: flex; align-items: center; padding: 0 4px; justify-content: space-between; gap: 10px; }
+.sd-tile__tag { position: absolute; top: -10px; left: 50%; z-index: 2; transform: translateX(-50%); white-space: nowrap; }
 .sd-tile__sub { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--sd-ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 .sd-tile__price { font: 700 14px/1 var(--sd-mono); color: color-mix(in srgb, var(--tile-glow) 55%, #fff); flex: 0 0 auto; }
 
@@ -1152,6 +1158,7 @@ html:has(.sidera) #stellar-main { padding-top: 0; padding-bottom: 0; }
 .sd-flags li { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: baseline; padding: 10px 14px; border: 1px solid var(--sd-rule); border-radius: var(--sd-radius-sm); background: var(--sd-plate); font-family: var(--sd-mono); font-size: 13px; color: var(--sd-ink-2); }
 .sd-flags li[data-serious='true'] { border-color: color-mix(in srgb, var(--sd-accent) 40%, transparent); }
 .sd-flags a { color: var(--sd-ink); }
+.sd-flags__detail { flex-basis: 100%; font-size: 12px; color: var(--sd-ink-3); overflow-wrap: anywhere; }
 
 /* Signed out, the Collection is one panel: sign in, or read any holder. */
 .sd-gate { max-width: 560px; margin-inline: auto; text-align: center; padding: 40px 24px; border: 1px solid var(--sd-rule-strong); border-radius: calc(var(--sd-radius) + 8px); background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.015)); }

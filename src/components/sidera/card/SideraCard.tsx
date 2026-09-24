@@ -72,7 +72,7 @@ function SideraCard({ designation, edition, capture, commitment, hero = false }:
       </div>
       {hero && <span className="sdc-shadow" aria-hidden="true" />}
       {hero && (
-        <button type="button" className="sd-btn sd-btn--primary sdc-turn" onClick={() => setOver((v) => !v)}>
+        <button type="button" className="sd-btn sdc-turn" onClick={() => setOver((v) => !v)}>
           {over ? 'Turn it back' : 'Turn it over'}
         </button>
       )}

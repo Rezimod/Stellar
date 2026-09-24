@@ -26,7 +26,7 @@ export async function generateMetadata({
   const { designation } = await params;
   const card = SET_001_CARD_BY_DESIGNATION.get(designation.toUpperCase());
   if (!card) return { title: 'Card not found' };
-  return { title: `${card.seed.name} · ${card.seed.designation}`, description: card.seed.blurb };
+  return { title: `${card.seed.name} — Set 001 · Sidera`, description: card.seed.blurb };
 }
 
 /** A selenographic degree, with a real minus sign rather than a hyphen. */
