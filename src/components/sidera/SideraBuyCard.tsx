@@ -1,8 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { usePrivy } from '@privy-io/react-auth';
-import { AuthModal } from '@/components/auth/AuthModal';
+import { usePrivySafe as usePrivy } from './usePrivySafe';
 import { useSideraHolder } from './useSideraHolder';
 import SideraPay, { type Confirmation, type SideraOrder } from './SideraPay';
 import SideraReveal from './SideraReveal';
@@ -28,9 +27,8 @@ export default function SideraBuyCard({
   /** A draft set sells nothing. Set 001 is draft until it is released. */
   released: boolean;
 }) {
-  const { getAccessToken } = usePrivy();
+  const { getAccessToken, login } = usePrivy();
   const { authenticated, ready, address } = useSideraHolder();
-  const [authOpen, setAuthOpen] = useState(false);
   const [order, setOrder] = useState<SideraOrder | null>(null);
   const [done, setDone] = useState<Confirmation | null>(null);
   const [error, setError] = useState('');
@@ -105,14 +103,13 @@ export default function SideraBuyCard({
             {placing ? 'Placing' : `Buy direct — $${priceUsd}`}
           </button>
         ) : (
-          <button type="button" className="sd-btn sd-btn--primary" onClick={() => setAuthOpen(true)}>
+          <button type="button" className="sd-btn sd-btn--primary" onClick={() => login()}>
             Sign in to buy
           </button>
         )}
       </div>
       {error && <p className="sd-data">{error}</p>}
       {done?.error && <p className="sd-data">{done.error}</p>}
-      <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
     </>
   );
 }

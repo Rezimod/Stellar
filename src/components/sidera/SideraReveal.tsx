@@ -21,6 +21,8 @@ export type RevealedCard = {
  * seed, which the provenance strip prints; a card bought outright has neither.
  */
 export type Draw = {
+  /** A preview draw from a named capsule: nothing bought, nothing recorded. */
+  preview?: string;
   sequence?: number;
   secret?: string;
   nonce?: string;
@@ -36,14 +38,14 @@ function SealedBack({ designation, u }: { designation: string; u: string }) {
 const rarityOf = (c: RevealedCard): Rarity => (isRarity(c.rarity) ? (c.rarity as Rarity) : 'common');
 
 /** How long the stone takes to arrive, by the scarcest thing it carries. */
-const FALL_MS: Record<Rarity, number> = { common: 1000, rare: 1200, epic: 1450, legendary: 1800 };
+const FALL_MS: Record<Rarity, number> = { common: 850, rare: 950, epic: 1100, legendary: 1400 };
 /** From impact to the stone breaking: it cools, cracks and parts. */
-const OPEN_MS = 1100;
-const DRAW_STAGGER_MS = 1150;
+const OPEN_MS = 900;
+const DRAW_STAGGER_MS = 950;
 /** A legendary card is held back a beat before it comes out. */
-const HOLD_MS: Record<Rarity, number> = { common: 0, rare: 0, epic: 250, legendary: 800 };
+const HOLD_MS: Record<Rarity, number> = { common: 0, rare: 0, epic: 200, legendary: 600 };
 /** One card's rise to the centre, turn, hold and walk to its place. */
-const DRAW_MS = 1550;
+const DRAW_MS = 1300;
 
 /** Embers shed by the stone on the way down, and the sparks thrown at impact. */
 const EMBERS = 7;
@@ -171,11 +173,21 @@ function best(cards: RevealedCard[]): Rarity {
  * goes straight to the end, and under prefers-reduced-motion the cards are
  * simply already there.
  */
-export default function SideraReveal({ draw }: { draw: Draw }) {
-  const { cards, sequence, secret, nonce } = draw;
+export default function SideraReveal({
+  draw,
+  onAgain,
+  onClose,
+}: {
+  draw: Draw;
+  /** Draws again; the preview's "Open another". */
+  onAgain?: () => void;
+  /** Called on close instead of leaving the cards in the page. */
+  onClose?: () => void;
+}) {
+  const { cards, sequence, secret, nonce, preview } = draw;
   const stoneId = `sd-stone${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
   const top = best(cards);
-  const outright = secret === undefined;
+  const outright = secret === undefined && !preview;
 
   /* Commonest first: the reveal should climb. */
   const ordered = useMemo(
@@ -204,8 +216,9 @@ export default function SideraReveal({ draw }: { draw: Draw }) {
     if (!staged) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return;
-      if (done) setStaged(false);
-      else setDone(true);
+      if (!done) setDone(true);
+      else if (onClose) onClose();
+      else setStaged(false);
     };
     window.addEventListener('keydown', onKey);
     const overflow = document.body.style.overflow;
@@ -214,7 +227,7 @@ export default function SideraReveal({ draw }: { draw: Draw }) {
       window.removeEventListener('keydown', onKey);
       document.body.style.overflow = overflow;
     };
-  }, [staged, done]);
+  }, [staged, done, onClose]);
 
   useEffect(() => {
     if (!done) return;
@@ -233,7 +246,7 @@ export default function SideraReveal({ draw }: { draw: Draw }) {
 
   const only = ordered.length === 1 ? ordered[0] : null;
   const place = places(ordered.length);
-  const label = outright ? `${only?.name ?? 'Card'}, bought` : `Capsule ${sequence}, opened`;
+  const label = preview ? `${preview} capsule, opened` : outright ? `${only?.name ?? 'Card'}, bought` : `Capsule ${sequence}, opened`;
 
   return (
     <div
@@ -262,8 +275,9 @@ export default function SideraReveal({ draw }: { draw: Draw }) {
             className="sd-skip"
             onClick={(e) => {
               e.stopPropagation();
-              if (done) setStaged(false);
-              else skip();
+              if (!done) skip();
+              else if (onClose) onClose();
+              else setStaged(false);
             }}
           >
             {done ? 'Close' : 'Skip'}
@@ -271,7 +285,9 @@ export default function SideraReveal({ draw }: { draw: Draw }) {
         )}
 
         <p className="sd-reveal__caption" aria-hidden="true">
-          <span className="sd-label">{outright ? 'Bought outright' : `Capsule No. ${pad(sequence ?? 0)} · Set 001`}</span>
+          <span className="sd-label">
+            {preview ? `${preview} capsule · Set 001` : outright ? 'Bought outright' : `Capsule No. ${pad(sequence ?? 0)} · Set 001`}
+          </span>
           <span className="sd-reveal__line">{outright ? 'It came down for you.' : 'Something came back.'}</span>
         </p>
 
@@ -352,7 +368,12 @@ export default function SideraReveal({ draw }: { draw: Draw }) {
         </p>
 
         <div className="sd-reveal__after" style={{ '--sd-i': ordered.length - 1 } as CSSProperties}>
-          {outright && only ? (
+          {preview ? (
+            <p className="sd-data sd-reveal__provenance">
+              <span>Preview draw</span>
+              <span>nothing bought, nothing recorded</span>
+            </p>
+          ) : outright && only ? (
             <p className="sd-data sd-reveal__provenance">
               <span>
                 Edition No. {pad(only.editionNumber)} of {only.editionSize}
@@ -367,14 +388,25 @@ export default function SideraReveal({ draw }: { draw: Draw }) {
               <a href="/capsules/log">verify</a>
             </p>
           )}
-          <div className="sd-pay__actions">
-            <a className="sd-btn sd-btn--primary" href="/collection">
-              {outright ? 'See it in your Collection' : 'Add to Collection'}
-            </a>
-            <a className="sd-btn" href={outright ? '/set/001' : '/capsules'}>
-              {outright ? 'Back to the set' : 'Open another'}
-            </a>
-          </div>
+          {preview ? (
+            <div className="sd-pay__actions">
+              <button type="button" className="sd-btn sd-btn--primary" onClick={onAgain}>
+                Open another
+              </button>
+              <button type="button" className="sd-btn" onClick={onClose}>
+                Back to the shelf
+              </button>
+            </div>
+          ) : (
+            <div className="sd-pay__actions">
+              <a className="sd-btn sd-btn--primary" href="/collection">
+                {outright ? 'See it in your Collection' : 'Add to Collection'}
+              </a>
+              <a className="sd-btn" href={outright ? '/set/001' : '/capsules'}>
+                {outright ? 'Back to the set' : 'Open another'}
+              </a>
+            </div>
+          )}
         </div>
       </div>
     </div>

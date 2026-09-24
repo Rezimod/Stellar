@@ -2,8 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { usePrivy } from '@privy-io/react-auth';
-import { AuthModal } from '@/components/auth/AuthModal';
+import { usePrivySafe as usePrivy } from './usePrivySafe';
 import { useSideraHolder } from './useSideraHolder';
 import SideraPay, { type SideraOrder } from './SideraPay';
 import SideraReveal, { type Draw } from './SideraReveal';
@@ -38,9 +37,8 @@ export default function SideraBuyCapsule({
   priceUsd: number;
   cardsPerCapsule: number;
 }) {
-  const { getAccessToken } = usePrivy();
+  const { getAccessToken, login } = usePrivy();
   const { authenticated, ready, address } = useSideraHolder();
-  const [authOpen, setAuthOpen] = useState(false);
   const [order, setOrder] = useState<SideraOrder | null>(null);
   const [receipt, setReceipt] = useState<Receipt | null>(null);
   const [paid, setPaid] = useState(false);
@@ -155,7 +153,7 @@ export default function SideraBuyCapsule({
               {busy ? 'Reserving' : `Take this capsule — $${priceUsd}`}
             </button>
           ) : (
-            <button type="button" className="sd-btn sd-btn--primary" onClick={() => setAuthOpen(true)}>
+            <button type="button" className="sd-btn sd-btn--primary" onClick={() => login()}>
               Sign in to buy
             </button>
           )}
@@ -164,7 +162,6 @@ export default function SideraBuyCapsule({
       )}
 
       {error && <p className="sd-data">{error}</p>}
-      <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
     </div>
   );
 }

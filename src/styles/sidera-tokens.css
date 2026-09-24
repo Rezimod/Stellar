@@ -1224,3 +1224,74 @@ html:has(.sidera) #stellar-main { padding-top: 0; padding-bottom: 0; }
 }
 /* A long name's outline lettering stays inside the screen. */
 .sd-cardhero__plate { overflow-x: clip; }
+
+/* ── The shelf: four capsules ─────────────────────────────────── */
+/* Cheapest first, each lit in the colour of the rarity it reaches for. The
+   whole tile is the button: it opens a preview draw straight away. */
+@media (min-width: 1100px) { .sd-shop { grid-template-columns: minmax(0, 1fr); } }
+.sd-tiers__row { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(10px, 1.6vw, 20px); }
+@media (max-width: 899px) { .sd-tiers__row { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.sd-tier {
+  position: relative; width: 100%; height: 100%; display: flex; flex-direction: column; gap: 8px; text-align: left; cursor: pointer;
+  padding: 14px 14px 16px; border-radius: calc(var(--sd-radius) + 6px);
+  border: 1px solid color-mix(in srgb, var(--tier) 30%, var(--sd-rule));
+  background:
+    radial-gradient(90% 60% at 50% 0%, color-mix(in srgb, var(--tier) 16%, transparent), transparent 70%),
+    linear-gradient(180deg, rgba(14, 22, 48, 0.9), rgba(6, 11, 29, 0.95));
+  color: var(--sd-ink); font: inherit;
+  transition: transform var(--sd-dur-fast) var(--sd-ease), border-color var(--sd-dur-fast) var(--sd-ease), box-shadow var(--sd-dur-base) var(--sd-ease);
+}
+.sd-tier:hover, .sd-tier:focus-visible { transform: translateY(-3px); border-color: color-mix(in srgb, var(--tier) 70%, transparent); box-shadow: 0 18px 40px -18px color-mix(in srgb, var(--tier) 55%, transparent); }
+.sd-tier:focus-visible { outline: 2px solid var(--sd-focus); outline-offset: 3px; }
+.sd-tier:active { transform: translateY(-1px) scale(0.99); }
+
+/* The sealed capsule: three cards fanned, the front one naming its class. */
+.sd-tier__capsule { position: relative; display: grid; place-items: center; height: clamp(120px, 15vw, 170px); margin-bottom: 4px; }
+.sd-tier__card {
+  position: absolute; width: clamp(62px, 7.4vw, 92px); aspect-ratio: 63 / 88; border-radius: 7px;
+  border: 1px solid color-mix(in srgb, var(--tier) 35%, var(--sd-rule-strong));
+  background: radial-gradient(120% 90% at 50% 10%, #1a2c58 0%, #070e22 75%);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.45);
+  transition: transform var(--sd-dur-base) var(--sd-ease);
+}
+.sd-tier__card:nth-child(1) { transform: rotate(-11deg) translateX(-30%); opacity: 0.65; }
+.sd-tier__card:nth-child(2) { transform: rotate(7deg) translateX(26%); opacity: 0.8; }
+.sd-tier:hover .sd-tier__card:nth-child(1) { transform: rotate(-16deg) translateX(-42%); }
+.sd-tier:hover .sd-tier__card:nth-child(2) { transform: rotate(12deg) translateX(38%); }
+.sd-tier__card--front {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+  border-color: color-mix(in srgb, var(--tier) 75%, transparent);
+  background:
+    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.035) 0 2px, transparent 2px 7px),
+    radial-gradient(120% 90% at 50% 10%, color-mix(in srgb, var(--tier) 22%, #13214a) 0%, #070e22 80%);
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.5), 0 0 26px -6px color-mix(in srgb, var(--tier) 60%, transparent);
+}
+.sd-tier:hover .sd-tier__card--front { transform: translateY(-4px); }
+.sd-tier__mark { font-family: var(--sd-display, var(--sd-sans)); font-weight: 700; letter-spacing: 0.22em; font-size: clamp(8px, 0.8vw, 10px); text-transform: uppercase; }
+.sd-tier__kind { font-family: var(--sd-mono); font-size: clamp(7px, 0.7vw, 9px); letter-spacing: 0.16em; text-transform: uppercase; color: var(--tier); }
+
+.sd-tier__head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.sd-tier__name { font-weight: 600; font-size: clamp(16px, 1.5vw, 20px); letter-spacing: -0.01em; }
+.sd-tier__price { font-weight: 700; font-size: clamp(22px, 2.2vw, 30px); letter-spacing: -0.03em; color: var(--tier); font-variant-numeric: tabular-nums; }
+.sd-tier__line { font-size: 13px; line-height: 1.35; color: var(--sd-ink-3); }
+.sd-tier__odds { display: flex; height: 6px; border-radius: 3px; overflow: hidden; gap: 2px; margin-top: 2px; }
+.sd-tier__odds > span { min-width: 0; flex-basis: 0; }
+.sd-tier__odds > [data-rarity='common'] { background: var(--sd-rarity-common); }
+.sd-tier__odds > [data-rarity='rare'] { background: var(--sd-rarity-rare); }
+.sd-tier__odds > [data-rarity='epic'] { background: var(--sd-rarity-epic); }
+.sd-tier__odds > [data-rarity='legendary'] { background: var(--sd-rarity-legendary); min-width: 3px; }
+.sd-tier__best { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px 10px; font-family: var(--sd-mono); font-size: 11px; letter-spacing: 0.06em; color: var(--sd-ink-3); }
+.sd-tier__open {
+  margin-top: auto; align-self: stretch; text-align: center; padding: 10px 12px; border-radius: 999px;
+  background: var(--tier); color: #050b1d; font-weight: 700; font-size: 14px;
+}
+.sd-shop__set { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px; }
+@media (max-width: 639px) {
+  .sd-tier { padding: 12px 12px 14px; gap: 6px; }
+  .sd-tier__line { font-size: 12px; }
+  .sd-tier__best { font-size: 10px; }
+  .sd-tier__card { width: 58px; }
+  .sd-tier__mark { font-size: 7px; }
+  .sd-tier__kind { font-size: 6.5px; }
+}
+@media (prefers-reduced-motion: reduce) { .sd-tier, .sd-tier__card { transition: none; } }

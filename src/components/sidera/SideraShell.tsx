@@ -2,7 +2,8 @@ import type { ReactNode } from 'react';
 import Link from 'next/link';
 import Wordmark from './ui/Wordmark';
 import SideraNavLinks from './SideraNavLinks';
-import SideraAccount from './SideraAccount';
+import SideraAccountGate from './SideraAccountGate';
+import SideraAuth from './SideraAuth';
 
 /**
  * The frame every Sidera page wraps itself in:
@@ -22,39 +23,43 @@ import SideraAccount from './SideraAccount';
 export default function SideraShell({ children, title, bare = false }: { children: ReactNode; title?: string; bare?: boolean }) {
   if (bare)
     return (
-      <div className="sidera">
-        <div className="sd-backdrop" aria-hidden="true" />
-        {children}
-      </div>
+      <SideraAuth>
+        <div className="sidera">
+          <div className="sd-backdrop" aria-hidden="true" />
+          {children}
+        </div>
+      </SideraAuth>
     );
   return (
-    <div className="sidera">
-      <div className="sd-backdrop" aria-hidden="true" />
-      <header className="sd-bar">
-        <div className="sd-container sd-bar__inner">
-          <div className="sd-bar__mark">
-            <Wordmark href="/" />
+    <SideraAuth>
+      <div className="sidera">
+        <div className="sd-backdrop" aria-hidden="true" />
+        <header className="sd-bar">
+          <div className="sd-container sd-bar__inner">
+            <div className="sd-bar__mark">
+              <Wordmark href="/" />
+            </div>
+            <SideraNavLinks />
+            <div className="sd-bar__account">
+              <SideraAccountGate />
+            </div>
           </div>
-          <SideraNavLinks />
-          <div className="sd-bar__account">
-            <SideraAccount />
+        </header>
+
+        {title && <h1 className="sr-only">{title}</h1>}
+        {children}
+
+        <footer className="sd-foot">
+          <div className="sd-container sd-foot__inner sd-data">
+            <span>Node 01 · commissioning</span>
+            <nav aria-label="Legal" className="sd-foot__links">
+              <Link href="/terms">Terms</Link>
+              <Link href="/privacy">Privacy</Link>
+              <Link href="/contact">Contact</Link>
+            </nav>
           </div>
-        </div>
-      </header>
-
-      {title && <h1 className="sr-only">{title}</h1>}
-      {children}
-
-      <footer className="sd-foot">
-        <div className="sd-container sd-foot__inner sd-data">
-          <span>Node 01 · commissioning</span>
-          <nav aria-label="Legal" className="sd-foot__links">
-            <Link href="/terms">Terms</Link>
-            <Link href="/privacy">Privacy</Link>
-            <Link href="/contact">Contact</Link>
-          </nav>
-        </div>
-      </footer>
-    </div>
+        </footer>
+      </div>
+    </SideraAuth>
   );
 }

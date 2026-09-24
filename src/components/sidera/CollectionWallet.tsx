@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { AuthModal } from '@/components/auth/AuthModal'
+import { usePrivySafe } from './usePrivySafe'
 import { useSideraHolder } from './useSideraHolder'
 
 /**
@@ -14,7 +14,7 @@ import { useSideraHolder } from './useSideraHolder'
 export default function CollectionWallet() {
   const router = useRouter()
   const { ready, authenticated, address } = useSideraHolder()
-  const [authOpen, setAuthOpen] = useState(false)
+  const { login } = usePrivySafe()
   const [typed, setTyped] = useState('')
 
   useEffect(() => {
@@ -27,7 +27,7 @@ export default function CollectionWallet() {
     <>
       <p className="sd-lede">Your editions and every photograph Node 01 takes of them. Collections are public, like the log.</p>
       <div className="sd-pay__actions sd-section">
-        <button type="button" className="sd-btn sd-btn--primary" onClick={() => setAuthOpen(true)} disabled={!ready}>
+        <button type="button" className="sd-btn sd-btn--primary" onClick={() => login()} disabled={!ready}>
           {ready ? 'Sign in' : 'Reading the account'}
         </button>
       </div>
@@ -56,7 +56,6 @@ export default function CollectionWallet() {
           Read it
         </button>
       </form>
-      <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
     </>
   )
 }

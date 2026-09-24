@@ -1,6 +1,6 @@
 'use client';
 
-import { usePrivy } from '@privy-io/react-auth';
+import { usePrivySafe as usePrivy } from './usePrivySafe';
 import { useMemo } from 'react';
 
 type LinkedSolana = { type: 'wallet'; chainType?: string; walletClientType?: string; address: string };

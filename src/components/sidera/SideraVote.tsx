@@ -1,24 +1,21 @@
 'use client';
 
 import { useState } from 'react';
-import { usePrivy } from '@privy-io/react-auth';
-import { AuthModal } from '@/components/auth/AuthModal';
+import { usePrivySafe as usePrivy } from './usePrivySafe';
 import { useSideraHolder } from './useSideraHolder';
 
 /** A holder's vote for one card of the night. Casting again for another card moves the vote. */
 export default function SideraVote({ designation, name }: { designation: string; name: string }) {
-  const { getAccessToken } = usePrivy();
+  const { getAccessToken, login } = usePrivy();
   const { authenticated, ready, address } = useSideraHolder();
-  const [authOpen, setAuthOpen] = useState(false);
   const [state, setState] = useState<{ busy: boolean; note: string }>({ busy: false, note: '' });
 
   if (!ready || !authenticated) {
     return (
       <>
-        <button type="button" className="sd-btn" onClick={() => setAuthOpen(true)} aria-label={`Sign in to vote for ${name}`}>
+        <button type="button" className="sd-btn" onClick={() => login()} aria-label={`Sign in to vote for ${name}`}>
           Vote
         </button>
-        <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
       </>
     );
   }

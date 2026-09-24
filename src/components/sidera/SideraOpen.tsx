@@ -1,8 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { usePrivy } from '@privy-io/react-auth';
-import { AuthModal } from '@/components/auth/AuthModal';
+import { usePrivySafe as usePrivy } from './usePrivySafe';
 import { useSideraHolder } from './useSideraHolder';
 import SideraReveal, { type Draw } from './SideraReveal';
 
@@ -15,9 +14,8 @@ import SideraReveal, { type Draw } from './SideraReveal';
  * the same way, which is what the route itself does.
  */
 export default function SideraOpen({ capsuleId }: { capsuleId: string }) {
-  const { getAccessToken } = usePrivy();
+  const { getAccessToken, login } = usePrivy();
   const { authenticated, ready } = useSideraHolder();
-  const [authOpen, setAuthOpen] = useState(false);
   const [draw, setDraw] = useState<Draw | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -60,14 +58,13 @@ export default function SideraOpen({ capsuleId }: { capsuleId: string }) {
             {busy ? 'Opening' : 'Crack it open'}
           </button>
         ) : (
-          <button type="button" className="sd-btn" onClick={() => setAuthOpen(true)}>
+          <button type="button" className="sd-btn" onClick={() => login()}>
             Sign in to open it
           </button>
         )}
       </div>
       <p className="sd-note">Only its holder can open it, and only once its payment is confirmed.</p>
       {error && <p className="sd-data">{error}</p>}
-      <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
     </div>
   );
 }

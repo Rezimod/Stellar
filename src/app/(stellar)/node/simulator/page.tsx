@@ -5,7 +5,7 @@ import SideraShell from '@/components/sidera/SideraShell';
 import Chapter from '@/components/sidera/ui/Chapter';
 import { getNodesWithReadiness } from '@/lib/observatory/nodes';
 import '../../observatory/observatory.css';
-import '../node.css';
+import '../../../node/node.css';
 
 export const metadata: Metadata = {
   title: 'Simulator — Node 01',

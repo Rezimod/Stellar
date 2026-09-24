@@ -1,0 +1,15 @@
+/* The base every Sidera page stands on: Tailwind's reset and only the
+   utilities Sidera's own components use (it scans nothing else), then the
+   page ground. The legacy Stellar stylesheets load only in app/(stellar). */
+@import "tailwindcss" source(none);
+@source "../components/sidera";
+@source "../components/observatory/LiveView.tsx";
+
+html, body { margin: 0; }
+html { background: #050b1d; color-scheme: dark; }
+body {
+  min-height: 100dvh; background: #050b1d; color: #f3f0ea;
+  font-family: var(--font-geist), system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+  padding-bottom: env(safe-area-inset-bottom);
+}

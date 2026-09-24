@@ -1,21 +1,19 @@
 import type { Metadata } from 'next';
 import type { Viewport } from 'next';
-import { Orbitron, Geist, JetBrains_Mono, Space_Grotesk, Barlow_Condensed } from 'next/font/google';
-import './globals.css';
-import '../styles/design-tokens.css';
-import '../styles/stellar-tokens.css';
-import '../styles/animations.css';
-import '../styles/wallet-adapter-overrides.css';
+import { Orbitron, Geist, JetBrains_Mono } from 'next/font/google';
+import './sidera-base.css';
 import '../styles/sidera-tokens.css';
+import { AnalyticsBoot } from '@/components/providers/AnalyticsBoot';
+import JsonLd from '@/components/shared/JsonLd';
 
-// Hero titles + headings — Orbitron Medium across every page.
+// Sidera's three faces: Orbitron for the wordmark and display, Geist for
+// text, JetBrains Mono for figures. The legacy pages add their own in app/(stellar).
 const orbitron = Orbitron({
   subsets: ['latin'],
   variable: '--font-orbitron',
-  weight: ['400', '500', '600', '700'],
+  weight: ['500', '600', '700'],
   display: 'swap',
 });
-// Body / paragraph copy — Geist Medium across every page.
 const geist = Geist({
   subsets: ['latin'],
   variable: '--font-geist',
@@ -28,39 +26,6 @@ const jetbrainsMono = JetBrains_Mono({
   weight: ['400', '500', '700'],
   display: 'swap',
 });
-// The observatory console's labels and controls.
-const barlowCondensed = Barlow_Condensed({
-  subsets: ['latin'],
-  variable: '--font-barlow',
-  weight: ['500', '600', '700'],
-  display: 'swap',
-});
-// Homepage hero display face — Space Grotesk (hero-only; not a global token).
-const spaceGrotesk = Space_Grotesk({
-  subsets: ['latin'],
-  variable: '--font-grotesk',
-  weight: ['400', '500', '600', '700'],
-  display: 'swap',
-});
-import { NextIntlClientProvider } from 'next-intl';
-import { getLocale, getMessages } from 'next-intl/server';
-import { SolanaWalletProvider } from '@/components/providers/PrivyProvider';
-import { WalletAdapterProvider } from '@/components/providers/WalletAdapterProvider';
-import ThemeProvider from '@/components/providers/ThemeProvider';
-import { LocationProvider } from '@/lib/location';
-import ErrorBoundary from '@/components/shared/ErrorBoundary';
-import { AppStateProvider } from '@/hooks/useAppState';
-import WalletSync from '@/components/providers/WalletSync';
-import { AnalyticsBoot } from '@/components/providers/AnalyticsBoot';
-import SwipeBack from '@/components/providers/SwipeBack';
-import Nav from '@/components/shared/Nav';
-import StarField from '@/components/shared/StarField';
-import Footer from '@/components/shared/Footer';
-import BottomNav from '@/components/shared/BottomNav';
-import DeferredGlobals from '@/components/shared/DeferredGlobals';
-import PageTransition from '@/components/layout/PageTransition';
-import { Toaster } from '@/components/ui/Toast';
-import JsonLd from '@/components/shared/JsonLd';
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -94,53 +59,22 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const locale = await getLocale();
-  const messages = await getMessages();
-
+/**
+ * The root every page shares, kept to what a Sidera page needs: fonts, the
+ * Sidera stylesheet, analytics. Wallets and sign-in load on demand
+ * (SideraAuth); the legacy Stellar providers and chrome live in app/(stellar).
+ */
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang={locale} className={`${orbitron.variable} ${geist.variable} ${jetbrainsMono.variable} ${spaceGrotesk.variable} ${barlowCondensed.variable}`}>
+    <html lang="en" className={`${orbitron.variable} ${geist.variable} ${jetbrainsMono.variable}`}>
       <head>
-        <link rel="preconnect" href="https://auth.privy.io" crossOrigin="anonymous" />
-        <link rel="preconnect" href="https://api.open-meteo.com" />
-        <link rel="dns-prefetch" href="https://astroman.ge" />
-        <link rel="dns-prefetch" href="https://explorer-api.walletconnect.com" />
         <meta name="apple-mobile-web-app-title" content="Sidera" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-        {/* Prevent theme flash — read localStorage before first paint */}
-        <script dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem('stellar_theme');if(t==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}})()` }} />
         <JsonLd />
       </head>
-      <body className="bg-canvas text-text-primary min-h-dvh w-full font-body flex flex-col"
-        style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
-        <a href="#stellar-main" className="skip-link">Skip to main content</a>
-        <ErrorBoundary>
-          <NextIntlClientProvider locale={locale} messages={messages}>
-            <ThemeProvider>
-            <SolanaWalletProvider>
-            <WalletAdapterProvider>
-              <LocationProvider>
-              <AppStateProvider>
-                <WalletSync />
-                <AnalyticsBoot />
-                <StarField />
-                <Nav />
-                <SwipeBack>
-                  <main id="stellar-main" role="main" className="relative z-10 flex-1 pt-14 pb-8 sm:pb-12">
-                    <PageTransition>{children}</PageTransition>
-                  </main>
-                </SwipeBack>
-                <Footer />
-                <BottomNav />
-                <DeferredGlobals />
-                <Toaster />
-              </AppStateProvider>
-              </LocationProvider>
-            </WalletAdapterProvider>
-            </SolanaWalletProvider>
-            </ThemeProvider>
-          </NextIntlClientProvider>
-        </ErrorBoundary>
+      <body>
+        <AnalyticsBoot />
+        {children}
       </body>
     </html>
   );

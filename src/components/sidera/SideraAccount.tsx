@@ -3,9 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
-import { usePrivy } from '@privy-io/react-auth';
-import { AuthModal } from '@/components/auth/AuthModal';
-import { useStellarAuth } from '@/hooks/useStellarAuth';
+import { usePrivySafe as usePrivy } from './usePrivySafe';
 import { useSideraHolder } from './useSideraHolder';
 
 const RPC = process.env.NEXT_PUBLIC_SOLANA_RPC_URL ?? process.env.NEXT_PUBLIC_HELIUS_RPC_URL ?? 'https://api.mainnet-beta.solana.com';
@@ -40,10 +38,8 @@ function Avatar({ seed }: { seed: string }) {
  */
 export default function SideraAccount() {
   const router = useRouter();
-  const { logout } = useStellarAuth();
-  const { user } = usePrivy();
+  const { user, login, logout } = usePrivy();
   const { authenticated, ready, address } = useSideraHolder();
-  const [authOpen, setAuthOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [cards, setCards] = useState<number | null>(null);
   const [sol, setSol] = useState<number | null>(null);
@@ -95,10 +91,9 @@ export default function SideraAccount() {
   if (!authenticated) {
     return (
       <>
-        <button type="button" className="sd-chip sd-chip--cta" onClick={() => setAuthOpen(true)}>
+        <button type="button" className="sd-chip sd-chip--cta" onClick={() => login()}>
           Sign in
         </button>
-        <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
       </>
     );
   }
