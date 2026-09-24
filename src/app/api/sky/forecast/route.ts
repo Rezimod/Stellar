@@ -11,7 +11,10 @@ export async function GET(req: NextRequest) {
     req.headers.get('x-real-ip') ||
     'unknown';
 
-  const { success, remaining } = await checkRateLimit(skyForecastRateLimit, ip);
+  const { success, remaining } =
+    process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
+      ? await checkRateLimit(skyForecastRateLimit, ip)
+      : { success: true, remaining: 0 };
   if (!success) {
     return NextResponse.json(
       { error: 'Too many requests. Try again in a minute.' },

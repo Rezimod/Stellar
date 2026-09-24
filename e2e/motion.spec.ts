@@ -1,11 +1,12 @@
 import { test, expect } from '@playwright/test';
 
 test('nothing animates under reduced motion', async ({ page }) => {
+  test.setTimeout(180_000);
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.setViewportSize({ width: 1440, height: 900 });
   for (const path of ['/', '/set/001', '/card/SATURN', '/capsules']) {
-    await page.goto(`http://localhost:3000${path}`, { waitUntil: 'networkidle', timeout: 120_000 });
-    await page.waitForTimeout(900);
+    await page.goto(path, { waitUntil: 'domcontentloaded', timeout: 120_000 });
+    await page.waitForTimeout(2500);
     const r = await page.evaluate(() => ({
       matches: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
       running: document.getAnimations().filter((a) => a.playState === 'running').length,

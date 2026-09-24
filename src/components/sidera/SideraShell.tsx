@@ -20,9 +20,16 @@ import SideraAccount from './SideraAccount';
  * own header and runs edge to edge, like the observatory console, passes `bare`.
  */
 export default function SideraShell({ children, title, bare = false }: { children: ReactNode; title?: string; bare?: boolean }) {
-  if (bare) return <div className="sidera">{children}</div>;
+  if (bare)
+    return (
+      <div className="sidera">
+        <div className="sd-backdrop" aria-hidden="true" />
+        {children}
+      </div>
+    );
   return (
     <div className="sidera">
+      <div className="sd-backdrop" aria-hidden="true" />
       <header className="sd-bar">
         <div className="sd-container sd-bar__inner">
           <div className="sd-bar__mark">

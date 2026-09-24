@@ -1105,7 +1105,7 @@ html:has(.sidera) #stellar-main { padding-top: 0; padding-bottom: 0; }
 .sd-chapter { align-items: center; gap: 14px; margin-bottom: 20px; }
 .sd-chapter__n { font-size: 12px; }
 .sd-chapter__title { font-family: var(--sd-mono); font-weight: 500; font-size: 12px; line-height: 1.4; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sd-ink-2); }
-@media (max-width: 639px) { .sd-chapter { flex-wrap: nowrap; } .sd-chapter__rule { display: block; } .sd-chapter__aside { flex-basis: auto; } }
+@media (max-width: 639px) { .sd-chapter { flex-wrap: nowrap; } .sd-chapter__rule { display: block; } .sd-chapter__aside { flex-basis: auto; min-width: 0; white-space: normal; text-align: right; } }
 
 /* The strip: a page's figures in one line, the first thing on it. */
 .sd-strip { display: flex; flex-wrap: wrap; gap: 14px 40px; margin: 0; padding: 0 0 20px; border-bottom: 1px solid var(--sd-rule); }
@@ -1164,8 +1164,11 @@ html:has(.sidera) #stellar-main { padding-top: 0; padding-bottom: 0; }
    Nebula light that drifts, and stars that breathe. Two fixed layers,
    transform and opacity only, so scrolling never repaints them. */
 .sidera { position: relative; isolation: isolate; }
-.sidera::before, .sidera::after { content: ''; position: fixed; inset: -10%; z-index: -1; pointer-events: none; will-change: transform, opacity; }
-.sidera::before {
+/* The layers overhang so they can drift; the sky clips them, since a fixed box
+   hanging past the right edge would widen the page. */
+.sd-backdrop { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+.sd-backdrop::before, .sd-backdrop::after { content: ''; position: absolute; inset: -10%; will-change: transform, opacity; }
+.sd-backdrop::before {
   background:
     radial-gradient(38% 30% at 14% 18%, rgba(124, 104, 255, 0.42), transparent 70%),
     radial-gradient(34% 28% at 88% 30%, rgba(20, 190, 200, 0.30), transparent 70%),
@@ -1173,7 +1176,7 @@ html:has(.sidera) #stellar-main { padding-top: 0; padding-bottom: 0; }
     radial-gradient(30% 24% at 36% 62%, rgba(255, 179, 71, 0.10), transparent 70%);
   animation: sd-nebula 32s ease-in-out infinite alternate;
 }
-.sidera::after {
+.sd-backdrop::after {
   background: var(--sd-stars) 0 0 / 340px 300px, var(--sd-stars) 170px 120px / 520px 460px;
   opacity: 0.55;
   animation: sd-twinkle 7s ease-in-out infinite alternate;
@@ -1181,4 +1184,4 @@ html:has(.sidera) #stellar-main { padding-top: 0; padding-bottom: 0; }
 @keyframes sd-nebula { 0% { transform: translate3d(0, 0, 0) scale(1); } 100% { transform: translate3d(-4%, 3%, 0) scale(1.08); } }
 @keyframes sd-twinkle { 0% { opacity: 0.35; } 100% { opacity: 0.8; } }
 .sd-bar { box-shadow: 0 1px 0 rgba(139, 123, 255, 0.28), 0 10px 40px -20px rgba(124, 104, 255, 0.6); }
-@media (prefers-reduced-motion: reduce) { .sidera::before, .sidera::after { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .sd-backdrop::before, .sd-backdrop::after { animation: none; } }

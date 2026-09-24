@@ -11,17 +11,17 @@ import { test, expect } from '@playwright/test';
  */
 
 test.describe('smoke — golden routes', () => {
-  test('home page renders hero + bottom nav', async ({ page }) => {
+  test('home page renders the shop + Sidera nav', async ({ page }) => {
     const errors: string[] = [];
     page.on('pageerror', (err) => errors.push(err.message));
 
     const response = await page.goto('/');
     expect(response?.ok()).toBeTruthy();
 
-    // Top nav tabs — scoped to <nav> to avoid matching hero/footer Sky links.
-    const nav = page.getByRole('navigation');
-    await expect(nav.getByRole('link', { name: 'Sky', exact: true })).toBeVisible();
-    await expect(nav.getByRole('link', { name: 'Missions', exact: true })).toBeVisible();
+    const nav = page.getByRole('navigation', { name: 'Sidera' });
+    await expect(nav.getByRole('link', { name: 'Set 001', exact: true })).toBeVisible();
+    await expect(nav.getByRole('link', { name: 'Tonight', exact: true })).toBeVisible();
+    await expect(page.locator('.sd-shop__panel')).toBeVisible();
 
     expect(errors, `pageerrors on /: ${errors.join('\n')}`).toEqual([]);
   });
