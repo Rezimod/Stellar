@@ -61,7 +61,11 @@ export default async function CapsulesPage() {
               Three cards, committed by hash before the sale. Your nonce seals the draw; anyone can recompute it after
               opening.
             </p>
-            {simulatedPayments() && <p className="sd-strip-note">Rehearsal · no payment is taken · every sale is marked in the log</p>}
+            {simulatedPayments() ? (
+              <p className="sd-strip-note">Rehearsal · no payment is taken · every sale is marked in the log</p>
+            ) : (
+              process.env.NEXT_PUBLIC_SOLANA_CLUSTER === 'devnet' && <p className="sd-strip-note">Solana devnet · paid in test SOL</p>
+            )}
           </div>
         </div>
       </section>

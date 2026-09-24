@@ -3,6 +3,10 @@
 import { useEffect, useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { usePrivy } from '@privy-io/react-auth';
+import { useWallets } from '@privy-io/react-auth/solana';
+import { Connection, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
+import { createTransfer, parseURL, type TransferRequestURL } from '@solana/pay';
+import bs58 from 'bs58';
 import Caption from './ui/Caption';
 import DataRow from './ui/DataRow';
 
@@ -29,6 +33,10 @@ function minutesLeft(expiresAt: string | null): number | null {
 
 /** A deployment that rehearses instead of selling. Set at build, not by the page. */
 const REHEARSAL = process.env.NEXT_PUBLIC_SIDERA_SIMULATED_PAYMENT === '1';
+const DEVNET = process.env.NEXT_PUBLIC_SOLANA_CLUSTER === 'devnet';
+const RPC = process.env.NEXT_PUBLIC_SOLANA_RPC_URL ?? (DEVNET ? 'https://api.devnet.solana.com' : 'https://api.mainnet-beta.solana.com');
+const explorer = (sig: string) => `https://explorer.solana.com/tx/${sig}${DEVNET ? '?cluster=devnet' : ''}`;
+const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /**
  * One Solana Pay order, waiting to be paid: the request as a code and as a
@@ -42,8 +50,11 @@ const REHEARSAL = process.env.NEXT_PUBLIC_SIDERA_SIMULATED_PAYMENT === '1';
  */
 export default function SideraPay({ order, onConfirmed }: { order: SideraOrder; onConfirmed: (c: Confirmation) => void }) {
   const { getAccessToken } = usePrivy();
+  const { wallets } = useWallets();
   const [checking, setChecking] = useState(false);
+  const [paying, setPaying] = useState(false);
   const [note, setNote] = useState('');
+  const [sent, setSent] = useState<string | null>(null);
   const [left, setLeft] = useState<number | null>(minutesLeft(order.expiresAt));
 
   useEffect(() => {
@@ -52,9 +63,9 @@ export default function SideraPay({ order, onConfirmed }: { order: SideraOrder; 
     return () => clearInterval(t);
   }, [order.expiresAt]);
 
-  const check = async () => {
+  const check = async (quiet = false): Promise<boolean> => {
     setChecking(true);
-    setNote('');
+    if (!quiet) setNote('');
     try {
       const token = await getAccessToken();
       const res = await fetch('/api/sidera/orders/confirm', {
@@ -65,13 +76,69 @@ export default function SideraPay({ order, onConfirmed }: { order: SideraOrder; 
       const data = (await res.json().catch(() => ({}))) as Confirmation;
       if (data.confirmed) {
         onConfirmed(data);
-        return;
+        return true;
       }
-      setNote(data.error ?? 'No transfer has arrived yet.');
+      if (!quiet) setNote(data.error ?? 'No transfer has arrived yet.');
     } catch {
-      setNote('The check could not be made. Try again in a moment.');
+      if (!quiet) setNote('The check could not be made. Try again in a moment.');
     } finally {
       setChecking(false);
+    }
+    return false;
+  };
+
+  const wallet = wallets[0];
+
+  /** The same transfer the code asks for, signed by the holder's own wallet and sent from here. */
+  const payFromWallet = async () => {
+    if (!wallet) {
+      setNote('No wallet is connected to this account yet.');
+      return;
+    }
+    setPaying(true);
+    setNote('');
+    try {
+      const req = parseURL(order.url) as TransferRequestURL;
+      const connection = new Connection(RPC, 'confirmed');
+      const tx = await createTransfer(connection, new PublicKey(wallet.address), {
+        recipient: req.recipient,
+        amount: req.amount!,
+        reference: req.reference,
+        memo: req.memo,
+      });
+      const { signature } = await wallet.signAndSendTransaction({
+        transaction: tx.serialize({ requireAllSignatures: false, verifySignatures: false }),
+        chain: DEVNET ? 'solana:devnet' : 'solana:mainnet',
+      });
+      setSent(bs58.encode(signature));
+      setNote('Sent. Waiting for the network to confirm it.');
+      for (let i = 0; i < 12; i++) {
+        await wait(2500);
+        if (await check(true)) return;
+      }
+      setNote('Sent, but not confirmed yet. Press "I have paid" in a moment.');
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : '';
+      setNote(/insufficient|balance/i.test(msg) ? 'This wallet has too little SOL for the transfer and its fee.' : msg || 'The transfer was not sent.');
+    } finally {
+      setPaying(false);
+    }
+  };
+
+  /** Devnet only: 1 test SOL from the network's faucet, which has no value. */
+  const airdrop = async () => {
+    if (!wallet) return;
+    setPaying(true);
+    setNote('');
+    try {
+      const connection = new Connection(RPC, 'confirmed');
+      const sig = await connection.requestAirdrop(new PublicKey(wallet.address), LAMPORTS_PER_SOL);
+      await connection.confirmTransaction(sig, 'confirmed');
+      setNote('1 test SOL arrived.');
+    } catch {
+      setNote('The devnet faucet refused, as it often does. Use faucet.solana.com with the address below.');
+    } finally {
+      setPaying(false);
     }
   };
 
@@ -101,22 +168,36 @@ export default function SideraPay({ order, onConfirmed }: { order: SideraOrder; 
         />
         <div className="sd-pay__actions">
           {REHEARSAL ? (
-            <button type="button" className="sd-btn sd-btn--primary" onClick={check} disabled={checking}>
+            <button type="button" className="sd-btn sd-btn--primary" onClick={() => check()} disabled={checking}>
               {checking ? 'Settling' : 'Settle without paying'}
             </button>
           ) : (
             <>
-              <a className="sd-btn sd-btn--primary" href={order.url}>
-                Pay in your wallet
+              <button type="button" className="sd-btn sd-btn--primary" onClick={payFromWallet} disabled={paying || !wallet}>
+                {paying ? 'Sending' : `Pay ${order.amountSol.toFixed(4)} SOL`}
+              </button>
+              <a className="sd-btn" href={order.url}>
+                Other wallet
               </a>
-              <button type="button" className="sd-btn" onClick={check} disabled={checking}>
+              <button type="button" className="sd-btn" onClick={() => check()} disabled={checking}>
                 {checking ? 'Checking the chain' : 'I have paid'}
               </button>
+              {DEVNET && (
+                <button type="button" className="sd-btn" onClick={airdrop} disabled={paying || !wallet}>
+                  Get 1 test SOL
+                </button>
+              )}
             </>
           )}
         </div>
         {note && <p className="sd-data">{note}</p>}
-        <Caption as="p" parts={[REHEARSAL ? 'No payment taken' : 'Solana Pay', `Order ${order.orderId.slice(0, 8)}`]} />
+        {sent && (
+          <a className="sd-link sd-data" href={explorer(sent)} target="_blank" rel="noopener noreferrer">
+            Transaction {sent.slice(0, 10)}… on the explorer
+          </a>
+        )}
+        {DEVNET && wallet && <p className="sd-data">Wallet {wallet.address}</p>}
+        <Caption as="p" parts={[REHEARSAL ? 'No payment taken' : DEVNET ? 'Solana devnet · test SOL' : 'Solana Pay', `Order ${order.orderId.slice(0, 8)}`]} />
       </div>
     </div>
   );

@@ -82,8 +82,6 @@ export default async function HomePage() {
     <SideraShell title="Sidera">
       <SideraView step="landing" />
       <div className="sd-shop">
-        <ShopFloor cards={cards} groups={groups} />
-
         <aside className="sd-shop__panel" aria-label="Open a capsule">
           <div className="sd-shop__machine" aria-hidden="true">
             <span className="sd-shop__rays" />
@@ -122,7 +120,11 @@ export default async function HomePage() {
                 Sold out
               </button>
             )}
-            {simulatedPayments() && <p className="sd-shop__rehearsal">Rehearsal · no payment is taken</p>}
+            {simulatedPayments() ? (
+              <p className="sd-shop__rehearsal">Rehearsal · no payment is taken</p>
+            ) : (
+              process.env.NEXT_PUBLIC_SOLANA_CLUSTER === 'devnet' && <p className="sd-shop__rehearsal">Solana devnet · paid in test SOL</p>
+            )}
           </div>
 
           <h3 className="sd-shop__h">Odds per card</h3>
@@ -157,6 +159,8 @@ export default async function HomePage() {
             </Link>
           </div>
         </aside>
+
+        <ShopFloor cards={cards} groups={groups} />
       </div>
     </SideraShell>
   );
