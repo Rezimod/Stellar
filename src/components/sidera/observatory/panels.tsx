@@ -1,5 +1,6 @@
 'use client';
 
+import { memo } from 'react';
 import Link from 'next/link';
 import type { Axis } from '@/lib/observatory/mount-drive';
 import type { AltAz } from '@/lib/observatory/safety';
@@ -9,7 +10,7 @@ import type { Frame } from './dialogs';
 import Icon from './icons';
 import { plateArt, type PathPoint } from './sky';
 
-export function QuickStart({ name, designation, onStart }: { name: string | null; designation: string | null; onStart: () => void }) {
+function QuickStartBase({ name, designation, onStart }: { name: string | null; designation: string | null; onStart: () => void }) {
   return (
     <section className="sdo-panel sdo-quick" aria-labelledby="sdo-quick-t">
       {designation && (
@@ -34,7 +35,7 @@ export function QuickStart({ name, designation, onStart }: { name: string | null
 
 export type StationRow = { station: Station; dark: boolean; twilight: boolean; local: string; best: boolean };
 
-export function StationList({ rows, selectedId, onPick }: { rows: StationRow[]; selectedId: string | null; onPick: (s: Station) => void }) {
+function StationListBase({ rows, selectedId, onPick }: { rows: StationRow[]; selectedId: string | null; onPick: (s: Station) => void }) {
   return (
     <div className="sdo-scopes__list">
       {rows.map(({ station: s, dark, twilight, local, best }) => (
@@ -54,7 +55,7 @@ export function StationList({ rows, selectedId, onPick }: { rows: StationRow[]; 
   );
 }
 
-export function Telescopes({ rows, selectedId, onPick, sky }: { rows: StationRow[]; selectedId: string | null; onPick: (s: Station) => void; sky: [string, string][] }) {
+function TelescopesBase({ rows, selectedId, onPick, sky }: { rows: StationRow[]; selectedId: string | null; onPick: (s: Station) => void; sky: [string, string][] }) {
   return (
     <section className="sdo-panel sdo-scopes" aria-labelledby="sdo-scopes-t">
       <div className="sdo-ph">
@@ -76,7 +77,7 @@ export function Telescopes({ rows, selectedId, onPick, sky }: { rows: StationRow
   );
 }
 
-export function Session({ elapsed, connected, onEnd }: { elapsed: string; connected: boolean; onEnd: () => void }) {
+function SessionBase({ elapsed, connected, onEnd }: { elapsed: string; connected: boolean; onEnd: () => void }) {
   return (
     <section className="sdo-panel" aria-labelledby="sdo-session-t">
       <div className="sdo-ph">
@@ -93,7 +94,7 @@ export function Session({ elapsed, connected, onEnd }: { elapsed: string; connec
   );
 }
 
-export function Pointing({ path, pointing, rows, rms, rmsHistory, seeing, seeingHistory, battery, sensor }: {
+function PointingBase({ path, pointing, rows, rms, rmsHistory, seeing, seeingHistory, battery, sensor }: {
   path: PathPoint[] | null; pointing: AltAz | null; rows: [string, string][]; rms: string; rmsHistory: number[];
   seeing: string; seeingHistory: number[]; battery: number | null; sensor: string;
 }) {
@@ -149,7 +150,7 @@ function Stepper({ label, value, onDown, onUp, min, max }: { label: string; valu
   );
 }
 
-export function Camera({ exp, subs, gain, total, locked, onExp, onSubs, onGain }: {
+function CameraBase({ exp, subs, gain, total, locked, onExp, onSubs, onGain }: {
   exp: number; subs: number; gain: number; total: string; locked: boolean; onExp: (v: number) => void; onSubs: (v: number) => void; onGain: (v: number) => void;
 }) {
   return (
@@ -193,7 +194,7 @@ function PadButton({ axis, dir, icon, label, enabled, onPress, onRelease }: {
   );
 }
 
-export function HandControl({ rate, onRate, tracking, onTracking, onFocus, focus, enabled, onPress, onRelease, onCentre, canCentre }: {
+function HandControlBase({ rate, onRate, tracking, onTracking, onFocus, focus, enabled, onPress, onRelease, onCentre, canCentre }: {
   rate: number; onRate: (v: number) => void; tracking: boolean; onTracking: (v: boolean) => void; focus: number; onFocus: (d: number) => void;
   enabled: boolean; onPress: (a: Axis, d: 1 | -1) => void; onRelease: (a: Axis) => void; onCentre: () => void; canCentre: boolean;
 }) {
@@ -237,7 +238,7 @@ export function HandControl({ rate, onRate, tracking, onTracking, onFocus, focus
   );
 }
 
-export function FrameThumbs({ frames, onOpen }: { frames: Frame[]; onOpen: (f: Frame) => void }) {
+function FrameThumbsBase({ frames, onOpen }: { frames: Frame[]; onOpen: (f: Frame) => void }) {
   return (
     <>
       {frames.map((f) => (
@@ -251,7 +252,7 @@ export function FrameThumbs({ frames, onOpen }: { frames: Frame[]; onOpen: (f: F
   );
 }
 
-export function Frames({ frames, onOpen }: { frames: Frame[]; onOpen: (f: Frame) => void }) {
+function FramesBase({ frames, onOpen }: { frames: Frame[]; onOpen: (f: Frame) => void }) {
   return (
     <section className="sdo-panel sdo-frames" aria-labelledby="sdo-frames-t">
       <div className="sdo-ph">
@@ -264,3 +265,13 @@ export function Frames({ frames, onOpen }: { frames: Frame[]; onOpen: (f: Frame)
     </section>
   );
 }
+
+export const QuickStart = memo(QuickStartBase);
+export const StationList = memo(StationListBase);
+export const Telescopes = memo(TelescopesBase);
+export const Session = memo(SessionBase);
+export const Pointing = memo(PointingBase);
+export const Camera = memo(CameraBase);
+export const HandControl = memo(HandControlBase);
+export const FrameThumbs = memo(FrameThumbsBase);
+export const Frames = memo(FramesBase);

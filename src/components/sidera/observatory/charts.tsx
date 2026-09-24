@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import type { AltAz } from '@/lib/observatory/safety';
 import type { PathPoint, Span } from './sky';
 
@@ -45,7 +46,7 @@ const polar = (alt: number, az: number) => {
 };
 
 /** The sky from above: horizon at the rim, zenith at the centre, the target's path tonight and where the tube points. */
-export function Dial({ path, pointing }: { path: PathPoint[] | null; pointing: AltAz | null }) {
+function DialBase({ path, pointing }: { path: PathPoint[] | null; pointing: AltAz | null }) {
   const ticks = Array.from({ length: 72 }, (_, i) => {
     const a = (i * 5 * Math.PI) / 180;
     const L = i % 18 === 0 ? 6 : 3;
@@ -88,3 +89,5 @@ export function Dial({ path, pointing }: { path: PathPoint[] | null; pointing: A
     </svg>
   );
 }
+
+export const Dial = memo(DialBase);

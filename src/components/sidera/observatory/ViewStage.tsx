@@ -1,6 +1,6 @@
 'use client';
 
-import type { ReactNode, RefObject } from 'react';
+import { memo, type ReactNode, type RefObject } from 'react';
 import Icon from './icons';
 import { plateArt } from './sky';
 
@@ -59,7 +59,7 @@ export type ViewStageProps = {
   idle: { title: string; text: string } | null;
 };
 
-export default function ViewStage(p: ViewStageProps) {
+function ViewStage(p: ViewStageProps) {
   const k = TRAIN_K[p.train];
   const artStyle = { transform: `scale(${k})${p.art === 'blur' ? ' translate(34px,-22px)' : ''}`, filter: p.art === 'blur' ? 'blur(6px) brightness(.75)' : undefined };
   const trains = (Object.keys(TRAIN_K) as Train[]).map((t) => (
@@ -75,7 +75,7 @@ export default function ViewStage(p: ViewStageProps) {
   );
 
   return (
-    <section className={`sdo-view${p.full ? ' is-full' : ''}`} aria-label="Telescope view">
+    <section className={`sdo-view${p.full ? ' is-full' : ''}${p.status.go ? ' is-go' : ''}`} aria-label="Telescope view">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img className="sdo-view__sky" src={p.backdrop} alt="" />
       <div className="sdo-view__feed" ref={p.viewRef}>{p.feed}</div>
@@ -133,3 +133,5 @@ export default function ViewStage(p: ViewStageProps) {
     </section>
   );
 }
+
+export default memo(ViewStage);

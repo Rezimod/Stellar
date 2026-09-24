@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { editionLabel, type Plate } from '@/lib/sidera/plate';
 import { DISPLAY, FOIL_OP, FrameBorder, FrameDefs, LOGO_D, MONO, SANS, rr } from './frame';
 
@@ -30,7 +31,7 @@ const SEAL = [rosette(315, 372, 24, 7, 12, 8.6, 0, 1400), rosette(315, 372, 20, 
 
 const short = (hash: string) => `[${hash.slice(0, 4)}…${hash.slice(-4)}]`;
 
-export default function CardBack({ plate: c, edition, commitment, sealed = false, u }: Props) {
+function CardBack({ plate: c, edition, commitment, sealed = false, u }: Props) {
   const r = sealed ? 'common' : c.rarity;
   const b = `${u}b`;
   const ed = editionLabel(edition);
@@ -101,3 +102,5 @@ export default function CardBack({ plate: c, edition, commitment, sealed = false
     </div>
   );
 }
+
+export default memo(CardBack);

@@ -598,18 +598,23 @@ export default function ObservatoryConsole({ tonight, nodeCloud }: { tonight: To
   const best = path ? bestOf(path) : null;
   const darkWin = useMemo(() => getTonightDarkWindow(selected.lat, selected.lon, new Date(Math.floor(now / 60_000) * 60_000), selected.timezone), [selected, Math.floor(now / 60_000)]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  if (clockMs === null) return <div className="sdo" aria-busy="true" />;
-
-  const skyState = skyStateAt(selected, date);
-  const rows: StationRow[] = (() => {
+  // The station list changes once a minute; the tick must not redraw it.
+  const minute = Math.floor(now / 60_000);
+  const stationRows = useMemo<StationRow[]>(() => {
+    const at = new Date(minute * 60_000);
     const graded = STATIONS.map((s) => {
-      const state = skyStateAt(s, date);
-      return { station: s, dark: state === 'night', twilight: state === 'twilight', local: clock(now, s.timezone), best: false };
+      const state = skyStateAt(s, at);
+      return { station: s, dark: state === 'night', twilight: state === 'twilight', local: clock(at.getTime(), s.timezone), best: false };
     });
     const bestDark = graded.filter((r) => r.dark).sort((a, b) => a.station.bortle - b.station.bortle)[0];
     if (bestDark) bestDark.best = true;
     return graded;
-  })();
+  }, [minute]);
+
+  if (clockMs === null) return <div className="sdo" aria-busy="true" />;
+
+  const skyState = skyStateAt(selected, date);
+  const rows = stationRows;
   const hoursLeft = (label: string, ms: number) => {
     const m = Math.max(0, Math.round(ms / 60_000));
     return [label, `${Math.floor(m / 60)} h ${pad2(m % 60)} m`] as const;
@@ -692,6 +697,9 @@ export default function ObservatoryConsole({ tonight, nodeCloud }: { tonight: To
         <div className="sdo-atmo__glow" />
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img className="sdo-atmo__sky" src={plateArt('SATURN', 'sky')} alt="" />
+        <div className="sdo-atmo__aurora sdo-atmo__aurora--a" />
+        <div className="sdo-atmo__aurora sdo-atmo__aurora--b" />
+        <div className="sdo-atmo__aurora sdo-atmo__aurora--c" />
         <div className="sdo-atmo__dots" />
         <div className="sdo-atmo__ring" />
         <div className="sdo-atmo__ring sdo-atmo__ring--b" />

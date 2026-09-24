@@ -111,4 +111,13 @@ export function plateFor(designation: string): Plate | null {
   };
 }
 
+/** Each object's own light, for the glow a tile sits on. Where an object has none — a crater, a slab — the family's stands in. */
+const GLOW: Record<string, string> = {
+  MOON: '#c9d6ff', 'TRANQUILITY-BASE': '#bacbff', VENUS: '#ffd79a', MARS: '#ff9a63', JUPITER: '#ffbd8a', SATURN: '#ffe3a3',
+  PLUTO: '#e4d3ff', HALLEY: '#7fc8ff', SIRIUS: '#9fcaff', POLARIS: '#a9c4ff', BETELGEUSE: '#ff7a4a', M42: '#ff9ec7', M45: '#6fb6ff',
+  M31: '#b8c6ff', M16: '#56d6c2', M87: '#ff8a2a', 'TWIN-SUN': '#ff9a5a', 'TIDE-WORLD': '#7fd8ff', 'RING-HABITAT': '#7fe0a8',
+  'UNIT-7': '#ffb070', SENTINEL: '#5ef0ff', 'BLACK-SLAB': '#e8e2d4', DERELICT: '#6fa8d8', WORMHOLE: '#b9a4ff',
+};
+export const glowFor = (designation: string) => GLOW[designation] ?? '#bcd8ff';
+
 export const editionLabel = (n: number | null | undefined) => (n == null ? '—' : pad3(n));

@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import SideraCard from './card/SideraCard';
 import type { Rarity } from '@/lib/rarity';
+import { glowFor } from '@/lib/sidera/plate';
+import type { CSSProperties } from 'react';
 
 export type ShopCardProps = {
   designation: string;
@@ -18,8 +20,17 @@ export type ShopCardProps = {
 /** A card on the floor: the card itself, then one line and the price. */
 export default function ShopCard({ designation, name, rarity, sub, price, tag, dim }: ShopCardProps) {
   return (
-    <Link href={`/card/${designation}`} className={dim ? 'sd-tile sd-tile--dim' : 'sd-tile'} data-rarity={rarity} aria-label={`${name}, ${price}`}>
-      <SideraCard designation={designation} />
+    <Link
+      href={`/card/${designation}`}
+      className={dim ? 'sd-tile sd-tile--dim' : 'sd-tile'}
+      data-rarity={rarity}
+      aria-label={`${name}, ${price}`}
+      style={{ '--tile-glow': glowFor(designation) } as CSSProperties}
+    >
+      <span className="sd-tile__stage">
+        <span className="sd-tile__glow" aria-hidden="true" />
+        <SideraCard designation={designation} />
+      </span>
       <span className="sd-tile__foot">
         <span className="sd-tile__sub">
           {tag && <span className="sd-pill sd-pill--tag">{tag}</span>}

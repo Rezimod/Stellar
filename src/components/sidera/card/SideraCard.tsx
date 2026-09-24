@@ -1,6 +1,6 @@
 'use client';
 
-import { useId, useRef, useState } from 'react';
+import { memo, useId, useRef, useState } from 'react';
 import { editionLabel, plateFor } from '@/lib/sidera/plate';
 import CardBack from './CardBack';
 import CardFront from './CardFront';
@@ -19,7 +19,7 @@ type Props = {
  * A Sidera card you can hold. Move across it and it leans toward you; the sky
  * sinks behind the object, the labels float above it, the foil follows the light.
  */
-export default function SideraCard({ designation, edition, capture, commitment, hero = false }: Props) {
+function SideraCard({ designation, edition, capture, commitment, hero = false }: Props) {
   const plate = plateFor(designation);
   const u = `sd${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
   const stage = useRef<HTMLDivElement>(null);
@@ -79,3 +79,5 @@ export default function SideraCard({ designation, edition, capture, commitment, 
     </div>
   );
 }
+
+export default memo(SideraCard);

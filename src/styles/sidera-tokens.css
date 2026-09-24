@@ -56,9 +56,9 @@
   --sd-radius-sm: 10px;
 
   /* Motion. One clock for the whole product, so a hover and a reveal agree. */
-  --sd-dur-fast: 320ms;
-  --sd-dur-base: 480ms;
-  --sd-dur-slow: 720ms;
+  --sd-dur-fast: 140ms;
+  --sd-dur-base: 240ms;
+  --sd-dur-slow: 420ms;
   --sd-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
 
   --font-display: var(--sd-display);
@@ -75,6 +75,8 @@
     radial-gradient(1.5px 1.5px at 311px 263px, rgba(190, 215, 255, 0.6), transparent 60%);
   background:
     var(--sd-stars) 0 0 / 340px 300px,
+    radial-gradient(60% 40% at 8% 4%, rgba(116, 102, 240, 0.28), transparent 70%),
+    radial-gradient(50% 36% at 96% 12%, rgba(20, 160, 170, 0.16), transparent 70%),
     radial-gradient(120% 70% at 50% -10%, #13275a 0%, transparent 60%),
     linear-gradient(180deg, var(--sd-canvas) 0%, #070f26 55%, #050b1d 100%);
   color: var(--sd-ink);
@@ -211,14 +213,14 @@
   transition: background var(--sd-dur-fast) var(--sd-ease), border-color var(--sd-dur-fast) var(--sd-ease), transform var(--sd-dur-fast) var(--sd-ease);
 }
 .sd-btn:hover:not(:disabled) { background: var(--sd-plate-hover); border-color: var(--sd-ink-4); }
-.sd-btn:active:not(:disabled) { transform: translateY(1px); }
+.sd-btn:active:not(:disabled) { transform: translateY(1px) scale(0.985); transition-duration: 60ms; }
 .sd-btn:disabled { color: var(--sd-ink-4); border-color: var(--sd-rule); cursor: not-allowed; }
 .sd-btn--primary {
   background: linear-gradient(180deg, var(--sd-accent-hi), var(--sd-accent));
   border-color: transparent; color: #1a1207;
-  box-shadow: 0 10px 30px rgba(255, 179, 71, 0.22);
+  box-shadow: 0 10px 30px rgba(255, 179, 71, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.45);
 }
-.sd-btn--primary:hover:not(:disabled) { background: linear-gradient(180deg, #ffd089, var(--sd-accent-hi)); border-color: transparent; }
+.sd-btn--primary:hover:not(:disabled) { background: linear-gradient(180deg, #ffd089, var(--sd-accent-hi)); border-color: transparent; box-shadow: 0 0 0 4px rgba(255, 179, 71, 0.16), 0 14px 36px rgba(255, 179, 71, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.45); }
 .sd-btn--primary:disabled { background: var(--sd-plate); color: var(--sd-ink-4); box-shadow: none; }
 
 .sd-input {
@@ -883,8 +885,31 @@ html:has(.sidera) #stellar-main { padding-top: 0; padding-bottom: 0; }
 .sd-floor__grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 14px; }
 @media (min-width: 640px) { .sd-floor__grid { grid-template-columns: repeat(auto-fill, minmax(196px, 1fr)); gap: 16px; } }
 
-/* A tile: the card itself, then one line and the price. */
-.sd-tile { display: flex; flex-direction: column; gap: 12px; height: 100%; text-decoration: none; color: inherit; }
+/* A tile: the card on its object's own light, then one line and the price. */
+@property --px { syntax: '<number>'; inherits: true; initial-value: 0.5; }
+@property --py { syntax: '<number>'; inherits: true; initial-value: 0.5; }
+.sd-tile { --tile-glow: #bcd8ff; display: flex; flex-direction: column; gap: 12px; height: 100%; text-decoration: none; color: inherit; }
+.sd-tile__stage { position: relative; display: block; isolation: isolate; }
+.sd-tile__glow {
+  position: absolute; inset: -14% -18% -6%; z-index: -1; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--tile-glow) 70%, transparent), color-mix(in srgb, var(--tile-glow) 22%, transparent) 55%, transparent 80%);
+  opacity: 0.6; transform: translateY(6%) scale(0.96); filter: blur(6px);
+  transition: opacity var(--sd-dur-base) var(--sd-ease), transform var(--sd-dur-base) var(--sd-ease);
+}
+.sd-tile .sdc-stage { --px: 0.5; --py: 0.5; transition: --px 700ms var(--sd-ease), --py 700ms var(--sd-ease); }
+.sd-tile .sdc-card { transition: transform var(--sd-dur-fast) var(--sd-ease), box-shadow var(--sd-dur-fast) var(--sd-ease); will-change: transform; }
+.sd-tile .sdc-foil { opacity: calc(var(--sdc-foil, 0) * 0.55); transition: opacity var(--sd-dur-base) var(--sd-ease); }
+@media (hover: hover) {
+  .sd-tile:hover .sd-tile__glow, .sd-tile:focus-visible .sd-tile__glow { opacity: 1; transform: translateY(0) scale(1.14); }
+  .sd-tile:hover .sdc-stage:not(.is-live), .sd-tile:focus-visible .sdc-stage { --px: 0.82; --py: 0.22; }
+  .sd-tile:hover .sdc-card, .sd-tile:focus-visible .sdc-card {
+    transform: translateY(-6px);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--tile-glow) 45%, transparent), 0 34px 70px -24px rgba(0, 0, 0, 0.95), 0 0 48px -12px color-mix(in srgb, var(--tile-glow) 55%, transparent) !important;
+  }
+  .sd-tile:hover .sdc-foil { opacity: var(--sdc-foil, 0); }
+}
+.sd-tile:active .sdc-card { transform: translateY(-2px) scale(0.99); transition-duration: 60ms; }
+@media (prefers-reduced-motion: reduce) { .sd-tile .sdc-stage, .sd-tile__glow, .sd-tile .sdc-card { transition: none; } }
 .sd-pill {
   --r: var(--sd-rarity-common);
   display: inline-flex; align-items: center; gap: 6px; padding: 4px 9px; border-radius: 7px;

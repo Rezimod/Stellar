@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { editionLabel, type Plate } from '@/lib/sidera/plate';
 import { DISPLAY, FOIL_OP, FrameBorder, FrameDefs, GLIT_OP, LOGO_D, MONO, SANS, rr } from './frame';
 
@@ -11,7 +12,7 @@ type Props = {
 };
 
 /** The face of a card: art window of three parallax layers under the metal frame, foil, glitter and glare on top. */
-export default function CardFront({ plate: c, edition, capture, u }: Props) {
+function CardFront({ plate: c, edition, capture, u }: Props) {
   const r = c.rarity;
   const f = `${u}f`;
   const wh = c.full ? 832 : 620;
@@ -151,7 +152,7 @@ export default function CardFront({ plate: c, edition, capture, u }: Props) {
         </g>
       </svg>
 
-      {FOIL_OP[r] > 0 && <div className="sdc-foil" style={{ opacity: FOIL_OP[r] }} />}
+      {FOIL_OP[r] > 0 && <div className="sdc-foil" style={{ opacity: FOIL_OP[r], ['--sdc-foil' as string]: FOIL_OP[r] }} />}
       {GLIT_OP[r] > 0 && (
         <svg className="sdc-glitter" style={{ opacity: GLIT_OP[r] }} viewBox="0 0 630 880" preserveAspectRatio="none" aria-hidden="true">
           <defs>
@@ -167,3 +168,5 @@ export default function CardFront({ plate: c, edition, capture, u }: Props) {
     </div>
   );
 }
+
+export default memo(CardFront);
