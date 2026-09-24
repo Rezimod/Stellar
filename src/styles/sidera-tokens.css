@@ -135,7 +135,7 @@
 .sd-datarow { display: flex; flex-wrap: wrap; column-gap: 28px; row-gap: 10px; margin: 0; font-family: var(--sd-mono); font-size: 13px; line-height: 1.4; font-variant-numeric: tabular-nums; }
 .sd-datarow > div { display: flex; gap: 8px; min-width: 0; align-items: baseline; }
 .sd-datarow dt { color: var(--sd-ink-3); text-transform: uppercase; letter-spacing: 0.12em; font-size: 12px; }
-.sd-datarow dd { margin: 0; color: var(--sd-ink); }
+.sd-datarow dd { margin: 0; min-width: 0; overflow-wrap: anywhere; color: var(--sd-ink); }
 .sd-datarow--stacked { flex-direction: column; row-gap: 0; }
 .sd-datarow--stacked > div { justify-content: space-between; padding: 9px 0; gap: 12px; }
 .sd-datarow--stacked > div::after { content: ''; order: 1; flex: 1 1 auto; min-width: 24px; border-bottom: 1px dotted var(--sd-ink-4); transform: translateY(-4px); }
@@ -915,7 +915,7 @@ html:has(.sidera) #stellar-main { padding-top: 0; padding-bottom: 0; }
 
 /* ── The floor ────────────────────────────────────────────────── */
 /* Home: the set on a shelf to browse, and the capsule on a counter beside it. */
-.sd-shop { width: 100%; max-width: 1480px; margin-inline: auto; padding: 20px var(--sd-gutter) 0; display: grid; gap: 20px; align-items: start; }
+.sd-shop { width: 100%; max-width: 1480px; margin-inline: auto; padding: 20px var(--sd-gutter) 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; align-items: start; }
 @media (min-width: 1100px) { .sd-shop { grid-template-columns: 360px minmax(0, 1fr); gap: 28px; padding-top: 24px; } }
 
 .sd-floor { min-width: 0; }
@@ -1050,6 +1050,15 @@ html:has(.sidera) #stellar-main { padding-top: 0; padding-bottom: 0; }
 .sd-bar .sd-container { max-width: 1480px; }
 .sd-bar .sd-wordmark--sm { font-size: 18px; }
 .sd-navlink { font-weight: 600; font-size: 15px; color: var(--sd-ink-3); }
+/* A phone: the five tabs share the width; on the narrowest they scroll, and fade at the edge that has more. */
+@media (max-width: 719px) {
+  .sd-bar__links { justify-content: space-between; gap: 12px; scrollbar-width: none; }
+  .sd-bar__links::-webkit-scrollbar { display: none; }
+  .sd-bar__links .sd-navlink { font-size: 13.5px; }
+}
+@media (max-width: 374px) {
+  .sd-bar__links { justify-content: flex-start; mask-image: linear-gradient(90deg, #000 85%, transparent); }
+}
 .sd-account { position: relative; display: flex; align-items: center; gap: 10px; }
 .sd-chip {
   display: inline-flex; align-items: baseline; gap: 7px; height: 44px; padding: 0 18px; border-radius: 999px;
@@ -1185,3 +1194,26 @@ html:has(.sidera) #stellar-main { padding-top: 0; padding-bottom: 0; }
 @keyframes sd-twinkle { 0% { opacity: 0.35; } 100% { opacity: 0.8; } }
 .sd-bar { box-shadow: 0 1px 0 rgba(139, 123, 255, 0.28), 0 10px 40px -20px rgba(124, 104, 255, 0.6); }
 @media (prefers-reduced-motion: reduce) { .sd-backdrop::before, .sd-backdrop::after { animation: none; } }
+
+/* ── Phones ───────────────────────────────────────────────────── */
+/* The log: each entry becomes a block — number, capsule and event on one
+   line, the detail under them, the time last. */
+@media (max-width: 639px) {
+  .sd-log--mid thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .sd-log--mid, .sd-log--mid tbody { display: block; }
+  .sd-log--mid tr { display: grid; grid-template-columns: auto auto minmax(0, 1fr); align-items: center; gap: 2px 14px; padding: 10px 0; border-bottom: 1px solid var(--sd-rule); }
+  .sd-log--mid td { padding: 0; border: 0; }
+  .sd-log--mid td:nth-child(3) { color: var(--sd-ink); }
+  .sd-log--mid td:nth-child(4) { grid-column: 1 / -1; overflow-wrap: anywhere; }
+  .sd-log--mid td:nth-child(5) { grid-column: 1 / -1; font-size: 12px; color: var(--sd-ink-3); }
+  .sd-log--mid a { min-height: 32px; }
+}
+/* The sealed capsule's fanned cards fit the narrowest phones. */
+@media (max-width: 400px) {
+  .sd-sealed { height: 320px; }
+  .sd-sealed__card { width: 180px; }
+  .sd-sealed__card:nth-child(1) { transform: rotate(-12deg) translateX(-40px); }
+  .sd-sealed__card:nth-child(2) { transform: rotate(6deg) translateX(34px); }
+}
+/* A long name's outline lettering stays inside the screen. */
+.sd-cardhero__plate { overflow-x: clip; }
