@@ -16,9 +16,11 @@ import SideraAccount from './SideraAccount';
  * bottom tabs and starfield while the page is on screen. Legacy pages are
  * untouched. Content goes inside `.sd-container` for the 16px gutter and the
  * 1040px measure, unless a section is meant to run full-bleed. A page with no
- * visible heading passes `title`, read out as its h1.
+ * visible heading passes `title`, read out as its h1. A page that draws its
+ * own header and runs edge to edge, like the observatory console, passes `bare`.
  */
-export default function SideraShell({ children, title }: { children: ReactNode; title?: string }) {
+export default function SideraShell({ children, title, bare = false }: { children: ReactNode; title?: string; bare?: boolean }) {
+  if (bare) return <div className="sidera">{children}</div>;
   return (
     <div className="sidera">
       <header className="sd-bar">
