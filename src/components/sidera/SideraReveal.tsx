@@ -38,18 +38,19 @@ function SealedBack({ designation, u }: { designation: string; u: string }) {
 const rarityOf = (c: RevealedCard): Rarity => (isRarity(c.rarity) ? (c.rarity as Rarity) : 'common');
 
 /** How long the stone takes to arrive, by the scarcest thing it carries. */
-const FALL_MS: Record<Rarity, number> = { common: 850, rare: 950, epic: 1100, legendary: 1400 };
+const FALL_MS: Record<Rarity, number> = { common: 1700, rare: 1900, epic: 2100, legendary: 2500 };
 /** From impact to the stone breaking: it cools, cracks and parts. */
-const OPEN_MS = 900;
-const DRAW_STAGGER_MS = 950;
+const OPEN_MS = 1500;
+const DRAW_STAGGER_MS = 1350;
 /** A legendary card is held back a beat before it comes out. */
-const HOLD_MS: Record<Rarity, number> = { common: 0, rare: 0, epic: 200, legendary: 600 };
+const HOLD_MS: Record<Rarity, number> = { common: 0, rare: 0, epic: 250, legendary: 700 };
 /** One card's rise to the centre, turn, hold and walk to its place. */
-const DRAW_MS = 1300;
+const DRAW_MS = 1800;
 
-/** Embers shed by the stone on the way down, and the sparks thrown at impact. */
-const EMBERS = 7;
-const SPARKS = 12;
+/** Embers shed by the stone on the way down, fragments that break off it, and the sparks thrown at impact. */
+const EMBERS = 12;
+const FRAGMENTS = 5;
+const SPARKS = 16;
 
 /**
  * Where each card comes to rest, in the order they are drawn: the outermost
@@ -299,8 +300,13 @@ export default function SideraReveal({
               {Array.from({ length: EMBERS }, (_, k) => (
                 <span key={k} className="sd-reveal__ember" style={{ '--k': k } as CSSProperties} />
               ))}
+              {Array.from({ length: FRAGMENTS }, (_, k) => (
+                <span key={k} className="sd-reveal__fragment" style={{ '--k': k } as CSSProperties} />
+              ))}
             </span>
+            <span className="sd-reveal__train" />
             <span className="sd-reveal__flash" />
+            <span className="sd-reveal__dust" />
             <span className="sd-reveal__shock" />
             <span className="sd-reveal__shock sd-reveal__shock--2" />
             {Array.from({ length: SPARKS }, (_, k) => (

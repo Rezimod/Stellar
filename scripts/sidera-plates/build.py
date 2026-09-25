@@ -8,15 +8,18 @@ JetBrains Mono. fontTools (and brotli) are needed only for that subset.
 import base64, io, os, re, sys
 from drawing import andromeda, saturn
 import more
-from first_light import PLACEHOLDERS
+from fl_kept import PLATES as KEPT
+from fl_solar import PLATES as SOLAR
+from fl_deep import PLATES as DEEP
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 OUT = os.path.join(ROOT, 'public', 'cards', 'plate')
 
-# Drawn plates; every other First Light card is a typographic placeholder until its drawing exists.
+# Every plate on the full-art canvas (582 × 832), in the set's order of families.
 ART = {
-    'JUPITER': more.jupiter, 'SATURN': saturn, 'HALLEY': lambda u: more.halley(u, more.HF), 'M45': more.m45, 'M42': more.m42, 'M31': andromeda,
-    **PLACEHOLDERS,
+    'JUPITER': lambda u: more.jupiter(u, more.HF), 'SATURN': lambda u: saturn(u, more.HF), 'HALLEY': lambda u: more.halley(u, more.HF),
+    'M45': lambda u: more.m45(u, more.HF), 'M42': lambda u: more.m42(u, more.HF), 'M31': lambda u: andromeda(u, more.HF),
+    **KEPT, **SOLAR, **DEEP,
 }
 
 

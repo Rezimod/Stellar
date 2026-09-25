@@ -26,7 +26,35 @@ const NOUN: Record<string, string> = {
 };
 
 /** Name size where the face sets it by hand. */
-const NAME_SIZE: Record<string, number> = { SATURN: 40 };
+const NAME_SIZE: Record<string, number> = { SATURN: 44, 'PLEIADES-OCCULTATION': 30 };
+
+/** Two lines on the back: what this is, said simply, and why it matters. */
+const STORY: Record<string, [string, string]> = {
+  'FIRST-LIGHT': ['Before any star, a shutter opens.', 'Whatever the sky gives first, you hold.'],
+  IMILAC: ['A world broke apart before Earth had oceans.', 'This is a piece of its heart, green with olivine.'],
+  'LUNAR-FRAGMENT': ['An impact threw it off the Moon.', 'It fell here, and now it is held.'],
+  TYCHO: ['One strike, 108 million years ago.', 'Its rays still cross the whole near side.'],
+  'OLYMPUS-MONS': ['Three Everests high, wide as France.', 'You could stand on it and not know it was a mountain.'],
+  JUPITER: ['A thousand Earths would fit inside.', 'Its storm has raged longer than any nation.'],
+  EUROPA: ['Under the ice, twice the water of Earth.', 'The best place to look for life we have not met.'],
+  SATURN: ['Ice as small as sand, as big as houses.', 'From here, the thinnest thing we have ever seen.'],
+  'KRAKEN-MARE': ['A sea where the rain is methane.', 'The only shore beyond Earth where waves may break.'],
+  HALLEY: ['It came in 1986. It comes again in 2061.', 'Hold the card, and wait with it.'],
+  'VOYAGER-1': ['Launched in 1977, still calling home.', 'Every year, farther from everyone who ever lived.'],
+  M45: ['Seven sisters, a hundred million years young.', 'Named by every people who ever looked up.'],
+  M42: ['A cloud where stars are being born tonight.', 'You can see it with your own eyes.'],
+  M1: ['In 1054, a star was seen in daylight.', 'This is what remains, a heart still spinning.'],
+  'SGR-A': ['Four million suns, hidden in the dark.', 'Everything in our galaxy turns around it.'],
+  M31: ['A trillion stars, 2.5 million light-years out.', 'It is coming toward us. In four billion years, we meet.'],
+  ORIONIDS: ['Dust shed by Halley, centuries ago.', 'It burns above you at 66 kilometres a second.'],
+  'HUNTERS-MOON': ['The full Moon that rises with the dusk.', 'For a few nights, it lights the whole field.'],
+  'PLEIADES-OCCULTATION': ['The Moon crosses the seven sisters.', 'One by one, they vanish and return.'],
+  GEMINIDS: ['Not comet dust: the crumbs of an asteroid.', 'The richest shower of the year, under no Moon.'],
+  'CHRISTMAS-SUPERMOON': ['The closest full Moon of the year.', 'Fourteen percent wider, thirty percent brighter.'],
+  'DOUBLE-OPPOSITION': ['Jupiter, then Mars, at their closest to Earth.', 'Eight days apart. The next pair is years away.'],
+  'SNOW-MOON-ECLIPSE': ['A full Moon slips into the edge of Earth’s shadow.', 'Watch one limb go quietly dusky.'],
+  'GREAT-ECLIPSE': ['Six minutes of night at midday.', 'The longest darkness on land this century.'],
+};
 
 export type Plate = {
   designation: string;
@@ -37,11 +65,12 @@ export type Plate = {
   /** Place in the set, two digits. */
   num: string;
   des: string;
+  /** Under the name on the face: what it is and where. */
+  kicker: string;
   data: [string, string][];
+  story: [string, string];
   /** Edition count, padded to three digits. */
   of: string;
-  /** Legendary cards are full art: the drawing runs to the edge. */
-  full: boolean;
   nameSize: number;
   back: string;
   noun: string | null;
@@ -91,10 +120,11 @@ export function plateFor(designation: string): Plate | null {
     glyph: info.glyph,
     num: String(SET_001_CARDS.indexOf(card) + 1).padStart(2, '0'),
     des: `${designation} · ${seed.objectType} · ${seed.catalogRef}`.toUpperCase(),
+    kicker: `${seed.objectType} · ${seed.catalogRef}`.toUpperCase(),
     data: record.stats.map(([label, value]) => [label, value.toUpperCase()]),
+    story: STORY[designation],
     of: pad3(seed.editionSize),
-    full: rarity === 'legendary',
-    nameSize: NAME_SIZE[designation] ?? Math.min(58, Math.floor(410 / (seed.name.length * 0.6))),
+    nameSize: NAME_SIZE[designation] ?? Math.min(60, Math.floor(400 / (seed.name.length * 0.56))),
     back,
     noun: NOUN[designation] ?? null,
     section: record.section,

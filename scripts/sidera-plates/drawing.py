@@ -102,9 +102,9 @@ def reticle(cx, cy, r, ticks=72, major=6, op=.3):
     return ''.join(out)
 
 # ================================================================= SATURN
-def saturn(u):
-    W, H = 582, 620
-    cx, cy, rot, sc = 291, 300, -16, 0.8
+def saturn(u, h=620):
+    W = 582
+    cx, cy, rot, sc = 291, 340, -16, 0.8
     B = math.radians(24); sB, cB = math.sin(B), math.cos(B)
     a, b = 120.0, 108.0
     ly = math.sqrt(b * b * cB * cB + a * a * sB * sB)
@@ -123,7 +123,7 @@ def saturn(u):
     # sky
     bg_defs = SPIKE_DEFS.format(u=u) + ('<radialGradient id="%shz" cx=".5" cy=".45" r=".7"><stop offset="0" stop-color="#26243d"/><stop offset=".5" stop-color="#0f0e1e"/><stop offset="1" stop-color="#04050d"/></radialGradient>'
                                         '<radialGradient id="%shz2" cx=".2" cy=".85" r=".5"><stop offset="0" stop-color="#2b3a6a" stop-opacity=".35"/><stop offset="1" stop-color="#2b3a6a" stop-opacity="0"/></radialGradient>') % (u, u)
-    bg = svg(W, H, '<rect width="%d" height="%d" fill="url(#%shz)"/><rect width="%d" height="%d" fill="url(#%shz2)"/>' % (W, H, u, W, H, u) + starfield(W, H, 260, 11, 6, u=u), bg_defs)
+    bg = svg(W, h, '<rect width="%d" height="%d" fill="url(#%shz)"/><rect width="%d" height="%d" fill="url(#%shz2)"/>' % (W, h, u, W, h, u) + starfield(W, h, 260, 11, 6, u=u), bg_defs)
 
     # rings profile
     def prof(km):
@@ -206,7 +206,7 @@ def saturn(u):
         X, Y = scr(x, y)
         mo += '<circle cx="%s" cy="%s" r="%s" fill="%s"/><circle cx="%s" cy="%s" r="%s" fill="#000" opacity=".45" transform="translate(%s %s)"/>' % (
             f(X), f(Y), f(r_), c, f(X), f(Y), f(r_ * .9), f(r_ * .35), f(r_ * .3))
-    obj = svg(W, H, '<g transform="translate(%d %d) rotate(%d) scale(%s)">%s</g>%s%s' % (cx, cy, rot, sc, system, mo, grain(u + 'o', W, H, .12)), obj_defs)
+    obj = svg(W, h, '<g transform="translate(%d %d) rotate(%d) scale(%s)">%s</g>%s%s' % (cx, cy, rot, sc, system, mo, grain(u + 'o', W, h, .12)), obj_defs)
 
     # annotation layer
     ann = [reticle(cx, cy, 124, 72, 8, .22)]
@@ -222,7 +222,7 @@ def saturn(u):
             f(X + (8 if x > 0 else -8)), f(Y - 6), LBL, 'start' if x > 0 else 'end', n))
     ann.append(scalebar(22, 590, 50000 * K * sc, '50,000 KM'))
     ann.append('<text x="22" y="96" fill="rgba(245,241,232,.5)" style="%s">RING PLANE 24° · FLATTENING 0.098</text>' % LBL)
-    annotation = svg(W, H, ''.join(ann))
+    annotation = svg(W, h, ''.join(ann))
     return bg, obj, annotation
 
 # ================================================================= MOON
@@ -315,13 +315,13 @@ def moon(u):
     return bg, obj, svg(W, H, ''.join(ann))
 
 # ================================================================= ANDROMEDA
-def andromeda(u):
-    W, H = 582, 620
-    cx, cy, rot = 291, 300, -38
+def andromeda(u, h=620):
+    W = 582
+    cx, cy, rot = 291, 340, -38
     q = math.cos(math.radians(77))
     rnd = random.Random(31)
     bg_defs = SPIKE_DEFS.format(u=u) + '<radialGradient id="%shz" cx=".5" cy=".48" r=".75"><stop offset="0" stop-color="#1d2244"/><stop offset=".55" stop-color="#0b0e22"/><stop offset="1" stop-color="#03040b"/></radialGradient>' % u
-    bg = svg(W, H, '<rect width="%d" height="%d" fill="url(#%shz)"/>' % (W, H, u) + starfield(W, H, 320, 41, 7, u=u), bg_defs)
+    bg = svg(W, h, '<rect width="%d" height="%d" fill="url(#%shz)"/>' % (W, h, u) + starfield(W, h, 320, 41, 7, u=u), bg_defs)
     defs = ('<filter id="%sb4" x="-30%%" y="-30%%" width="160%%" height="160%%"><feGaussianBlur stdDeviation="5"/></filter>'
             '<filter id="%sb2" x="-20%%" y="-20%%" width="140%%" height="140%%"><feGaussianBlur stdDeviation="1.8"/></filter>'
             '<filter id="%sb1"><feGaussianBlur stdDeviation=".5"/></filter>')
@@ -356,8 +356,8 @@ def andromeda(u):
     m32 = (348, 360); m110 = (176, 178)
     sats = ('<circle cx="%d" cy="%d" r="11" fill="url(#%sbulge)"/><circle cx="%d" cy="%d" r="2" fill="#fff"/>'
             '<ellipse cx="%d" cy="%d" rx="30" ry="12" transform="rotate(-62 %d %d)" fill="url(#%sinner)" opacity=".75"/>') % (m32[0], m32[1], u, m32[0], m32[1], m110[0], m110[1], m110[0], m110[1], u)
-    fg = starfield(W, H, 40, 77, 4, u=u + 'x')
-    obj = svg(W, H, gal + sats + fg + grain(u + 'o', W, H, .12), defs + SPIKE_DEFS.format(u=u + 'x'))
+    fg = starfield(W, h, 40, 77, 4, u=u + 'x')
+    obj = svg(W, h, gal + sats + fg + grain(u + 'o', W, h, .12), defs + SPIKE_DEFS.format(u=u + 'x'))
     def scr(x, y):
         t = math.radians(rot)
         return (cx + x * math.cos(t) - y * math.sin(t), cy + x * math.sin(t) + y * math.cos(t))
@@ -369,7 +369,7 @@ def andromeda(u):
     ann.append(label(scr(310, 0), (560, 540), ['DISK', 'INCLINED 77°'], 'end', dot=False))
     ann.append(scalebar(22, 590, 80, '20,000 LY'))
     ann.append('<text x="22" y="96" fill="rgba(245,241,232,.5)" style="%s">RA 00H 42M 44S · DEC +41° 16′</text>' % LBL)
-    return bg, obj, svg(W, H, ''.join(ann))
+    return bg, obj, svg(W, h, ''.join(ann))
 
 # ================================================================= M87
 def m87(u):

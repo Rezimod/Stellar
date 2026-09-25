@@ -197,11 +197,11 @@ def mars(u):
 
 
 # ================================================================= JUPITER
-def jupiter(u):
-    cx, cy, a = 291, 292, 158
+def jupiter(u, h=H):
+    cx, cy, a = 291, 330, 158
     b_ = a * (1 - .065)
     rnd = random.Random(599)
-    bg = sky(u, H, ('#2a2018', '#120d0a', '#050407'), 200, 598, 5)
+    bg = sky(u, h, ('#2a2018', '#120d0a', '#050407'), 200, 598, 5)
     defs = ('<clipPath id="%sdisk"><ellipse cx="%d" cy="%d" rx="%d" ry="%s"/></clipPath>'
             '<filter id="%sturb" x="-10%%" y="-10%%" width="120%%" height="120%%"><feTurbulence type="fractalNoise" baseFrequency=".004 .06" numOctaves="3" seed="21"/><feDisplacementMap in="SourceGraphic" scale="16"/></filter>'
             '<filter id="%sb1"><feGaussianBlur stdDeviation=".8"/></filter>'
@@ -224,7 +224,7 @@ def jupiter(u):
         u, u, ''.join(g), spot, cx, cy, a, f(b_), u, cx, cy, a, f(b_), u, cx, cy, f(a - .5), f(b_ - .5))
     moons = [('IO', -216, 6, 3.4, '#f0d890'), ('EUROPA', 232, 2, 3, '#ece4d4'), ('GANYMEDE', -258, 8, 4.8, '#c8bca8'), ('CALLISTO', 268, 5, 4.4, '#8a7c6c')]
     mo = ''.join('<circle cx="%d" cy="%d" r="%s" fill="%s"/><circle cx="%s" cy="%d" r="%s" fill="#000" opacity=".4"/>' % (cx + x, cy + y, f(r), c, f(cx + x + r * .35), cy + y, f(r * .85)) for n, x, y, r, c in moons)
-    obj = svg(W, H, body + mo + grain(u + 'o', W, H, .12), defs)
+    obj = svg(W, h, body + mo + grain(u + 'o', W, h, .12), defs)
     ann = [reticle(cx, cy, a + 14, 72, 8, .2), top('SYSTEM II · FLATTENING 0.065')]
     ann.append(label((gx, gy), (560, 470), ['GREAT RED SPOT', '16,350 KM'], 'end'))
     ann.append(label((cx - .5 * a, cy - .2 * b_), (22, 150), ['NORTH EQUATORIAL', 'BELT']))
@@ -233,7 +233,7 @@ def jupiter(u):
     for n, x, y, r, c in moons:
         ann.append('<text x="%d" y="%d" fill="rgba(245,241,232,.66)" style="%s" text-anchor="middle">%s</text>' % (cx + x, cy + y + (20 if n in ('IO', 'CALLISTO') else -12), LBL, n))
     ann.append(scalebar(22, 590, 50000 / 71492 * a, '50,000 KM'))
-    return bg, obj, svg(W, H, ''.join(ann))
+    return bg, obj, svg(W, h, ''.join(ann))
 
 
 # ================================================================= PLUTO
@@ -396,10 +396,10 @@ def betelgeuse(u):
 
 
 # ================================================================= M42
-def m42(u):
-    cx, cy = 300, 320
+def m42(u, h=H):
+    cx, cy = 300, 350
     rnd = random.Random(1976)
-    bg = sky(u, H, ('#2a1c34', '#110e1c', '#04050e'), 260, 42, 5)
+    bg = sky(u, h, ('#2a1c34', '#110e1c', '#04050e'), 260, 42, 5)
     defs = ('<filter id="%sneb" x="-20%%" y="-20%%" width="140%%" height="140%%"><feTurbulence type="fractalNoise" baseFrequency=".012" numOctaves="4" seed="42"/><feDisplacementMap in="SourceGraphic" scale="60"/><feGaussianBlur stdDeviation="6"/></filter>'
             '<filter id="%sfil" x="-20%%" y="-20%%" width="140%%" height="140%%"><feTurbulence type="fractalNoise" baseFrequency=".03" numOctaves="3" seed="7"/><feDisplacementMap in="SourceGraphic" scale="30"/><feGaussianBlur stdDeviation="1.4"/></filter>'
             '<radialGradient id="%score"><stop offset="0" stop-color="#fffaf0"/><stop offset=".25" stop-color="#ffe8c8" stop-opacity=".8"/><stop offset="1" stop-color="#ffc8a0" stop-opacity="0"/></radialGradient>') % (u, u, u)
@@ -416,8 +416,8 @@ def m42(u):
     m43 = '<circle cx="%d" cy="%d" r="36" fill="#e0587a" opacity=".35" filter="url(#%sneb)"/><circle cx="%d" cy="%d" r="3" fill="#fff"/>' % (cx + 10, cy - 180, u, cx + 10, cy - 180)
     tx, ty = cx + 6, cy - 6
     trap = ''.join(spike_star(tx + dx, ty + dy, r, '#dfe8ff', 10 + 6 * r) for dx, dy, r in [(-6, -4, 1.8), (5, -6, 1.4), (-4, 6, 1.6), (7, 4, 1.2)])
-    obj = svg(W, H, '<g filter="url(#%sneb)">%s</g><g filter="url(#%sfil)">%s%s</g>%s<circle cx="%d" cy="%d" r="60" fill="url(#%score)"/>%s' % (
-        u, ''.join(clouds), u, fil, dark, m43, tx, ty, u, trap) + grain(u + 'o', W, H, .12), defs)
+    obj = svg(W, h, '<g filter="url(#%sneb)">%s</g><g filter="url(#%sfil)">%s%s</g>%s<circle cx="%d" cy="%d" r="60" fill="url(#%score)"/>%s' % (
+        u, ''.join(clouds), u, fil, dark, m43, tx, ty, u, trap) + grain(u + 'o', W, h, .12), defs)
     ann = [top('RA 05H 35M 17S · DEC −05° 23′ · ORION')]
     ann.append(label((tx, ty), (560, 300), ['TRAPEZIUM', 'θ¹ ORIONIS · 4 YOUNG STARS'], 'end'))
     ann.append(label((cx + 10, cy - 180), (560, 130), ['M43', "DE MAIRAN'S NEBULA"], 'end'))
@@ -425,21 +425,21 @@ def m42(u):
     ann.append(label((cx + 60, cy + 90), (560, 520), ['ORION BAR', 'IONIZATION FRONT'], 'end'))
     ann.append(label((cx - 80, cy + 90), (22, 470), ['HYDROGEN GLOW', 'Hα · 656 NM']))
     ann.append(scalebar(22, 590, 64, '5 LY'))
-    return bg, obj, svg(W, H, ''.join(ann))
+    return bg, obj, svg(W, h, ''.join(ann))
 
 
 # ================================================================= M45
-def m45(u):
+def m45(u, h=H):
     rnd = random.Random(45)
-    bg = sky(u, H, ('#132446', '#08122a', '#03060f'), 240, 45, 3)
+    bg = sky(u, h, ('#132446', '#08122a', '#03060f'), 240, 45, 3)
     # J2000 positions, as offsets from Alcyone in arcminutes (east to the left)
     ra0, de0 = 3 + 47 / 60 + 29.1 / 3600, 24 + 6 / 60 + 18 / 3600
     stars = [('ALCYONE', 3, 47, 29.1, 24, 6, 18, 2.87), ('ATLAS', 3, 49, 9.7, 24, 3, 12, 3.62), ('ELECTRA', 3, 44, 52.5, 24, 6, 48, 3.70), ('MAIA', 3, 45, 49.6, 24, 22, 4, 3.87),
              ('MEROPE', 3, 46, 19.6, 23, 56, 54, 4.18), ('TAYGETA', 3, 45, 12.5, 24, 28, 2, 4.30), ('PLEIONE', 3, 49, 11.2, 24, 8, 12, 5.05), ('CELAENO', 3, 44, 48.2, 24, 17, 22, 5.45), ('ASTEROPE', 3, 45, 54.5, 24, 33, 16, 5.76)]
-    sc, ox, oy = 5.6, 316, 316
+    sc, ox, oy = 5.6, 316, 350
     pos = {}
-    for n, h, m, s, d, dm, ds, mag in stars:
-        ra = h + m / 60 + s / 3600; de = d + dm / 60 + ds / 3600
+    for n, hr, m, s, d, dm, ds, mag in stars:
+        ra = hr + m / 60 + s / 3600; de = d + dm / 60 + ds / 3600
         x = ox - (ra - ra0) * 15 * math.cos(math.radians(24.1)) * 60 * sc; y = oy - (de - de0) * 60 * sc
         pos[n] = (x, y, mag)
     defs = ('<filter id="%sneb" x="-30%%" y="-30%%" width="160%%" height="160%%"><feTurbulence type="fractalNoise" baseFrequency=".02 .05" numOctaves="4" seed="45"/><feDisplacementMap in="SourceGraphic" scale="50"/><feGaussianBlur stdDeviation="5"/></filter>'
@@ -450,7 +450,7 @@ def m45(u):
     streaks = ''.join('<path d="M%s %sl%s %s" stroke="#9ec0ff" stroke-opacity="%s" stroke-width="%s" filter="url(#%sb1)"/>' % (
         f(rnd.uniform(60, 520)), f(rnd.uniform(140, 560)), f(rnd.uniform(40, 120)), f(rnd.uniform(-60, -20)), f(rnd.uniform(.05, .14)), f(rnd.uniform(1, 4)), u) for _ in range(40))
     st = ''.join(spike_star(x, y, 3.6 - (mag - 2.8) * .9, '#bcd8ff', 34 - (mag - 2.8) * 7) for n, (x, y, mag) in pos.items())
-    obj = svg(W, H, '<g filter="url(#%sneb)">%s</g>%s%s' % (u, neb, streaks, st) + grain(u + 'o', W, H, .1), defs)
+    obj = svg(W, h, '<g filter="url(#%sneb)">%s</g>%s%s' % (u, neb, streaks, st) + grain(u + 'o', W, h, .1), defs)
     ann = [top('RA 03H 47M 24S · DEC +24° 07′ · TAURUS')]
     place = {'ALCYONE': (22, 380, 'start', ['ALCYONE', 'MAG 2.9 · BRIGHTEST']), 'ATLAS': (560, 330, 'end', ['ATLAS']), 'ELECTRA': (560, 460, 'end', ['ELECTRA']),
              'MAIA': (560, 150, 'end', ['MAIA']), 'MEROPE': (22, 470, 'start', ['MEROPE', 'REFLECTION NEBULA']), 'TAYGETA': (560, 210, 'end', ['TAYGETA']),
@@ -459,7 +459,7 @@ def m45(u):
         lx, ly, an, lines = place[n]
         ann.append(label((x, y), (lx, ly), lines, an))
     ann.append(scalebar(22, 590, 30 * sc / 2, "15′"))
-    return bg, obj, svg(W, H, ''.join(ann))
+    return bg, obj, svg(W, h, ''.join(ann))
 
 
 # ================================================================= M16

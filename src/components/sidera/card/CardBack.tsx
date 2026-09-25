@@ -27,7 +27,7 @@ function rosette(cx: number, cy: number, R: number, r: number, d: number, s: num
   return 'M' + pts.join('L');
 }
 
-const SEAL = [rosette(315, 372, 24, 7, 12, 8.6, 0, 1400), rosette(315, 372, 20, 9, 7, 9.2, 9, 1200), rosette(315, 372, 30, 11, 16, 6.4, 4, 1500)];
+const SEAL = [rosette(315, 372, 24, 7, 12, 6.2, 0, 1400), rosette(315, 372, 20, 9, 7, 6.6, 9, 1200), rosette(315, 372, 30, 11, 16, 4.6, 4, 1500)];
 
 const short = (hash: string) => `[${hash.slice(0, 4)}…${hash.slice(-4)}]`;
 
@@ -41,12 +41,14 @@ function CardBack({ plate: c, edition, commitment, sealed = false, u }: Props) {
   const lines = sealed
     ? ['One card of First Light.', 'Turn it over.']
     : [
-        edition == null ? `This card is one of ${c.of} editions.` : `This card is edition ${ed} of ${c.of}.`,
-        ...(c.section === 'almanac'
-          ? ['On the night, every holder of this card', 'receives the capture. Then the card is sealed.']
+        ...c.story,
+        c.section === 'almanac'
+          ? 'On the night, every holder receives the capture.'
           : c.noun
-            ? [`When Node 01 photographs ${c.noun},`, 'every holder of this card receives the image.']
-            : ['Nothing Node 01 can point at.', 'It is held, and recorded here.']),
+            ? `When Node 01 photographs ${c.noun}, every holder receives the image.`
+            : edition == null
+              ? `One of ${c.of} editions.`
+              : `Edition ${ed} of ${c.of}.`,
       ];
 
   return (
@@ -66,17 +68,37 @@ function CardBack({ plate: c, edition, commitment, sealed = false, u }: Props) {
           <path d={SEAL[1]} opacity=".3" />
           <path d={SEAL[2]} opacity=".22" />
         </g>
-        {[66, 72, 214].map((radius) => (
-          <circle key={radius} cx="315" cy="372" r={radius} fill="none" stroke={`url(#${b}metal)`} strokeWidth={radius === 66 ? 1.2 : 0.6} opacity=".7" />
+        {[48, 52, 150].map((radius) => (
+          <circle key={radius} cx="315" cy="372" r={radius} fill="none" stroke={`url(#${b}metal)`} strokeWidth={radius === 48 ? 1.2 : 0.6} opacity=".7" />
         ))}
-        <circle cx="315" cy="372" r="65" fill="#080d1e" />
-        <g transform="translate(287 344) scale(2.55)">
+        <circle cx="315" cy="372" r="47" fill="#080d1e" />
+        <g transform="translate(294 351) scale(1.9)">
           <path d={LOGO_D} fill={`url(#${b}metal)`} />
         </g>
         <text x="315" y="104" textAnchor="middle" fill="rgba(245,241,232,.6)" style={{ fontFamily: MONO, fontSize: 10, letterSpacing: 2.4 }}>
           {sealed ? 'FIRST LIGHT · COLLECTIBLE ASTRONOMY' : c.back}
         </text>
         <line x1="60" y1="124" x2="570" y2="124" stroke="rgba(245,241,232,.1)" />
+        {!sealed && (
+          <>
+            <text x="315" y="184" textAnchor="middle" fill="#f5f1e8" style={{ fontFamily: SANS, fontWeight: 600, fontSize: Math.min(40, c.nameSize * 0.7), letterSpacing: -1 }}>
+              {c.name}
+            </text>
+            <text x="315" y="208" textAnchor="middle" fill="rgba(245,241,232,.55)" style={{ fontFamily: MONO, fontSize: 10, letterSpacing: 2.2 }}>
+              {c.kicker}
+            </text>
+            {c.data.map(([label, value], i) => (
+              <g key={label} transform={`translate(${315 + (i - 1) * 176} 560)`}>
+                <text textAnchor="middle" fill="rgba(245,241,232,.5)" style={{ fontFamily: MONO, fontSize: 9, letterSpacing: 2 }}>
+                  {label}
+                </text>
+                <text y="24" textAnchor="middle" fill="#f5f1e8" style={{ fontFamily: MONO, fontSize: 15 }}>
+                  {value}
+                </text>
+              </g>
+            ))}
+          </>
+        )}
         <text x="315" y="640" textAnchor="middle" fill={`url(#${b}metalH)`} style={{ fontFamily: DISPLAY, fontWeight: 600, fontSize: 26, letterSpacing: 11 }}>
           SIDERA
         </text>
@@ -84,7 +106,7 @@ function CardBack({ plate: c, edition, commitment, sealed = false, u }: Props) {
           {sealed ? 'FIRST LIGHT · SEALED' : `FIRST LIGHT · ${c.num} / 24 · ${c.glyph} ${c.rname.toUpperCase()}`}
         </text>
         {lines.map((line, i) => (
-          <text key={i} x="315" y={714 + i * 22} textAnchor="middle" fill="rgba(245,241,232,.78)" style={{ fontFamily: SANS, fontSize: 15 }}>
+          <text key={i} x="315" y={706 + i * 24} textAnchor="middle" fill={i === 2 ? 'rgba(245,241,232,.55)' : 'rgba(245,241,232,.86)'} style={{ fontFamily: SANS, fontSize: i === 2 ? 13 : 16 }}>
             {line}
           </text>
         ))}
