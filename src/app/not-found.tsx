@@ -12,7 +12,7 @@ export default function NotFound() {
           <p className="sd-label">Not found</p>
           <p className="sd-lede">Nothing is catalogued at this address. The set, the capsules and tonight&rsquo;s card are below.</p>
           <div className="sd-links" style={{ justifyContent: 'center' }}>
-            <Link href="/set/001" className="sd-chip">Set 001</Link>
+            <Link href="/set/001" className="sd-chip">First Light</Link>
             <Link href="/capsules" className="sd-chip">Capsules</Link>
             <Link href="/tonight" className="sd-chip">Tonight</Link>
           </div>

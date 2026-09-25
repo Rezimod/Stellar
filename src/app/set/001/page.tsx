@@ -1,12 +1,14 @@
 import type { Metadata } from 'next';
+import AlmanacDate from '@/components/sidera/AlmanacDate';
 import ShopCard from '@/components/sidera/ShopCard';
 import SideraShell from '@/components/sidera/SideraShell';
 import SideraView from '@/components/sidera/SideraView';
 import Chapter from '@/components/sidera/ui/Chapter';
 import DataRow from '@/components/sidera/ui/DataRow';
 import { getDb } from '@/lib/db';
-import { SET_GROUPS } from '@/lib/sets/groups';
+import { SET_GROUPS, groupCards } from '@/lib/sets/groups';
 import { SET_001, SET_001_CARDS } from '@/lib/sets/set-001';
+import { cardStatus } from '@/lib/sidera/almanac';
 import { readSetSupply } from '@/lib/sidera/capsule';
 import { DIRECT_CARD_PRICE_USD } from '@/lib/sidera/economics';
 import { holderView } from '@/lib/sidera/repo';
@@ -15,8 +17,8 @@ import type { Rarity } from '@/lib/rarity';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'Set 001',
-  description: 'Twenty-four cards: the Moon, the planets, stars, the deep sky and eight works of fiction, each a numbered edition.',
+  title: 'First Light',
+  description: 'Twenty-four cards: sixteen real objects, numbered outward from Earth, and eight dated events in the sky, each a numbered edition.',
 };
 
 const pad = (n: number) => String(n).padStart(3, '0');
@@ -52,11 +54,12 @@ export default async function Set001Page({
     }
   }
 
+  const now = new Date();
   const totalEditions = SET_001_CARDS.reduce((sum, c) => sum + c.seed.editionSize, 0);
   const observable = SET_001_CARDS.filter((c) => c.seed.observationStatus !== 'not_available').length;
 
   return (
-    <SideraShell title="Set 001">
+    <SideraShell title="First Light">
       <SideraView step="set" />
       <section className="sd-container sd-top">
         <DataRow
@@ -71,9 +74,9 @@ export default async function Set001Page({
       </section>
 
       {SET_GROUPS.map((g, gi) => {
-        const cards = SET_001_CARDS.filter((c) => g.types.includes(c.seed.objectType));
+        const cards = groupCards(SET_001_CARDS, g.key);
         return (
-          <section key={g.title} className="sd-container sd-chapter-block">
+          <section key={g.key} className="sd-container sd-chapter-block">
             <Chapter n={String(gi + 1).padStart(2, '0')} title={g.short} aside={`${cards.length} ${cards.length === 1 ? 'card' : 'cards'}`} />
             <ul className="sd-floor__grid">
               {cards.map((c) => {
@@ -81,14 +84,21 @@ export default async function Set001Page({
                 const mine = held?.get(c.seed.designation);
                 const rarity = c.seed.rarity as Rarity;
                 const left = s ? s.editionSize - s.allocated : c.seed.editionSize;
+                const sealed = cardStatus(c, now) === 'sealed';
                 return (
                   <li key={c.seed.designation}>
                     <ShopCard
                       designation={c.seed.designation}
                       name={c.seed.name}
                       rarity={rarity}
-                      sub={`${left} of ${c.seed.editionSize} left`}
-                      price={`$${DIRECT_CARD_PRICE_USD[rarity]}`}
+                      sub={
+                        c.record.section === 'almanac' ? (
+                          <AlmanacDate startUtc={c.record.eventStartUtc!} endUtc={c.record.eventEndUtc!} countdown short />
+                        ) : (
+                          `${left} of ${c.seed.editionSize} left`
+                        )
+                      }
+                      price={sealed ? 'Sealed' : `$${DIRECT_CARD_PRICE_USD[rarity]}`}
                       tag={mine !== undefined ? `No. ${pad(mine)}` : held !== null ? 'Not held' : undefined}
                       dim={held !== null && mine === undefined}
                     />

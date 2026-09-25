@@ -81,7 +81,7 @@ function loadImage(src: string) {
  * The observatory console: connect to a station, park and calibrate, choose a
  * target, point, capture. The mount, the safety envelope and the sky are the
  * same engine the simulator runs; every frame is drawn by the sky model and
- * says so. A target that is a Set 001 card is drawn with its card's plate.
+ * says so. A target that is a First Light card is drawn with its card's plate.
  */
 export default function ObservatoryConsole({ tonight, nodeCloud }: { tonight: TonightCard; nodeCloud: number | null }) {
   const [clockMs, setClockMs] = useState<number | null>(null);

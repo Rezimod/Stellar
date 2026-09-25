@@ -16,7 +16,7 @@ export type CardPlateProps = {
   hero?: boolean;
 };
 
-/** One Set 001 card, as it is printed: art window, metal frame, name, figures and edition. */
+/** One First Light card, as it is printed: art window, metal frame, name, figures and edition. */
 export default function CardPlate({ designation, edition, capture, commitment, href, size = 'md', hero = false }: CardPlateProps) {
   const card = <SideraCard designation={designation} edition={edition} capture={capture} commitment={commitment} hero={hero} />;
   return (

@@ -283,10 +283,10 @@ def pluto(u):
 
 
 # ================================================================= HALLEY
-def halley(u):
+def halley(u, h=H):
     rnd = random.Random(1986)
     nx, ny = 396, 206
-    bg = sky(u, H, ('#122038', '#07101e', '#02050c'), 300, 76, 6)
+    bg = sky(u, h, ('#122038', '#07101e', '#02050c'), 300, 76, 6)
     defs = ('<radialGradient id="%scoma" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffffff"/><stop offset=".12" stop-color="#fff2d0" stop-opacity=".9"/><stop offset=".4" stop-color="#b8f0e0" stop-opacity=".3"/><stop offset="1" stop-color="#7fd8c8" stop-opacity="0"/></radialGradient>'
             '<linearGradient id="%sdust" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff0cc" stop-opacity=".75"/><stop offset=".5" stop-color="#ffd89a" stop-opacity=".28"/><stop offset="1" stop-color="#ffc878" stop-opacity="0"/></linearGradient>'
             '<linearGradient id="%sion" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bfe4ff" stop-opacity=".8"/><stop offset=".6" stop-color="#6fb6ff" stop-opacity=".2"/><stop offset="1" stop-color="#6fb6ff" stop-opacity="0"/></linearGradient>'
@@ -301,8 +301,8 @@ def halley(u):
         f(nx - t * 360 + rnd.gauss(0, 16 + 50 * t)), f(ny + t * t * 330 + t * 60 + rnd.gauss(0, 10 + 30 * t)), f(.3 + .8 * rnd.random()), f(.2 + .5 * rnd.random() * (1 - t)))
         for t in (rnd.random() ** 1.4 for _ in range(500)))
     jets = ''.join('<path d="M%d %dl%s %s" stroke="#fff" stroke-opacity=".5" stroke-width="1" filter="url(#%sb2)"/>' % (nx, ny, f(30 * math.cos(a)), f(30 * math.sin(a)), u) for a in (-1.2, -.5, .2))
-    obj = svg(W, H, '<g filter="url(#%sb6)"><path d="%s" fill="url(#%sdust)"/><path d="%s" fill="url(#%sion)"/></g>%s%s' % (u, dust, u, ion, u, streams, motes) +
-              '<circle cx="%d" cy="%d" r="70" fill="url(#%scoma)"/>%s<circle cx="%d" cy="%d" r="3.2" fill="#fff"/>' % (nx, ny, u, jets, nx, ny) + grain(u + 'o', W, H, .12), defs)
+    obj = svg(W, h, '<g filter="url(#%sb6)"><path d="%s" fill="url(#%sdust)"/><path d="%s" fill="url(#%sion)"/></g>%s%s' % (u, dust, u, ion, u, streams, motes) +
+              '<circle cx="%d" cy="%d" r="70" fill="url(#%scoma)"/>%s<circle cx="%d" cy="%d" r="3.2" fill="#fff"/>' % (nx, ny, u, jets, nx, ny) + grain(u + 'o', W, h, .12), defs)
     ann = [reticle(nx, ny, 58, 72, 4, .22), top('PERIHELION 9 FEB 1986 · NEXT 28 JULY 2061')]
     ann.append(label((nx, ny), (560, 330), ['NUCLEUS', '15 × 8 KM · DARK AS COAL'], 'end'))
     ann.append(label((nx + 40, ny - 40), (560, 130), ['COMA', '100,000 KM ACROSS'], 'end'))
@@ -310,7 +310,7 @@ def halley(u):
     ann.append(label((nx - 200, ny + 250), (560, 520), ['DUST TAIL', 'CURVED · SUNLIT DUST'], 'end'))
     ann.append('<g stroke="rgba(245,241,232,.5)" stroke-width=".7"><path d="M536 212L556 194M556 194l-7 1M556 194l-1 7"/></g><text x="530" y="226" text-anchor="end" fill="rgba(245,241,232,.6)" style="%s">SUN</text>' % LBL)
     ann.append(scalebar(22, 590, 110, '1 MILLION KM'))
-    return bg, obj, svg(W, H, ''.join(ann))
+    return bg, obj, svg(W, h, ''.join(ann))
 
 
 # ================================================================= SIRIUS

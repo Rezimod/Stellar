@@ -1,5 +1,5 @@
 /**
- * Files Set 001 and its cards in the sidera database.
+ * Files First Light and its cards in the sidera database.
  *
  *   SIDERA_DATABASE_CONFIRM=sidera npm run sidera:seed
  *
@@ -17,14 +17,16 @@ async function main() {
   const db = getDb()
   if (!db) throw new Error('DATABASE_URL is not configured')
 
-  const { cards } = await seedSet(db, SET_001, SET_001_CARDS)
+  const { cards, removed, kept } = await seedSet(db, SET_001, SET_001_CARDS)
   console.log(`${SET_001.code}: ${cards.length} cards filed`)
   for (const c of cards) {
-    console.log(`  ${c.designation.padEnd(18)} ${c.rarity.padEnd(10)} ${c.observationStatus.padEnd(14)} ${c.editionSize}`)
+    console.log(`  ${c.designation.padEnd(20)} ${c.rarity.padEnd(10)} ${c.observationStatus.padEnd(14)} ${c.editionSize}`)
   }
+  if (removed.length) console.log(`Removed, no editions existed: ${removed.join(', ')}`)
+  if (kept.length) console.log(`Still filed, editions exist — decide by hand: ${kept.join(', ')}`)
 }
 
 main().catch((error) => {
-  console.error('Seeding Set 001 failed:', error)
+  console.error('Seeding First Light failed:', error)
   process.exit(1)
 })

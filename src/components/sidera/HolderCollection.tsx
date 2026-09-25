@@ -19,7 +19,7 @@ function captureParts(capture: CaptureSummary): string[] {
  */
 export default function HolderCollection({ editions }: { editions: HolderEdition[] }) {
   if (editions.length === 0) {
-    return <p className="sd-note">No cards yet. Set 001 is where they come from.</p>
+    return <p className="sd-note">No cards yet. First Light is where they come from.</p>
   }
 
   const ordered = [...editions].sort((a, b) => {

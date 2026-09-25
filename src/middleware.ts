@@ -8,6 +8,8 @@ import { INVITE_COOKIE, inviteCodes } from '@/lib/invite';
  * on-chain-referenced route (never matched here).
  */
 const RETIRED: Array<[RegExp, string]> = [
+  // Cards of the first Set 001, replaced by First Light before anything sold.
+  [/^\/card\/(MOON|TRANQUILITY-BASE|VENUS|MARS|PLUTO|SIRIUS|POLARIS|BETELGEUSE|M16|M87|TWIN-SUN|TIDE-WORLD|RING-HABITAT|UNIT-7|SENTINEL|BLACK-SLAB|DERELICT|WORMHOLE)\/?$/i, '/set/001'],
   [/^\/(sky|moon)(\/|$)/, '/tonight'],
   [/^\/observatory\/?$/, '/node'],
   [/^\/(profile|u)(\/|$)/, '/collection'],

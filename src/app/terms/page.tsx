@@ -18,7 +18,7 @@ export default function TermsPage() {
         <section className="sd-chapter-block">
           <Chapter n="01" title="What Sidera is" />
           <p>
-            Sidera is a set of collectible cards, each a numbered edition of an object in the sky or a work of fiction. It is run
+            Sidera is a set of collectible cards, each a numbered edition of a real object or a dated event in the sky. It is run
             by Astroman, Tbilisi. Node 01, the telescope that photographs the night&rsquo;s card, is commissioning: until it is
             operational, no photograph is promised.
           </p>

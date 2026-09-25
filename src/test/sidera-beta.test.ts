@@ -83,3 +83,15 @@ describe('an invitation link', () => {
     expect(res.headers.get('set-cookie')).toBeNull();
   });
 });
+
+describe('the retired card pages', () => {
+  it('sends a card of the first Set 001 to First Light', () => {
+    delete process.env.SIDERA_INVITE_CODES;
+    for (const path of ['/card/MOON', '/card/M87', '/card/tranquility-base', '/card/WORMHOLE/']) {
+      const res = middleware(request(path));
+      expect(res.status, path).toBe(307);
+      expect(new URL(res.headers.get('location')!).pathname).toBe('/set/001');
+    }
+    expect(middleware(request('/card/HALLEY')).status).toBe(200);
+  });
+});

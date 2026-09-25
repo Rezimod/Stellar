@@ -17,6 +17,7 @@ import { eq, sql, type SQL } from 'drizzle-orm';
 import type { BatchItem } from 'drizzle-orm/batch';
 import { orders } from '@/lib/schema';
 import { isRarity, type Rarity } from '@/lib/rarity';
+import { isSealed } from './almanac';
 import type { Db } from './attach';
 import type { LogRow } from './audit';
 import { CAPSULE_PRICE_USD, CARDS_PER_CAPSULE, RARITY_ODDS_BPS } from './economics';
@@ -93,7 +94,7 @@ export type SupplyRow = SupplyEntry & { cardId: string; editionSize: number };
  * Every card of the set, with how many editions are left. Edition numbers are
  * gapless from 1, so the highest number allocated is the number allocated.
  */
-export async function readSupply(db: Db, setId: string): Promise<SupplyRow[]> {
+export async function readSupply(db: Db, setId: string, now: Date = new Date()): Promise<SupplyRow[]> {
   const { rows } = (await db.execute(sql`
     SELECT c.id, c.designation, c.rarity, c.edition_size,
       COALESCE((SELECT MAX(e.edition_number) FROM edition e WHERE e.card_id = c.id), 0) AS allocated
@@ -108,7 +109,8 @@ export async function readSupply(db: Db, setId: string): Promise<SupplyRow[]> {
       designation: r.designation,
       rarity: r.rarity as Rarity,
       editionSize: Number(r.edition_size),
-      remaining: Number(r.edition_size) - Number(r.allocated),
+      // A sealed Almanac card's unsold editions are retired: nothing left to draw.
+      remaining: isSealed(r.designation, now) ? 0 : Number(r.edition_size) - Number(r.allocated),
     }));
 }
 

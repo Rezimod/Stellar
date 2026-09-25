@@ -159,3 +159,21 @@ most reversible option; each needs a yes/no from Rezi.
     Still reachable: /nfts (the legacy observation view), /observatory/*
     (operator tools), /m/* and /api/*. **For the owner:** whether any
     redirected page should stay, and when to make the redirects permanent.
+
+## First Light (2026-09-25)
+
+25. **Set 001 replaced by First Light before anything sold.** The 24 cards
+    are new (16 Objects, 8 dated Almanac cards); `card_set.code` stays
+    `SET001` and the URL `/set/001`, the display name is First Light. The
+    "committed before sale" commitment is per capsule (SHA-256 of that
+    capsule's secret) and never covered the card list, so the 20 listed
+    capsules keep their commitments; their draws run against whatever
+    supply exists when they open. Sealing is read off the clock from
+    `eventEndUtc` (`src/lib/sidera/almanac.ts`), not stored: a sealed card
+    has 0 editions to draw, is not sold outright, and its tile says Sealed.
+    Re-seeding deletes the 18 old card rows only while no edition of them
+    exists. **For the owner:** the old rows are still in the sidera DB
+    until `sidera:seed` is run; `RARITY_ODDS_BPS` (7570/1960/420/50) was
+    tuned to the old 2,700/700/150/15 supply — First Light's is
+    2,100/800/120/25 — and was left as published; the Almanac's promised
+    capture on the night has no flow yet (nightly_target is by vote).

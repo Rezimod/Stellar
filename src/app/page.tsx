@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { eq } from 'drizzle-orm';
+import AlmanacDate from '@/components/sidera/AlmanacDate';
 import CapsuleTiers, { type TierCard } from '@/components/sidera/CapsuleTiers';
 import ShopFloor from '@/components/sidera/ShopFloor';
 import type { ShopCardProps } from '@/components/sidera/ShopCard';
@@ -11,6 +12,7 @@ import { getNode } from '@/lib/observatory/nodes';
 import { RARITIES, type Rarity } from '@/lib/rarity';
 import { card } from '@/lib/schema';
 import { SET_001, SET_001_CARDS } from '@/lib/sets/set-001';
+import { cardStatus } from '@/lib/sidera/almanac';
 import { readSetSupply } from '@/lib/sidera/capsule';
 import { DIRECT_CARD_PRICE_USD } from '@/lib/sidera/economics';
 import { nightRow } from '@/lib/sidera/night';
@@ -21,7 +23,7 @@ export const revalidate = 60;
 export const metadata: Metadata = {
   title: 'Sidera — the night sky, issued in editions',
   description:
-    'Twenty-four cards, each held as a numbered edition. A telescope in Tbilisi photographs one real object a night, and everyone holding that card gets the photograph.',
+    'First Light: twenty-four cards, each held as a numbered edition. Sixteen real objects, eight dated events. A telescope in Tbilisi photographs one object a night, and everyone holding that card gets the photograph.',
 };
 
 export default async function HomePage() {
@@ -47,27 +49,38 @@ export default async function HomePage() {
   }
 
   // Scarcest first, the way a shelf puts its best stock at eye level.
-  const seeds = SET_001_CARDS.map(({ seed }) => seed).sort(
-    (a, b) => RARITIES.indexOf(b.rarity as Rarity) - RARITIES.indexOf(a.rarity as Rarity),
+  const now = new Date();
+  const sorted = [...SET_001_CARDS].sort(
+    (a, b) => RARITIES.indexOf(b.seed.rarity as Rarity) - RARITIES.indexOf(a.seed.rarity as Rarity),
   );
-  const cards: ShopCardProps[] = seeds.map((seed) => {
+  const cards: ShopCardProps[] = sorted.map((c) => {
+    const { seed, record } = c;
     const rarity = seed.rarity as Rarity;
     const left = remaining.get(seed.designation) ?? seed.editionSize;
+    const sealed = cardStatus(c, now) === 'sealed';
     return {
       designation: seed.designation,
       name: seed.name,
       rarity,
-      sub: `${left} of ${seed.editionSize} left`,
-      price: `$${DIRECT_CARD_PRICE_USD[rarity]}`,
+      sub:
+        record.section === 'almanac' ? (
+          <AlmanacDate startUtc={record.eventStartUtc!} endUtc={record.eventEndUtc!} countdown short />
+        ) : (
+          `${left} of ${seed.editionSize} left`
+        ),
+      price: sealed ? 'Sealed' : `$${DIRECT_CARD_PRICE_USD[rarity]}`,
       tag: seed.designation === tonight ? 'Tonight' : undefined,
     };
   });
-  const tierCards: TierCard[] = seeds.map((seed) => ({
-    designation: seed.designation,
-    name: seed.name,
-    rarity: seed.rarity as Rarity,
-    editionSize: seed.editionSize,
-  }));
+  // A sealed card is out of every capsule.
+  const tierCards: TierCard[] = sorted
+    .filter((c) => cardStatus(c, now) === 'open')
+    .map(({ seed }) => ({
+      designation: seed.designation,
+      name: seed.name,
+      rarity: seed.rarity as Rarity,
+      editionSize: seed.editionSize,
+    }));
 
   return (
     <SideraShell title="Sidera">
@@ -75,7 +88,7 @@ export default async function HomePage() {
       <div className="sd-shop">
         <CapsuleTiers cards={tierCards} />
         <div className="sd-shop__set">
-          <span className="sd-label">Set 001 · {cards.length} cards</span>
+          <span className="sd-label">First Light · {cards.length} cards</span>
           <Link href="/capsules/log" className="sd-shop__chip">
             Provably fair · log
           </Link>

@@ -27,8 +27,8 @@ export const CARDS_PER_CAPSULE = 3;
 /**
  * PROVISIONAL (Gate 2). Chance of each rarity on a single draw, in parts per
  * ten thousand. Integers so the draw is exact arithmetic that any verifier,
- * in any language, reproduces bit for bit. Set to Set 001's own supply mix
- * (2,700 / 700 / 150 / 15 editions), so no tier runs out long before the rest.
+ * in any language, reproduces bit for bit. Set to the first set's supply mix
+ * (2,700 / 700 / 150 / 15 editions); First Light's is 2,100 / 800 / 120 / 25.
  */
 export const RARITY_ODDS_BPS: Record<Rarity, number> = {
   common: 7570,

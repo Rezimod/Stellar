@@ -1,49 +1,32 @@
 /**
- * What a Set 001 card prints: its line of record, three figures, and the line
- * on its back. The drawing itself is in public/cards/plate/<DESIGNATION>/,
- * written by scripts/sidera-plates/build.py.
+ * What a First Light card prints: its line of record, three figures, and the
+ * line on its back — read off the card's own record. The drawing itself is in
+ * public/cards/plate/<DESIGNATION>/, written by scripts/sidera-plates/build.py.
  */
 import { rarityInfo, type Rarity } from '@/lib/rarity';
+import type { Section } from '@/lib/sets/build';
 import { SET_001_CARDS, SET_001_CARD_BY_DESIGNATION } from '@/lib/sets/set-001';
-
-type Spec = {
-  des: string;
-  data: [string, string][];
-  /** Name as it runs on the back: "When Node 01 photographs the Moon". Null for fiction. */
-  noun: string | null;
-  back: string;
-  /** Name size where the plate sets it by hand. */
-  nameSize?: number;
-};
 
 const MOVES = 'RA/DEC · MOVES — COMPUTED FOR THE NIGHT';
 
-const SPECS: Record<string, Spec> = {
-  MOON: { des: 'MOON · EARTH’S MOON · JPL HORIZONS 301', data: [['DIAMETER', '3,474 KM'], ['DISTANCE', '384,400 KM'], ['SYNODIC', '29.5 DAYS']], noun: 'the Moon', back: MOVES, nameSize: 54 },
-  'TRANQUILITY-BASE': { des: 'TRANQUILITY BASE · APOLLO 11 · LROC', data: [['LANDED', '20 JUL 1969'], ['MOONWALK', '2 H 31 M'], ['LATITUDE', '0.674° N']], noun: 'Tranquility Base', back: 'LAT 0.674° N · LON 23.473° E' },
-  VENUS: { des: 'VENUS · PLANET · JPL HORIZONS 299', data: [['DIAMETER', '12,104 KM'], ['DAY', '243 DAYS'], ['SURFACE', '465 °C']], noun: 'Venus', back: MOVES },
-  MARS: { des: 'MARS · PLANET · JPL HORIZONS 499', data: [['DIAMETER', '6,779 KM'], ['DAY', '24 H 37 M'], ['MOONS', '2']], noun: 'Mars', back: MOVES },
-  JUPITER: { des: 'JUPITER · PLANET · JPL HORIZONS 599', data: [['DIAMETER', '142,984 KM'], ['DAY', '9 H 56 M'], ['MOONS', '95']], noun: 'Jupiter', back: MOVES },
-  SATURN: { des: 'SATURN · PLANET · JPL HORIZONS 699', data: [['DIAMETER', '120,536 KM'], ['DAY', '10 H 33 M'], ['DENSITY', '0.69 G/CM³']], noun: 'Saturn', back: MOVES, nameSize: 58 },
-  PLUTO: { des: 'PLUTO · DWARF PLANET · JPL HORIZONS 999', data: [['DIAMETER', '2,377 KM'], ['YEAR', '248 YEARS'], ['DAY', '6.4 DAYS']], noun: 'Pluto', back: MOVES },
-  HALLEY: { des: '1P/HALLEY · COMET · PERIODIC', data: [['PERIOD', '76 YEARS'], ['NUCLEUS', '15 × 8 KM'], ['RETURNS', '2061']], noun: 'Halley’s Comet', back: MOVES },
-  SIRIUS: { des: 'SIRIUS · STAR · HIP 32349', data: [['MAGNITUDE', '−1.46'], ['DISTANCE', '8.6 LY'], ['TYPE', 'A1V']], noun: 'Sirius', back: '' },
-  POLARIS: { des: 'POLARIS · STAR · HIP 11767', data: [['MAGNITUDE', '1.98'], ['DISTANCE', '433 LY'], ['TYPE', 'F7IB']], noun: 'Polaris', back: '' },
-  BETELGEUSE: { des: 'BETELGEUSE · RED SUPERGIANT · HIP 27989', data: [['MAGNITUDE', '0.50'], ['DISTANCE', '~550 LY'], ['RADIUS', '~760 R☉']], noun: 'Betelgeuse', back: '' },
-  M42: { des: 'M42 · NEBULA · NGC 1976', data: [['DISTANCE', '1,344 LY'], ['SIZE', '24 LY'], ['MAGNITUDE', '4.0']], noun: 'the Orion Nebula', back: '' },
-  M45: { des: 'M45 · STAR CLUSTER · SEVEN SISTERS', data: [['DISTANCE', '444 LY'], ['AGE', '100 MYR'], ['MAGNITUDE', '1.6']], noun: 'the Pleiades', back: '' },
-  M31: { des: 'M31 · SPIRAL GALAXY · NGC 224', data: [['DISTANCE', '2.5 MLY'], ['STARS', '~1 TRILLION'], ['MAGNITUDE', '3.4']], noun: 'Andromeda', back: '' },
-  M16: { des: 'M16 · NEBULA · NGC 6611', data: [['DISTANCE', '5,700 LY'], ['PILLAR', '4 LY TALL'], ['MAGNITUDE', '6.0']], noun: 'the Eagle Nebula', back: '' },
-  M87: { des: 'M87* · SUPERMASSIVE BLACK HOLE · VIRGO A', data: [['MASS', '6.5 BN M☉'], ['DISTANCE', '55 MLY'], ['SHADOW', '42 µAS']], noun: 'M87', back: '', nameSize: 46 },
-  'TWIN-SUN': { des: 'TWIN-SUN · FICTIONAL WORLD · SIDERA FICTION 01', data: [['SUNS', '2'], ['SUNSETS', '2 A DAY'], ['WATER', 'NONE']], noun: null, back: '' },
-  'TIDE-WORLD': { des: 'TIDE-WORLD · FICTIONAL WORLD · SIDERA FICTION 02', data: [['OCEAN', '100%'], ['LAND', 'NONE'], ['MOONS', '1']], noun: null, back: '' },
-  'RING-HABITAT': { des: 'RING-HABITAT · FICTIONAL HABITAT · SIDERA FICTION 03', data: [['RADIUS', '1 AU'], ['STAR', '1'], ['NIGHT', 'BY SHADOW']], noun: null, back: '' },
-  'UNIT-7': { des: 'UNIT-7 · FICTIONAL ROBOT · SIDERA FICTION 04', data: [['HEIGHT', '1.1 M'], ['PLANTS', '1'], ['COMPANY', 'NONE']], noun: null, back: '' },
-  SENTINEL: { des: 'SENTINEL · FICTIONAL ROBOT · SIDERA FICTION 05', data: [['HEIGHT', '40 M'], ['WATCHING', '10,000 YEARS'], ['SENSORS', '1']], noun: null, back: '' },
-  'BLACK-SLAB': { des: 'BLACK-SLAB · FICTIONAL ARTIFACT · SIDERA FICTION 06', data: [['RATIO', '1 : 4 : 9'], ['MAKER', 'UNKNOWN'], ['SEEN', 'AT ALIGNMENT']], noun: null, back: '' },
-  DERELICT: { des: 'DERELICT · FICTIONAL STARSHIP · SIDERA FICTION 07', data: [['LENGTH', '11 KM'], ['LIGHTS ON', '4'], ['CREW', 'NONE FOUND']], noun: null, back: '' },
-  WORMHOLE: { des: 'WORMHOLE · FICTIONAL PHENOMENON · SIDERA FICTION 08', data: [['THROAT', '1,400 KM'], ['DEPTH', '0 KM'], ['OTHER SIDE', 'A GALAXY']], noun: null, back: '' },
+/** The name as it runs on the back: "When Node 01 photographs the Moon". Absent for what the node cannot point at. */
+const NOUN: Record<string, string> = {
+  TYCHO: 'Tycho',
+  'OLYMPUS-MONS': 'Olympus Mons',
+  JUPITER: 'Jupiter',
+  EUROPA: 'Europa',
+  SATURN: 'Saturn',
+  'KRAKEN-MARE': 'Kraken Mare',
+  HALLEY: 'Halley',
+  M45: 'the Pleiades',
+  M42: 'the Orion Nebula',
+  M1: 'the Crab',
+  'SGR-A': 'Sagittarius A*',
+  M31: 'Andromeda',
 };
+
+/** Name size where the face sets it by hand. */
+const NAME_SIZE: Record<string, number> = { SATURN: 40 };
 
 export type Plate = {
   designation: string;
@@ -62,6 +45,7 @@ export type Plate = {
   nameSize: number;
   back: string;
   noun: string | null;
+  section: Section;
   /** The directory holding sky.svg, object.svg and survey.svg. */
   art: string;
 };
@@ -78,21 +62,27 @@ function position(ra: number, dec: number) {
   return `RA ${two(h)}H ${two(m)}M ${two(sec)}S · DEC ${dec < 0 ? '−' : '+'}${two(d)}° ${two(dm)}′ ${two(ds)}″`;
 }
 
+/** "LAT 43.31° S · LON 11.36° W" */
+function lunar(lat: number, lon: number) {
+  return `LAT ${Math.abs(lat).toFixed(2)}° ${lat < 0 ? 'S' : 'N'} · LON ${Math.abs(lon).toFixed(2)}° ${lon < 0 ? 'W' : 'E'}`;
+}
+
 export function plateFor(designation: string): Plate | null {
   const card = SET_001_CARD_BY_DESIGNATION.get(designation);
-  const spec = SPECS[designation];
-  if (!card || !spec) return null;
-  const { seed } = card;
+  if (!card) return null;
+  const { seed, record } = card;
   const rarity = seed.rarity as Rarity;
   const info = rarityInfo(rarity);
-  const fiction = spec.noun === null;
   const back =
-    spec.back ||
-    (fiction
-      ? `${seed.catalogRef.toUpperCase()} · NOT IN ANY SKY`
+    record.section === 'almanac'
+      ? `${record.eventStartUtc!.slice(0, 10)} · ${record.eventEndUtc!.slice(0, 10)} UTC`
       : seed.raHours != null && seed.decDeg != null
         ? position(seed.raHours, seed.decDeg)
-        : MOVES);
+        : seed.surfaceLat != null && seed.surfaceLon != null
+          ? lunar(seed.surfaceLat, seed.surfaceLon)
+          : NOUN[designation]
+            ? MOVES
+            : seed.catalogRef.toUpperCase();
   return {
     designation,
     name: seed.name,
@@ -100,23 +90,25 @@ export function plateFor(designation: string): Plate | null {
     rname: info.label,
     glyph: info.glyph,
     num: String(SET_001_CARDS.indexOf(card) + 1).padStart(2, '0'),
-    des: spec.des,
-    data: spec.data,
+    des: `${designation} · ${seed.objectType} · ${seed.catalogRef}`.toUpperCase(),
+    data: record.stats.map(([label, value]) => [label, value.toUpperCase()]),
     of: pad3(seed.editionSize),
     full: rarity === 'legendary',
-    nameSize: spec.nameSize ?? Math.min(58, Math.floor(410 / (seed.name.length * 0.6))),
+    nameSize: NAME_SIZE[designation] ?? Math.min(58, Math.floor(410 / (seed.name.length * 0.6))),
     back,
-    noun: spec.noun,
+    noun: NOUN[designation] ?? null,
+    section: record.section,
     art: `/cards/plate/${designation}`,
   };
 }
 
-/** Each object's own light, for the glow a tile sits on. Where an object has none — a crater, a slab — the family's stands in. */
+/** Each object's own light, for the glow a tile sits on. Where an object has none — a crater, a stone — the family's stands in. */
 const GLOW: Record<string, string> = {
-  MOON: '#c9d6ff', 'TRANQUILITY-BASE': '#bacbff', VENUS: '#ffd79a', MARS: '#ff9a63', JUPITER: '#ffbd8a', SATURN: '#ffe3a3',
-  PLUTO: '#e4d3ff', HALLEY: '#7fc8ff', SIRIUS: '#9fcaff', POLARIS: '#a9c4ff', BETELGEUSE: '#ff7a4a', M42: '#ff9ec7', M45: '#6fb6ff',
-  M31: '#b8c6ff', M16: '#56d6c2', M87: '#ff8a2a', 'TWIN-SUN': '#ff9a5a', 'TIDE-WORLD': '#7fd8ff', 'RING-HABITAT': '#7fe0a8',
-  'UNIT-7': '#ffb070', SENTINEL: '#5ef0ff', 'BLACK-SLAB': '#e8e2d4', DERELICT: '#6fa8d8', WORMHOLE: '#b9a4ff',
+  'FIRST-LIGHT': '#e8e2d4', IMILAC: '#d9b26f', 'LUNAR-FRAGMENT': '#c9d6ff', TYCHO: '#bacbff', 'OLYMPUS-MONS': '#ff9a63',
+  JUPITER: '#ffbd8a', EUROPA: '#d8ecff', SATURN: '#ffe3a3', 'KRAKEN-MARE': '#ffd28a', HALLEY: '#7fc8ff', 'VOYAGER-1': '#bfc8d8',
+  M45: '#6fb6ff', M42: '#ff9ec7', M1: '#9fd0ff', 'SGR-A': '#ff8a2a', M31: '#b8c6ff',
+  ORIONIDS: '#9fcaff', 'HUNTERS-MOON': '#ffd79a', 'PLEIADES-OCCULTATION': '#c9d6ff', GEMINIDS: '#a9c4ff',
+  'CHRISTMAS-SUPERMOON': '#fff1cf', 'DOUBLE-OPPOSITION': '#ffb070', 'SNOW-MOON-ECLIPSE': '#d6c2ff', 'GREAT-ECLIPSE': '#ffe9b8',
 };
 export const glowFor = (designation: string) => GLOW[designation] ?? '#bcd8ff';
 

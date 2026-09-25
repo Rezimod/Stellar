@@ -4,7 +4,7 @@ const ROUTES = [
   ['home', '/'],
   ['set-001', '/set/001'],
   ['card-saturn', '/card/SATURN'],
-  ['card-m87', '/card/M87'],
+  ['card-halley', '/card/HALLEY'],
   ['capsules', '/capsules'],
 ] as const;
 

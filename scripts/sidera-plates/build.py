@@ -1,4 +1,4 @@
-"""Writes every Set 001 plate as three layers: public/cards/plate/<DESIGNATION>/{sky,object,survey}.svg
+"""Writes every First Light plate as three layers: public/cards/plate/<DESIGNATION>/{sky,object,survey}.svg
 
     python3 scripts/sidera-plates/build.py [path/to/JetBrainsMono-Regular.ttf]
 
@@ -6,18 +6,17 @@ The layers are served as images, so the survey layer carries its own subset of
 JetBrains Mono. fontTools (and brotli) are needed only for that subset.
 """
 import base64, io, os, re, sys
-from drawing import moon, andromeda, saturn, m87
+from drawing import andromeda, saturn
 import more
+from first_light import PLACEHOLDERS
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 OUT = os.path.join(ROOT, 'public', 'cards', 'plate')
 
+# Drawn plates; every other First Light card is a typographic placeholder until its drawing exists.
 ART = {
-    'MOON': moon, 'TRANQUILITY-BASE': more.tranquility, 'VENUS': more.venus, 'MARS': more.mars, 'JUPITER': more.jupiter,
-    'SATURN': saturn, 'PLUTO': more.pluto, 'HALLEY': more.halley, 'SIRIUS': more.sirius, 'POLARIS': more.polaris,
-    'BETELGEUSE': more.betelgeuse, 'M42': more.m42, 'M45': more.m45, 'M31': andromeda, 'M16': more.m16, 'M87': m87,
-    'TWIN-SUN': more.twin_sun, 'TIDE-WORLD': more.tide_world, 'RING-HABITAT': more.ring_habitat, 'UNIT-7': more.unit7,
-    'SENTINEL': more.sentinel, 'BLACK-SLAB': more.black_slab, 'DERELICT': more.derelict, 'WORMHOLE': more.wormhole,
+    'JUPITER': more.jupiter, 'SATURN': saturn, 'HALLEY': lambda u: more.halley(u, more.HF), 'M45': more.m45, 'M42': more.m42, 'M31': andromeda,
+    **PLACEHOLDERS,
 }
 
 

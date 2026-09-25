@@ -5,26 +5,33 @@ import { DEEP_SKY_BY_ID } from '@/lib/observatory/sky-field';
 import { SIM_TARGET_BY_ID } from '@/lib/observatory/sim-targets';
 import { isRarity, RARITIES, rarityInfo } from '@/lib/rarity';
 import { JUDGING_NODE_ID, subjectOf } from '@/lib/sets/build';
-import { SET_001_CARD_BY_DESIGNATION, SET_001_CARDS } from '@/lib/sets/set-001';
+import { groupCards } from '@/lib/sets/groups';
+import { SET_001, SET_001_CARD_BY_DESIGNATION, SET_001_CARDS } from '@/lib/sets/set-001';
+import { cardStatus, eventLabel, isSealed } from '@/lib/sidera/almanac';
 import { EDITION_SIZE } from '@/lib/sidera/economics';
 import { observability } from '@/lib/sidera/observability';
-import { BRIGHT_STARS } from '@/lib/sky/stars';
+import { plateFor } from '@/lib/sidera/plate';
 
 const node = getNode(JUDGING_NODE_ID)!;
 const seeds = SET_001_CARDS.map((c) => c.seed);
 const byDesignation = (d: string) => SET_001_CARD_BY_DESIGNATION.get(d)!.seed;
+const objects = SET_001_CARDS.filter((c) => c.record.section === 'object');
+const almanac = SET_001_CARDS.filter((c) => c.record.section === 'almanac');
+const pointable = objects.filter((c) => c.seed.targetId !== 'kept');
 
-describe('Set 001', () => {
-  it('is twenty-four cards, sixteen real and eight from fiction, each filed under its own designation', () => {
+describe('First Light', () => {
+  it('is twenty-four cards, sixteen objects then eight dated events, each filed under its own designation', () => {
+    expect(SET_001.name).toBe('First Light');
     expect(seeds.length).toBe(24);
-    expect(seeds.filter((c) => c.targetId === 'fiction')).toHaveLength(8);
+    expect(objects).toHaveLength(16);
+    expect(almanac).toHaveLength(8);
+    expect(SET_001_CARDS.slice(0, 16)).toEqual(objects);
     expect(new Set(seeds.map((c) => c.designation)).size).toBe(seeds.length);
     for (const c of seeds) expect(c.designation).toMatch(/^[A-Z0-9-]+$/);
   });
 
   it('takes every observation status from the helper, recomputed here', () => {
-    for (const { seed, subject } of SET_001_CARDS.filter((c) => c.seed.targetId !== 'fiction')) {
-      // The subject judged is the card's own target and position.
+    for (const { seed, subject } of pointable) {
       const { resolveArcsec, magnitude, sizeArcmin } = subject;
       const recomputed = observability(subjectOf(seed, { resolveArcsec, magnitude, sizeArcmin }), node);
       expect(seed.observationStatus, seed.designation).toBe(recomputed.status);
@@ -34,47 +41,44 @@ describe('Set 001', () => {
   it('comes out as authored', () => {
     const statuses = Object.fromEntries(seeds.map((c) => [c.designation, `${c.rarity} ${c.observationStatus}`]));
     expect(statuses).toEqual({
-      MOON: 'common eligible',
-      'TRANQUILITY-BASE': 'legendary not_available',
-      VENUS: 'common eligible',
-      MARS: 'common eligible',
+      'FIRST-LIGHT': 'legendary not_available',
+      IMILAC: 'legendary not_available',
+      'LUNAR-FRAGMENT': 'legendary not_available',
+      TYCHO: 'rare eligible',
+      'OLYMPUS-MONS': 'common not_available',
       JUPITER: 'rare eligible',
+      EUROPA: 'common not_available',
       SATURN: 'epic eligible',
-      PLUTO: 'rare not_available',
-      HALLEY: 'epic not_available',
-      SIRIUS: 'common eligible',
-      POLARIS: 'common eligible',
-      BETELGEUSE: 'rare eligible',
-      M42: 'common eligible',
-      M45: 'common eligible',
+      'KRAKEN-MARE': 'common not_available',
+      HALLEY: 'legendary not_available',
+      'VOYAGER-1': 'common not_available',
+      M45: 'rare eligible',
+      M42: 'rare eligible',
+      M1: 'epic not_available',
+      'SGR-A': 'common not_available',
       M31: 'rare not_available',
-      M16: 'epic eligible',
-      M87: 'legendary not_available',
-      'TWIN-SUN': 'rare not_available',
-      'TIDE-WORLD': 'common not_available',
-      'RING-HABITAT': 'epic not_available',
-      'UNIT-7': 'common not_available',
-      SENTINEL: 'rare not_available',
-      'BLACK-SLAB': 'epic not_available',
-      DERELICT: 'rare not_available',
-      WORMHOLE: 'legendary not_available',
+      ORIONIDS: 'common not_available',
+      'HUNTERS-MOON': 'common not_available',
+      'PLEIADES-OCCULTATION': 'rare not_available',
+      GEMINIDS: 'rare not_available',
+      'CHRISTMAS-SUPERMOON': 'rare not_available',
+      'DOUBLE-OPPOSITION': 'epic not_available',
+      'SNOW-MOON-ECLIPSE': 'epic not_available',
+      'GREAT-ECLIPSE': 'legendary not_available',
     });
   });
 
-  it('never offers fiction to the telescope, and says why', () => {
-    for (const c of SET_001_CARDS.filter((x) => x.seed.targetId === 'fiction')) {
-      expect(c.seed.observationStatus).toBe('not_available');
-      expect(c.observability.reason).toMatch(/^Fiction\./);
-      expect(c.seed.objectType).toMatch(/^fictional /);
-    }
+  it('counts five of each tier as the table says: 5 legendary, 4 epic, 8 rare, 7 common', () => {
+    const count = (r: string) => seeds.filter((c) => c.rarity === r).length;
+    expect([count('legendary'), count('epic'), count('rare'), count('common')]).toEqual([5, 4, 8, 7]);
   });
 
-  it('keeps rarity independent of whether the node can record the object', () => {
-    for (const status of ['eligible', 'not_available']) {
-      const rarities = new Set(seeds.filter((c) => c.observationStatus === status).map((c) => c.rarity));
-      expect(rarities.has('common'), status).toBe(true);
-      expect(rarities.has('epic'), status).toBe(true);
+  it('never offers the telescope what it cannot point at, and says why', () => {
+    for (const c of SET_001_CARDS.filter((x) => x.seed.targetId === 'kept' || x.seed.targetId === 'event')) {
+      expect(c.seed.observationStatus).toBe('not_available');
+      expect(c.observability.reason.length).toBeGreaterThan(20);
     }
+    for (const c of almanac) expect(c.seed.targetId).toBe('event');
   });
 
   it('only offers the night picker targets the node can actually capture', () => {
@@ -93,8 +97,8 @@ describe('Set 001', () => {
   });
 
   it('has a fixed J2000 position for fixed objects and none for the moving ones', () => {
-    for (const c of seeds.filter((x) => x.targetId !== 'fiction')) {
-      const moving = SIM_TARGET_BY_ID.get(c.targetId)?.kind === 'body' || ['pluto', 'halley'].includes(c.targetId);
+    for (const c of pointable.map((x) => x.seed)) {
+      const moving = SIM_TARGET_BY_ID.get(c.targetId)?.kind === 'body' || c.targetId === 'halley';
       if (moving) {
         expect(c.raHours, c.designation).toBeNull();
         expect(c.decDeg, c.designation).toBeNull();
@@ -104,38 +108,73 @@ describe('Set 001', () => {
         expect(Math.abs(c.decDeg!), c.designation).toBeLessThanOrEqual(90);
       }
       const onMoon = c.surfaceLat !== null && c.surfaceLat !== undefined;
-      expect(onMoon, c.designation).toBe(c.designation === 'TRANQUILITY-BASE');
+      expect(onMoon, c.designation).toBe(c.designation === 'TYCHO');
     }
   });
 
-  it('takes star and deep-sky positions from the catalogues the node already uses', () => {
-    const stars = { SIRIUS: 'sirius', POLARIS: 'polaris', BETELGEUSE: 'betelgeuse' };
-    for (const [designation, id] of Object.entries(stars)) {
-      const s = BRIGHT_STARS.find((x) => x.id === id)!;
-      expect(byDesignation(designation)).toMatchObject({ raHours: s.ra, decDeg: s.dec });
-    }
-    for (const id of ['m42', 'm45', 'm31']) {
+  it('takes deep-sky positions from the catalogue the node already uses', () => {
+    for (const id of ['m42', 'm45', 'm31', 'm1']) {
       const d = DEEP_SKY_BY_ID.get(id)!;
       expect(byDesignation(id.toUpperCase())).toMatchObject({ raHours: d.ra, decDeg: d.dec });
     }
   });
 
-  it('agrees with the sim targets on the position of everything the node carries', () => {
-    for (const c of seeds) {
-      const target = SIM_TARGET_BY_ID.get(c.targetId);
-      if (target?.kind !== 'fixed') continue;
-      expect(c.raHours, c.designation).toBeCloseTo(target.ra!, 3);
-      expect(c.decDeg, c.designation).toBeCloseTo(target.dec!, 3);
+  it('pairs cards both ways, and only with cards in the set', () => {
+    for (const c of SET_001_CARDS) {
+      const p = c.record.pairsWith;
+      if (p === null) continue;
+      const other = SET_001_CARD_BY_DESIGNATION.get(p);
+      expect(other, `${c.seed.designation} pairs with ${p}`).toBeDefined();
+      expect(other!.record.pairsWith).toBe(c.seed.designation);
+    }
+    expect(SET_001_CARDS.filter((c) => c.record.physical).map((c) => c.seed.designation)).toEqual(['IMILAC', 'LUNAR-FRAGMENT']);
+  });
+
+  it('prints three figures and a line on every card, in the logbook’s voice', () => {
+    const banned = /\b(nfts?|mint(ed|ing|s)?|drops?|payload|manifest|registry|airdrops?)\b/i;
+    for (const c of SET_001_CARDS) {
+      expect(c.record.stats).toHaveLength(3);
+      expect(c.record.line, c.seed.designation).not.toMatch(banned);
+      expect(c.record.line).not.toContain('!');
+      expect(c.seed.blurb).toBe(c.record.line);
+      expect(c.seed.artUrl).toMatch(/^\/cards\//);
+      const plate = plateFor(c.seed.designation)!;
+      expect(plate.des.length, plate.des).toBeLessThanOrEqual(60);
+      for (const [, value] of plate.data) expect(value.length, value).toBeLessThanOrEqual(17);
     }
   });
 
-  it('writes its blurbs in the logbook’s voice', () => {
-    const banned = /\b(nfts?|mint(ed|ing|s)?|drops?|payload|manifest|registry|airdrops?)\b/i;
-    for (const c of seeds) {
-      expect(c.blurb, c.designation).not.toMatch(banned);
-      expect(c.blurb, c.designation).not.toContain('!');
-      expect(c.artUrl).toMatch(/^\/cards\//);
-    }
+  it('lists the Almanac by date, every event with a window', () => {
+    const dated = groupCards(SET_001_CARDS, 'almanac');
+    expect(dated.map((c) => c.seed.designation)).toEqual([
+      'ORIONIDS', 'HUNTERS-MOON', 'PLEIADES-OCCULTATION', 'GEMINIDS', 'CHRISTMAS-SUPERMOON', 'DOUBLE-OPPOSITION', 'SNOW-MOON-ECLIPSE', 'GREAT-ECLIPSE',
+    ]);
+    for (const c of dated) expect(Date.parse(c.record.eventEndUtc!)).toBeGreaterThan(Date.parse(c.record.eventStartUtc!));
+    for (const c of objects) expect(c.record.eventEndUtc).toBeNull();
+  });
+});
+
+describe('sealing', () => {
+  const orionids = SET_001_CARD_BY_DESIGNATION.get('ORIONIDS')!;
+  const before = new Date('2026-09-26T12:00:00Z');
+  const during = new Date('2026-10-21T20:00:00Z');
+  const after = new Date('2026-10-23T00:00:00Z');
+
+  it('is open before the event ends and sealed from the moment it does', () => {
+    expect(cardStatus(orionids, before)).toBe('open');
+    expect(cardStatus(orionids, during)).toBe('open');
+    expect(cardStatus(orionids, after)).toBe('sealed');
+    expect(isSealed('ORIONIDS', after)).toBe(true);
+    expect(isSealed('JUPITER', new Date('2099-01-01T00:00:00Z'))).toBe(false);
+    expect(isSealed('NOT-A-CARD', after)).toBe(false);
+  });
+
+  it('counts down in days, then says under way, then sealed', () => {
+    const { eventStartUtc: s, eventEndUtc: e } = orionids.record;
+    expect(eventLabel(s!, e!, before)).toBe('In 25 days');
+    expect(eventLabel(s!, e!, new Date('2026-10-20T12:00:00Z'))).toBe('Tonight');
+    expect(eventLabel(s!, e!, during)).toBe('Under way');
+    expect(eventLabel(s!, e!, after)).toBe('Sealed');
   });
 });
 

@@ -17,7 +17,7 @@ export const dynamic = 'force-dynamic';
 export const metadata: Metadata = {
   title: 'Capsules — three cards, sealed before the sale',
   description:
-    'A capsule holds three cards from Set 001. The outcome is sealed before it goes on sale and can be checked by anyone after it opens.',
+    'A capsule holds three cards from First Light. The outcome is sealed before it goes on sale and can be checked by anyone after it opens.',
 };
 
 export default async function CapsulesPage() {

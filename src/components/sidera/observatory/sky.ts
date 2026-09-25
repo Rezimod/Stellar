@@ -42,11 +42,11 @@ export function clock(t: number, timezone: string, seconds = false) {
   }).format(new Date(t));
 }
 
-/** The Set 001 card drawn of each telescope target, where there is one. The Moon's first card is the Moon itself. */
+/** The First Light card drawn of each telescope target, where there is one. */
 const CARD_BY_TARGET = new Map<string, string>();
 for (const c of SET_001_CARDS) {
   const id = c.seed.targetId;
-  if (!id || id === 'fiction') continue;
+  if (c.seed.observationStatus === 'not_available') continue;
   for (const key of [id, `star-${id}`]) if (!CARD_BY_TARGET.has(key)) CARD_BY_TARGET.set(key, c.seed.designation);
 }
 export const cardForTarget = (id: string) => CARD_BY_TARGET.get(id) ?? null;

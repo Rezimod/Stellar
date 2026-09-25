@@ -24,7 +24,7 @@ export default function SideraBuyCard({
   rarity: Rarity;
   priceUsd: number;
   available: boolean;
-  /** A draft set sells nothing. Set 001 is draft until it is released. */
+  /** A draft set sells nothing. First Light is draft until it is released. */
   released: boolean;
 }) {
   const { getAccessToken, login } = usePrivy();
@@ -35,7 +35,7 @@ export default function SideraBuyCard({
   const [placing, setPlacing] = useState(false);
 
   if (!released) {
-    return <p className="sd-note">Direct sale opens when Set 001 is released. Until then, every card comes out of a capsule.</p>;
+    return <p className="sd-note">Direct sale opens when First Light is released. Until then, every card comes out of a capsule.</p>;
   }
 
   if (!available) {

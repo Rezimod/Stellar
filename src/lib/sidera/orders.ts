@@ -19,6 +19,7 @@ import { and, eq, inArray, sql } from 'drizzle-orm';
 import { card, edition, orders } from '@/lib/schema';
 import { priceToSol } from '@/lib/dealers';
 import { fetchSolPriceRates } from '@/lib/sol-price';
+import { isSealed } from './almanac';
 import type { Db } from './attach';
 import { ORDER_WINDOW_MINUTES } from './economics';
 
@@ -216,6 +217,7 @@ export async function cardAvailability(db: Db, designation: string) {
   const r = rows[0];
   if (!r) return null;
   const released = r.set_status === 'released';
+  const sealed = isSealed(designation);
   return {
     cardId: r.id,
     name: r.name,
@@ -224,7 +226,9 @@ export async function cardAvailability(db: Db, designation: string) {
     allocated: Number(r.allocated),
     /** A draft set is not on sale. Nothing in it can be bought, by capsule or on its own. */
     released,
-    available: released && Number(r.allocated) < Number(r.edition_size) && Number(r.spare) >= 1,
+    /** An Almanac card whose event has ended. Its unsold editions are retired. */
+    sealed,
+    available: released && !sealed && Number(r.allocated) < Number(r.edition_size) && Number(r.spare) >= 1,
   };
 }
 

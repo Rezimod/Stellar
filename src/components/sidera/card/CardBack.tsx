@@ -36,15 +36,17 @@ function CardBack({ plate: c, edition, commitment, sealed = false, u }: Props) {
   const b = `${u}b`;
   const ed = editionLabel(edition);
   const micro = sealed
-    ? 'SIDERA · SET 001 · SEALED · NODE 01 · TBILISI · '
-    : `SIDERA · SET 001 · ${c.des.split(' · ')[0]} · EDITION ${ed} OF ${c.of} · NODE 01 · TBILISI · `;
+    ? 'SIDERA · FIRST LIGHT · SEALED · NODE 01 · TBILISI · '
+    : `SIDERA · FIRST LIGHT · ${c.des.split(' · ')[0]} · EDITION ${ed} OF ${c.of} · NODE 01 · TBILISI · `;
   const lines = sealed
-    ? ['One card of Set 001.', 'Turn it over.']
+    ? ['One card of First Light.', 'Turn it over.']
     : [
         edition == null ? `This card is one of ${c.of} editions.` : `This card is edition ${ed} of ${c.of}.`,
-        ...(c.noun
-          ? [`When Node 01 photographs ${c.noun},`, 'every holder of this card receives the image.']
-          : [`${c.name} exists in no sky.`, 'It is drawn, and never observed.']),
+        ...(c.section === 'almanac'
+          ? ['On the night, every holder of this card', 'receives the capture. Then the card is sealed.']
+          : c.noun
+            ? [`When Node 01 photographs ${c.noun},`, 'every holder of this card receives the image.']
+            : ['Nothing Node 01 can point at.', 'It is held, and recorded here.']),
       ];
 
   return (
@@ -72,14 +74,14 @@ function CardBack({ plate: c, edition, commitment, sealed = false, u }: Props) {
           <path d={LOGO_D} fill={`url(#${b}metal)`} />
         </g>
         <text x="315" y="104" textAnchor="middle" fill="rgba(245,241,232,.6)" style={{ fontFamily: MONO, fontSize: 10, letterSpacing: 2.4 }}>
-          {sealed ? 'SET 001 · COLLECTIBLE ASTRONOMY' : c.back}
+          {sealed ? 'FIRST LIGHT · COLLECTIBLE ASTRONOMY' : c.back}
         </text>
         <line x1="60" y1="124" x2="570" y2="124" stroke="rgba(245,241,232,.1)" />
         <text x="315" y="640" textAnchor="middle" fill={`url(#${b}metalH)`} style={{ fontFamily: DISPLAY, fontWeight: 600, fontSize: 26, letterSpacing: 11 }}>
           SIDERA
         </text>
         <text x="315" y="668" textAnchor="middle" fill="rgba(245,241,232,.6)" style={{ fontFamily: MONO, fontSize: 11, letterSpacing: 2.4 }}>
-          {sealed ? 'SET 001 · SEALED' : `SET 001 · ${c.num} / 24 · ${c.glyph} ${c.rname.toUpperCase()}`}
+          {sealed ? 'FIRST LIGHT · SEALED' : `FIRST LIGHT · ${c.num} / 24 · ${c.glyph} ${c.rname.toUpperCase()}`}
         </text>
         {lines.map((line, i) => (
           <text key={i} x="315" y={714 + i * 22} textAnchor="middle" fill="rgba(245,241,232,.78)" style={{ fontFamily: SANS, fontSize: 15 }}>

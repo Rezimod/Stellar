@@ -23,13 +23,44 @@ export type CardFacts = Omit<CardSeed, 'rarity' | 'observationStatus' | 'edition
 /** What decides whether the node can record it, beyond position. */
 export type CardOptics = Pick<ObservabilitySubject, 'resolveArcsec' | 'magnitude' | 'sizeArcmin'>;
 
+export type Section = 'object' | 'almanac';
+
+/** What the card prints and how it is sold, beyond the row the database keeps. */
+export type CardRecord = {
+  section: Section;
+  /** An Almanac card's event, ISO 8601 UTC. Null for an object. */
+  eventStartUtc: string | null;
+  eventEndUtc: string | null;
+  /** The designation of the card this one is paired with, if any. */
+  pairsWith: string | null;
+  /** Includes a physical fragment, redeemable later. */
+  physical: boolean;
+  /** Three figures on the face: label and value. */
+  stats: [[string, string], [string, string], [string, string]];
+  /** One short line of card text. */
+  line: string;
+};
+
 export type AuthoredCard = {
   seed: CardSeed;
   subject: ObservabilitySubject;
   observability: Observability;
+  record: CardRecord;
 };
 
-/** The node every Set 001 card is judged against. */
+type Extras = Pick<CardRecord, 'stats' | 'line'> & Partial<Pick<CardRecord, 'pairsWith' | 'physical'>>;
+
+const record = (extras: Extras, event: Pick<CardRecord, 'section' | 'eventStartUtc' | 'eventEndUtc'>): CardRecord => ({
+  ...event,
+  pairsWith: extras.pairsWith ?? null,
+  physical: extras.physical ?? false,
+  stats: extras.stats,
+  line: extras.line,
+});
+
+const OBJECT = { section: 'object', eventStartUtc: null, eventEndUtc: null } as const;
+
+/** The node every First Light card is judged against. */
 export const JUDGING_NODE_ID = 'tbilisi-01';
 
 /** One placeholder until the art exists. */
@@ -37,13 +68,13 @@ export const PLACEHOLDER_ART = '/cards/placeholder.svg';
 
 /** Rendered from Explore's own planet maps by tools/explore/render-card.ts —
  *  art, not a Node 01 frame. Everything else is drawn from its record. */
-const RENDERED = new Set(['SATURN', 'MARS', 'JUPITER', 'VENUS']);
+const RENDERED = new Set(['SATURN', 'JUPITER']);
 
 export function subjectOf(facts: Pick<CardSeed, 'targetId' | 'decDeg'>, optics: CardOptics): ObservabilitySubject {
   return { targetId: facts.targetId, decDeg: facts.decDeg ?? null, ...optics };
 }
 
-export function authorCard(facts: CardFacts, optics: CardOptics): AuthoredCard {
+export function authorCard(facts: CardFacts, optics: CardOptics, extras: Extras): AuthoredCard {
   const node = getNode(JUDGING_NODE_ID);
   if (!node) throw new Error(`${JUDGING_NODE_ID} is not in the node registry`);
 
@@ -58,17 +89,16 @@ export function authorCard(facts: CardFacts, optics: CardOptics): AuthoredCard {
     },
     subject,
     observability: judged,
+    record: record(extras, OBJECT),
   };
 }
 
-/**
- * A card from fiction: an original design, never an observation. There is no
- * sky it can be found in, so Node 01 never photographs it and the card says so.
- */
-export function authorFiction(facts: Omit<CardFacts, 'targetId' | 'raHours' | 'decDeg' | 'surfaceLat' | 'surfaceLon'>): AuthoredCard {
+type NoSky = Omit<CardFacts, 'targetId' | 'raHours' | 'decDeg' | 'surfaceLat' | 'surfaceLon'>;
+
+const unpointable = (facts: NoSky, targetId: string, reason: string, rec: CardRecord): AuthoredCard => {
   const seed: CardSeed = {
     ...facts,
-    targetId: 'fiction',
+    targetId,
     raHours: null,
     decDeg: null,
     surfaceLat: null,
@@ -79,7 +109,31 @@ export function authorFiction(facts: Omit<CardFacts, 'targetId' | 'raHours' | 'd
   };
   return {
     seed,
-    subject: { targetId: 'fiction', decDeg: null, resolveArcsec: null, magnitude: null, sizeArcmin: null },
-    observability: { status: 'not_available', reason: 'Fiction. It exists in no sky, so no telescope will ever photograph it.' },
+    subject: { targetId, decDeg: null, resolveArcsec: null, magnitude: null, sizeArcmin: null },
+    observability: { status: 'not_available', reason },
+    record: rec,
   };
+};
+
+/**
+ * A card of something Node 01 cannot point at — a specimen in a case, a
+ * spacecraft beyond any telescope, the observatory's own first frame. The
+ * author says why.
+ */
+export function authorKept(facts: NoSky, reason: string, extras: Extras): AuthoredCard {
+  return unpointable(facts, 'kept', reason, record(extras, OBJECT));
 }
+
+/**
+ * An Almanac card: a dated event in the real sky. Sold until the event ends,
+ * then sealed. No vote decides it; Node 01 records it on the night.
+ */
+export function authorAlmanac(facts: NoSky, event: { start: string; end: string }, extras: Extras): AuthoredCard {
+  return unpointable(
+    facts,
+    'event',
+    'A dated event. Node 01 records it on the night, weather allowing; no vote decides it.',
+    record(extras, { section: 'almanac', eventStartUtc: event.start, eventEndUtc: event.end }),
+  );
+}
+

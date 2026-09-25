@@ -20,7 +20,7 @@ function CardFront({ plate: c, edition, capture, u }: Props) {
   const win = rr(24, 24, 582, wh, 18);
   const chipY = c.full ? 548 : 24 + wh - 40;
   const chipW = 30 + c.rname.length * 9.2;
-  const micro = `SIDERA · SET 001 · ${c.des.split(' · ')[0]} · EDITION ${ed} OF ${c.of} · COMMITTED BEFORE SALE · `;
+  const micro = `SIDERA · FIRST LIGHT · ${c.des.split(' · ')[0]} · EDITION ${ed} OF ${c.of} · COMMITTED BEFORE SALE · `;
   const ranked = r === 'epic' || r === 'legendary';
 
   return (
@@ -96,7 +96,7 @@ function CardFront({ plate: c, edition, capture, u }: Props) {
           SIDERA
         </text>
         <text x="584" y="64" textAnchor="end" fill="rgba(245,241,232,.78)" style={{ fontFamily: MONO, fontSize: 11, letterSpacing: 2 }}>
-          SET 001 · {c.num} / 24
+          FIRST LIGHT · {c.num} / 24
         </text>
 
         <g transform={`translate(44 ${chipY})`}>

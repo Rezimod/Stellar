@@ -286,7 +286,7 @@ export default function SideraReveal({
 
         <p className="sd-reveal__caption" aria-hidden="true">
           <span className="sd-label">
-            {preview ? `${preview} capsule · Set 001` : outright ? 'Bought outright' : `Capsule No. ${pad(sequence ?? 0)} · Set 001`}
+            {preview ? `${preview} capsule · First Light` : outright ? 'Bought outright' : `Capsule No. ${pad(sequence ?? 0)} · First Light`}
           </span>
           <span className="sd-reveal__line">{outright ? 'It came down for you.' : 'Something came back.'}</span>
         </p>
