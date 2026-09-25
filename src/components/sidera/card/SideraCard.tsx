@@ -56,6 +56,8 @@ function SideraCard({ designation, edition, capture, commitment, hero = false }:
           set(over ? 1 - px : px, py, true);
         }}
         onPointerLeave={() => set(0.5, 0.5, false)}
+        onClick={hero ? () => setOver((v) => !v) : undefined}
+        style={hero ? { cursor: 'pointer' } : undefined}
       >
         <div className="sdc-tilt">
           <div className={`sdc-flip${over ? ' is-over' : ''}`}>

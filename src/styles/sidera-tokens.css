@@ -363,7 +363,6 @@
 }
 
 .sd-reveal__caption { position: relative; z-index: 3; display: flex; flex-direction: column; align-items: center; gap: 8px; margin: 0; text-align: center; animation: sd-draw 700ms var(--sd-ease) calc(var(--sd-fall) + 260ms) both; }
-.sd-reveal__line { font-weight: 600; font-size: clamp(24px, 3.6vw, 38px); letter-spacing: -0.03em; }
 
 /* The field: where the stone lands, and where the cards come to rest. */
 .sd-reveal__field {
@@ -415,6 +414,20 @@
   box-shadow: 0 0 6px 2px var(--sd-heat);
   transform: rotate(calc(atan2(var(--sd-from-y), var(--sd-from-x)) + (var(--k) - 3) * 4deg));
   animation: sd-ember 700ms ease-out calc(var(--k) * -60ms) infinite;
+}
+/* Dust hanging in the air around the stone while it waits, drifting up and going out. */
+.sd-reveal__mote {
+  width: 3px; height: 3px; margin: -1.5px 0 0 -1.5px; border-radius: 50%; background: color-mix(in srgb, var(--sd-heat) 70%, #fff);
+  box-shadow: 0 0 6px 1px color-mix(in srgb, var(--sd-heat) 50%, transparent);
+  transform: rotate(calc(var(--k) / var(--n) * 360deg)) translateX(calc(70px + mod(var(--k) * 37, 90) * 1px));
+  opacity: 0; animation: sd-mote 2600ms ease-out calc(var(--sd-fall) + 500ms + mod(var(--k) * 190, 900) * 1ms) both;
+}
+/* Rays behind the break: a slow turning fan of the stone's light, gone as the cards settle. */
+.sd-reveal__rays {
+  width: 900px; height: 900px; margin: -450px 0 0 -450px; border-radius: 50%; opacity: 0;
+  background: repeating-conic-gradient(from 0deg, color-mix(in srgb, var(--sd-heat) 45%, transparent) 0deg 4deg, transparent 4deg 18deg);
+  mask-image: radial-gradient(circle, #000 0%, transparent 62%);
+  animation: sd-rays 3200ms ease-out calc(var(--sd-fall) + var(--sd-open) - 300ms) both;
 }
 /* Dust lifted at impact: slow, wide, and gone. */
 .sd-reveal__dust {
@@ -485,8 +498,11 @@
   position: absolute; left: 50%; top: 50%; width: var(--sd-cw);
   margin: calc(var(--sd-cw) * -0.7 - 18px) 0 0 calc(var(--sd-cw) / -2);
   transform: var(--sd-rest);
-  animation: sd-deal var(--sd-draw) cubic-bezier(0.3, 0.7, 0.2, 1) var(--sd-at) both;
+  animation:
+    sd-deal var(--sd-draw) cubic-bezier(0.3, 0.7, 0.2, 1) var(--sd-at) both,
+    sd-breathe 6s ease-in-out calc(var(--sd-at) + var(--sd-draw)) infinite alternate;
 }
+@keyframes sd-breathe { from { translate: 0 0; } to { translate: 0 -7px; } }
 .sd-reveal__card--best { --sd-extra: var(--sd-hold); --sd-s: var(--sd-best); }
 .sd-reveal__card:focus-visible { outline: 2px solid var(--sd-focus); outline-offset: 6px; border-radius: var(--sd-radius); }
 .sd-reveal__card .sd-cardplate { max-width: none; }
@@ -598,6 +614,16 @@
   0% { opacity: 0; transform: rotate(calc(atan2(var(--sd-from-y), var(--sd-from-x)) + (var(--k) - 2) * 9deg)) translateX(0); }
   15% { opacity: 1; }
   100% { opacity: 0; transform: rotate(calc(atan2(var(--sd-from-y), var(--sd-from-x)) + (var(--k) - 2) * 9deg)) translateX(260px) scale(0.2); }
+}
+@keyframes sd-mote {
+  0% { opacity: 0; translate: 0 10px; }
+  20% { opacity: 0.9; }
+  100% { opacity: 0; translate: 0 -80px; }
+}
+@keyframes sd-rays {
+  0% { opacity: 0; rotate: 0deg; scale: 0.6; }
+  12% { opacity: 0.9; }
+  100% { opacity: 0; rotate: 40deg; scale: 1.3; }
 }
 @keyframes sd-dust {
   0% { opacity: 0; transform: scale(0.3); }
@@ -739,6 +765,8 @@
 }
 
 /* Skipped, closed, or never animated: everything is simply there. */
+.sd-reveal.is-done .sd-reveal__rays,
+.sd-reveal.is-done .sd-reveal__mote,
 .sd-reveal.is-done .sd-reveal__train,
 .sd-reveal.is-done .sd-reveal__dust,
 .sd-reveal.is-done .sd-reveal__fx,
@@ -1088,6 +1116,27 @@ html:has(.sidera) #stellar-main { padding-top: 0; padding-bottom: 0; }
   .sd-tile:hover .sdc-glare { opacity: 1; }
 }
 .sd-tile:active .sdc-card { transform: translateY(-2px) scale(0.99); transition-duration: 60ms; }
+.sd-tile__stage { transition: transform var(--sd-dur-base) var(--sd-ease); }
+.sd-tile:hover .sd-tile__stage { transform: translateY(-6px); }
+.sd-tile:hover .sd-tile__glow { opacity: 1; }
+
+/* Tiles settle onto the shelf one after another; a filter re-runs it. */
+.sd-shelf__item.is-in { animation: sd-tile-in 420ms var(--sd-ease) calc(var(--i, 0) * 28ms) both; }
+@keyframes sd-tile-in { from { opacity: 0; transform: translateY(14px) scale(0.97); } to { opacity: 1; transform: none; } }
+.sd-shelf__chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }
+.sd-shelf__chip {
+  font: 500 12px/1 var(--sd-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--sd-ink-3);
+  padding: 9px 13px; border-radius: 999px; border: 1px solid var(--sd-rule); background: rgba(255, 255, 255, 0.03); cursor: pointer;
+  transition: color var(--sd-dur-base) var(--sd-ease), border-color var(--sd-dur-base) var(--sd-ease), background var(--sd-dur-base) var(--sd-ease), transform 120ms var(--sd-ease);
+}
+.sd-shelf__chip:hover { color: var(--sd-ink); border-color: var(--sd-rule-strong); }
+.sd-shelf__chip:active { transform: scale(0.96); }
+.sd-shelf__chip[aria-pressed='true'] { color: var(--sd-ink); border-color: var(--sd-ink-3); background: rgba(255, 255, 255, 0.08); }
+.sd-shelf__chip[data-rarity='rare'][aria-pressed='true'] { color: var(--sd-rarity-rare); border-color: var(--sd-rarity-rare); }
+.sd-shelf__chip[data-rarity='epic'][aria-pressed='true'] { color: var(--sd-rarity-epic); border-color: var(--sd-rarity-epic); }
+.sd-shelf__chip[data-rarity='legendary'][aria-pressed='true'] { color: var(--sd-rarity-legendary); border-color: var(--sd-rarity-legendary); }
+.sd-shelf__chip:focus-visible { outline: 2px solid var(--sd-focus); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .sd-shelf__item.is-in { animation: none; } .sd-tile:hover .sd-tile__stage { transform: none; } }
 @media (prefers-reduced-motion: reduce) { .sd-tile .sdc-stage, .sd-tile__glow, .sd-tile .sdc-card { transition: none; } }
 .sd-pill {
   --r: var(--sd-rarity-common);
@@ -1246,9 +1295,12 @@ html:has(.sidera) #stellar-main { padding-top: 0; padding-bottom: 0; }
 .sd-cardhero__plate { position: relative; display: grid; place-items: center; padding-block: 12px; }
 .sd-cardhero__plate .sd-tilt { position: relative; z-index: 1; width: min(100%, 360px); }
 .sd-cardhero__plate .sd-cardplate { --sd-card-cap: 440px; }
-.sd-cardhero__plate .sd-poster__ghost { font-size: clamp(56px, 9vw, 132px); }
-.sd-cardhero__name { font-family: var(--sd-sans); font-weight: 600; font-size: clamp(40px, 6.4vw, 76px); line-height: 0.95; letter-spacing: -0.045em; margin: 0; }
-.sd-cardhero__blurb { color: var(--sd-ink-2); font-size: 17px; line-height: 1.6; max-width: 46ch; margin: 18px 0 0; }
+.sd-cardhero__line { color: var(--sd-ink); font-size: 17px; line-height: 1.6; max-width: 46ch; margin: 0; }
+.sd-lead { font: 500 17px/1.5 var(--sd-sans); color: var(--sd-ink); margin: 0; }
+.sd-cardhero__pair { display: flex; align-items: center; gap: 16px; margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--sd-rule); }
+.sd-cardhero__pair .sd-cardplate { --sd-card-cap: 84px; margin: 0; flex: 0 0 auto; }
+.sd-cardhero__pair .sd-data { color: var(--sd-ink-2); }
+.sd-cardplate[data-size='lg'] .sdc-card { box-shadow: 0 40px 110px -30px color-mix(in srgb, var(--tile-glow) 55%, transparent), 0 40px 90px -30px rgba(0, 0, 0, 0.95) !important; }
 .sd-cardhero .sd-facts { margin-top: 26px; }
 .sd-cardhero .sd-buy, .sd-cardhero .sd-pay__actions { margin-top: 22px; }
 .sd-cardhero__obs { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin-top: 26px; padding-top: 20px; border-top: 1px solid var(--sd-rule); }

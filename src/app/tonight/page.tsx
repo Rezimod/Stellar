@@ -95,7 +95,7 @@ export default async function TonightPage() {
                 </p>
               )}
               <p className="sd-eyebrow">{d ? 'Tonight’s card' : leading ? (cast ? 'Leading the vote' : 'Highest tonight') : 'Node 01'}</p>
-              <h1 className="sd-mega">{lead ? lead.name : 'A quiet sky.'}</h1>
+              <p className="sd-lead">{lead ? lead.name : 'A quiet sky.'}</p>
               <p className="sd-poster__sub">
                 {d
                   ? d.basis

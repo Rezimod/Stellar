@@ -51,6 +51,8 @@ const DRAW_MS = 1800;
 const EMBERS = 12;
 const FRAGMENTS = 5;
 const SPARKS = 16;
+/** Dust hanging in the air while the stone waits. */
+const MOTES = 16;
 
 /**
  * Where each card comes to rest, in the order they are drawn: the outermost
@@ -290,7 +292,6 @@ export default function SideraReveal({
           <span className="sd-label">
             {preview ? `${preview} capsule · First Light` : outright ? 'Bought outright' : `Capsule No. ${pad(sequence ?? 0)} · First Light`}
           </span>
-          <span className="sd-reveal__line">{outright ? 'It came down for you.' : 'Something came back.'}</span>
         </p>
 
         <div className="sd-reveal__field">
@@ -306,6 +307,10 @@ export default function SideraReveal({
               ))}
             </span>
             <span className="sd-reveal__train" />
+            {Array.from({ length: MOTES }, (_, k) => (
+              <span key={k} className="sd-reveal__mote" style={{ '--k': k, '--n': MOTES } as CSSProperties} />
+            ))}
+            <span className="sd-reveal__rays" />
             <span className="sd-reveal__flash" />
             <span className="sd-reveal__dust" />
             <span className="sd-reveal__shock" />

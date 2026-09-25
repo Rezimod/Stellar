@@ -1,5 +1,7 @@
 import Link from 'next/link';
+import type { CSSProperties } from 'react';
 import SideraCard from './card/SideraCard';
+import { glowFor } from '@/lib/sidera/plate';
 
 export type CardPlateProps = {
   designation: string;
@@ -20,7 +22,7 @@ export type CardPlateProps = {
 export default function CardPlate({ designation, edition, capture, commitment, href, size = 'md', hero = false }: CardPlateProps) {
   const card = <SideraCard designation={designation} edition={edition} capture={capture} commitment={commitment} hero={hero} />;
   return (
-    <div className="sd-cardplate" data-size={size}>
+    <div className="sd-cardplate" data-size={size} style={{ '--tile-glow': glowFor(designation) } as CSSProperties}>
       {href ? (
         <Link href={href} className="sd-cardplate__link">
           {card}

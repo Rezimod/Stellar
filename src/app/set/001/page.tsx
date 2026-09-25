@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import AlmanacDate from '@/components/sidera/AlmanacDate';
+import ShelfFilter from '@/components/sidera/ShelfFilter';
 import ShopCard from '@/components/sidera/ShopCard';
 import SideraShell from '@/components/sidera/SideraShell';
 import SideraView from '@/components/sidera/SideraView';
@@ -71,12 +72,13 @@ export default async function Set001Page({
             { label: 'Status', value: status === 'released' ? 'Released' : 'Pre-release' },
           ]}
         />
+        <ShelfFilter />
       </section>
 
       {SET_GROUPS.map((g, gi) => {
         const cards = groupCards(SET_001_CARDS, g.key);
         return (
-          <section key={g.key} className="sd-container sd-chapter-block">
+          <section key={g.key} className="sd-container sd-chapter-block" data-shelf-section>
             <Chapter n={String(gi + 1).padStart(2, '0')} title={g.short} aside={`${cards.length} ${cards.length === 1 ? 'card' : 'cards'}`} />
             <ul className="sd-floor__grid">
               {cards.map((c) => {
@@ -86,7 +88,7 @@ export default async function Set001Page({
                 const left = s ? s.editionSize - s.allocated : c.seed.editionSize;
                 const sealed = cardStatus(c, now) === 'sealed';
                 return (
-                  <li key={c.seed.designation}>
+                  <li key={c.seed.designation} data-shelf-item data-section={c.record.section} data-rarity={rarity} className="sd-shelf__item">
                     <ShopCard
                       designation={c.seed.designation}
                       name={c.seed.name}

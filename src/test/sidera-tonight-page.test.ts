@@ -36,7 +36,7 @@ it('opens the vote before the night is decided', async () => {
     voting: { ...base.voting, candidates: [{ designation: 'SATURN', name: 'Saturn', rarity: 'legendary', altitudeDeg: 41.2, at: '2026-09-20T19:15:00Z', votes: 12, track: [] }] },
   });
   expect(html).toContain('Leading the vote');
-  expect(html).toContain('<h1 class="sd-mega">Saturn</h1>');
+  expect(html).toContain('<p class="sd-lead">Saturn</p>');
   expect(html).toContain('Vote · 20 September');
   expect(html).toContain('41° at 23:15');
   expect(html).toContain('lock tonight’s card at 17:00 Tbilisi time');

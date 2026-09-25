@@ -93,7 +93,7 @@ export default async function CardPage({ params }: { params: Promise<{ designati
     : [];
 
   return (
-    <SideraShell>
+    <SideraShell title={seed.name}>
       <SideraView step="card" />
       <section className="sd-container sd-top">
         <nav aria-label="Breadcrumb" className="sd-crumb sd-data">
@@ -103,18 +103,14 @@ export default async function CardPage({ params }: { params: Promise<{ designati
         </nav>
         <div className="sd-cardhero">
           <figure className="sd-cardhero__plate sd-figure">
-            <span className="sd-poster__ghost" aria-hidden="true">
-              {seed.designation}
-            </span>
             <CardPlate size="lg" hero designation={seed.designation} />
           </figure>
 
           <div>
             <p className="sd-eyebrow">
-              {seed.objectType} · {rarityInfo(rarity).label}
+              {seed.designation} · {seed.objectType} · {rarityInfo(rarity).label}
             </p>
-            <h1 className="sd-cardhero__name">{seed.name}</h1>
-            <p className="sd-cardhero__blurb">{record.line}</p>
+            <p className="sd-cardhero__line">{record.line}</p>
             <DataRow
               className="sd-facts"
               items={[
@@ -141,6 +137,13 @@ export default async function CardPage({ params }: { params: Promise<{ designati
             )}
             {almanac && !sealed && <p className="sd-note">If clouds cover the night, this card stays open until the next clear capture.</p>}
             {record.physical && <p className="sd-note">Includes a physical fragment.</p>}
+            {pair && (
+              <div className="sd-cardhero__pair">
+                <span className="sd-label">Pairs with</span>
+                <CardPlate size="sm" designation={pair.seed.designation} href={`/card/${pair.seed.designation}`} />
+                <span className="sd-data">{pair.seed.name}</span>
+              </div>
+            )}
             <div className="sd-cardhero__obs">
               <ObservationStatusMark status={seed.observationStatus as ObservationStatus} />
               <span className="sd-data">{card.observability.reason}</span>
