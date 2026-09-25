@@ -452,17 +452,26 @@
     sd-jolt 600ms cubic-bezier(0.3, 1.6, 0.5, 1) var(--sd-fall) both,
     sd-cool 1600ms ease-out var(--sd-fall) both;
 }
+/* The wait: the stone lies there, shivers, then shudders harder and harder as the light inside it builds. */
+.sd-reveal__body { position: absolute; inset: 0; animation: sd-quake calc(var(--sd-open) - 1200ms) linear calc(var(--sd-fall) + 800ms) both; }
 .sd-reveal__half { position: absolute; inset: 0; }
 .sd-reveal__half svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .sd-reveal__half--l { animation: sd-part-l 1200ms cubic-bezier(0.2, 0.7, 0.3, 1) calc(var(--sd-fall) + var(--sd-open) - 350ms) both; }
 .sd-reveal__half--r { animation: sd-part-r 1200ms cubic-bezier(0.2, 0.7, 0.3, 1) calc(var(--sd-fall) + var(--sd-open) - 350ms) both; }
 .sd-reveal__rim { opacity: 0.9; }
-.sd-reveal__crack { opacity: 0; animation: sd-crack 800ms ease-out calc(var(--sd-fall) + 600ms) both; }
+.sd-reveal__crack { opacity: 0; animation: sd-crack 800ms ease-out calc(var(--sd-fall) + 600ms) both, sd-throb 360ms ease-in-out calc(var(--sd-fall) + 1400ms) 5 alternate; }
+/* The burst: the whole screen goes white the instant it breaks, and the cards come out of the afterimage. */
+.sd-reveal__burst {
+  position: fixed; inset: 0; z-index: 6; pointer-events: none; opacity: 0;
+  background: radial-gradient(circle at 50% 50%, #fff 0%, #fff 22%, color-mix(in srgb, var(--sd-heat) 60%, #fff) 45%, color-mix(in srgb, var(--sd-heat) 30%, transparent) 75%, transparent 100%);
+  animation: sd-burst 1500ms cubic-bezier(0.1, 0.8, 0.2, 1) calc(var(--sd-fall) + var(--sd-open) - 420ms) both;
+}
+.sd-reveal:not(.sd-reveal--staged) .sd-reveal__burst, .sd-reveal.is-done .sd-reveal__burst { display: none; }
 .sd-reveal__breach {
   position: absolute; left: 50%; top: -60%; width: 34px; height: 220%; margin-left: -17px; border-radius: 50%;
   background: radial-gradient(closest-side, #fff, color-mix(in srgb, var(--sd-heat) 75%, transparent) 40%, transparent);
   filter: blur(5px); opacity: 0; transform: scaleX(0.2);
-  animation: sd-breach 1400ms cubic-bezier(0.2, 0.7, 0.3, 1) calc(var(--sd-fall) + var(--sd-open) - 380ms) both;
+  animation: sd-breach 1400ms cubic-bezier(0.2, 0.7, 0.3, 1) calc(var(--sd-fall) + var(--sd-open) - 700ms) both;
 }
 
 /* The cards. Each is placed on the field at its rest; the animation starts it
@@ -631,6 +640,59 @@
   from { filter: brightness(2.6) drop-shadow(0 0 36px var(--sd-heat)); }
   40% { filter: brightness(1.6) drop-shadow(0 0 22px var(--sd-heat)); }
   to { filter: brightness(1) drop-shadow(0 0 10px color-mix(in srgb, var(--sd-heat) 45%, transparent)); }
+}
+@keyframes sd-quake {
+  0.0% { transform: translate(0.0px, 0.0px) rotate(0.0deg); filter: brightness(1.00) drop-shadow(0 0 6px var(--sd-heat)); }
+  2.5% { transform: translate(-0.3px, 0.0px) rotate(-0.0deg); filter: brightness(1.00) drop-shadow(0 0 6px var(--sd-heat)); }
+  5.0% { transform: translate(-0.4px, 0.0px) rotate(-0.1deg); filter: brightness(1.00) drop-shadow(0 0 6px var(--sd-heat)); }
+  7.5% { transform: translate(-0.1px, -0.4px) rotate(-0.1deg); filter: brightness(1.01) drop-shadow(0 0 6px var(--sd-heat)); }
+  10.0% { transform: translate(-0.1px, 0.3px) rotate(-0.1deg); filter: brightness(1.01) drop-shadow(0 0 6px var(--sd-heat)); }
+  12.5% { transform: translate(-0.3px, 0.1px) rotate(0.1deg); filter: brightness(1.01) drop-shadow(0 0 7px var(--sd-heat)); }
+  15.0% { transform: translate(0.1px, -0.1px) rotate(0.2deg); filter: brightness(1.02) drop-shadow(0 0 7px var(--sd-heat)); }
+  17.5% { transform: translate(-0.5px, 0.4px) rotate(-0.1deg); filter: brightness(1.03) drop-shadow(0 0 8px var(--sd-heat)); }
+  20.0% { transform: translate(-0.4px, -0.5px) rotate(-0.1deg); filter: brightness(1.04) drop-shadow(0 0 8px var(--sd-heat)); }
+  22.5% { transform: translate(0.4px, -0.4px) rotate(0.0deg); filter: brightness(1.05) drop-shadow(0 0 9px var(--sd-heat)); }
+  25.0% { transform: translate(0.2px, -0.2px) rotate(0.0deg); filter: brightness(1.06) drop-shadow(0 0 9px var(--sd-heat)); }
+  27.5% { transform: translate(-0.7px, -0.7px) rotate(-0.2deg); filter: brightness(1.07) drop-shadow(0 0 10px var(--sd-heat)); }
+  30.0% { transform: translate(0.3px, -0.1px) rotate(-0.1deg); filter: brightness(1.08) drop-shadow(0 0 10px var(--sd-heat)); }
+  32.5% { transform: translate(0.2px, -0.1px) rotate(-0.1deg); filter: brightness(1.10) drop-shadow(0 0 11px var(--sd-heat)); }
+  35.0% { transform: translate(0.7px, 0.5px) rotate(-0.2deg); filter: brightness(1.11) drop-shadow(0 0 12px var(--sd-heat)); }
+  37.5% { transform: translate(0.2px, 0.1px) rotate(0.3deg); filter: brightness(1.13) drop-shadow(0 0 13px var(--sd-heat)); }
+  40.0% { transform: translate(0.6px, -0.6px) rotate(0.5deg); filter: brightness(1.14) drop-shadow(0 0 13px var(--sd-heat)); }
+  42.5% { transform: translate(-1.2px, -0.3px) rotate(0.3deg); filter: brightness(1.16) drop-shadow(0 0 14px var(--sd-heat)); }
+  45.0% { transform: translate(-1.2px, -0.0px) rotate(-0.5deg); filter: brightness(1.18) drop-shadow(0 0 15px var(--sd-heat)); }
+  47.5% { transform: translate(0.6px, 1.0px) rotate(0.1deg); filter: brightness(1.20) drop-shadow(0 0 16px var(--sd-heat)); }
+  50.0% { transform: translate(1.5px, -0.8px) rotate(0.3deg); filter: brightness(1.23) drop-shadow(0 0 17px var(--sd-heat)); }
+  52.5% { transform: translate(0.4px, 0.4px) rotate(-0.1deg); filter: brightness(1.25) drop-shadow(0 0 18px var(--sd-heat)); }
+  55.0% { transform: translate(1.6px, 2.1px) rotate(-0.0deg); filter: brightness(1.27) drop-shadow(0 0 19px var(--sd-heat)); }
+  57.5% { transform: translate(0.9px, -2.3px) rotate(0.4deg); filter: brightness(1.30) drop-shadow(0 0 20px var(--sd-heat)); }
+  60.0% { transform: translate(0.8px, 2.8px) rotate(0.6deg); filter: brightness(1.32) drop-shadow(0 0 21px var(--sd-heat)); }
+  62.5% { transform: translate(-1.3px, -0.7px) rotate(0.4deg); filter: brightness(1.35) drop-shadow(0 0 22px var(--sd-heat)); }
+  65.0% { transform: translate(-3.2px, -0.3px) rotate(-0.8deg); filter: brightness(1.38) drop-shadow(0 0 23px var(--sd-heat)); }
+  67.5% { transform: translate(-2.7px, -3.1px) rotate(0.7deg); filter: brightness(1.41) drop-shadow(0 0 24px var(--sd-heat)); }
+  70.0% { transform: translate(-2.8px, -1.9px) rotate(-0.3deg); filter: brightness(1.44) drop-shadow(0 0 25px var(--sd-heat)); }
+  72.5% { transform: translate(3.0px, -3.4px) rotate(-0.1deg); filter: brightness(1.47) drop-shadow(0 0 26px var(--sd-heat)); }
+  75.0% { transform: translate(0.4px, 3.4px) rotate(1.0deg); filter: brightness(1.51) drop-shadow(0 0 27px var(--sd-heat)); }
+  77.5% { transform: translate(3.4px, -2.1px) rotate(-0.3deg); filter: brightness(1.54) drop-shadow(0 0 28px var(--sd-heat)); }
+  80.0% { transform: translate(-1.4px, 3.8px) rotate(1.6deg); filter: brightness(1.58) drop-shadow(0 0 29px var(--sd-heat)); }
+  82.5% { transform: translate(-3.7px, -3.4px) rotate(-1.0deg); filter: brightness(1.61) drop-shadow(0 0 30px var(--sd-heat)); }
+  85.0% { transform: translate(-3.0px, -0.2px) rotate(0.4deg); filter: brightness(1.65) drop-shadow(0 0 32px var(--sd-heat)); }
+  87.5% { transform: translate(-2.8px, -5.9px) rotate(-0.3deg); filter: brightness(1.69) drop-shadow(0 0 33px var(--sd-heat)); }
+  90.0% { transform: translate(-1.7px, 0.8px) rotate(2.0deg); filter: brightness(1.73) drop-shadow(0 0 34px var(--sd-heat)); }
+  92.5% { transform: translate(2.6px, 0.2px) rotate(0.6deg); filter: brightness(1.77) drop-shadow(0 0 36px var(--sd-heat)); }
+  95.0% { transform: translate(2.5px, -6.3px) rotate(2.0deg); filter: brightness(1.81) drop-shadow(0 0 37px var(--sd-heat)); }
+  97.5% { transform: translate(4.2px, 5.6px) rotate(1.6deg); filter: brightness(1.86) drop-shadow(0 0 38px var(--sd-heat)); }
+  100.0% { transform: translate(-1.7px, -1.6px) rotate(-2.2deg); filter: brightness(1.90) drop-shadow(0 0 40px var(--sd-heat)); }
+}
+@keyframes sd-throb {
+  from { filter: brightness(1); }
+  to { filter: brightness(2.4) drop-shadow(0 0 6px var(--sd-heat)); }
+}
+@keyframes sd-burst {
+  0% { opacity: 0; transform: scale(0.6); }
+  8% { opacity: 1; transform: scale(1); }
+  30% { opacity: 1; }
+  100% { opacity: 0; transform: scale(1.4); }
 }
 @keyframes sd-crack {
   0% { opacity: 0; stroke-dasharray: 130; stroke-dashoffset: 130; }

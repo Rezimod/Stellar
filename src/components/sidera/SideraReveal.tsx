@@ -39,8 +39,8 @@ const rarityOf = (c: RevealedCard): Rarity => (isRarity(c.rarity) ? (c.rarity as
 
 /** How long the stone takes to arrive, by the scarcest thing it carries. */
 const FALL_MS: Record<Rarity, number> = { common: 1700, rare: 1900, epic: 2100, legendary: 2500 };
-/** From impact to the stone breaking: it cools, cracks and parts. */
-const OPEN_MS = 1500;
+/** From impact to the stone breaking: it cools, cracks, trembles harder and harder, then bursts. */
+const OPEN_MS = 3400;
 const DRAW_STAGGER_MS = 1350;
 /** A legendary card is held back a beat before it comes out. */
 const HOLD_MS: Record<Rarity, number> = { common: 0, rare: 0, epic: 250, legendary: 700 };
@@ -267,6 +267,7 @@ export default function SideraReveal({
         <span className="sd-reveal__warp" />
         <span className="sd-reveal__limb" />
       </div>
+      <span className="sd-reveal__burst" aria-hidden="true" />
 
       <div className="sd-reveal__stage">
         {staged && (
@@ -317,11 +318,13 @@ export default function SideraReveal({
           <div className="sd-reveal__stone" aria-hidden="true">
             <StoneDefs id={stoneId} />
             <span className="sd-reveal__breach" />
-            <span className="sd-reveal__half sd-reveal__half--l" style={{ clipPath: HALF_CLIP.left }}>
-              <Stone id={stoneId} />
-            </span>
-            <span className="sd-reveal__half sd-reveal__half--r" style={{ clipPath: HALF_CLIP.right }}>
-              <Stone id={stoneId} />
+            <span className="sd-reveal__body">
+              <span className="sd-reveal__half sd-reveal__half--l" style={{ clipPath: HALF_CLIP.left }}>
+                <Stone id={stoneId} />
+              </span>
+              <span className="sd-reveal__half sd-reveal__half--r" style={{ clipPath: HALF_CLIP.right }}>
+                <Stone id={stoneId} />
+              </span>
             </span>
           </div>
 
