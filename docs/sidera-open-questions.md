@@ -194,3 +194,21 @@ most reversible option; each needs a yes/no from Rezi.
     heavy Lunar sales run the 25 legendaries and 120 epics down first.
     **For the owner:** how many capsules of each tier to list, and whether to
     void the 20 older $15 capsules.
+
+## A hundred cards (2026-09-26)
+
+27. **First Light grows from 24 to 100 cards before any stranger has
+    bought.** The owner asked for about a hundred: celestial objects, and
+    cards from Star Wars, Interstellar and other iconic films. The film
+    cards were not made as asked: their names, designs and imagery belong to
+    their studios, and a card sold with them would be infringing. Took the
+    reversible option: ten original Frontier worlds that carry the ideas
+    those films made famous (twin suns, a wormhole, an ocean near a black
+    hole, a ring around a world) under Sidera's own names and designs,
+    labelled fiction on the face and back, paired with the real object that
+    inspired them where one exists. Rarity mix 8 / 16 / 34 / 42 (legendary
+    to common), so supply is 40 / 480 / 3,400 / 12,600 editions; the tier
+    odds in `tiers.ts` and `RARITY_ODDS_BPS` were not retuned. The code and
+    URL stay SET001 and /set/001. **For the owner:** whether to license any
+    real film property (a separate, paid agreement), and the final rarity
+    of each card.
