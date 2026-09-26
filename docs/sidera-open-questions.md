@@ -177,3 +177,20 @@ most reversible option; each needs a yes/no from Rezi.
     tuned to the old 2,700/700/150/15 supply — First Light's is
     2,100/800/120/25 — and was left as published; the Almanac's promised
     capture on the night has no flow yet (nightly_target is by vote).
+
+## Capsule tiers on sale (2026-09-26)
+
+26. **The four shelf tiers sell for real.** A capsule is now listed as a tier
+    (`capsule.tier`, `capsule.odds_bps`); it takes the tier's price and odds,
+    and its 'listed' log entry carries them, so the odds it opens under are
+    public before the sale. The audit flags `odds_changed` when an opening's
+    logged odds differ from the listing's. Capsules listed before tiers keep
+    `RARITY_ODDS_BPS` and their $15 price. Took the reversible option: the
+    20 capsules already listed are left on sale as they are, shown on
+    /capsules as "Listed before the tiers"; the tiers start empty until
+    capsules are listed with `sidera-release-set.ts <count> <tier>`. The tier
+    odds in `tiers.ts` are PROVISIONAL (Gate 2) and were not checked against
+    First Light's supply (2,100 / 800 / 120 / 25): Lunar draws no commons, so
+    heavy Lunar sales run the 25 legendaries and 120 epics down first.
+    **For the owner:** how many capsules of each tier to list, and whether to
+    void the 20 older $15 capsules.

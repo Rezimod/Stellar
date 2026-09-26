@@ -2,8 +2,9 @@
  * The four capsules on the shelf, cheapest first. Each is named for a class of
  * meteorite, commonest to rarest, and the odds climb with the price.
  *
- * PROVISIONAL (Gate 2), and for now a preview only: opening one draws in the
- * browser, charges nothing and records nothing. Odds are parts per ten
+ * PROVISIONAL (Gate 2). A capsule is listed as one tier and keeps its odds
+ * from then on (capsule.odds_bps, and its 'listed' log entry), so changing a
+ * row here changes only capsules listed after. Odds are parts per ten
  * thousand and each row sums to exactly 10,000.
  */
 
@@ -56,6 +57,10 @@ export const TIERS: readonly Tier[] = [
 ];
 
 export const CARDS_PER_TIER = 3;
+
+export function tierByKey(key: unknown): Tier | undefined {
+  return TIERS.find((t) => t.key === key);
+}
 
 /** A rarity drawn at a tier's odds, from a number in [0, 1). */
 export function rarityAt(tier: Tier, u: number): Rarity {

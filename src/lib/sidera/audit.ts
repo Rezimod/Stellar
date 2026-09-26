@@ -23,7 +23,7 @@
  */
 
 import bs58 from 'bs58';
-import type { Rarity } from '@/lib/rarity';
+import { RARITIES, type Rarity } from '@/lib/rarity';
 import { SoldOutError, commitmentOf, planPulls, purchaseHash, verifyCapsule, type SupplyEntry } from './randomness';
 
 export type CapsuleEvent = 'listed' | 'purchased' | 'opened' | 'voided' | 'released' | 'refund_due' | 'card_sold';
@@ -42,8 +42,11 @@ export type LogRow = {
   at: string;
 };
 
-/** What a 'listed' row's outcome carries: null, or the demo mark. */
-export type ListedOutcome = { demo?: boolean } | null;
+/**
+ * What a 'listed' row's outcome carries: null, or the demo mark, and — for a
+ * capsule listed as a tier — the tier and the odds it must open under.
+ */
+export type ListedOutcome = { demo?: boolean; tier?: string; oddsBps?: Record<Rarity, number> } | null;
 
 /**
  * What a 'purchased' row's outcome carries: when the payment window closes,
@@ -92,6 +95,7 @@ export type AuditFlag = {
     | 'unlisted_event'
     | 'out_of_order'
     | 'commitment_changed'
+    | 'odds_changed'
     | 'nonce_changed'
     | 'opened_without_purchase'
     | 'purchased_not_opened'
@@ -314,6 +318,10 @@ export function auditLog(rows: LogRow[], now: Date = new Date()): Audit {
         : { ok: false, problems: ['no outcome recorded'] };
       if (result.ok) verified++;
       else flag('verification_failed', result.problems.join('; '));
+      const promised = (listed?.outcome as ListedOutcome)?.oddsBps;
+      if (promised && o && JSON.stringify(RARITIES.map((r) => promised[r])) !== JSON.stringify(RARITIES.map((r) => o.oddsBps?.[r]))) {
+        flag('odds_changed', 'opened under odds other than those logged when it was listed');
+      }
       if (o?.supply?.some((s) => s.editionSize === undefined)) {
         note('edition_check_skipped', 'logged before supply carried edition sizes: edition numbers not checked against it');
       }

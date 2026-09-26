@@ -16,11 +16,12 @@ import { createCipheriv, createDecipheriv, randomBytes, randomUUID } from 'node:
 import { eq, sql, type SQL } from 'drizzle-orm';
 import type { BatchItem } from 'drizzle-orm/batch';
 import { orders } from '@/lib/schema';
-import { isRarity, type Rarity } from '@/lib/rarity';
+import { RARITIES, isRarity, type Rarity } from '@/lib/rarity';
 import { isSealed } from './almanac';
 import type { Db } from './attach';
 import type { LogRow } from './audit';
 import { CAPSULE_PRICE_USD, CARDS_PER_CAPSULE, RARITY_ODDS_BPS } from './economics';
+import type { Tier } from './tiers';
 import { findPayment, markPaid, orderExpiry, simulatedPayments, type OrderRow, type PaymentCheck } from './orders';
 import {
   SoldOutError,
@@ -141,6 +142,13 @@ export async function readSetSupply(db: Db, code: string) {
 
 export type ListedCapsule = { id: string; sequence: number; commitment: string };
 
+/** A capsule's own odds, as listed; a capsule listed before tiers opens under the published default. */
+function oddsOf(c: { odds_bps: unknown }): Record<Rarity, number> {
+  const o = c.odds_bps as Record<string, unknown> | null;
+  if (!o || !RARITIES.every((r) => Number.isInteger(o[r]))) return RARITY_ODDS_BPS;
+  return Object.fromEntries(RARITIES.map((r) => [r, o[r] as number])) as Record<Rarity, number>;
+}
+
 /**
  * Lists `count` capsules of a set, each committed before it exists for sale.
  *
@@ -148,13 +156,22 @@ export type ListedCapsule = { id: string; sequence: number; commitment: string }
  * five consecutive numbers; a second lister at the same moment collides on the
  * unique index and the whole batch is retried, never half-written. Refuses to
  * list more capsules than the set's remaining editions can fill.
+ *
+ * Listed as a tier, a capsule takes the tier's price and odds, and both the
+ * row and its 'listed' entry carry the odds: what it opens under is fixed and
+ * public before anyone can buy it.
  */
 export async function listCapsules(
   db: Db,
-  input: { setId: string; count: number; priceUsd?: number; demo?: boolean },
+  input: { setId: string; count: number; tier?: Tier; priceUsd?: number; demo?: boolean },
 ): Promise<ListedCapsule[]> {
   const demo = input.demo === true;
-  const price = input.priceUsd ?? CAPSULE_PRICE_USD;
+  const tier = input.tier ?? null;
+  const price = input.priceUsd ?? tier?.priceUsd ?? CAPSULE_PRICE_USD;
+  const odds = tier ? JSON.stringify(tier.oddsBps) : null;
+  const listedOutcome = demo || tier
+    ? JSON.stringify({ ...(demo ? { demo: true } : {}), ...(tier ? { tier: tier.key, oddsBps: tier.oddsBps } : {}) })
+    : null;
   const supply = await readSupply(db, input.setId);
   const remaining = supply.reduce((sum, s) => sum + Math.max(0, s.remaining), 0);
   const { rows: open } = (await db.execute(sql`
@@ -175,14 +192,14 @@ export async function listCapsules(
     const statements = capsules.map((c) =>
       db.execute(sql`
         WITH c AS (
-          INSERT INTO capsule (id, set_id, sequence, commitment, server_secret_sealed, price_usd, cards_per_capsule, demo)
+          INSERT INTO capsule (id, set_id, sequence, commitment, server_secret_sealed, price_usd, cards_per_capsule, demo, tier, odds_bps)
           SELECT ${c.id}::uuid, ${input.setId}::uuid, COALESCE(MAX(sequence), 0) + 1, ${c.commitment}, ${c.sealed},
-            ${price}, ${CARDS_PER_CAPSULE}, ${demo}
+            ${price}, ${CARDS_PER_CAPSULE}, ${demo}, ${tier?.key ?? null}, ${odds}::jsonb
           FROM capsule
           RETURNING id, sequence, commitment
         )
         INSERT INTO capsule_log (capsule_id, capsule_sequence, event, commitment, outcome)
-        SELECT id, sequence, 'listed', commitment, ${demo ? JSON.stringify({ demo: true }) : null}::jsonb FROM c
+        SELECT id, sequence, 'listed', commitment, ${listedOutcome}::jsonb FROM c
         RETURNING capsule_id, capsule_sequence
       `),
     );
@@ -201,16 +218,21 @@ export async function listCapsules(
   throw new Error('capsule listing kept colliding');
 }
 
-/** Capsules on sale, lowest number first. Never selects the sealed secret; never offers a demo capsule. */
-export async function capsulesOnSale(db: Db, limit = 50) {
+/**
+ * Capsules on sale, lowest number first; with a tier key, that tier's only.
+ * Never selects the sealed secret; never offers a demo capsule.
+ */
+export async function capsulesOnSale(db: Db, opts: { limit?: number; tier?: string } = {}) {
+  const only = opts.tier ? sql`AND tier = ${opts.tier}` : sql``;
   const { rows } = (await db.execute(sql`
-    SELECT id, set_id, sequence, commitment, price_usd, cards_per_capsule, listed_at
-    FROM capsule WHERE state = 'listed' AND NOT demo ORDER BY sequence LIMIT ${limit}
-  `)) as Rows<{ id: string; set_id: string; sequence: number | string; commitment: string; price_usd: number; cards_per_capsule: number; listed_at: string }>;
+    SELECT id, set_id, sequence, commitment, price_usd, cards_per_capsule, listed_at, tier
+    FROM capsule WHERE state = 'listed' AND NOT demo ${only} ORDER BY sequence LIMIT ${opts.limit ?? 50}
+  `)) as Rows<{ id: string; set_id: string; sequence: number | string; commitment: string; price_usd: number; cards_per_capsule: number; listed_at: string; tier: string | null }>;
   return rows.map((r) => ({
     id: r.id,
     setId: r.set_id,
     sequence: Number(r.sequence),
+    tier: r.tier,
     commitment: r.commitment,
     priceUsd: Number(r.price_usd),
     cardsPerCapsule: Number(r.cards_per_capsule),
@@ -234,10 +256,12 @@ type CapsuleRow = {
   buyer_nonce: string | null;
   order_id: string | null;
   demo: boolean;
+  tier: string | null;
+  odds_bps: unknown;
 };
 
 const CAPSULE_COLUMNS = sql.raw(`id, set_id, sequence, commitment, server_secret_sealed, server_secret, state, price_usd,
-      cards_per_capsule, buyer_wallet, buyer_nonce, order_id, demo`);
+      cards_per_capsule, buyer_wallet, buyer_nonce, order_id, demo, tier, odds_bps`);
 
 export async function readCapsule(db: Db, capsuleId: string): Promise<CapsuleRow | null> {
   const { rows } = (await db.execute(sql`
@@ -372,7 +396,15 @@ function publishedSupply(supply: SupplyRow[]): SupplyEntry[] {
  */
 export function openStatements(
   db: Db,
-  input: { capsuleId: string; secret: string; owner: string; plan: PlannedPull[]; supply: SupplyRow[]; draws: number },
+  input: {
+    capsuleId: string;
+    secret: string;
+    owner: string;
+    plan: PlannedPull[];
+    supply: SupplyRow[];
+    draws: number;
+    oddsBps: Record<Rarity, number>;
+  },
 ) {
   const bySupply = new Map(input.supply.map((s) => [s.designation, s]));
   const earlier = new Map<string, number>();
@@ -419,7 +451,7 @@ export function openStatements(
         jsonb_build_object(
           'secret', c.server_secret,
           'draws', ${input.draws}::int,
-          'oddsBps', ${JSON.stringify(RARITY_ODDS_BPS)}::jsonb,
+          'oddsBps', ${JSON.stringify(input.oddsBps)}::jsonb,
           'supply', ${JSON.stringify(published)}::jsonb,
           'pulls', (
             SELECT jsonb_agg(jsonb_build_object(
@@ -466,9 +498,10 @@ export async function openCapsule(db: Db, capsuleId: string): Promise<OpenResult
     const secret = unsealSecret(c.server_secret_sealed, c.id);
     const supply = await readSupply(db, c.set_id);
     const draws = Number(c.cards_per_capsule);
+    const oddsBps = oddsOf(c);
     let plan: PlannedPull[];
     try {
-      plan = planPulls({ secret, nonce: c.buyer_nonce, capsuleId: c.id, supply, draws });
+      plan = planPulls({ secret, nonce: c.buyer_nonce, capsuleId: c.id, supply, draws, oddsBps });
     } catch (err) {
       if (!(err instanceof SoldOutError)) throw err;
       await closeCapsule(db, c, {
@@ -480,14 +513,14 @@ export async function openCapsule(db: Db, capsuleId: string): Promise<OpenResult
           reason: 'sold_out',
           priorState: 'purchased',
           ...(c.demo ? { demo: true } : {}),
-          soldOut: { draws, oddsBps: RARITY_ODDS_BPS, supply: publishedSupply(supply) },
+          soldOut: { draws, oddsBps, supply: publishedSupply(supply) },
         },
         refundReason: 'every edition of the set was allocated before the capsule could be opened',
       });
       throw err;
     }
 
-    const statements = openStatements(db, { capsuleId: c.id, secret, owner: c.buyer_wallet, plan, supply, draws });
+    const statements = openStatements(db, { capsuleId: c.id, secret, owner: c.buyer_wallet, plan, supply, draws, oddsBps });
     try {
       await runBatch(db, statements);
       return { ok: true, alreadyOpened: false, secret, pulls: await readPulls(db, c.id) };

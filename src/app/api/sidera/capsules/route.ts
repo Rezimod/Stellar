@@ -6,18 +6,22 @@ import { paused } from '@/lib/kill-switch';
 import { sideraLogRateLimit } from '@/lib/rate-limit';
 import { capsulesOnSale, listCapsules } from '@/lib/sidera/capsule';
 import { clientIp, isSideraAdmin, limited } from '@/lib/sidera/route-guards';
+import { tierByKey } from '@/lib/sidera/tiers';
 
 export const runtime = 'nodejs';
 
 const MAX_PER_LISTING = 100;
 
-/** Capsules on sale, each with the commitment published when it was listed. */
+/** Capsules on sale, each with the commitment published when it was listed; `?tier=` for one tier's. */
 export async function GET(req: NextRequest) {
   const l = await limited(sideraLogRateLimit, clientIp(req));
   if (l) return l;
+  const key = req.nextUrl.searchParams.get('tier');
+  const tier = key === null ? undefined : tierByKey(key);
+  if (key !== null && !tier) return NextResponse.json({ error: 'Unknown tier' }, { status: 400 });
   const db = getDb();
   if (!db) return NextResponse.json({ error: 'Database not configured' }, { status: 503 });
-  return NextResponse.json({ capsules: await capsulesOnSale(db) });
+  return NextResponse.json({ capsules: await capsulesOnSale(db, { tier: tier?.key }) });
 }
 
 /**
@@ -29,12 +33,14 @@ export async function POST(req: NextRequest) {
   if (p) return p;
   if (!(await isSideraAdmin(req))) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const body = (await req.json().catch(() => null)) as { count?: unknown; setCode?: unknown } | null;
+  const body = (await req.json().catch(() => null)) as { count?: unknown; setCode?: unknown; tier?: unknown } | null;
   const count = body?.count;
   if (typeof count !== 'number' || !Number.isInteger(count) || count < 1 || count > MAX_PER_LISTING) {
     return NextResponse.json({ error: `count must be an integer from 1 to ${MAX_PER_LISTING}` }, { status: 400 });
   }
   const setCode = typeof body?.setCode === 'string' ? body.setCode : 'SET001';
+  const tier = body?.tier === undefined ? undefined : tierByKey(body.tier);
+  if (body?.tier !== undefined && !tier) return NextResponse.json({ error: 'Unknown tier' }, { status: 400 });
 
   const db = getDb();
   if (!db) return NextResponse.json({ error: 'Database not configured' }, { status: 503 });
@@ -42,7 +48,7 @@ export async function POST(req: NextRequest) {
   if (!set) return NextResponse.json({ error: 'Unknown set' }, { status: 404 });
 
   try {
-    const listed = await listCapsules(db, { setId: set.id, count });
+    const listed = await listCapsules(db, { setId: set.id, count, tier });
     return NextResponse.json({ listed }, { status: 201 });
   } catch (err) {
     console.error('[sidera/capsules/list]', err);

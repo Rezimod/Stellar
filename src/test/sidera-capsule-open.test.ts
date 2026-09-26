@@ -6,6 +6,7 @@ import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Db } from '@/lib/sidera/attach';
 import { auditLog, type LogRow } from '@/lib/sidera/audit';
 import { SoldOutError, commitmentOf, purchaseHash } from '@/lib/sidera/randomness';
+import { TIERS } from '@/lib/sidera/tiers';
 
 const payments = vi.hoisted(() => ({ findPayment: vi.fn(), markPaid: vi.fn() }));
 vi.mock('@/lib/sidera/orders', async (actual) => ({
@@ -31,7 +32,7 @@ type Capsule = {
   id: string; set_id: string; sequence: number; commitment: string; server_secret_sealed: string;
   server_secret: string | null; state: string; price_usd: number; cards_per_capsule: number;
   buyer_wallet: string | null; buyer_nonce: string | null; purchase_hash: string | null; order_id: string | null;
-  demo?: boolean;
+  demo?: boolean; tier?: string | null; odds_bps?: unknown;
 };
 type Order = { id: string; status: string; expiresAt: Date | null; signature: string | null; paidAt: Date | null; amountSol: number; paymentReference: string };
 type Card = { id: string; set_id: string; designation: string; name: string; rarity: string; edition_size: number };
@@ -87,10 +88,10 @@ function fakePostgres(state: State) {
   /** Applies one write to the transaction's working copy; returns its rows. */
   function write(sql: string, p: unknown[], tx: State): { rows: unknown[] } {
     if (/INSERT INTO capsule \(id, set_id, sequence/.test(sql)) {
-      const [id, setId, commitment, sealed, price, perCapsule] = p as [string, string, string, string, number, number];
+      const [id, setId, commitment, sealed, price, perCapsule, , tier, odds, outcome] = p as [string, string, string, string, number, number, boolean, string | null, string | null, string | null];
       const sequence = Math.max(0, ...tx.capsules.map((c) => c.sequence)) + 1;
-      tx.capsules.push({ id, set_id: setId, sequence, commitment, server_secret_sealed: sealed, server_secret: null, state: 'listed', price_usd: price, cards_per_capsule: perCapsule, buyer_wallet: null, buyer_nonce: null, purchase_hash: null, order_id: null });
-      tx.log.push({ seq: 0, capsuleId: id, capsuleSequence: sequence, event: 'listed', commitment, buyerWallet: null, buyerNonce: null, purchaseHash: null, outcome: null, at: '' });
+      tx.capsules.push({ id, set_id: setId, sequence, commitment, server_secret_sealed: sealed, server_secret: null, state: 'listed', price_usd: price, cards_per_capsule: perCapsule, buyer_wallet: null, buyer_nonce: null, purchase_hash: null, order_id: null, tier, odds_bps: odds ? JSON.parse(odds) : null });
+      tx.log.push({ seq: 0, capsuleId: id, capsuleSequence: sequence, event: 'listed', commitment, buyerWallet: null, buyerNonce: null, purchaseHash: null, outcome: outcome ? JSON.parse(outcome) : null, at: '' });
       return { rows: [{ capsule_id: id, capsule_sequence: sequence }] };
     }
     if (/^\s*UPDATE capsule SET state = 'opened'/.test(sql)) {
@@ -402,6 +403,43 @@ describe('listing capsules at the same moment', () => {
     const { db } = fakePostgres(state);
     await expect(listCapsules(db, { setId: SET, count: 2 })).rejects.toThrow(/Not enough editions/);
     await expect(listCapsules(db, { setId: SET, count: 1 })).resolves.toHaveLength(1);
+  });
+});
+
+describe('capsules listed as a tier', () => {
+  it('open under the odds logged at listing, and the log verifies', async () => {
+    const lunar = TIERS.find((t) => t.key === 'lunar')!;
+    const cards = [card('C1', 'common', 500), card('R1', 'rare', 500), card('E1', 'epic', 500), card('L1', 'legendary', 500)];
+    const state: State = { capsules: [], cards, editions: [], pulls: [], log: [] };
+    const { db } = fakePostgres(state);
+
+    const listed = await listCapsules(db, { setId: SET, count: 12, tier: lunar });
+    expect(state.capsules.every((c) => c.price_usd === lunar.priceUsd && c.tier === 'lunar')).toBe(true);
+    expect(state.log[0].outcome).toEqual({ tier: 'lunar', oddsBps: lunar.oddsBps });
+
+    for (const [i, c] of state.capsules.entries()) {
+      const nonce = createHash('sha256').update(`tier-nonce-${i}`).digest('hex');
+      const wallet = `holder-${i}`;
+      Object.assign(c, { state: 'purchased', buyer_wallet: wallet, buyer_nonce: nonce, purchase_hash: purchaseHash({ capsuleId: c.id, sequence: c.sequence, commitment: c.commitment, wallet, nonce }) });
+      state.log.push({ seq: 0, capsuleId: c.id, capsuleSequence: c.sequence, event: 'purchased', commitment: c.commitment, buyerWallet: wallet, buyerNonce: nonce, purchaseHash: c.purchase_hash, outcome: null, at: '' });
+    }
+    for (const c of listed) await openCapsule(db, c.id);
+
+    // Lunar gives no common: 36 draws and not one.
+    expect(state.pulls).toHaveLength(36);
+    expect(state.pulls.some((p) => p.rarity === 'common')).toBe(false);
+    const opened = state.log.filter((r) => r.event === 'opened');
+    expect(opened.every((r) => JSON.stringify((r.outcome as { oddsBps: unknown }).oddsBps) === JSON.stringify(lunar.oddsBps))).toBe(true);
+    const ordered = () => state.log.map((r, i) => ({ ...r, seq: i + 1 }));
+    const clean = auditLog(ordered());
+    expect(clean.flags).toEqual([]);
+    expect(clean.verified).toBe(12);
+
+    // An opening logged under other odds than were listed is flagged.
+    const swapped = ordered().map((r) => r.event === 'opened' && r.capsuleId === listed[0].id
+      ? { ...r, outcome: { ...(r.outcome as object), oddsBps: { common: 7570, rare: 1960, epic: 420, legendary: 50 } } }
+      : r);
+    expect(auditLog(swapped).flags.map((f) => f.kind)).toContain('odds_changed');
   });
 });
 

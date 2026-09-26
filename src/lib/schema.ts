@@ -940,6 +940,14 @@ export const cardVote = pgTable('card_vote', {
 //   ALTER TABLE capsule ADD COLUMN IF NOT EXISTS price_usd double precision;
 //   ALTER TABLE capsule ALTER COLUMN price_gel DROP NOT NULL;
 //   UPDATE capsule SET price_usd = 15 WHERE state IN ('listed', 'purchased') AND price_usd IS NULL;
+//
+//   -- Capsule tiers. A capsule is listed as one of the four on the shelf and
+//   -- carries that tier's odds from then on, so the odds it opens under are
+//   -- the ones published when it was listed. Null on capsules listed before
+//   -- tiers: those open under RARITY_ODDS_BPS, as they always did.
+//   ALTER TABLE capsule ADD COLUMN IF NOT EXISTS tier text;
+//   ALTER TABLE capsule ADD COLUMN IF NOT EXISTS odds_bps jsonb;
+//   CREATE INDEX IF NOT EXISTS capsule_tier_idx ON capsule (tier, state, sequence);
 export const capsule = pgTable('capsule', {
   /** Chosen by the server before insert: it is part of what the draws are derived from. */
   id: uuid('id').primaryKey(),
@@ -960,6 +968,10 @@ export const capsule = pgTable('capsule', {
   priceUsd: doublePrecision('price_usd').notNull(),
   /** Lari, for capsules listed before prices moved to dollars. History only. */
   priceGel: doublePrecision('price_gel'),
+  /** The shelf's tier key ('chondrite' … 'lunar'); null before tiers. */
+  tier: text('tier'),
+  /** The odds it opens under, parts per ten thousand, fixed at listing; null before tiers. */
+  oddsBps: jsonb('odds_bps'),
   cardsPerCapsule: integer('cards_per_capsule').notNull(),
   listedAt: timestamp('listed_at', { withTimezone: true }).defaultNow().notNull(),
   buyerWallet: text('buyer_wallet'),
@@ -976,6 +988,7 @@ export const capsule = pgTable('capsule', {
 }, (t) => [
   index('capsule_state_idx').on(t.state, t.sequence),
   index('capsule_buyer_idx').on(t.buyerWallet),
+  index('capsule_tier_idx').on(t.tier, t.state, t.sequence),
 ])
 
 export const capsulePull = pgTable('capsule_pull', {

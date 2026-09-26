@@ -31,6 +31,7 @@ const FLAG: Record<AuditFlag['kind'], string> = {
   unlisted_event: 'An event for a capsule never listed',
   out_of_order: 'Events out of order',
   commitment_changed: 'Commitment changed after listing',
+  odds_changed: 'Opened under other odds than listed',
   nonce_changed: 'Nonce changed after purchase',
   opened_without_purchase: 'Opened without a purchase',
   purchased_not_opened: 'Bought, not yet opened',

@@ -1,7 +1,10 @@
 /**
  * Puts a set on sale, and optionally lists the first capsules of it.
  *
- *   SIDERA_DATABASE_CONFIRM=sidera npx tsx scripts/sidera-release-set.ts [capsules]
+ *   SIDERA_DATABASE_CONFIRM=sidera npx tsx scripts/sidera-release-set.ts [capsules] [tier]
+ *
+ * With a tier (chondrite, iron, pallasite, lunar) the capsules are listed as
+ * that tier, at its price and odds; without one, at the set's old single price.
  *
  * Releasing is the one switch: until a set's status is 'released', neither a
  * capsule nor a single card can be bought. Idempotent — a set already released
@@ -14,6 +17,7 @@ import { sql } from 'drizzle-orm'
 import { getDb } from '../src/lib/db'
 import { SET_001 } from '../src/lib/sets/set-001'
 import { listCapsules } from '../src/lib/sidera/capsule'
+import { TIERS, tierByKey } from '../src/lib/sidera/tiers'
 import { requireSideraDatabase } from './sidera-guard'
 
 async function main() {
@@ -22,6 +26,8 @@ async function main() {
 
   const count = Number(process.argv[2] ?? 0)
   if (!Number.isInteger(count) || count < 0) throw new Error('the capsule count must be a whole number')
+  const tier = process.argv[3] === undefined ? undefined : tierByKey(process.argv[3])
+  if (process.argv[3] !== undefined && !tier) throw new Error(`the tier must be one of: ${TIERS.map((t) => t.key).join(', ')}`)
 
   const db = getDb()
   if (!db) throw new Error('DATABASE_URL is not configured')
@@ -39,8 +45,8 @@ async function main() {
     console.log('No capsules listed. Pass a count to list some.')
     return
   }
-  const listed = await listCapsules(db, { setId: set.id, count })
-  console.log(`${listed.length} capsules listed:`)
+  const listed = await listCapsules(db, { setId: set.id, count, tier })
+  console.log(`${listed.length} capsules listed${tier ? ` as ${tier.name}, $${tier.priceUsd}` : ''}:`)
   for (const c of listed) console.log(`  ${String(c.sequence).padStart(3, '0')}  ${c.id}  ${c.commitment}`)
 }
 

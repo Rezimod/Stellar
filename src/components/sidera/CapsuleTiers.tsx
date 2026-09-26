@@ -3,6 +3,7 @@
 import { useCallback, useState, type CSSProperties } from 'react';
 import { RARITIES, rarityInfo, type Rarity } from '@/lib/rarity';
 import { CARDS_PER_TIER, TIERS, rarityAt, type Tier } from '@/lib/sidera/tiers';
+import CapsuleTierSheet from './CapsuleTierSheet';
 import SideraReveal, { type Draw } from './SideraReveal';
 
 export type TierCard = { designation: string; name: string; rarity: Rarity; editionSize: number };
@@ -31,13 +32,16 @@ function drawFrom(tier: Tier, cards: TierCard[]): Draw {
 }
 
 /**
- * The four capsules, cheapest first, the odds climbing with the price. Any of
- * them opens straight away — no account, no payment — so the reveal can be
- * seen as it will be; nothing drawn here is recorded.
+ * The four capsules, cheapest first, the odds climbing with the price. A tile
+ * opens its sheet: the next capsule of that tier on sale, bought and opened
+ * there, or a preview draw — no account, no payment, nothing recorded — so
+ * the reveal can be seen as it will be.
  */
-export default function CapsuleTiers({ cards }: { cards: TierCard[] }) {
+export default function CapsuleTiers({ cards, onSale }: { cards: TierCard[]; onSale: Record<string, number> | null }) {
+  const [sheet, setSheet] = useState<Tier | null>(null);
   const [open, setOpen] = useState<{ tier: Tier; draw: Draw; n: number } | null>(null);
   const start = useCallback((tier: Tier) => setOpen((o) => ({ tier, draw: drawFrom(tier, cards), n: (o?.n ?? 0) + 1 })), [cards]);
+  const closeSheet = useCallback(() => setSheet(null), []);
 
   return (
     <section className="sd-tiers" aria-label="Capsules">
@@ -49,7 +53,7 @@ export default function CapsuleTiers({ cards }: { cards: TierCard[] }) {
               className="sd-tier"
               data-tier={t.key}
               style={{ '--tier': rarityInfo(t.lit).color } as CSSProperties}
-              onClick={() => start(t)}
+              onClick={() => setSheet(t)}
             >
               <span className="sd-tier__capsule" aria-hidden="true">
                 <span className="sd-tier__card" />
@@ -75,12 +79,23 @@ export default function CapsuleTiers({ cards }: { cards: TierCard[] }) {
                 <span style={{ color: rarityInfo('legendary').color }}>✦ Legendary {pct(t.oddsBps.legendary)}</span>
                 <span>Epic {pct(t.oddsBps.epic)}</span>
               </span>
+              {onSale && <span className="sd-tier__stock">{onSale[t.key] ? `${onSale[t.key]} on sale` : 'None on sale'}</span>}
               <span className="sd-tier__open">Open</span>
             </button>
           </li>
         ))}
       </ul>
 
+      {sheet && (
+        <CapsuleTierSheet
+          tier={sheet}
+          onClose={closeSheet}
+          onPreview={() => {
+            setSheet(null);
+            start(sheet);
+          }}
+        />
+      )}
       {open && (
         <SideraReveal key={open.n} draw={open.draw} onAgain={() => start(open.tier)} onClose={() => setOpen(null)} />
       )}

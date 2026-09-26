@@ -8,7 +8,8 @@ import DataRow from '@/components/sidera/ui/DataRow';
 import RarityMark from '@/components/sidera/ui/RarityMark';
 import { getDb } from '@/lib/db';
 import { RARITIES } from '@/lib/rarity';
-import { CAPSULE_PRICE_USD, CARDS_PER_CAPSULE, ORDER_WINDOW_MINUTES, RARITY_ODDS_BPS } from '@/lib/sidera/economics';
+import { CARDS_PER_CAPSULE, ORDER_WINDOW_MINUTES, RARITY_ODDS_BPS } from '@/lib/sidera/economics';
+import { TIERS, tierByKey } from '@/lib/sidera/tiers';
 import { capsulesOnSale } from '@/lib/sidera/capsule';
 import { simulatedPayments } from '@/lib/sidera/orders';
 
@@ -51,7 +52,7 @@ export default async function CapsulesPage() {
             <DataRow
               className="sd-strip"
               items={[
-                { label: 'Price', value: `$${CAPSULE_PRICE_USD}` },
+                { label: 'Price', value: `$${TIERS[0].priceUsd}–${TIERS[TIERS.length - 1].priceUsd}` },
                 { label: 'Cards', value: CARDS_PER_CAPSULE },
                 { label: 'On sale', value: onSale?.length ?? '—' },
                 { label: 'Quote holds', value: `${ORDER_WINDOW_MINUTES} min` },
@@ -72,15 +73,23 @@ export default async function CapsulesPage() {
 
       <section className="sd-container sd-chapter-block">
         <Chapter n="01" title="Odds per card" aside="Provisional" />
-        <ul className="sd-oddsboard">
-          {RARITIES.map((r) => (
-            <li key={r} data-rarity={r}>
-              <RarityMark rarity={r} />
-              <span className="sd-oddsboard__n">{(RARITY_ODDS_BPS[r] / 100).toFixed(r === 'legendary' ? 1 : 0)}%</span>
-            </li>
-          ))}
-        </ul>
-        <p className="sd-strip-note">Logged with every capsule opened under them</p>
+        {[
+          ...TIERS.map((t) => ({ key: t.key, label: `${t.name} · $${t.priceUsd}`, odds: t.oddsBps })),
+          ...(onSale?.some((c) => !c.tier) ? [{ key: 'standard', label: 'Listed before the tiers', odds: RARITY_ODDS_BPS }] : []),
+        ].map((row) => (
+          <div key={row.key} className="sd-section">
+            <p className="sd-label">{row.label}</p>
+            <ul className="sd-oddsboard">
+              {RARITIES.map((r) => (
+                <li key={r} data-rarity={r}>
+                  <RarityMark rarity={r} />
+                  <span className="sd-oddsboard__n">{(row.odds[r] / 100).toFixed(r === 'legendary' ? 1 : 0)}%</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+        <p className="sd-strip-note">Fixed when a capsule is listed, and logged with it</p>
       </section>
 
       <section className="sd-container sd-chapter-block">
@@ -92,7 +101,7 @@ export default async function CapsulesPage() {
             <article key={c.id} className="sd-capsule">
               <div className="sd-capsule__head">
                 <span className="sd-capsule__n">
-                  <span className="sd-label">Capsule</span> {String(c.sequence).padStart(3, '0')}
+                  <span className="sd-label">{tierByKey(c.tier)?.name ?? 'Capsule'}</span> {String(c.sequence).padStart(3, '0')}
                 </span>
                 <span className="sd-capsule__price">${c.priceUsd}</span>
               </div>

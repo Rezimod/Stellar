@@ -1456,3 +1456,31 @@ html:has(.sidera) #stellar-main { padding-top: 0; padding-bottom: 0; }
   .sd-tier__kind { font-size: 6.5px; }
 }
 @media (prefers-reduced-motion: reduce) { .sd-tier, .sd-tier__card { transition: none; } }
+.sd-tier__stock { font-family: var(--sd-mono); font-size: 11px; letter-spacing: 0.06em; color: var(--sd-ink-3); }
+
+/* ── A tier's sheet: its odds, the next capsule on sale, the preview ── */
+.sd-sheet {
+  position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 16px;
+  background: rgba(3, 7, 20, 0.72); backdrop-filter: blur(6px);
+  animation: sd-sheet-in var(--sd-dur-base) var(--sd-ease);
+}
+.sd-sheet__panel {
+  position: relative; width: min(460px, 100%); max-height: 100%; overflow-y: auto; outline: none;
+  display: flex; flex-direction: column; gap: 10px; padding: 22px 20px 20px;
+  border-radius: calc(var(--sd-radius) + 6px);
+  border: 1px solid color-mix(in srgb, var(--tier) 45%, var(--sd-rule));
+  background:
+    radial-gradient(90% 50% at 50% 0%, color-mix(in srgb, var(--tier) 14%, transparent), transparent 70%),
+    linear-gradient(180deg, rgba(14, 22, 48, 0.98), rgba(6, 11, 29, 0.99));
+  color: var(--sd-ink);
+}
+.sd-sheet__panel h2 { margin: 0; }
+.sd-sheet__close { position: absolute; top: 12px; right: 12px; min-height: 32px; padding: 4px 10px; border: 1px solid var(--sd-rule); border-radius: 999px; background: none; color: var(--sd-ink-3); font: inherit; font-size: 13px; cursor: pointer; }
+.sd-sheet__close:hover, .sd-sheet__close:focus-visible { color: var(--sd-ink); border-color: var(--sd-rule-strong); }
+.sd-sheet__odds { list-style: none; margin: 4px 0 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.sd-sheet__odds li { display: flex; flex-direction: column; gap: 2px; padding: 8px 10px; border: 1px solid var(--sd-rule); border-radius: var(--sd-radius); font-family: var(--sd-mono); font-size: 12px; }
+.sd-sheet__odds li > span:last-child { font-size: 16px; font-variant-numeric: tabular-nums; }
+.sd-sheet__preview { align-self: flex-start; margin-top: 4px; background: none; border: 0; padding: 6px 0; font: inherit; font-size: 13px; cursor: pointer; }
+@media (max-width: 420px) { .sd-sheet__odds { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@keyframes sd-sheet-in { from { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .sd-sheet { animation: none; } }

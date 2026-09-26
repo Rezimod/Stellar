@@ -13,7 +13,7 @@ import { RARITIES, type Rarity } from '@/lib/rarity';
 import { card } from '@/lib/schema';
 import { SET_001, SET_001_CARDS } from '@/lib/sets/set-001';
 import { cardStatus } from '@/lib/sidera/almanac';
-import { readSetSupply } from '@/lib/sidera/capsule';
+import { capsulesOnSale, readSetSupply } from '@/lib/sidera/capsule';
 import { DIRECT_CARD_PRICE_USD } from '@/lib/sidera/economics';
 import { nightRow } from '@/lib/sidera/night';
 import { siteNightDate } from '@/lib/sidera/target';
@@ -32,13 +32,22 @@ export default async function HomePage() {
 
   let remaining = new Map<string, number>();
   let tonight: string | null = null;
+  let onSale: Record<string, number> | null = null;
   if (db) {
     try {
-      const [supply, night] = await Promise.all([
+      const [supply, night, listed] = await Promise.all([
         readSetSupply(db, SET_001.code),
         nightRow(db, siteNightDate(node.timezone, new Date())),
+        capsulesOnSale(db, { limit: 1000 }).catch((err) => {
+          console.error('[sidera] cannot read capsules on sale', err);
+          return null;
+        }),
       ]);
       if (supply) remaining = new Map(supply.cards.map((c) => [c.designation, c.remaining]));
+      if (listed) {
+        onSale = {};
+        for (const c of listed) if (c.tier) onSale[c.tier] = (onSale[c.tier] ?? 0) + 1;
+      }
       if (night) {
         const [row] = await db.select({ designation: card.designation }).from(card).where(eq(card.id, night.cardId));
         tonight = row?.designation ?? null;
@@ -86,7 +95,7 @@ export default async function HomePage() {
     <SideraShell title="Sidera">
       <SideraView step="landing" />
       <div className="sd-shop">
-        <CapsuleTiers cards={tierCards} />
+        <CapsuleTiers cards={tierCards} onSale={onSale} />
         <div className="sd-shop__set">
           <span className="sd-label">First Light · {cards.length} cards</span>
           <Link href="/capsules/log" className="sd-shop__chip">
