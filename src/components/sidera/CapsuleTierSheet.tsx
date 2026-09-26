@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { RARITIES, rarityInfo } from '@/lib/rarity';
 import { CARDS_PER_TIER, type Tier } from '@/lib/sidera/tiers';
 import SideraBuyCapsule from './SideraBuyCapsule';
+import TierCapsule from './TierCapsule';
 
 type OnSale = { id: string; sequence: number; commitment: string; priceUsd: number; cardsPerCapsule: number };
 
@@ -12,7 +13,8 @@ const pct = (bps: number) => (bps === 0 ? '—' : `${(bps / 100).toFixed(bps < 1
 /**
  * One tier, taken off the shelf: its odds in full, and the next capsule of it
  * on sale — read at the moment the sheet opens, so the commitment the buyer
- * sends is the one published now. The preview stays one press away.
+ * sends is the one published now. Everything, the buy button included, sits
+ * on one screen. The preview stays one press away.
  */
 export default function CapsuleTierSheet({ tier, onPreview, onClose }: { tier: Tier; onPreview: () => void; onClose: () => void }) {
   const [next, setNext] = useState<OnSale | null | undefined>(undefined);
@@ -45,6 +47,8 @@ export default function CapsuleTierSheet({ tier, onPreview, onClose }: { tier: T
     };
   }, [onClose]);
 
+  const top = Math.max(...RARITIES.map((r) => tier.oddsBps[r]));
+
   return (
     <div className="sd-sheet" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div
@@ -56,52 +60,71 @@ export default function CapsuleTierSheet({ tier, onPreview, onClose }: { tier: T
         tabIndex={-1}
         style={{ '--tier': rarityInfo(tier.lit).color } as CSSProperties}
       >
-        <button type="button" className="sd-sheet__close" onClick={onClose}>
-          Close
+        <button type="button" className="sd-sheet__close" onClick={onClose} aria-label="Close">
+          <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+            <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+          </svg>
         </button>
-        <p className="sd-label">Capsule · First Light</p>
-        <div className="sd-tier__head">
-          <h2 className="sd-tier__name">{tier.name}</h2>
-          <span className="sd-tier__price">${tier.priceUsd}</span>
+
+        <div className="sd-sheet__art">
+          <span className="sd-sheet__rays" aria-hidden="true" />
+          <TierCapsule tier={tier} />
+          <span className="sd-sheet__count">{CARDS_PER_TIER} cards inside</span>
         </div>
-        <p className="sd-tier__line">
-          {tier.line} · {CARDS_PER_TIER} cards
-        </p>
 
-        <ul className="sd-sheet__odds">
-          {[...RARITIES].reverse().map((r) => (
-            <li key={r} data-rarity={r}>
-              <span style={{ color: rarityInfo(r).color }}>{rarityInfo(r).label}</span>
-              <span>{pct(tier.oddsBps[r])}</span>
-            </li>
-          ))}
-        </ul>
-        <p className="sd-strip-note">Odds per card, fixed when the capsule was listed and logged with it</p>
+        <div className="sd-sheet__body">
+          <p className="sd-label">Capsule · First Light</p>
+          <div className="sd-sheet__head">
+            <h2 className="sd-sheet__name">{tier.name}</h2>
+            <span className="sd-sheet__price">${tier.priceUsd}</span>
+          </div>
+          <p className="sd-sheet__line">{tier.line}</p>
 
-        {failed ? (
-          <p className="sd-note">The sale cannot be read at the moment.</p>
-        ) : next === undefined ? (
-          <p className="sd-data">Reading the sale</p>
-        ) : next === null ? (
-          <p className="sd-note">No {tier.name} capsule is on sale right now.</p>
-        ) : (
-          <>
-            <p className="sd-data">
-              Capsule No. {String(next.sequence).padStart(3, '0')} · commitment {next.commitment.slice(0, 12)}…
-            </p>
-            <SideraBuyCapsule
-              capsuleId={next.id}
-              sequence={next.sequence}
-              commitment={next.commitment}
-              priceUsd={next.priceUsd}
-              cardsPerCapsule={next.cardsPerCapsule}
-            />
-          </>
-        )}
+          <ul className="sd-sheet__odds" aria-label="Odds per card">
+            {[...RARITIES].reverse().map((r) => (
+              <li key={r} data-zero={tier.oddsBps[r] === 0 || undefined} style={{ '--r': rarityInfo(r).color, '--w': tier.oddsBps[r] / top } as CSSProperties}>
+                <span className="sd-sheet__rarity">{rarityInfo(r).label}</span>
+                <span className="sd-sheet__bar" aria-hidden="true" />
+                <span className="sd-sheet__pct">{pct(tier.oddsBps[r])}</span>
+              </li>
+            ))}
+          </ul>
 
-        <button type="button" className="sd-link sd-sheet__preview" onClick={onPreview}>
-          Preview the opening — nothing is bought
-        </button>
+          <div className="sd-sheet__buy">
+            {failed ? (
+              <p className="sd-buyflow__error">The sale cannot be read at the moment.</p>
+            ) : next === undefined ? (
+              <div className="sd-sheet__wait" aria-label="Reading the sale">
+                <span />
+                <span />
+              </div>
+            ) : next === null ? (
+              <p className="sd-buyflow__error">No {tier.name} capsule is on sale right now.</p>
+            ) : (
+              <>
+                <p className="sd-sheet__lot">
+                  <span>No. {String(next.sequence).padStart(3, '0')}</span>
+                  <span title={next.commitment}>commitment {next.commitment.slice(0, 10)}…</span>
+                </p>
+                <SideraBuyCapsule
+                  capsuleId={next.id}
+                  sequence={next.sequence}
+                  commitment={next.commitment}
+                  priceUsd={next.priceUsd}
+                  cardsPerCapsule={next.cardsPerCapsule}
+                  onClose={onClose}
+                />
+              </>
+            )}
+          </div>
+
+          <button type="button" className="sd-sheet__preview" onClick={onPreview}>
+            <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+              <path d="M5 3.5v9l7-4.5z" fill="currentColor" />
+            </svg>
+            Preview the opening — nothing is bought
+          </button>
+        </div>
       </div>
     </div>
   );

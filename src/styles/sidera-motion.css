@@ -59,10 +59,12 @@
   mask-image: linear-gradient(180deg, #000 calc(100% - 48px), transparent);
 }
 .sd-fan__rail { position: relative; z-index: 2; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 16px; max-width: 1480px; }
+/* The fan takes what the first screen has left once the four capsule tiles
+   (about --sd-caph + 185px) and the bar are placed. */
 .sd-fan__stage {
-  --cw: clamp(170px, 17vw, 244px);
+  --cw: clamp(120px, min(17vw, (100svh - var(--sd-caph) - 380px) / 1.4), 244px);
   position: relative; z-index: 1; display: grid; place-items: center;
-  height: calc(var(--cw) * 1.4 + 76px);
+  height: calc(var(--cw) * 1.4 + 40px);
   perspective: 1600px;
 }
 .sd-fan__deck {

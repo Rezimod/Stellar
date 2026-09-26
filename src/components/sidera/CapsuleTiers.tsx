@@ -1,10 +1,17 @@
 'use client';
 
-import { useCallback, useState, type CSSProperties } from 'react';
+import { useCallback, useEffect, useState, type CSSProperties } from 'react';
+import dynamic from 'next/dynamic';
 import { RARITIES, rarityInfo, type Rarity } from '@/lib/rarity';
-import { CARDS_PER_TIER, TIERS, rarityAt, type Tier } from '@/lib/sidera/tiers';
-import CapsuleTierSheet from './CapsuleTierSheet';
-import SideraReveal, { type Draw } from './SideraReveal';
+import { CARDS_PER_TIER, TIERS, rarityAt, tierByKey, type Tier } from '@/lib/sidera/tiers';
+import type { Draw } from './SideraReveal';
+import TierCapsule from './TierCapsule';
+
+// The sheet carries the wallet and payment code; the shelf fetches it on
+// first intent (a pointer over a tile, a touch) rather than with the page.
+const loadSheet = () => import('./CapsuleTierSheet');
+const CapsuleTierSheet = dynamic(loadSheet, { ssr: false });
+const SideraReveal = dynamic(() => import('./SideraReveal'), { ssr: false });
 
 export type TierCard = { designation: string; name: string; rarity: Rarity; editionSize: number };
 
@@ -38,10 +45,21 @@ function drawFrom(tier: Tier, cards: TierCard[]): Draw {
  * the reveal can be seen as it will be.
  */
 export default function CapsuleTiers({ cards, onSale }: { cards: TierCard[]; onSale: Record<string, number> | null }) {
-  const [sheet, setSheet] = useState<Tier | null>(null);
+  const [sheet, setSheetState] = useState<Tier | null>(null);
   const [open, setOpen] = useState<{ tier: Tier; draw: Draw; n: number } | null>(null);
   const start = useCallback((tier: Tier) => setOpen((o) => ({ tier, draw: drawFrom(tier, cards), n: (o?.n ?? 0) + 1 })), [cards]);
-  const closeSheet = useCallback(() => setSheet(null), []);
+
+  // The open sheet lives in the address (#iron), so signing in — which loads
+  // Privy and remounts the page — lands the buyer back on the same capsule.
+  const setSheet = useCallback((t: Tier | null) => {
+    setSheetState(t);
+    history.replaceState(history.state, '', t ? `#${t.key}` : location.pathname + location.search);
+  }, []);
+  const closeSheet = useCallback(() => setSheet(null), [setSheet]);
+  useEffect(() => {
+    const t = tierByKey(location.hash.slice(1));
+    if (t) setSheetState(t);
+  }, []);
 
   return (
     <section className="sd-tiers" aria-label="Capsules">
@@ -53,16 +71,12 @@ export default function CapsuleTiers({ cards, onSale }: { cards: TierCard[]; onS
               className="sd-tier"
               data-tier={t.key}
               style={{ '--tier': rarityInfo(t.lit).color } as CSSProperties}
+              onPointerEnter={loadSheet}
+              onTouchStart={loadSheet}
+              onFocus={loadSheet}
               onClick={() => setSheet(t)}
             >
-              <span className="sd-tier__capsule" aria-hidden="true">
-                <span className="sd-tier__card" />
-                <span className="sd-tier__card" />
-                <span className="sd-tier__card sd-tier__card--front">
-                  <span className="sd-tier__mark">Sidera</span>
-                  <span className="sd-tier__kind">{t.name}</span>
-                </span>
-              </span>
+              <TierCapsule tier={t} />
               <span className="sd-tier__head">
                 <span className="sd-tier__name">{t.name}</span>
                 <span className="sd-tier__price">${t.priceUsd}</span>
@@ -78,9 +92,9 @@ export default function CapsuleTiers({ cards, onSale }: { cards: TierCard[]; onS
               <span className="sd-tier__best">
                 <span style={{ color: rarityInfo('legendary').color }}>✦ Legendary {pct(t.oddsBps.legendary)}</span>
                 <span>Epic {pct(t.oddsBps.epic)}</span>
+                {onSale && <span className="sd-tier__stock">{onSale[t.key] ? `${onSale[t.key]} on sale` : 'None on sale'}</span>}
               </span>
-              {onSale && <span className="sd-tier__stock">{onSale[t.key] ? `${onSale[t.key]} on sale` : 'None on sale'}</span>}
-              <span className="sd-tier__open">Open</span>
+              <span className="sd-tier__open">Buy &amp; open</span>
             </button>
           </li>
         ))}

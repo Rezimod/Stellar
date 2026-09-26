@@ -48,7 +48,16 @@ const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
  * on the button, nothing is charged, and the page says so before it is
  * pressed. The capsule behind it is real, and so is everything after.
  */
-export default function SideraPay({ order, onConfirmed }: { order: SideraOrder; onConfirmed: (c: Confirmation) => void }) {
+export default function SideraPay({
+  order,
+  onConfirmed,
+  compact = false,
+}: {
+  order: SideraOrder;
+  onConfirmed: (c: Confirmation) => void;
+  /** One screen: the pay button first, the code and the rest beside it, small. */
+  compact?: boolean;
+}) {
   const { getAccessToken } = usePrivy();
   const { wallets } = useWallets();
   const [checking, setChecking] = useState(false);
@@ -141,6 +150,60 @@ export default function SideraPay({ order, onConfirmed }: { order: SideraOrder; 
       setPaying(false);
     }
   };
+
+  if (compact) {
+    const quote = left === null ? null : left > 0 ? `quote ${left} min` : 'quote expired';
+    return (
+      <div className="sd-pay sd-pay--compact">
+        {!REHEARSAL && (
+          <div className="sd-pay__code">
+            <QRCodeSVG value={order.url} size={104} bgColor="#ffffff" fgColor="#050b1d" level="M" />
+          </div>
+        )}
+        <div className="sd-pay__side">
+          <p className="sd-pay__sum">
+            <strong>{REHEARSAL ? 'Not charged' : `${order.amountSol.toFixed(4)} SOL`}</strong>
+            <span>
+              {order.amountFiat} {order.currency}
+              {quote && ` · ${quote}`}
+            </span>
+          </p>
+          {REHEARSAL ? (
+            <button type="button" className="sd-btn sd-btn--primary sd-btn--block" onClick={() => check()} disabled={checking}>
+              {checking ? 'Settling' : 'Settle & open'}
+            </button>
+          ) : (
+            <button type="button" className="sd-btn sd-btn--primary sd-btn--block" onClick={payFromWallet} disabled={paying || !wallet}>
+              {paying ? 'Sending' : `Pay ${order.amountSol.toFixed(4)} SOL`}
+            </button>
+          )}
+          {!REHEARSAL && (
+            <div className="sd-pay__minor">
+              <a href={order.url}>Other wallet</a>
+              <button type="button" onClick={() => check()} disabled={checking}>
+                {checking ? 'Checking' : 'I have paid'}
+              </button>
+              {DEVNET && (
+                <button type="button" onClick={airdrop} disabled={paying || !wallet}>
+                  Get test SOL
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+        {(note || sent) && (
+          <p className="sd-pay__note">
+            {note}{' '}
+            {sent && (
+              <a className="sd-link" href={explorer(sent)} target="_blank" rel="noopener noreferrer">
+                View transaction
+              </a>
+            )}
+          </p>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="sd-pay">

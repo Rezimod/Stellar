@@ -1388,28 +1388,31 @@ html:has(.sidera) #stellar-main { padding-top: 0; padding-bottom: 0; }
 
 /* ── The shelf: four capsules ─────────────────────────────────── */
 /* Cheapest first, each lit in the colour of the rarity it reaches for. The
-   whole tile is the button: it opens a preview draw straight away. */
+   whole tile is the button. Sized from the viewport so the fan, all four
+   tiles and their buttons share the first screen. Keep --sd-caph in step
+   with .sd-fan__stage in sidera-motion.css. */
+.sidera { --sd-caph: clamp(76px, 13svh, 140px); }
 @media (min-width: 1100px) { .sd-shop { grid-template-columns: minmax(0, 1fr); } }
-.sd-tiers__row { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(10px, 1.6vw, 20px); }
-@media (max-width: 899px) { .sd-tiers__row { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.sd-tiers__row { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(10px, 1.4vw, 18px); }
 .sd-tier {
-  position: relative; width: 100%; height: 100%; display: flex; flex-direction: column; gap: 8px; text-align: left; cursor: pointer;
-  padding: 14px 14px 16px; border-radius: calc(var(--sd-radius) + 6px);
+  position: relative; width: 100%; height: 100%; display: flex; flex-direction: column; gap: 6px; text-align: left; cursor: pointer;
+  padding: 12px 14px 14px; border-radius: calc(var(--sd-radius) + 6px);
   border: 1px solid color-mix(in srgb, var(--tier) 30%, var(--sd-rule));
   background:
-    radial-gradient(90% 60% at 50% 0%, color-mix(in srgb, var(--tier) 16%, transparent), transparent 70%),
-    linear-gradient(180deg, rgba(14, 22, 48, 0.9), rgba(6, 11, 29, 0.95));
+    radial-gradient(90% 60% at 50% 0%, color-mix(in srgb, var(--tier) 18%, transparent), transparent 70%),
+    linear-gradient(180deg, rgba(14, 22, 48, 0.92), rgba(6, 11, 29, 0.96));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
   color: var(--sd-ink); font: inherit;
   transition: transform var(--sd-dur-fast) var(--sd-ease), border-color var(--sd-dur-fast) var(--sd-ease), box-shadow var(--sd-dur-base) var(--sd-ease);
 }
-.sd-tier:hover, .sd-tier:focus-visible { transform: translateY(-3px); border-color: color-mix(in srgb, var(--tier) 70%, transparent); box-shadow: 0 18px 40px -18px color-mix(in srgb, var(--tier) 55%, transparent); }
+.sd-tier:hover, .sd-tier:focus-visible { transform: translateY(-3px); border-color: color-mix(in srgb, var(--tier) 70%, transparent); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 18px 40px -18px color-mix(in srgb, var(--tier) 55%, transparent); }
 .sd-tier:focus-visible { outline: 2px solid var(--sd-focus); outline-offset: 3px; }
 .sd-tier:active { transform: translateY(-1px) scale(0.99); }
 
 /* The sealed capsule: three cards fanned, the front one naming its class. */
-.sd-tier__capsule { position: relative; display: grid; place-items: center; height: clamp(120px, 15vw, 170px); margin-bottom: 4px; }
+.sd-tier__capsule { --h: var(--sd-caph); position: relative; display: grid; place-items: center; height: var(--h); flex: none; }
 .sd-tier__card {
-  position: absolute; width: clamp(62px, 7.4vw, 92px); aspect-ratio: 63 / 88; border-radius: 7px;
+  position: absolute; width: calc(var(--h) * 0.56); aspect-ratio: 63 / 88; border-radius: 7px;
   border: 1px solid color-mix(in srgb, var(--tier) 35%, var(--sd-rule-strong));
   background: radial-gradient(120% 90% at 50% 10%, #1a2c58 0%, #070e22 75%);
   box-shadow: 0 14px 30px rgba(0, 0, 0, 0.45);
@@ -1420,67 +1423,223 @@ html:has(.sidera) #stellar-main { padding-top: 0; padding-bottom: 0; }
 .sd-tier:hover .sd-tier__card:nth-child(1) { transform: rotate(-16deg) translateX(-42%); }
 .sd-tier:hover .sd-tier__card:nth-child(2) { transform: rotate(12deg) translateX(38%); }
 .sd-tier__card--front {
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: calc(var(--h) * 0.04);
+  overflow: hidden;
   border-color: color-mix(in srgb, var(--tier) 75%, transparent);
   background:
     repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.035) 0 2px, transparent 2px 7px),
-    radial-gradient(120% 90% at 50% 10%, color-mix(in srgb, var(--tier) 22%, #13214a) 0%, #070e22 80%);
-  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.5), 0 0 26px -6px color-mix(in srgb, var(--tier) 60%, transparent);
+    radial-gradient(120% 90% at 50% 10%, color-mix(in srgb, var(--tier) 24%, #13214a) 0%, #070e22 80%);
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.5), 0 0 26px -6px color-mix(in srgb, var(--tier) 60%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
+/* A slow pass of light across the sealed front. */
+.sd-tier__card--front::after {
+  content: ''; position: absolute; inset: -20% -60%;
+  background: linear-gradient(105deg, transparent 40%, color-mix(in srgb, var(--tier) 30%, rgba(255, 255, 255, 0.25)) 50%, transparent 60%);
+  transform: translateX(-60%); pointer-events: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .sd-tier__card--front::after { animation: sd-tier-shine 5.5s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+  .sd-tiers__row > li:nth-child(2) .sd-tier__card--front::after { animation-delay: 0.6s; }
+  .sd-tiers__row > li:nth-child(3) .sd-tier__card--front::after { animation-delay: 1.2s; }
+  .sd-tiers__row > li:nth-child(4) .sd-tier__card--front::after { animation-delay: 1.8s; }
+}
+@keyframes sd-tier-shine { 0%, 55% { transform: translateX(-60%); } 85%, 100% { transform: translateX(60%); } }
 .sd-tier:hover .sd-tier__card--front { transform: translateY(-4px); }
-.sd-tier__mark { font-family: var(--sd-display, var(--sd-sans)); font-weight: 700; letter-spacing: 0.22em; font-size: clamp(8px, 0.8vw, 10px); text-transform: uppercase; }
-.sd-tier__kind { font-family: var(--sd-mono); font-size: clamp(7px, 0.7vw, 9px); letter-spacing: 0.16em; text-transform: uppercase; color: var(--tier); }
+.sd-tier__mark { position: relative; font-family: var(--sd-display, var(--sd-sans)); font-weight: 700; letter-spacing: 0.22em; font-size: clamp(7px, calc(var(--h) * 0.07), 10px); text-transform: uppercase; }
+.sd-tier__kind { position: relative; font-family: var(--sd-mono); font-size: clamp(6.5px, calc(var(--h) * 0.06), 9px); letter-spacing: 0.16em; text-transform: uppercase; color: var(--tier); }
 
 .sd-tier__head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
-.sd-tier__name { font-weight: 600; font-size: clamp(16px, 1.5vw, 20px); letter-spacing: -0.01em; }
-.sd-tier__price { font-weight: 700; font-size: clamp(22px, 2.2vw, 30px); letter-spacing: -0.03em; color: var(--tier); font-variant-numeric: tabular-nums; }
-.sd-tier__line { font-size: 13px; line-height: 1.35; color: var(--sd-ink-3); }
-.sd-tier__odds { display: flex; height: 6px; border-radius: 3px; overflow: hidden; gap: 2px; margin-top: 2px; }
+.sd-tier__name { font-weight: 600; font-size: clamp(16px, 1.4vw, 20px); letter-spacing: -0.01em; }
+.sd-tier__price { font-weight: 700; font-size: clamp(22px, 2vw, 28px); line-height: 1; letter-spacing: -0.03em; color: var(--tier); font-variant-numeric: tabular-nums; }
+.sd-tier__line { font-size: 13px; line-height: 1.3; color: var(--sd-ink-3); }
+.sd-tier__odds { display: flex; height: 6px; border-radius: 3px; overflow: hidden; gap: 2px; margin-top: 2px; flex: none; }
 .sd-tier__odds > span { min-width: 0; flex-basis: 0; }
 .sd-tier__odds > [data-rarity='common'] { background: var(--sd-rarity-common); }
 .sd-tier__odds > [data-rarity='rare'] { background: var(--sd-rarity-rare); }
 .sd-tier__odds > [data-rarity='epic'] { background: var(--sd-rarity-epic); }
 .sd-tier__odds > [data-rarity='legendary'] { background: var(--sd-rarity-legendary); min-width: 3px; }
-.sd-tier__best { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px 10px; font-family: var(--sd-mono); font-size: 11px; letter-spacing: 0.06em; color: var(--sd-ink-3); }
+.sd-tier__best { display: flex; flex-wrap: wrap; gap: 2px 12px; font-family: var(--sd-mono); font-size: 11px; letter-spacing: 0.06em; color: var(--sd-ink-3); }
+.sd-tier__stock { margin-left: auto; color: var(--sd-ink-2); }
 .sd-tier__open {
-  margin-top: auto; align-self: stretch; text-align: center; padding: 10px 12px; border-radius: 999px;
-  background: var(--tier); color: #050b1d; font-weight: 700; font-size: 14px;
+  margin-top: auto; align-self: stretch; display: flex; align-items: center; justify-content: center; min-height: 42px; padding: 8px 12px; border-radius: 999px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--tier) 80%, #fff), var(--tier));
+  color: #050b1d; font-weight: 700; font-size: 14px; letter-spacing: -0.005em;
+  box-shadow: 0 8px 22px -10px var(--tier), inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 .sd-shop__set { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px; }
-@media (max-width: 639px) {
-  .sd-tier { padding: 12px 12px 14px; gap: 6px; }
-  .sd-tier__line { font-size: 12px; }
-  .sd-tier__best { font-size: 10px; }
-  .sd-tier__card { width: 58px; }
-  .sd-tier__mark { font-size: 7px; }
-  .sd-tier__kind { font-size: 6.5px; }
-}
-@media (prefers-reduced-motion: reduce) { .sd-tier, .sd-tier__card { transition: none; } }
-.sd-tier__stock { font-family: var(--sd-mono); font-size: 11px; letter-spacing: 0.06em; color: var(--sd-ink-3); }
 
-/* ── A tier's sheet: its odds, the next capsule on sale, the preview ── */
+/* Phones: the four capsules as four rows, all on the first screen. */
+@media (max-width: 899px) {
+  .sidera { --sd-caph: 86px; }
+  .sd-shop { padding-top: 14px; gap: 14px; }
+  .sd-tiers__row { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .sd-tier {
+    display: grid; grid-template-columns: 76px minmax(0, 1fr) auto; align-items: center;
+    grid-template-areas: 'art head head' 'art line line' 'art odds odds' 'art best open';
+    gap: 4px 12px; padding: 10px 12px 10px 8px;
+  }
+  .sd-tier__capsule { grid-area: art; align-self: stretch; height: auto; min-height: var(--h); }
+  .sd-tier__head { grid-area: head; }
+  .sd-tier__line { grid-area: line; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sd-tier__odds { grid-area: odds; height: 5px; }
+  .sd-tier__best { grid-area: best; font-size: 10.5px; gap: 0 10px; align-self: center; }
+  .sd-tier__stock { display: none; }
+  .sd-tier__open { grid-area: open; min-height: 36px; padding: 6px 16px; font-size: 13px; margin-top: 2px; }
+  .sd-tier__name { font-size: 17px; }
+  .sd-tier__price { font-size: 22px; }
+}
+@media (max-width: 359px) { .sd-tier__best > span:nth-child(2) { display: none; } }
+@media (prefers-reduced-motion: reduce) { .sd-tier, .sd-tier__card { transition: none; } }
+
+/* ── A tier's sheet: the capsule, its odds, buy and open ───────── */
 .sd-sheet {
   position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 16px;
-  background: rgba(3, 7, 20, 0.72); backdrop-filter: blur(6px);
+  background: rgba(3, 7, 20, 0.74); backdrop-filter: blur(8px);
   animation: sd-sheet-in var(--sd-dur-base) var(--sd-ease);
 }
 .sd-sheet__panel {
-  position: relative; width: min(460px, 100%); max-height: 100%; overflow-y: auto; outline: none;
-  display: flex; flex-direction: column; gap: 10px; padding: 22px 20px 20px;
-  border-radius: calc(var(--sd-radius) + 6px);
-  border: 1px solid color-mix(in srgb, var(--tier) 45%, var(--sd-rule));
+  position: relative; width: min(780px, 100%); max-height: 100%; overflow-y: auto; overscroll-behavior: contain; outline: none;
+  display: grid; grid-template-columns: 300px minmax(0, 1fr);
+  border-radius: calc(var(--sd-radius) + 8px);
+  border: 1px solid color-mix(in srgb, var(--tier) 40%, var(--sd-rule));
   background:
-    radial-gradient(90% 50% at 50% 0%, color-mix(in srgb, var(--tier) 14%, transparent), transparent 70%),
-    linear-gradient(180deg, rgba(14, 22, 48, 0.98), rgba(6, 11, 29, 0.99));
+    radial-gradient(70% 60% at 20% 0%, color-mix(in srgb, var(--tier) 12%, transparent), transparent 70%),
+    linear-gradient(180deg, rgba(14, 22, 48, 0.985), rgba(6, 11, 29, 0.99));
+  box-shadow: 0 40px 120px -30px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.03) inset;
   color: var(--sd-ink);
+  animation: sd-sheet-up 420ms cubic-bezier(0.2, 0.9, 0.25, 1.05) both;
 }
-.sd-sheet__panel h2 { margin: 0; }
-.sd-sheet__close { position: absolute; top: 12px; right: 12px; min-height: 32px; padding: 4px 10px; border: 1px solid var(--sd-rule); border-radius: 999px; background: none; color: var(--sd-ink-3); font: inherit; font-size: 13px; cursor: pointer; }
-.sd-sheet__close:hover, .sd-sheet__close:focus-visible { color: var(--sd-ink); border-color: var(--sd-rule-strong); }
-.sd-sheet__odds { list-style: none; margin: 4px 0 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
-.sd-sheet__odds li { display: flex; flex-direction: column; gap: 2px; padding: 8px 10px; border: 1px solid var(--sd-rule); border-radius: var(--sd-radius); font-family: var(--sd-mono); font-size: 12px; }
-.sd-sheet__odds li > span:last-child { font-size: 16px; font-variant-numeric: tabular-nums; }
-.sd-sheet__preview { align-self: flex-start; margin-top: 4px; background: none; border: 0; padding: 6px 0; font: inherit; font-size: 13px; cursor: pointer; }
-@media (max-width: 420px) { .sd-sheet__odds { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.sd-sheet__panel:focus, .sd-sheet__panel:focus-visible { outline: none; }
+.sd-sheet__close {
+  position: absolute; top: 12px; right: 12px; z-index: 2; display: grid; place-items: center; width: 36px; height: 36px;
+  border: 1px solid var(--sd-rule); border-radius: 50%; background: rgba(6, 11, 29, 0.6); color: var(--sd-ink-3); cursor: pointer;
+  transition: color var(--sd-dur-fast) var(--sd-ease), border-color var(--sd-dur-fast) var(--sd-ease), transform var(--sd-dur-fast) var(--sd-ease);
+}
+.sd-sheet__close:hover, .sd-sheet__close:focus-visible { color: var(--sd-ink); border-color: var(--sd-rule-strong); transform: rotate(90deg); }
+
+.sd-sheet__art {
+  position: relative; overflow: hidden; display: grid; place-items: center; min-height: 340px;
+  border-right: 1px solid var(--sd-rule);
+  background:
+    radial-gradient(60% 45% at 50% 48%, color-mix(in srgb, var(--tier) 26%, transparent), transparent 72%),
+    radial-gradient(120% 80% at 50% 100%, rgba(2, 5, 15, 0.9), transparent 70%);
+}
+.sd-sheet__art .sd-tier__capsule { --h: 230px; }
+.sd-sheet__art .sd-tier__card:nth-child(1) { transform: rotate(-13deg) translateX(-36%); }
+.sd-sheet__art .sd-tier__card:nth-child(2) { transform: rotate(9deg) translateX(32%); }
+.sd-sheet__rays {
+  position: absolute; inset: -40%;
+  background: repeating-conic-gradient(from 0deg at 50% 50%, color-mix(in srgb, var(--tier) 9%, transparent) 0deg 4deg, transparent 4deg 14deg);
+  mask-image: radial-gradient(circle at 50% 50%, #000 0%, transparent 52%);
+}
+.sd-sheet__count {
+  position: absolute; left: 50%; bottom: 16px; translate: -50% 0; white-space: nowrap;
+  padding: 4px 10px; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--tier) 35%, var(--sd-rule));
+  background: rgba(6, 11, 29, 0.7); font: 500 11px var(--sd-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--sd-ink-2);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .sd-sheet__rays { animation: sd-spin 80s linear infinite; }
+  .sd-sheet__art .sd-tier__capsule { animation: sd-m-hover 6s ease-in-out infinite; }
+}
+
+.sd-sheet__body { display: flex; flex-direction: column; gap: 10px; min-width: 0; padding: 22px 24px 18px; }
+.sd-sheet__head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.sd-sheet__name { margin: 0; font-weight: 600; font-size: 28px; line-height: 1.1; letter-spacing: -0.02em; }
+.sd-sheet__price { font-weight: 700; font-size: 34px; line-height: 1; letter-spacing: -0.03em; color: var(--tier); font-variant-numeric: tabular-nums; }
+.sd-sheet__body > .sd-label { padding-right: 44px; }
+.sd-sheet__line { margin: -4px 0 0; font-size: 14px; color: var(--sd-ink-3); }
+
+.sd-sheet__odds { list-style: none; margin: 2px 0 0; padding: 10px 12px; display: grid; gap: 7px; border: 1px solid var(--sd-rule); border-radius: var(--sd-radius); background: rgba(2, 5, 15, 0.35); }
+.sd-sheet__odds li { display: grid; grid-template-columns: 78px minmax(0, 1fr) 44px; align-items: center; gap: 10px; font-family: var(--sd-mono); font-size: 12px; }
+.sd-sheet__rarity { color: var(--r); letter-spacing: 0.04em; }
+.sd-sheet__bar { height: 5px; border-radius: 3px; background: var(--sd-rule); overflow: hidden; position: relative; }
+.sd-sheet__bar::after { content: ''; position: absolute; inset: 0; width: max(calc(var(--w) * 100%), 3px); border-radius: inherit; background: var(--r); transform-origin: left; }
+.sd-sheet__pct { text-align: right; font-size: 13px; color: var(--sd-ink); font-variant-numeric: tabular-nums; }
+@media (prefers-reduced-motion: no-preference) {
+  .sd-sheet__bar::after { animation: sd-bar-in 700ms cubic-bezier(0.2, 0.9, 0.25, 1) 180ms both; }
+}
+.sd-sheet__odds li[data-zero] .sd-sheet__bar::after { display: none; }
+@keyframes sd-bar-in { from { transform: scaleX(0); } }
+
+.sd-sheet__buy { display: flex; flex-direction: column; gap: 8px; min-height: 124px; }
+.sd-sheet__lot { display: flex; justify-content: space-between; gap: 12px; margin: 0; font: 500 12px var(--sd-mono); letter-spacing: 0.04em; color: var(--sd-ink-3); }
+.sd-sheet__lot > span:first-child { color: var(--sd-ink-2); }
+.sd-sheet__wait { display: grid; gap: 10px; padding-top: 30px; }
+.sd-sheet__wait span { height: 52px; border-radius: 999px; background: linear-gradient(90deg, var(--sd-plate) 0%, rgba(255, 255, 255, 0.07) 50%, var(--sd-plate) 100%); background-size: 200% 100%; animation: sd-shimmer 1.2s linear infinite; }
+.sd-sheet__wait span:last-child { height: 14px; width: 60%; }
+@keyframes sd-shimmer { to { background-position: -200% 0; } }
+.sd-sheet__preview {
+  display: inline-flex; align-items: center; gap: 8px; align-self: center; margin-top: 2px; padding: 8px 10px; border: 0; border-radius: 999px;
+  background: none; color: var(--sd-ink-2); font: inherit; font-size: 13px; cursor: pointer;
+  transition: color var(--sd-dur-fast) var(--sd-ease), background var(--sd-dur-fast) var(--sd-ease);
+}
+.sd-sheet__preview svg { color: var(--tier); }
+.sd-sheet__preview:hover, .sd-sheet__preview:focus-visible { color: var(--sd-ink); background: rgba(255, 255, 255, 0.05); }
+
+/* Phones: a sheet from the bottom, the capsule small beside its name. */
+@media (max-width: 719px) {
+  .sd-sheet { place-items: end center; padding: 0; }
+  .sd-sheet__panel {
+    width: 100%; max-height: calc(100dvh - 24px); grid-template-columns: minmax(0, 1fr);
+    border-radius: 22px 22px 0 0; border-bottom: 0; padding-bottom: env(safe-area-inset-bottom);
+    animation-name: sd-sheet-rise;
+  }
+  .sd-sheet__art { position: absolute; top: 14px; left: 14px; width: 84px; height: 96px; min-height: 0; overflow: visible; border: 0; border-radius: 14px; background: radial-gradient(60% 55% at 50% 50%, color-mix(in srgb, var(--tier) 30%, transparent), transparent 75%); }
+  .sd-sheet__art .sd-tier__capsule { --h: 84px; }
+  .sd-sheet__rays, .sd-sheet__count { display: none; }
+  .sd-sheet__body { padding: 16px 16px 12px; }
+  .sd-sheet__body > .sd-label, .sd-sheet__head, .sd-sheet__line { margin-left: 104px; }
+  .sd-sheet__body > .sd-label { font-size: 11px; }
+  .sd-sheet__head { padding-right: 46px; }
+  .sd-sheet__name { font-size: 24px; }
+  .sd-sheet__price { font-size: 26px; }
+  .sd-sheet__line { font-size: 13px; min-height: 26px; }
+  .sd-sheet__odds { padding: 9px 10px; gap: 6px; }
+  .sd-sheet__odds li { grid-template-columns: 72px minmax(0, 1fr) 40px; }
+  .sd-sheet__buy { min-height: 116px; }
+}
 @keyframes sd-sheet-in { from { opacity: 0; } }
-@media (prefers-reduced-motion: reduce) { .sd-sheet { animation: none; } }
+@keyframes sd-sheet-up { from { opacity: 0; transform: translateY(18px) scale(0.98); } }
+@keyframes sd-sheet-rise { from { transform: translateY(100%); } }
+@media (prefers-reduced-motion: reduce) { .sd-sheet, .sd-sheet__panel { animation: none; } }
+
+/* ── Buying: steps, one button, the receipt folded away ─────────── */
+.sd-buyflow { display: flex; flex-direction: column; gap: 10px; }
+.sd-steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.sd-steps li {
+  position: relative; display: flex; align-items: center; gap: 8px; margin: 0; padding: 0; border: 0; font: 500 12px var(--sd-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--sd-ink-4);
+}
+.sd-steps li:not(:last-child)::after { content: ''; flex: 1; height: 1px; background: var(--sd-rule); margin-right: 4px; }
+.sd-steps__dot {
+  display: grid; place-items: center; flex: none; width: 22px; height: 22px; border-radius: 50%;
+  border: 1px solid var(--sd-rule-strong); font-size: 11px; letter-spacing: 0; color: var(--sd-ink-3);
+}
+.sd-steps li.is-now { color: var(--sd-ink); }
+.sd-steps li.is-now .sd-steps__dot { border-color: var(--sd-accent); color: #1a1207; background: var(--sd-accent); box-shadow: 0 0 0 4px rgba(255, 179, 71, 0.16); }
+.sd-steps li.is-done { color: var(--sd-ink-2); }
+.sd-steps li.is-done .sd-steps__dot { border-color: var(--sd-rarity-rare); color: var(--sd-rarity-rare); }
+.sd-steps li.is-done::after { background: color-mix(in srgb, var(--sd-rarity-rare) 50%, transparent); }
+
+.sd-btn--block { width: 100%; min-height: 52px; font-size: 16px; font-weight: 700; }
+.sd-spin { width: 16px; height: 16px; border-radius: 50%; border: 2px solid currentColor; border-right-color: transparent; animation: sd-spin 700ms linear infinite; }
+.sd-buyflow__note { margin: 0; text-align: center; font: 500 12px var(--sd-mono); letter-spacing: 0.03em; color: var(--sd-ink-3); }
+.sd-buyflow__error { margin: 0; padding: 10px 12px; border-radius: var(--sd-radius-sm); border: 1px solid rgba(255, 130, 110, 0.35); background: rgba(255, 90, 70, 0.08); color: #ffb3a6; font-size: 14px; }
+.sd-receipt { border: 1px solid var(--sd-rule); border-radius: var(--sd-radius-sm); padding: 0 12px; font-size: 13px; }
+.sd-receipt > summary { cursor: pointer; padding: 10px 0; font: 500 12px var(--sd-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--sd-ink-2); }
+.sd-receipt[open] { padding-bottom: 12px; }
+.sd-receipt dd { overflow-wrap: anywhere; }
+.sd-receipt .sd-note { font-size: 13px; margin-top: 10px; }
+
+.sd-pay--compact { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 14px; align-items: center; }
+.sd-pay--compact .sd-pay__code { padding: 8px; border-radius: 10px; }
+.sd-pay--compact .sd-pay__side { gap: 8px; }
+.sd-pay--compact:not(:has(.sd-pay__code)) { grid-template-columns: minmax(0, 1fr); }
+.sd-pay__sum { margin: 0; display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.sd-pay__sum strong { font: 700 18px var(--sd-mono); font-variant-numeric: tabular-nums; }
+.sd-pay__sum span { font: 500 12px var(--sd-mono); color: var(--sd-ink-3); }
+.sd-pay__minor { display: flex; flex-wrap: wrap; gap: 4px 14px; }
+.sd-pay__minor a, .sd-pay__minor button { padding: 4px 0; border: 0; background: none; color: var(--sd-ink-2); font: 500 13px var(--sd-sans); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--sd-rule-strong); cursor: pointer; }
+.sd-pay__minor a:hover, .sd-pay__minor button:hover:not(:disabled) { color: var(--sd-accent); }
+.sd-pay__minor button:disabled { color: var(--sd-ink-4); cursor: default; }
+.sd-pay__note { grid-column: 1 / -1; margin: 0; font: 500 12px var(--sd-mono); color: var(--sd-ink-2); overflow-wrap: anywhere; }
+.sd-fan + .sd-shop { padding-top: 6px; }

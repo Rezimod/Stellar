@@ -3,7 +3,10 @@
 import { useState } from 'react';
 import { usePrivySafe as usePrivy } from './usePrivySafe';
 import { useSideraHolder } from './useSideraHolder';
-import SideraReveal, { type Draw } from './SideraReveal';
+import dynamic from 'next/dynamic';
+import type { Draw } from './SideraReveal';
+
+const SideraReveal = dynamic(() => import('./SideraReveal'), { ssr: false });
 
 /**
  * Opening a capsule from its own public record.
@@ -54,11 +57,11 @@ export default function SideraOpen({ capsuleId }: { capsuleId: string }) {
     <div className="sd-section">
       <div className="sd-pay__actions">
         {ready && authenticated ? (
-          <button type="button" className="sd-btn sd-btn--primary" onClick={open} disabled={busy}>
+          <button type="button" className="sd-btn sd-btn--primary sd-btn--block" onClick={open} disabled={busy}>
             {busy ? 'Opening' : 'Crack it open'}
           </button>
         ) : (
-          <button type="button" className="sd-btn" onClick={() => login()}>
+          <button type="button" className="sd-btn sd-btn--primary sd-btn--block" onClick={() => login()}>
             Sign in to open it
           </button>
         )}

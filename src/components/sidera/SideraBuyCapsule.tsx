@@ -4,8 +4,9 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePrivySafe as usePrivy } from './usePrivySafe';
 import { useSideraHolder } from './useSideraHolder';
-import SideraPay, { type SideraOrder } from './SideraPay';
-import SideraReveal, { type Draw } from './SideraReveal';
+import dynamic from 'next/dynamic';
+import type { SideraOrder } from './SideraPay';
+import type { Draw } from './SideraReveal';
 import DataRow from './ui/DataRow';
 
 type Receipt = { nonce: string; purchaseHash: string; purchaseMessage: string };
@@ -16,13 +17,21 @@ function freshNonce(): string {
   return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
 }
 
+const SideraPay = dynamic(() => import('./SideraPay'), { ssr: false });
+const SideraReveal = dynamic(() => import('./SideraReveal'), { ssr: false });
+
+/** A deployment that rehearses instead of selling. Set at build, not by the page. */
+const REHEARSAL = process.env.NEXT_PUBLIC_SIDERA_SIMULATED_PAYMENT === '1';
+const STEPS = ['Buy', 'Pay', 'Open'] as const;
+
 /**
- * Buying and opening one capsule.
+ * Buying and opening one capsule, as one run: reserve, pay, and the capsule
+ * cracks open by itself the moment the payment is confirmed.
  *
  * The nonce is drawn here, in the buyer's own browser, and sent with the
  * commitment they can see published. Neither side can choose the outcome
  * alone: the secret was committed to before the sale, the nonce after it. The
- * receipt — the purchase message and its hash — is shown so it can be kept.
+ * receipt — the purchase message and its hash — stays one press away.
  */
 export default function SideraBuyCapsule({
   capsuleId,
@@ -30,12 +39,15 @@ export default function SideraBuyCapsule({
   commitment,
   priceUsd,
   cardsPerCapsule,
+  onClose,
 }: {
   capsuleId: string;
   sequence: number;
   commitment: string;
   priceUsd: number;
   cardsPerCapsule: number;
+  /** Passed on to the reveal: where closing it goes, instead of leaving the cards in the page. */
+  onClose?: () => void;
 }) {
   const { getAccessToken, login } = usePrivy();
   const { authenticated, ready, address } = useSideraHolder();
@@ -43,7 +55,7 @@ export default function SideraBuyCapsule({
   const [receipt, setReceipt] = useState<Receipt | null>(null);
   const [paid, setPaid] = useState(false);
   const [cards, setCards] = useState<Draw | null>(null);
-  const [busy, setBusy] = useState(false);
+  const [busy, setBusy] = useState('');
   const [error, setError] = useState('');
 
   const post = async (path: string, body: unknown) => {
@@ -56,31 +68,8 @@ export default function SideraBuyCapsule({
     return { res, data: await res.json().catch(() => ({})) };
   };
 
-  const reserve = async () => {
-    if (!address) {
-      setError('This account has no Solana wallet yet.');
-      return;
-    }
-    setBusy(true);
-    setError('');
-    try {
-      const nonce = freshNonce();
-      const { res, data } = await post('/api/sidera/capsules/buy', { walletAddress: address, capsuleId, commitment, nonce });
-      if (!res.ok) {
-        setError(data.error ?? 'The capsule could not be reserved.');
-        return;
-      }
-      setReceipt({ nonce, purchaseHash: data.purchaseHash, purchaseMessage: data.purchaseMessage });
-      setOrder(data as SideraOrder);
-    } catch {
-      setError('The capsule could not be reserved. Try again in a moment.');
-    } finally {
-      setBusy(false);
-    }
-  };
-
   const open = async () => {
-    setBusy(true);
+    setBusy('Opening your capsule');
     setError('');
     try {
       const { res, data } = await post('/api/sidera/capsules/open', { capsuleId });
@@ -97,28 +86,119 @@ export default function SideraBuyCapsule({
     } catch {
       setError('The capsule could not be opened. Try again in a moment.');
     } finally {
-      setBusy(false);
+      setBusy('');
+    }
+  };
+
+  const confirmed = () => {
+    setPaid(true);
+    void open();
+  };
+
+  const reserve = async () => {
+    if (!address) {
+      setError('This account has no Solana wallet yet.');
+      return;
+    }
+    setBusy('Reserving');
+    setError('');
+    try {
+      const nonce = freshNonce();
+      const { res, data } = await post('/api/sidera/capsules/buy', { walletAddress: address, capsuleId, commitment, nonce });
+      if (!res.ok) {
+        setError(data.error ?? 'The capsule could not be reserved.');
+        return;
+      }
+      setReceipt({ nonce, purchaseHash: data.purchaseHash, purchaseMessage: data.purchaseMessage });
+      const next = data as SideraOrder;
+      if (!REHEARSAL) {
+        setOrder(next);
+        return;
+      }
+      // A rehearsal has no wallet step: settle, then open, in the same press.
+      setBusy('Settling');
+      const settled = await post('/api/sidera/orders/confirm', { orderId: next.orderId });
+      if (!settled.data.confirmed) {
+        setOrder(next);
+        setError(settled.data.error ?? 'The order could not be settled.');
+        return;
+      }
+      setPaid(true);
+      setBusy('');
+      await open();
+    } catch {
+      setError('The capsule could not be reserved. Try again in a moment.');
+    } finally {
+      setBusy('');
     }
   };
 
   if (cards) {
     return (
-      <div className="sd-section">
-        <SideraReveal draw={cards} />
-        <p className="sd-pay__actions sd-section">
-          <Link href={`/capsule/${capsuleId}`} className="sd-btn">
-            Public record
-          </Link>
-        </p>
+      <div className="sd-buyflow">
+        <SideraReveal draw={cards} onClose={onClose} />
+        {!onClose && (
+          <p className="sd-pay__actions">
+            <Link href={`/capsule/${capsuleId}`} className="sd-btn">
+              Public record
+            </Link>
+          </p>
+        )}
       </div>
     );
   }
 
+  const step = paid ? 2 : order ? 1 : 0;
+
   return (
-    <div className="sd-section">
+    <div className="sd-buyflow">
+      <ol className="sd-steps" aria-label="Progress">
+        {STEPS.map((s, i) => (
+          <li key={s} className={i < step ? 'is-done' : i === step ? 'is-now' : undefined} aria-current={i === step ? 'step' : undefined}>
+            <span className="sd-steps__dot">
+              {i < step ? (
+                <svg viewBox="0 0 12 12" width="10" height="10" aria-hidden="true">
+                  <path d="M2.5 6.2 5 8.6l4.5-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              ) : (
+                i + 1
+              )}
+            </span>
+            {s}
+          </li>
+        ))}
+      </ol>
+
+      {paid ? (
+        <button type="button" className="sd-btn sd-btn--primary sd-btn--block" onClick={open} disabled={!!busy}>
+          {busy ? <Working label={busy} /> : 'Crack it open'}
+        </button>
+      ) : order ? (
+        <SideraPay order={order} onConfirmed={confirmed} compact />
+      ) : ready && authenticated ? (
+        <button type="button" className="sd-btn sd-btn--primary sd-btn--block" onClick={reserve} disabled={!!busy}>
+          {busy ? <Working label={busy} /> : `Buy & open — $${priceUsd}`}
+        </button>
+      ) : (
+        <button type="button" className="sd-btn sd-btn--primary sd-btn--block" onClick={() => login()}>
+          Sign in to buy — ${priceUsd}
+        </button>
+      )}
+
+      {!order && !paid && (
+        <p className="sd-buyflow__note">
+          {cardsPerCapsule} cards · {REHEARSAL ? 'rehearsal — nothing is charged' : 'opens the moment it is paid'}
+        </p>
+      )}
+      {error && (
+        <p className="sd-buyflow__error" role="alert">
+          {error}
+        </p>
+      )}
+
       {receipt && (
-        <div className="sd-section">
-          <h3 className="sd-section__title">Your receipt — keep it</h3>
+        <details className="sd-receipt">
+          <summary>Receipt — keep it</summary>
           <DataRow
             layout="stacked"
             items={[
@@ -129,39 +209,23 @@ export default function SideraBuyCapsule({
             ]}
           />
           <p className="sd-note">
-            This capsule is yours from here. Its{' '}
+            This capsule is yours. Its{' '}
             <Link href={`/capsule/${capsuleId}`} className="sd-link">
               public record
             </Link>{' '}
-            is the way back to it, and where it can be opened if this page is closed.
+            is the way back to it if this page is closed.
           </p>
-        </div>
+        </details>
       )}
-
-      {paid ? (
-        <div className="sd-pay__actions">
-          <button type="button" className="sd-btn sd-btn--primary" onClick={open} disabled={busy}>
-            {busy ? 'Opening' : 'Crack it open'}
-          </button>
-        </div>
-      ) : order ? (
-        <SideraPay order={order} onConfirmed={() => setPaid(true)} />
-      ) : (
-        <div className="sd-pay__actions">
-          {ready && authenticated ? (
-            <button type="button" className="sd-btn sd-btn--primary" onClick={reserve} disabled={busy}>
-              {busy ? 'Reserving' : `Take this capsule — $${priceUsd}`}
-            </button>
-          ) : (
-            <button type="button" className="sd-btn sd-btn--primary" onClick={() => login()}>
-              Sign in to buy
-            </button>
-          )}
-          <span className="sd-data">{cardsPerCapsule} cards</span>
-        </div>
-      )}
-
-      {error && <p className="sd-data">{error}</p>}
     </div>
+  );
+}
+
+function Working({ label }: { label: string }) {
+  return (
+    <>
+      <span className="sd-spin" aria-hidden="true" />
+      {label}
+    </>
   );
 }
