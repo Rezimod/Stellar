@@ -6,7 +6,7 @@ import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { RARITIES } from '@/lib/rarity';
 import { auditLog, type LogRow, type OpenedOutcome } from '@/lib/sidera/audit';
-import { RARITY_ODDS_BPS } from '@/lib/sidera/economics';
+import { CARDS_PER_CAPSULE, RARITY_ODDS_BPS } from '@/lib/sidera/economics';
 import { commitmentOf, planPulls, purchaseHash, type SupplyEntry } from '@/lib/sidera/randomness';
 
 const hex = (label: string) => createHash('sha256').update(label).digest('hex');
@@ -54,7 +54,7 @@ function honestLog(n: number): LogRow[] {
       event: 'opened',
       commitment,
       ...buyer,
-      outcome: { secret: c.secret, draws: 3, oddsBps: RARITY_ODDS_BPS, supply, pulls },
+      outcome: { secret: c.secret, draws: CARDS_PER_CAPSULE, oddsBps: RARITY_ODDS_BPS, supply, pulls },
     });
   }
   return rows;
@@ -132,10 +132,10 @@ describe('auditing the capsule log', () => {
     const opened = log.find((r) => r.capsuleSequence === 2 && r.event === 'opened')!;
     const o = opened.outcome as OpenedOutcome;
     const voidWith = (supply: SupplyEntry[]) => log.map((r) => (r === opened
-      ? { ...r, event: 'voided' as const, outcome: { secret: o.secret, reason: 'sold_out', priorState: 'purchased', soldOut: { draws: 3, oddsBps: RARITY_ODDS_BPS, supply } } }
+      ? { ...r, event: 'voided' as const, outcome: { secret: o.secret, reason: 'sold_out', priorState: 'purchased', soldOut: { draws: CARDS_PER_CAPSULE, oddsBps: RARITY_ODDS_BPS, supply } } }
       : r));
 
-    const short = o.supply.map((s, i) => ({ ...s, remaining: i === 0 ? 2 : 0 }));
+    const short = o.supply.map((s, i) => ({ ...s, remaining: i === 0 ? CARDS_PER_CAPSULE - 1 : 0 }));
     const real = auditLog(voidWith(short), NOW);
     expect(real.flags).toEqual([]);
     expect(kinds(real.notes)).toContain('voided_sold_out');
