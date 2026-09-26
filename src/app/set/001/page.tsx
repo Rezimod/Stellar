@@ -19,7 +19,7 @@ export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'First Light',
-  description: 'Twenty-four cards: sixteen real objects, numbered outward from Earth, and eight dated events in the sky, each a numbered edition.',
+  description: 'A hundred cards, numbered outward from Earth: the Solar System, the Stars, the Deep Sky, the Galaxies, the Extremes, the Frontier and the Almanac, each a numbered edition.',
 };
 
 const pad = (n: number) => String(n).padStart(3, '0');
@@ -79,7 +79,7 @@ export default async function Set001Page({
         const cards = groupCards(SET_001_CARDS, g.key);
         return (
           <section key={g.key} className="sd-container sd-chapter-block" data-shelf-section>
-            <Chapter n={String(gi + 1).padStart(2, '0')} title={g.short} aside={`${cards.length} ${cards.length === 1 ? 'card' : 'cards'}`} />
+            <Chapter n={String(gi + 1).padStart(2, '0')} title={g.title} aside={g.key === 'frontier' ? `${cards.length} cards · fiction` : `${cards.length} ${cards.length === 1 ? 'card' : 'cards'}`} />
             <ul className="sd-floor__grid">
               {cards.map((c) => {
                 const s = supply?.get(c.seed.designation);
@@ -88,7 +88,7 @@ export default async function Set001Page({
                 const left = s ? s.editionSize - s.allocated : c.seed.editionSize;
                 const sealed = cardStatus(c, now) === 'sealed';
                 return (
-                  <li key={c.seed.designation} data-shelf-item data-section={c.record.section} data-rarity={rarity} className="sd-shelf__item">
+                  <li key={c.seed.designation} data-shelf-item data-section={c.record.family} data-rarity={rarity} className="sd-shelf__item">
                     <ShopCard
                       designation={c.seed.designation}
                       name={c.seed.name}

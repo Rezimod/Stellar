@@ -5,7 +5,7 @@ import { DEEP_SKY_BY_ID } from '@/lib/observatory/sky-field';
 import { SIM_TARGET_BY_ID } from '@/lib/observatory/sim-targets';
 import { isRarity, RARITIES, rarityInfo } from '@/lib/rarity';
 import { JUDGING_NODE_ID, subjectOf } from '@/lib/sets/build';
-import { groupCards } from '@/lib/sets/groups';
+import { SET_GROUPS, groupCards } from '@/lib/sets/groups';
 import { SET_001, SET_001_CARD_BY_DESIGNATION, SET_001_CARDS } from '@/lib/sets/set-001';
 import { cardStatus, eventLabel, isSealed } from '@/lib/sidera/almanac';
 import { EDITION_SIZE } from '@/lib/sidera/economics';
@@ -17,15 +17,19 @@ const seeds = SET_001_CARDS.map((c) => c.seed);
 const byDesignation = (d: string) => SET_001_CARD_BY_DESIGNATION.get(d)!.seed;
 const objects = SET_001_CARDS.filter((c) => c.record.section === 'object');
 const almanac = SET_001_CARDS.filter((c) => c.record.section === 'almanac');
-const pointable = objects.filter((c) => c.seed.targetId !== 'kept');
+const pointable = objects.filter((c) => c.seed.targetId !== 'kept' && c.seed.targetId !== 'fiction');
+const MOVING = new Set(['moon', 'mercury', 'venus', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto', 'halley']);
 
 describe('First Light', () => {
-  it('is twenty-four cards, sixteen objects then eight dated events, each filed under its own designation', () => {
+  it('is a hundred cards in seven families, the Almanac last, each filed under its own designation', () => {
     expect(SET_001.name).toBe('First Light');
-    expect(seeds.length).toBe(24);
-    expect(objects).toHaveLength(16);
+    expect(seeds.length).toBe(100);
+    expect(objects).toHaveLength(92);
     expect(almanac).toHaveLength(8);
-    expect(SET_001_CARDS.slice(0, 16)).toEqual(objects);
+    expect(SET_001_CARDS.slice(0, 92)).toEqual(objects);
+    const families = SET_GROUPS.map((g) => groupCards(SET_001_CARDS, g.key).length);
+    expect(families).toEqual([23, 16, 21, 14, 8, 10, 8]);
+    expect(SET_GROUPS.flatMap((g) => groupCards(SET_001_CARDS, g.key))).toHaveLength(100);
     expect(new Set(seeds.map((c) => c.designation)).size).toBe(seeds.length);
     for (const c of seeds) expect(c.designation).toMatch(/^[A-Z0-9-]+$/);
   });
@@ -38,9 +42,9 @@ describe('First Light', () => {
     }
   });
 
-  it('comes out as authored', () => {
+  it('keeps the first twenty-four as authored', () => {
     const statuses = Object.fromEntries(seeds.map((c) => [c.designation, `${c.rarity} ${c.observationStatus}`]));
-    expect(statuses).toEqual({
+    expect(statuses).toMatchObject({
       'FIRST-LIGHT': 'legendary not_available',
       IMILAC: 'legendary not_available',
       'LUNAR-FRAGMENT': 'legendary not_available',
@@ -68,13 +72,13 @@ describe('First Light', () => {
     });
   });
 
-  it('counts five of each tier as the table says: 5 legendary, 4 epic, 8 rare, 7 common', () => {
+  it('counts the tiers as the table says: 8 legendary, 16 epic, 34 rare, 42 common', () => {
     const count = (r: string) => seeds.filter((c) => c.rarity === r).length;
-    expect([count('legendary'), count('epic'), count('rare'), count('common')]).toEqual([5, 4, 8, 7]);
+    expect([count('legendary'), count('epic'), count('rare'), count('common')]).toEqual([8, 16, 34, 42]);
   });
 
   it('never offers the telescope what it cannot point at, and says why', () => {
-    for (const c of SET_001_CARDS.filter((x) => x.seed.targetId === 'kept' || x.seed.targetId === 'event')) {
+    for (const c of SET_001_CARDS.filter((x) => ['kept', 'event', 'fiction'].includes(x.seed.targetId))) {
       expect(c.seed.observationStatus).toBe('not_available');
       expect(c.observability.reason.length).toBeGreaterThan(20);
     }
@@ -98,7 +102,7 @@ describe('First Light', () => {
 
   it('has a fixed J2000 position for fixed objects and none for the moving ones', () => {
     for (const c of pointable.map((x) => x.seed)) {
-      const moving = SIM_TARGET_BY_ID.get(c.targetId)?.kind === 'body' || c.targetId === 'halley';
+      const moving = MOVING.has(c.targetId);
       if (moving) {
         expect(c.raHours, c.designation).toBeNull();
         expect(c.decDeg, c.designation).toBeNull();

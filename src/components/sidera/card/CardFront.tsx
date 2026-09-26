@@ -88,7 +88,7 @@ function CardFront({ plate: c, edition, capture, u }: Props) {
           SIDERA
         </text>
         <text x="584" y="64" textAnchor="end" fill="rgba(245,241,232,.78)" style={{ fontFamily: MONO, fontSize: 11, letterSpacing: 2 }}>
-          FIRST LIGHT · {c.num} / 24
+          FIRST LIGHT · {c.num} / {c.total}
         </text>
 
         <g transform="translate(44 724)">

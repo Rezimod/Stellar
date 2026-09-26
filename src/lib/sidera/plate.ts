@@ -4,12 +4,12 @@
  * public/cards/plate/<DESIGNATION>/, written by scripts/sidera-plates/build.py.
  */
 import { rarityInfo, type Rarity } from '@/lib/rarity';
-import type { Section } from '@/lib/sets/build';
+import type { Family, Section } from '@/lib/sets/build';
 import { SET_001_CARDS, SET_001_CARD_BY_DESIGNATION } from '@/lib/sets/set-001';
 
 const MOVES = 'RA/DEC · MOVES — COMPUTED FOR THE NIGHT';
 
-/** The name as it runs on the back: "When Node 01 photographs the Moon". Absent for what the node cannot point at. */
+/** The name as it runs on the back: "When Node 01 photographs the Moon". Absent for what the node cannot point at. The later cards carry theirs in their record. */
 const NOUN: Record<string, string> = {
   TYCHO: 'Tycho',
   'OLYMPUS-MONS': 'Olympus Mons',
@@ -62,8 +62,10 @@ export type Plate = {
   rarity: Rarity;
   rname: string;
   glyph: string;
-  /** Place in the set, two digits. */
+  /** Place in the set, two digits (three past ninety-nine). */
   num: string;
+  /** Cards in the set. */
+  total: number;
   des: string;
   /** Under the name on the face: what it is and where. */
   kicker: string;
@@ -75,6 +77,7 @@ export type Plate = {
   back: string;
   noun: string | null;
   section: Section;
+  family: Family;
   /** The directory holding sky.svg, object.svg and survey.svg. */
   art: string;
 };
@@ -109,7 +112,7 @@ export function plateFor(designation: string): Plate | null {
         ? position(seed.raHours, seed.decDeg)
         : seed.surfaceLat != null && seed.surfaceLon != null
           ? lunar(seed.surfaceLat, seed.surfaceLon)
-          : NOUN[designation]
+          : NOUN[designation] ?? record.noun
             ? MOVES
             : seed.catalogRef.toUpperCase();
   return {
@@ -119,15 +122,17 @@ export function plateFor(designation: string): Plate | null {
     rname: info.label,
     glyph: info.glyph,
     num: String(SET_001_CARDS.indexOf(card) + 1).padStart(2, '0'),
+    total: SET_001_CARDS.length,
     des: `${designation} · ${seed.objectType} · ${seed.catalogRef}`.toUpperCase(),
     kicker: `${seed.objectType} · ${seed.catalogRef}`.toUpperCase(),
     data: record.stats.map(([label, value]) => [label, value.toUpperCase()]),
-    story: STORY[designation],
+    story: STORY[designation] ?? record.story ?? [seed.blurb, ''],
     of: pad3(seed.editionSize),
     nameSize: NAME_SIZE[designation] ?? Math.min(60, Math.floor(400 / (seed.name.length * 0.56))),
     back,
-    noun: NOUN[designation] ?? null,
+    noun: NOUN[designation] ?? record.noun,
     section: record.section,
+    family: record.family,
     art: `/cards/plate/${designation}`,
   };
 }
@@ -140,6 +145,7 @@ const GLOW: Record<string, string> = {
   ORIONIDS: '#9fcaff', 'HUNTERS-MOON': '#ffd79a', 'PLEIADES-OCCULTATION': '#c9d6ff', GEMINIDS: '#a9c4ff',
   'CHRISTMAS-SUPERMOON': '#fff1cf', 'DOUBLE-OPPOSITION': '#ffb070', 'SNOW-MOON-ECLIPSE': '#d6c2ff', 'GREAT-ECLIPSE': '#ffe9b8',
 };
-export const glowFor = (designation: string) => GLOW[designation] ?? '#bcd8ff';
+export const glowFor = (designation: string) =>
+  GLOW[designation] ?? SET_001_CARD_BY_DESIGNATION.get(designation)?.record.glow ?? '#bcd8ff';
 
 export const editionLabel = (n: number | null | undefined) => (n == null ? '—' : pad3(n));

@@ -59,7 +59,7 @@ describe('once the Orionids have passed', () => {
   it('the capsule preview pool leaves it out', async () => {
     const html = renderToStaticMarkup(await HomePage());
     const pool = html.match(/pool:([A-Z0-9,-]+)/)![1].split(',');
-    expect(pool).toHaveLength(23);
+    expect(pool).toHaveLength(99);
     expect(pool).not.toContain('ORIONIDS');
     expect(pool).toContain('GEMINIDS');
   });

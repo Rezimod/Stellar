@@ -44,6 +44,8 @@ function CardBack({ plate: c, edition, commitment, sealed = false, u }: Props) {
         ...c.story,
         c.section === 'almanac'
           ? 'On the night, every holder receives the capture.'
+          : c.family === 'frontier'
+            ? 'Fiction. A Sidera world, in no sky but this one.'
           : c.noun
             ? `When Node 01 photographs ${c.noun}, every holder receives the image.`
             : edition == null
@@ -103,7 +105,7 @@ function CardBack({ plate: c, edition, commitment, sealed = false, u }: Props) {
           SIDERA
         </text>
         <text x="315" y="668" textAnchor="middle" fill="rgba(245,241,232,.6)" style={{ fontFamily: MONO, fontSize: 11, letterSpacing: 2.4 }}>
-          {sealed ? 'FIRST LIGHT · SEALED' : `FIRST LIGHT · ${c.num} / 24 · ${c.glyph} ${c.rname.toUpperCase()}`}
+          {sealed ? 'FIRST LIGHT · SEALED' : `FIRST LIGHT · ${c.num} / ${c.total} · ${c.glyph} ${c.rname.toUpperCase()}`}
         </text>
         {lines.map((line, i) => (
           <text key={i} x="315" y={706 + i * 24} textAnchor="middle" fill={i === 2 ? 'rgba(245,241,232,.55)' : 'rgba(245,241,232,.86)'} style={{ fontFamily: SANS, fontSize: i === 2 ? 13 : 16 }}>

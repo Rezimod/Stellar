@@ -25,9 +25,13 @@ export type CardOptics = Pick<ObservabilitySubject, 'resolveArcsec' | 'magnitude
 
 export type Section = 'object' | 'almanac';
 
+/** Where a card sits on the shelf. The Frontier is fiction: Sidera's own worlds, never in any sky. */
+export type Family = 'near' | 'stars' | 'deep' | 'galaxies' | 'extremes' | 'frontier' | 'almanac';
+
 /** What the card prints and how it is sold, beyond the row the database keeps. */
 export type CardRecord = {
   section: Section;
+  family: Family;
   /** An Almanac card's event, ISO 8601 UTC. Null for an object. */
   eventStartUtc: string | null;
   eventEndUtc: string | null;
@@ -39,6 +43,12 @@ export type CardRecord = {
   stats: [[string, string], [string, string], [string, string]];
   /** One short line of card text. */
   line: string;
+  /** Two lines on the back: what this is, said simply, and why it matters. */
+  story: [string, string] | null;
+  /** The object's own light, for the glow its tile sits on. */
+  glow: string | null;
+  /** The name as it runs on the back: "When Node 01 photographs the Moon". */
+  noun: string | null;
 };
 
 export type AuthoredCard = {
@@ -48,14 +58,19 @@ export type AuthoredCard = {
   record: CardRecord;
 };
 
-type Extras = Pick<CardRecord, 'stats' | 'line'> & Partial<Pick<CardRecord, 'pairsWith' | 'physical'>>;
+export type Extras = Pick<CardRecord, 'stats' | 'line'> &
+  Partial<Pick<CardRecord, 'pairsWith' | 'physical' | 'family' | 'story' | 'glow' | 'noun'>>;
 
 const record = (extras: Extras, event: Pick<CardRecord, 'section' | 'eventStartUtc' | 'eventEndUtc'>): CardRecord => ({
   ...event,
+  family: extras.family ?? (event.section === 'almanac' ? 'almanac' : 'near'),
   pairsWith: extras.pairsWith ?? null,
   physical: extras.physical ?? false,
   stats: extras.stats,
   line: extras.line,
+  story: extras.story ?? null,
+  glow: extras.glow ?? null,
+  noun: extras.noun ?? null,
 });
 
 const OBJECT = { section: 'object', eventStartUtc: null, eventEndUtc: null } as const;
@@ -122,6 +137,19 @@ const unpointable = (facts: NoSky, targetId: string, reason: string, rec: CardRe
  */
 export function authorKept(facts: NoSky, reason: string, extras: Extras): AuthoredCard {
   return unpointable(facts, 'kept', reason, record(extras, OBJECT));
+}
+
+/**
+ * A Frontier card: a world of Sidera's own making, in the tradition of the
+ * great space films. Fiction, and it says so: there is nothing to point at.
+ */
+export function authorFiction(facts: NoSky, extras: Extras): AuthoredCard {
+  return unpointable(
+    facts,
+    'fiction',
+    'An original Sidera world. It exists on the card and nowhere in the sky.',
+    record({ ...extras, family: 'frontier' }, OBJECT),
+  );
 }
 
 /**

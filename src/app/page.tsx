@@ -23,7 +23,7 @@ export const revalidate = 60;
 export const metadata: Metadata = {
   title: 'Sidera — the night sky, issued in editions',
   description:
-    'First Light: twenty-four cards, each held as a numbered edition. Sixteen real objects, eight dated events. A telescope in Tbilisi photographs one object a night, and everyone holding that card gets the photograph.',
+    'First Light: a hundred cards, each held as a numbered edition — planets, stars, nebulae, galaxies, the extremes of the universe, ten worlds of fiction and eight dated events. A telescope in Tbilisi photographs one object a night, and everyone holding that card gets the photograph.',
 };
 
 export default async function HomePage() {

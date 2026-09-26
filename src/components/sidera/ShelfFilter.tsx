@@ -2,11 +2,11 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { RARITIES, rarityInfo } from '@/lib/rarity';
+import { SET_GROUPS } from '@/lib/sets/groups';
 
 const FILTERS = [
   { key: 'all', label: 'All' },
-  { key: 'object', label: 'Objects' },
-  { key: 'almanac', label: 'Almanac' },
+  ...SET_GROUPS.map((g) => ({ key: g.key, label: g.short })),
   ...[...RARITIES].reverse().map((r) => ({ key: r, label: `${rarityInfo(r).glyph} ${rarityInfo(r).label}` })),
 ];
 

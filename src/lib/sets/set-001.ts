@@ -1,11 +1,13 @@
 /**
  * First Light.
  *
- * Twenty-four cards in two halves. The Objects (01–16) are real things,
- * numbered outward from Earth: the observatory's own first frame, two
- * fragments held in the hand, then the Moon, Mars, Jupiter, Saturn, a comet, a
- * spacecraft and the deep sky. The Almanac (17–24) is real dated events; each
- * is sold until its event ends, then sealed.
+ * A hundred cards in seven families, numbered outward from Earth: the Solar
+ * System (from the observatory's own first frame and two fragments held in
+ * the hand, out to a visitor from another star), the Stars, the Deep Sky, the
+ * Galaxies and the Extremes are real things; the Frontier is ten worlds of
+ * Sidera's own, fiction and labelled so; the Almanac is real dated events,
+ * each sold until its event ends, then sealed. The first twenty-four are
+ * written here; the rest by family in ./first-light/.
  *
  * Rarity is a decision made here and stored; it has nothing to do with whether
  * Node 01 can photograph the object — that is judged from the instrument and
@@ -15,9 +17,15 @@
  * typical distance.
  */
 
-import { DEEP_SKY_BY_ID } from '@/lib/observatory/sky-field';
 import { arcsecFromKm, arcsecFromKmAtAu, MOON_DISTANCE_KM } from '@/lib/sidera/observability';
-import { authorAlmanac, authorCard, authorKept, type AuthoredCard, type CardFacts, type CardOptics } from './build';
+import { authorAlmanac, authorCard, authorKept, type AuthoredCard } from './build';
+import { DEEP_CARDS } from './first-light/deep';
+import { EXTREME_CARDS } from './first-light/extremes';
+import { FRONTIER_CARDS } from './first-light/frontier';
+import { GALAXY_CARDS } from './first-light/galaxies';
+import { NEAR_CARDS } from './first-light/near';
+import { NO_POSITION, OFF_MOON, body, deepSky } from './first-light/shared';
+import { STAR_CARDS } from './first-light/stars';
 
 export const SET_001 = {
   code: 'SET001',
@@ -26,32 +34,6 @@ export const SET_001 = {
   releasedAt: null,
 } as const;
 
-function dso(id: string) {
-  const d = DEEP_SKY_BY_ID.get(id);
-  if (!d) throw new Error(`${id} is not in the deep-sky catalogue`);
-  return d;
-}
-
-/** A moving body, or a detail on one: no fixed position, only a size. */
-const body = (resolveArcsec: number | null, magnitude: number | null = null): CardOptics => ({
-  resolveArcsec,
-  magnitude,
-  sizeArcmin: null,
-});
-
-/** A deep-sky object from the node's catalogue, seen whole. */
-function deepSky(id: string): Pick<CardFacts, 'raHours' | 'decDeg'> & { optics: CardOptics } {
-  const d = dso(id);
-  return {
-    raHours: d.ra,
-    decDeg: d.dec,
-    optics: { resolveArcsec: null, magnitude: d.mag, sizeArcmin: { major: d.major, minor: d.minor ?? d.major } },
-  };
-}
-
-const NO_POSITION = { raHours: null, decDeg: null, surfaceLat: null, surfaceLon: null } as const;
-const OFF_MOON = { surfaceLat: null, surfaceLon: null } as const;
-
 const m45 = deepSky('m45');
 const m42 = deepSky('m42');
 const m1 = deepSky('m1');
@@ -59,7 +41,7 @@ const m31 = deepSky('m31');
 
 const SPECIMEN = 'A specimen. It sits in a case, not in the sky; Node 01 has nothing to point at.';
 
-export const SET_001_CARDS: AuthoredCard[] = [
+const FIRST_24: AuthoredCard[] = [
   // The Objects, outward from Earth.
   authorKept(
     {
@@ -170,7 +152,7 @@ export const SET_001_CARDS: AuthoredCard[] = [
       blurb: 'Seven sisters, counted by every culture.',
     },
     m45.optics,
-    { stats: [['DISTANCE', '444 ly'], ['AGE', '~100 Myr'], ['MAGNITUDE', '1.6']], line: 'Seven sisters, counted by every culture.', pairsWith: 'PLEIADES-OCCULTATION' },
+    { stats: [['DISTANCE', '444 ly'], ['AGE', '~100 Myr'], ['MAGNITUDE', '1.6']], line: 'Seven sisters, counted by every culture.', pairsWith: 'PLEIADES-OCCULTATION', family: 'deep' },
   ),
   authorCard(
     {
@@ -180,7 +162,7 @@ export const SET_001_CARDS: AuthoredCard[] = [
       blurb: 'Where stars are being made tonight.',
     },
     m42.optics,
-    { stats: [['DISTANCE', '1,344 ly'], ['SIZE', '24 ly'], ['MAGNITUDE', '4.0']], line: 'Where stars are being made tonight.' },
+    { stats: [['DISTANCE', '1,344 ly'], ['SIZE', '24 ly'], ['MAGNITUDE', '4.0']], line: 'Where stars are being made tonight.', family: 'deep' },
   ),
   authorCard(
     {
@@ -190,7 +172,7 @@ export const SET_001_CARDS: AuthoredCard[] = [
       blurb: 'A star that died in daylight, written down in 1054.',
     },
     m1.optics,
-    { stats: [['DISTANCE', '~6,500 ly'], ['SEEN', '1054'], ['PULSAR', '30 turns/s']], line: 'A star that died in daylight, written down in 1054.' },
+    { stats: [['DISTANCE', '~6,500 ly'], ['SEEN', '1054'], ['PULSAR', '30 turns/s']], line: 'A star that died in daylight, written down in 1054.', family: 'deep' },
   ),
   authorCard(
     {
@@ -201,7 +183,7 @@ export const SET_001_CARDS: AuthoredCard[] = [
       blurb: 'The dark at the centre of the galaxy.',
     },
     { resolveArcsec: null, magnitude: null, sizeArcmin: null },
-    { stats: [['MASS', '4.3M M☉'], ['DISTANCE', '26,000 ly'], ['IMAGED', '2022']], line: 'The dark at the centre of the galaxy.' },
+    { stats: [['MASS', '4.3M M☉'], ['DISTANCE', '26,000 ly'], ['IMAGED', '2022']], line: 'The dark at the centre of the galaxy.', family: 'extremes' },
   ),
   authorCard(
     {
@@ -211,7 +193,7 @@ export const SET_001_CARDS: AuthoredCard[] = [
       blurb: 'The farthest thing the naked eye can see.',
     },
     m31.optics,
-    { stats: [['DISTANCE', '2.5 Mly'], ['STARS', '~1 trillion'], ['MAGNITUDE', '3.4']], line: 'The farthest thing the naked eye can see.' },
+    { stats: [['DISTANCE', '2.5 Mly'], ['STARS', '~1 trillion'], ['MAGNITUDE', '3.4']], line: 'The farthest thing the naked eye can see.', family: 'galaxies' },
   ),
 
   // The Almanac, in the order the sky does them. Sealed at the end of each window.
@@ -288,5 +270,38 @@ export const SET_001_CARDS: AuthoredCard[] = [
     { stats: [['DATE', '2 Aug 2027'], ['TOTALITY', '6+ min'], ['PATH', 'Spain to Egypt']], line: 'The longest totality of the decade.' },
   ),
 ];
+
+/** The set's order: each family outward from Earth, then the Frontier, then the Almanac by date. */
+const ORDER = [
+  // The Solar System
+  'FIRST-LIGHT', 'IMILAC', 'LUNAR-FRAGMENT', 'TYCHO', 'SUN', 'MERCURY', 'VENUS', 'MARS', 'OLYMPUS-MONS', 'VALLES-MARINERIS',
+  'JUPITER', 'IO', 'EUROPA', 'GANYMEDE', 'SATURN', 'KRAKEN-MARE', 'ENCELADUS', 'URANUS', 'NEPTUNE', 'PLUTO', 'HALLEY',
+  'OUMUAMUA', 'VOYAGER-1',
+  // The Stars
+  'ALPHA-CEN', 'SIRIUS', 'VEGA', 'ARCTURUS', 'ALDEBARAN', 'POLARIS', 'MIRA', 'ALBIREO', 'BETELGEUSE', 'ANTARES', 'RIGEL',
+  'ETA-CARINAE', 'TRAPPIST-1', '55-CANCRI-E', 'HD-189733B', 'KEPLER-16B',
+  // The Deep Sky
+  'M45', 'M44', 'HELIX', 'M57', 'CATS-EYE', 'M42', 'HORSEHEAD', 'ROSETTE', 'NORTH-AMERICA', 'VEIL', 'M8', 'M20', 'M16', 'M1',
+  'BUTTERFLY', 'CARINA', 'JEWEL-BOX', 'DOUBLE-CLUSTER', 'OMEGA-CEN', 'M13', 'TARANTULA',
+  // The Galaxies
+  'MILKY-WAY', 'LMC', 'SMC', 'M31', 'M33', 'M81', 'M82', 'CEN-A', 'M101', 'M51', 'M104', 'M87', 'STEPHANS-QUINTET', 'CARTWHEEL',
+  // The Extremes
+  'SGR-A', 'CYGNUS-X1', 'MAGNETAR', 'SN-1987A', 'GW170817', 'TON-618', 'HUBBLE-DEEP-FIELD', 'CMB',
+  // The Frontier
+  'WORMHOLE', 'TWIN-SUNS', 'HOUR-SEA', 'ORBITAL-RING', 'DYSON-SWARM', 'ECUMENOPOLIS', 'FROZEN-CLOUDS', 'GREEN-MOON',
+  'DERELICT', 'GENERATION-SHIP',
+  // The Almanac
+  'ORIONIDS', 'HUNTERS-MOON', 'PLEIADES-OCCULTATION', 'GEMINIDS', 'CHRISTMAS-SUPERMOON', 'DOUBLE-OPPOSITION',
+  'SNOW-MOON-ECLIPSE', 'GREAT-ECLIPSE',
+];
+
+const AUTHORED = new Map(
+  [...FIRST_24, ...NEAR_CARDS, ...STAR_CARDS, ...DEEP_CARDS, ...GALAXY_CARDS, ...EXTREME_CARDS, ...FRONTIER_CARDS].map((c) => [c.seed.designation, c]),
+);
+if (AUTHORED.size !== ORDER.length || ORDER.some((d) => !AUTHORED.has(d))) {
+  throw new Error('First Light: ORDER and the authored cards disagree');
+}
+
+export const SET_001_CARDS: AuthoredCard[] = ORDER.map((d) => AUTHORED.get(d)!);
 
 export const SET_001_CARD_BY_DESIGNATION = new Map(SET_001_CARDS.map((c) => [c.seed.designation, c]));

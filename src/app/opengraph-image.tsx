@@ -53,7 +53,7 @@ export default async function Image() {
             </div>
           </div>
           <div style={{ fontSize: 24, fontWeight: 600, letterSpacing: 3, color: 'rgba(214,224,250,0.7)' }}>
-            FIRST LIGHT · 24 CARDS · NODE 01, TBILISI
+            FIRST LIGHT · 100 CARDS · NODE 01, TBILISI
           </div>
         </div>
       </div>
