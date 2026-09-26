@@ -35,7 +35,7 @@ export default function TermsPage() {
         <section className="sd-chapter-block">
           <Chapter n="03" title="Capsules and cards" />
           <p>
-            A capsule holds three cards, drawn under the published odds and committed by hash before it goes on sale. The public{' '}
+            A capsule holds two cards, drawn under the published odds and committed by hash before it goes on sale. The public{' '}
             <Link href="/capsules/log">log</Link> records every listing, sale and opening, and anyone can recompute a draw after
             it is opened. A card bought directly is the next free edition of that card. Prices are shown in US dollars and
             charged in SOL at the rate quoted at checkout; a quote holds for fifteen minutes.

@@ -67,7 +67,7 @@ describe('the draws', () => {
     const a = planPulls({ secret, nonce, capsuleId, supply: PLENTY });
     expect(planPulls({ secret, nonce, capsuleId, supply: PLENTY })).toEqual(a);
     expect(a).toHaveLength(CARDS_PER_CAPSULE);
-    expect(a.map((p) => p.drawIndex)).toEqual([0, 1, 2]);
+    expect(a.map((p) => p.drawIndex)).toEqual(Array.from({ length: CARDS_PER_CAPSULE }, (_, i) => i));
   });
 
   it('depend on the nonce and on the capsule, not only the secret', () => {
@@ -174,8 +174,8 @@ describe('commit and reveal', () => {
     const other = PLENTY.find((s) => s.designation !== pulls[1].designation)!;
     const swapped = pulls.map((p, i) => (i === 1 ? { ...p, designation: other.designation, rarity: other.rarity } : p));
     expect(verifyCapsule({ ...honest, pulls: swapped }).ok).toBe(false);
-    expect(verifyCapsule({ ...honest, pulls: pulls.slice(0, 2) }).ok).toBe(false);
-    expect(verifyCapsule({ ...honest, pulls: [...pulls, { ...pulls[0], drawIndex: 3 }] }).ok).toBe(false);
+    expect(verifyCapsule({ ...honest, pulls: pulls.slice(0, -1) }).ok).toBe(false);
+    expect(verifyCapsule({ ...honest, pulls: [...pulls, { ...pulls[0], drawIndex: pulls.length }] }).ok).toBe(false);
   });
 
   it('fails when the supply claimed is not the supply the draws came from', () => {

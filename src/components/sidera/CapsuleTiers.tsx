@@ -13,7 +13,7 @@ const pct = (bps: number) => {
   return p === 0 ? '—' : p < 1 ? `${p.toFixed(1)}%` : `${Math.round(p)}%`;
 };
 
-/** Three cards at a tier's odds, drawn here in the browser. Preview only. */
+/** Two cards at a tier's odds, drawn here in the browser. Preview only. */
 function drawFrom(tier: Tier, cards: TierCard[]): Draw {
   const picked = Array.from({ length: CARDS_PER_TIER }, (_, i) => {
     const rarity = rarityAt(tier, Math.random());

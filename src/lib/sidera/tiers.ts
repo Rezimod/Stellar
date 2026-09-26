@@ -56,7 +56,7 @@ export const TIERS: readonly Tier[] = [
   },
 ];
 
-export const CARDS_PER_TIER = 3;
+export const CARDS_PER_TIER = 2;
 
 export function tierByKey(key: unknown): Tier | undefined {
   return TIERS.find((t) => t.key === key);

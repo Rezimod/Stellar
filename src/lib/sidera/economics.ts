@@ -22,7 +22,7 @@ export const EDITION_SIZE: Record<Rarity, number> = {
 };
 
 /** PROVISIONAL (Gate 2). Cards drawn when one capsule is opened. */
-export const CARDS_PER_CAPSULE = 3;
+export const CARDS_PER_CAPSULE = 2;
 
 /**
  * PROVISIONAL (Gate 2). Chance of each rarity on a single draw, in parts per

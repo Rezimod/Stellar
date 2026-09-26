@@ -399,9 +399,10 @@ describe('listing capsules at the same moment', () => {
   });
 
   it('refuses to list more capsules than the set has editions for', async () => {
+    // Seven editions: three are owed to the bought capsule, two more capsules would need four.
     const state: State = { capsules: purchased(1), cards: [card('C1', 'common', 7)], editions: [], pulls: [], log: [] };
     const { db } = fakePostgres(state);
-    await expect(listCapsules(db, { setId: SET, count: 2 })).rejects.toThrow(/Not enough editions/);
+    await expect(listCapsules(db, { setId: SET, count: 3 })).rejects.toThrow(/Not enough editions/);
     await expect(listCapsules(db, { setId: SET, count: 1 })).resolves.toHaveLength(1);
   });
 });
@@ -425,8 +426,8 @@ describe('capsules listed as a tier', () => {
     }
     for (const c of listed) await openCapsule(db, c.id);
 
-    // Lunar gives no common: 36 draws and not one.
-    expect(state.pulls).toHaveLength(36);
+    // Lunar gives no common: 24 draws and not one.
+    expect(state.pulls).toHaveLength(24);
     expect(state.pulls.some((p) => p.rarity === 'common')).toBe(false);
     const opened = state.log.filter((r) => r.event === 'opened');
     expect(opened.every((r) => JSON.stringify((r.outcome as { oddsBps: unknown }).oddsBps) === JSON.stringify(lunar.oddsBps))).toBe(true);

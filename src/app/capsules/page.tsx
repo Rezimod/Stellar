@@ -16,9 +16,9 @@ import { simulatedPayments } from '@/lib/sidera/orders';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'Capsules — three cards, sealed before the sale',
+  title: 'Capsules — two cards, sealed before the sale',
   description:
-    'A capsule holds three cards from First Light. The outcome is sealed before it goes on sale and can be checked by anyone after it opens.',
+    'A capsule holds two cards from First Light. The outcome is sealed before it goes on sale and can be checked by anyone after it opens.',
 };
 
 export default async function CapsulesPage() {
@@ -59,7 +59,7 @@ export default async function CapsulesPage() {
               ]}
             />
             <p className="sd-capsule-top__line">
-              Three cards, committed by hash before the sale. Your nonce seals the draw; anyone can recompute it after
+              Two cards, committed by hash before the sale. Your nonce seals the draw; anyone can recompute it after
               opening.
             </p>
             {simulatedPayments() ? (
