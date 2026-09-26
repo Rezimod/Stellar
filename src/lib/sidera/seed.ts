@@ -36,17 +36,17 @@ export async function seedSet(
   const rows: CardRow[] = [];
   for (const c of cards) rows.push(await upsertCard(db, { ...c.seed, setId: set.id }));
 
-  const listed = cards.map((c) => c.seed.designation);
+  const listed = sql`ARRAY[${sql.join(cards.map((c) => sql`${c.seed.designation}`), sql`, `)}]::text[]`;
   const { rows: gone } = (await db.execute(sql`
     DELETE FROM card c
     WHERE c.set_id = ${set.id}::uuid
-      AND c.designation <> ALL(${listed}::text[])
+      AND c.designation <> ALL(${listed})
       AND NOT EXISTS (SELECT 1 FROM edition e WHERE e.card_id = c.id)
     RETURNING c.designation
   `)) as { rows: Array<{ designation: string }> };
   const { rows: stuck } = (await db.execute(sql`
     SELECT c.designation FROM card c
-    WHERE c.set_id = ${set.id}::uuid AND c.designation <> ALL(${listed}::text[])
+    WHERE c.set_id = ${set.id}::uuid AND c.designation <> ALL(${listed})
   `)) as { rows: Array<{ designation: string }> };
 
   return { setId: set.id, cards: rows, removed: gone.map((r) => r.designation), kept: stuck.map((r) => r.designation) };
