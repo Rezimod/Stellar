@@ -4,6 +4,7 @@ import Wordmark from './ui/Wordmark';
 import SideraNavLinks from './SideraNavLinks';
 import SideraAccountGate from './SideraAccountGate';
 import SideraAuth from './SideraAuth';
+import SideraMotion from './SideraMotion';
 
 /**
  * The frame every Sidera page wraps itself in:
@@ -25,7 +26,10 @@ export default function SideraShell({ children, title, bare = false }: { childre
     return (
       <SideraAuth>
         <div className="sidera">
-          <div className="sd-backdrop" aria-hidden="true" />
+          <div className="sd-backdrop" aria-hidden="true">
+            <span className="sd-backdrop__near" />
+          </div>
+          <SideraMotion />
           {children}
         </div>
       </SideraAuth>
@@ -33,7 +37,10 @@ export default function SideraShell({ children, title, bare = false }: { childre
   return (
     <SideraAuth>
       <div className="sidera">
-        <div className="sd-backdrop" aria-hidden="true" />
+        <div className="sd-backdrop" aria-hidden="true">
+          <span className="sd-backdrop__near" />
+        </div>
+        <SideraMotion />
         <header className="sd-bar">
           <div className="sd-container sd-bar__inner">
             <div className="sd-bar__mark">

@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { eq } from 'drizzle-orm';
 import AlmanacDate from '@/components/sidera/AlmanacDate';
 import CapsuleTiers, { type TierCard } from '@/components/sidera/CapsuleTiers';
+import HomeFan from '@/components/sidera/HomeFan';
 import ShopFloor from '@/components/sidera/ShopFloor';
 import type { ShopCardProps } from '@/components/sidera/ShopCard';
 import SideraShell from '@/components/sidera/SideraShell';
@@ -94,6 +95,7 @@ export default async function HomePage() {
   return (
     <SideraShell title="Sidera">
       <SideraView step="landing" />
+      <HomeFan />
       <div className="sd-shop">
         <CapsuleTiers cards={tierCards} onSale={onSale} />
         <div className="sd-shop__set">

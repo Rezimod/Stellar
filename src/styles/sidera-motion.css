@@ -1,0 +1,282 @@
+/* SIDERA — motion. Loaded after sidera-tokens.css.
+
+   Three sources of movement, each optional:
+   - the pointer, handed to CSS by SideraMotion as --mx/--my (-1…1, eased) on
+     the sky and the home fan, and --lx/--ly (0…1) plus [data-lean] on the
+     capsule tile under it. Mouse only; never on touch or with reduced motion.
+   - the scroll, through CSS scroll-driven animations, inside @supports. Where
+     they are not supported nothing is hidden: everything simply sits still.
+   - time, for the few things that arrive on load or breathe while idle.
+   Transform and opacity only, so nothing lays out again and nothing shifts. */
+
+/* ── The sky: three depths ────────────────────────────────────── */
+/* Nebula furthest, stars behind, a few brighter stars in front. Each depth
+   moves a different distance with the pointer and with the page. */
+.sd-backdrop::before { translate: calc(var(--mx, 0) * -10px) calc(var(--my, 0) * -8px); }
+.sd-backdrop::after { inset: -10% -10% -40%; translate: calc(var(--mx, 0) * -7px) calc(var(--my, 0) * -5px); }
+.sd-backdrop__near {
+  position: absolute; inset: -12% -12% -90%; will-change: transform;
+  background:
+    radial-gradient(1.6px 1.6px at 47px 83px, rgba(255, 255, 255, 0.95), transparent 60%),
+    radial-gradient(1.2px 1.2px at 391px 211px, rgba(210, 225, 255, 0.85), transparent 60%),
+    radial-gradient(2px 2px at 263px 419px, rgba(255, 240, 215, 0.8), transparent 60%),
+    radial-gradient(1.3px 1.3px at 521px 37px, rgba(255, 255, 255, 0.8), transparent 60%),
+    radial-gradient(1.1px 1.1px at 149px 331px, rgba(200, 220, 255, 0.7), transparent 60%);
+  background-size: 620px 520px;
+  opacity: 0.6;
+  translate: calc(var(--mx, 0) * -22px) calc(var(--my, 0) * -16px);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .sd-backdrop__near { animation: sd-m-glint 9s ease-in-out infinite alternate; }
+}
+@keyframes sd-m-glint { from { opacity: 0.45; } to { opacity: 0.75; } }
+
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .sd-backdrop::after {
+      animation: sd-twinkle 7s ease-in-out infinite alternate, sd-m-sky-far linear both;
+      animation-timeline: auto, scroll(root);
+      animation-range: normal, 0px 6000px;
+    }
+    .sd-backdrop__near {
+      animation: sd-m-glint 9s ease-in-out infinite alternate, sd-m-sky-near linear both;
+      animation-timeline: auto, scroll(root);
+      animation-range: normal, 0px 6000px;
+    }
+  }
+}
+@keyframes sd-m-sky-far { to { transform: translate3d(0, -200px, 0); } }
+@keyframes sd-m-sky-near { to { transform: translate3d(0, -560px, 0); } }
+
+/* ── Home: three cards in a fan ───────────────────────────────── */
+/* Not on phones: there the fan's drawings would become the largest paint of
+   the first screen, and lazy images wait for hydration. Keep in step with
+   FAN_MEDIA in HomeFan.tsx. */
+.sd-fan { display: none; }
+@media (min-width: 900px) { .sd-fan { display: block; } }
+.sd-fan {
+  position: relative; overflow: clip; padding-top: 18px;
+  mask-image: linear-gradient(180deg, #000 calc(100% - 48px), transparent);
+}
+.sd-fan__rail { position: relative; z-index: 2; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 16px; max-width: 1480px; }
+.sd-fan__stage {
+  --cw: clamp(170px, 17vw, 244px);
+  position: relative; z-index: 1; display: grid; place-items: center;
+  height: calc(var(--cw) * 1.4 + 76px);
+  perspective: 1600px;
+}
+.sd-fan__deck {
+  position: relative; width: var(--cw); aspect-ratio: 63 / 88; margin-top: 10px;
+  transform-style: preserve-3d;
+  transform: rotateY(calc(var(--mx, 0) * 9deg)) rotateX(calc(var(--my, 0) * -6deg));
+}
+.sd-fan__card {
+  --place:
+    translate3d(calc(var(--side) * var(--cw) * 0.64), calc(var(--off) * 16px), calc(var(--off) * -70px))
+    rotate(calc(var(--side) * 9deg));
+  position: absolute; inset: 0; display: block; color: inherit; text-decoration: none;
+  border-radius: 4.76% / 3.41%;
+  transform: var(--place);
+  transition: translate 520ms cubic-bezier(0.2, 0.9, 0.25, 1.15);
+}
+.sd-fan__card:focus-visible { outline: 2px solid var(--sd-focus); outline-offset: 6px; }
+.sd-fan__float { display: block; }
+.sd-fan__card .sdc-card {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--tile-glow) 30%, rgba(255, 255, 255, 0.06)), 0 30px 60px -24px rgba(0, 0, 0, 0.95), 0 0 50px -18px color-mix(in srgb, var(--tile-glow) 60%, transparent) !important;
+}
+/* The foil is quieter at rest than on a card's own page, and wakes when held. */
+.sd-fan__card .sdc-foil { opacity: calc(var(--sdc-foil, 0) * 0.4) !important; transition: opacity 400ms var(--sd-ease); }
+.sd-fan__card .sdc-glitter { opacity: 0.35 !important; }
+.sd-fan__card:hover .sdc-foil { opacity: calc(var(--sdc-foil, 0) * 0.9) !important; }
+@media (hover: hover) and (pointer: fine) {
+  .sd-fan__card:hover { translate: 0 -12px 60px; }
+}
+
+/* The light the cards stand in, and a slow pass of light across the plate. */
+.sd-fan__light {
+  position: absolute; left: 50%; bottom: 0; width: min(1100px, 150vw); height: 80%; translate: -50% 0; pointer-events: none;
+  background:
+    radial-gradient(50% 42% at 50% 62%, rgba(188, 216, 255, 0.14), transparent 70%),
+    radial-gradient(28% 22% at 50% 70%, rgba(255, 227, 163, 0.12), transparent 70%);
+}
+.sd-fan__light::after {
+  content: ''; position: absolute; left: 50%; top: 86%; width: 140%; aspect-ratio: 1; translate: -50% 0; border-radius: 50%;
+  border-top: 1px solid rgba(160, 200, 255, 0.16);
+  mask-image: linear-gradient(90deg, transparent, #000 30%, #000 70%, transparent);
+}
+.sd-fan__sweep { position: absolute; inset: 0; z-index: 3; overflow: hidden; pointer-events: none; }
+.sd-fan__sweep::before {
+  content: ''; position: absolute; top: -40%; left: 0; width: 26%; height: 180%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.045) 50%, transparent);
+  transform: translateX(-120%) rotate(16deg); opacity: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .sd-fan__card { animation: sd-m-deal 1200ms cubic-bezier(0.2, 0.8, 0.2, 1) 120ms both; }
+  .sd-fan__float > .sdc { animation: sd-m-hover 9s ease-in-out calc(var(--side) * 1.7s - 2s) infinite; }
+  .sd-fan__light { animation: sd-m-fade 1600ms ease-out both; }
+  .sd-fan__sweep::before { animation: sd-m-sweep 12s cubic-bezier(0.4, 0, 0.2, 1) 1.6s infinite; }
+  .sd-fan__card .sdc-stage:not(.is-live) .sdc-foil { animation: sdc-foil 14s ease-in-out calc(var(--side) * 3s) infinite; }
+}
+@keyframes sd-m-deal {
+  from { transform: translate3d(0, 28px, -40px) rotate(0deg) scale(0.94); }
+  to { transform: var(--place); }
+}
+@keyframes sd-m-hover { 0%, 100% { translate: 0 0; } 50% { translate: 0 -9px; } }
+@keyframes sd-m-fade { from { opacity: 0; } }
+@keyframes sd-m-sweep {
+  0% { transform: translateX(-120%) rotate(16deg); opacity: 0; }
+  6% { opacity: 1; }
+  34% { opacity: 1; }
+  40%, 100% { transform: translateX(480%) rotate(16deg); opacity: 0; }
+}
+
+/* Scrolling past: the fan sinks behind the page, spreads, and dims. */
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .sd-fan__stage, .sd-fan__float, .sd-fan__rail, .sd-fan__light::after {
+      animation-timeline: scroll(root); animation-fill-mode: both; animation-timing-function: linear;
+      animation-range: 0px 85vh;
+    }
+    .sd-fan__stage { animation-name: sd-m-sink; }
+    .sd-fan__float { animation-name: sd-m-spread; }
+    .sd-fan__rail { animation-name: sd-m-out; animation-range: 0px 30vh; }
+    .sd-fan__light::after { animation-name: sd-m-rise-arc; }
+  }
+}
+@keyframes sd-m-sink { to { translate: 0 30%; scale: 0.9; opacity: 0.2; } }
+@keyframes sd-m-spread { to { transform: translateX(calc(var(--side) * 26%)) rotate(calc(var(--side) * 5deg)); } }
+@keyframes sd-m-out { to { opacity: 0; translate: 0 -12px; } }
+@keyframes sd-m-rise-arc { to { translate: -50% -60px; opacity: 0; } }
+
+/* ── Capsule tiles lean toward the pointer ────────────────────── */
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .sd-tiers__row > li { perspective: 1100px; }
+  .sd-tier {
+    transition:
+      transform 900ms cubic-bezier(0.16, 1.2, 0.3, 1),
+      border-color var(--sd-dur-fast) var(--sd-ease),
+      box-shadow var(--sd-dur-base) var(--sd-ease);
+  }
+  .sd-tier[data-lean] {
+    transform: translateY(-4px) rotateX(calc((0.5 - var(--ly, 0.5)) * 9deg)) rotateY(calc((var(--lx, 0.5) - 0.5) * 11deg));
+    transition-duration: 180ms, var(--sd-dur-fast), var(--sd-dur-base);
+    transition-timing-function: ease-out, var(--sd-ease), var(--sd-ease);
+  }
+  .sd-tier[data-lean]:active { transform: translateY(-1px) rotateX(calc((0.5 - var(--ly, 0.5)) * 4deg)) rotateY(calc((var(--lx, 0.5) - 0.5) * 5deg)) scale(0.985); }
+  /* The sheen: a soft light where the pointer is, in the tile's own colour. */
+  .sd-tier::after {
+    content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+    background: radial-gradient(360px circle at calc(var(--lx, 0.5) * 100%) calc(var(--ly, 0.5) * 100%), color-mix(in srgb, var(--tier) 22%, rgba(255, 255, 255, 0.07)), transparent 55%);
+    mix-blend-mode: screen; opacity: 0; transition: opacity 500ms var(--sd-ease);
+  }
+  .sd-tier[data-lean]::after { opacity: 1; }
+  /* The sealed cards sit deeper than the tile and drift against it. */
+  .sd-tier__capsule { transition: translate 900ms cubic-bezier(0.16, 1.2, 0.3, 1); }
+  .sd-tier[data-lean] .sd-tier__capsule { translate: calc((var(--lx, 0.5) - 0.5) * 12px) calc((var(--ly, 0.5) - 0.5) * 8px); transition-duration: 220ms; }
+  .sd-tier__card { transition: transform 600ms cubic-bezier(0.2, 0.9, 0.25, 1.15); }
+}
+/* The "Open" pill catches a pass of light when its tile is pointed at. */
+.sd-tier__open { position: relative; overflow: hidden; isolation: isolate; }
+
+/* ── Shop tiles: a held card, not a flipped one ───────────────── */
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .sd-tile .sdc-tilt { transition: transform 850ms cubic-bezier(0.18, 1.25, 0.3, 1); }
+  .sd-tile .sdc-stage.is-live .sdc-tilt {
+    transform: rotateX(calc((0.5 - var(--py)) * 15deg)) rotateY(calc((var(--px) - 0.5) * 18deg)) scale(1.025);
+    transition: transform 140ms ease-out;
+  }
+  .sd-tile__stage { transition: transform 700ms cubic-bezier(0.18, 1.25, 0.3, 1); }
+}
+
+/* ── Arrival on scroll ────────────────────────────────────────── */
+/* Each piece rises into place as it enters the view, and is fully there by
+   the time it is fully on screen. Tiles in a row ripple, left to right. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .sd-chapter,
+    .sd-floor__grid > li > .sd-tile,
+    .sd-tiers__row > li,
+    .sd-shop__set,
+    .sd-oddsboard > li,
+    .sd-capsule,
+    .sd-ballot__row,
+    .sd-facts,
+    .sd-alert,
+    .sd-skychart,
+    .sd-nights,
+    .sd-cardhero__obs,
+    .sd-links,
+    .sd-legal > p,
+    .sd-foot__inner {
+      animation: sd-m-rise linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 100%;
+    }
+    .sd-floor__grid > li > .sd-tile { animation-name: sd-m-rise-card; }
+    .sd-floor__grid > li:nth-child(6n + 2) > .sd-tile,
+    .sd-tiers__row > li:nth-child(4n + 2),
+    .sd-oddsboard > li:nth-child(4n + 2) { animation-range: entry 8% entry 100%; }
+    .sd-floor__grid > li:nth-child(6n + 3) > .sd-tile,
+    .sd-tiers__row > li:nth-child(4n + 3),
+    .sd-oddsboard > li:nth-child(4n + 3) { animation-range: entry 16% entry 100%; }
+    .sd-floor__grid > li:nth-child(6n + 4) > .sd-tile,
+    .sd-tiers__row > li:nth-child(4n + 4),
+    .sd-oddsboard > li:nth-child(4n + 4) { animation-range: entry 24% entry 100%; }
+    .sd-floor__grid > li:nth-child(6n + 5) > .sd-tile { animation-range: entry 32% entry 100%; }
+    .sd-floor__grid > li:nth-child(6n + 6) > .sd-tile { animation-range: entry 40% entry 100%; }
+
+    /* A chapter's rule draws out from its number. */
+    .sd-chapter__rule {
+      transform-origin: left center;
+      animation: sd-m-draw linear both; animation-timeline: view(); animation-range: entry 20% cover 30%;
+    }
+    /* The ghost designation behind a poster drifts against the page. */
+    .sd-poster__ghost { animation: sd-m-ghost linear both; animation-timeline: view(); animation-range: cover 0% cover 100%; }
+  }
+}
+@keyframes sd-m-rise { from { opacity: 0; translate: 0 28px; } }
+@keyframes sd-m-rise-card { from { opacity: 0; translate: 0 44px; scale: 0.94; } }
+@keyframes sd-m-draw { from { scale: 0 1; } }
+@keyframes sd-m-ghost { from { translate: 6% 0; } to { translate: -6% 0; } }
+
+/* ── Capsules: the sealed fan opens a little when pointed at ──── */
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .sd-sealed__card { transition: translate 700ms cubic-bezier(0.18, 1.25, 0.3, 1), rotate 700ms cubic-bezier(0.18, 1.25, 0.3, 1); }
+  .sd-sealed:hover .sd-sealed__card:nth-child(1) { translate: -22px 4px; rotate: -4deg; }
+  .sd-sealed:hover .sd-sealed__card:nth-child(2) { translate: 22px 2px; rotate: 4deg; }
+}
+
+/* ── Controls ─────────────────────────────────────────────────── */
+/* Lift on hover, give on press, a pass of light across the hot ones. Focus
+   rings are the tokens' own and stay as they are. */
+.sd-btn--primary, .sd-chip--cta { position: relative; overflow: hidden; isolation: isolate; }
+.sd-btn--primary::after, .sd-chip--cta::after, .sd-tier__open::after {
+  content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: linear-gradient(105deg, transparent 30%, rgba(255, 255, 255, 0.5) 50%, transparent 70%);
+  translate: -110% 0;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .sd-btn, .sd-chip, .sd-shop__chip, .sd-floor__tab, .sd-shelf__chip, .sd-menu a, .sd-menu > button {
+    transition-property: color, background, background-color, border-color, box-shadow, transform, translate;
+    transition-duration: 220ms; transition-timing-function: var(--sd-ease);
+  }
+  @media (hover: hover) {
+    .sd-btn:hover:not(:disabled), .sd-chip:not(.sd-chip--wallet):hover, .sd-shop__chip:hover, .sd-floor__tab:hover, .sd-shelf__chip:hover { translate: 0 -1px; }
+    .sd-btn--primary:hover:not(:disabled)::after, .sd-chip--cta:hover::after, .sd-tier:hover .sd-tier__open::after {
+      translate: 110% 0; transition: translate 800ms cubic-bezier(0.3, 0.6, 0.2, 1);
+    }
+    .sd-menu a:hover, .sd-menu > button:hover { translate: 2px 0; }
+  }
+  .sd-btn:active:not(:disabled), .sd-chip:not(.sd-chip--wallet):active, .sd-shop__chip:active, .sd-floor__tab:active, .sd-shelf__chip:active {
+    translate: 0 0; scale: 0.97; transition-duration: 70ms;
+  }
+}
+/* The page you are on keeps a quiet line under its name. */
+.sd-navlink[aria-current='page']::after { transform: scaleX(1); opacity: 0.55; }
+.sd-navlink::after { transition: transform 320ms var(--sd-ease), opacity var(--sd-dur-fast) var(--sd-ease); transform-origin: center; }
+.sd-navlink:hover::after { opacity: 1; }
+.sd-wordmark img { transition: transform 600ms cubic-bezier(0.18, 1.25, 0.3, 1); }
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .sd-wordmark:hover img { transform: rotate(-14deg) translate(-1px, -1px); }
+}
