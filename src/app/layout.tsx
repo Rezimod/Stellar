@@ -3,6 +3,7 @@ import type { Viewport } from 'next';
 import { Orbitron, Geist, JetBrains_Mono } from 'next/font/google';
 import './sidera-base.css';
 import '../styles/sidera-tokens.css';
+import '../styles/sidera-motion.css';
 import { AnalyticsBoot } from '@/components/providers/AnalyticsBoot';
 import JsonLd from '@/components/shared/JsonLd';
 
