@@ -8,6 +8,8 @@ type Props = {
   edition?: number | null;
   /** A real capture from Node 01 in place of the drawn plate. */
   capture?: string | null;
+  /** Small cards draw from the pre-rendered WebP layers: the same picture, none of the filter work. */
+  lite?: boolean;
   u: string;
 };
 
@@ -15,7 +17,8 @@ type Props = {
 const WIN_H = 832;
 
 /** The face of a card: the drawing alone — sky and object, no survey — edge to edge under the metal frame; the name at its foot; foil, glitter and glare on top. */
-function CardFront({ plate: c, edition, capture, u }: Props) {
+function CardFront({ plate: c, edition, capture, lite = false, u }: Props) {
+  const ext = lite ? 'webp' : 'svg';
   const r = c.rarity;
   const f = `${u}f`;
   const ed = editionLabel(edition);
@@ -37,10 +40,10 @@ function CardFront({ plate: c, edition, capture, u }: Props) {
         ) : (
           <>
             <div className="sdc-lay0">
-              <img src={`${c.art}/sky.svg`} alt="" loading="lazy" decoding="async" />
+              <img src={`${c.art}/sky.${ext}`} alt="" loading="lazy" decoding="async" />
             </div>
             <div className="sdc-lay1">
-              <img src={`${c.art}/object.svg`} alt="" loading="lazy" decoding="async" />
+              <img src={`${c.art}/object.${ext}`} alt="" loading="lazy" decoding="async" />
             </div>
           </>
         )}

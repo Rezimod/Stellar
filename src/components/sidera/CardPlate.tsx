@@ -20,7 +20,7 @@ export type CardPlateProps = {
 
 /** One First Light card, as it is printed: art window, metal frame, name, figures and edition. */
 export default function CardPlate({ designation, edition, capture, commitment, href, size = 'md', hero = false }: CardPlateProps) {
-  const card = <SideraCard designation={designation} edition={edition} capture={capture} commitment={commitment} hero={hero} />;
+  const card = <SideraCard designation={designation} edition={edition} capture={capture} commitment={commitment} hero={hero} lite={!hero} />;
   return (
     <div className="sd-cardplate" data-size={size} style={{ '--tile-glow': glowFor(designation) } as CSSProperties}>
       {href ? (

@@ -13,13 +13,15 @@ type Props = {
   commitment?: string | null;
   /** The hero card: it floats when left alone and can be turned over. */
   hero?: boolean;
+  /** A small card: its drawing loads as pre-rendered WebP. */
+  lite?: boolean;
 };
 
 /**
  * A Sidera card you can hold. Move across it and it leans toward you; the sky
  * sinks behind the object, the labels float above it, the foil follows the light.
  */
-function SideraCard({ designation, edition, capture, commitment, hero = false }: Props) {
+function SideraCard({ designation, edition, capture, commitment, hero = false, lite = false }: Props) {
   const plate = plateFor(designation);
   const u = `sd${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
   const stage = useRef<HTMLDivElement>(null);
@@ -62,7 +64,7 @@ function SideraCard({ designation, edition, capture, commitment, hero = false }:
         <div className="sdc-tilt">
           <div className={`sdc-flip${over ? ' is-over' : ''}`}>
             <div className="sdc-face" role="img" aria-label={`${plate.name}, ${plate.rname}, First Light number ${plate.num}${edition != null ? `, edition ${ed} of ${plate.of}` : ''}`}>
-              <CardFront plate={plate} edition={edition} capture={capture} u={u} />
+              <CardFront plate={plate} edition={edition} capture={capture} lite={lite} u={u} />
             </div>
             {hero && (
               <div className="sdc-face sdc-face--back" aria-hidden={!over}>
