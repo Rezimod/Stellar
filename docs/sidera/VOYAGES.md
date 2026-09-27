@@ -1,6 +1,6 @@
 # Voyages — a holder flies to the object on their card
 
-Status: plan, 2026-09-27. Nothing built yet.
+Status: V0 done 2026-09-27 (4c3b69f): Explore flies at `/voyage`. V1 next.
 
 A holder opens Explore, finds every card they hold marked as a destination,
 flies there, and looks at the object. The visit is recorded against their
