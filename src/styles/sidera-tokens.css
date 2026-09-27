@@ -722,14 +722,11 @@ html:has(.sidera) #stellar-main { padding-top: 0; padding-bottom: 0; }
 .sd-bar .sd-container { max-width: 1480px; }
 .sd-bar .sd-wordmark--sm { font-size: 18px; }
 .sd-navlink { font-weight: 600; font-size: 15px; color: var(--sd-ink-3); }
-/* A phone: the five tabs share the width; on the narrowest they scroll, and fade at the edge that has more. */
+/* A phone: the tabs scroll sideways and fade at the edge that has more; the last one scrolls clear of the fade. */
 @media (max-width: 719px) {
-  .sd-bar__links { justify-content: space-between; gap: 12px; scrollbar-width: none; }
+  .sd-bar__links { justify-content: flex-start; gap: 16px; padding-right: 32px; scrollbar-width: none; mask-image: linear-gradient(90deg, #000 85%, transparent); }
   .sd-bar__links::-webkit-scrollbar { display: none; }
   .sd-bar__links .sd-navlink { font-size: 13.5px; }
-}
-@media (max-width: 374px) {
-  .sd-bar__links { justify-content: flex-start; mask-image: linear-gradient(90deg, #000 85%, transparent); }
 }
 .sd-account { position: relative; display: flex; align-items: center; gap: 10px; }
 .sd-chip {

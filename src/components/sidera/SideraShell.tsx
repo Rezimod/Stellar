@@ -21,7 +21,18 @@ import SideraMotion from './SideraMotion';
  * visible heading passes `title`, read out as its h1. A page that draws its
  * own header and runs edge to edge, like the observatory console, passes `bare`.
  */
-export default function SideraShell({ children, title, bare = false }: { children: ReactNode; title?: string; bare?: boolean }) {
+export default function SideraShell({
+  children,
+  title,
+  bare = false,
+  still = false,
+}: {
+  children: ReactNode;
+  title?: string;
+  bare?: boolean;
+  /** No pointer motion: for a page that owns the pointer, like the game. */
+  still?: boolean;
+}) {
   if (bare)
     return (
       <SideraAuth>
@@ -29,7 +40,7 @@ export default function SideraShell({ children, title, bare = false }: { childre
           <div className="sd-backdrop" aria-hidden="true">
             <span className="sd-backdrop__near" />
           </div>
-          <SideraMotion />
+          {still ? null : <SideraMotion />}
           {children}
         </div>
       </SideraAuth>

@@ -5,13 +5,15 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 type Auth = {
   /** Privy is loaded and mounted. */
   ready: boolean;
+  /** Nothing will remount the page any more: no saved session, or Privy is already up. */
+  settled: boolean;
   /** Load Privy; with `login`, open its sign-in window as soon as it is up. */
   enable: (login?: boolean) => void;
   wantsLogin: boolean;
   loginOpened: () => void;
 };
 
-const AuthContext = createContext<Auth>({ ready: false, enable: () => {}, wantsLogin: false, loginOpened: () => {} });
+const AuthContext = createContext<Auth>({ ready: false, settled: true, enable: () => {}, wantsLogin: false, loginOpened: () => {} });
 export const useSideraAuth = () => useContext(AuthContext);
 
 /** Inside a legacy Stellar page, Privy is already mounted by its layout: Sidera uses that one. */
@@ -19,7 +21,7 @@ const LegacyContext = createContext(false);
 export function LegacyPrivy({ children }: { children: ReactNode }) {
   return <LegacyContext.Provider value>{children}</LegacyContext.Provider>;
 }
-const LEGACY: Auth = { ready: true, enable: () => {}, wantsLogin: false, loginOpened: () => {} };
+const LEGACY: Auth = { ready: true, settled: true, enable: () => {}, wantsLogin: false, loginOpened: () => {} };
 
 function hadSession() {
   try {
@@ -43,6 +45,7 @@ export default function SideraAuth({ children }: { children: ReactNode }) {
 function LazyAuth({ children }: { children: ReactNode }) {
   const [Shell, setShell] = useState<ComponentType<{ children: ReactNode }> | null>(null);
   const [wantsLogin, setWantsLogin] = useState(false);
+  const [session, setSession] = useState<boolean | null>(null);
 
   const enable = useCallback((login = false) => {
     if (login) setWantsLogin(true);
@@ -50,12 +53,20 @@ function LazyAuth({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (hadSession()) enable();
+    const had = hadSession();
+    setSession(had);
+    if (had) enable();
   }, [enable]);
 
   const value = useMemo(
-    () => ({ ready: Shell !== null, enable, wantsLogin, loginOpened: () => setWantsLogin(false) }),
-    [Shell, enable, wantsLogin],
+    () => ({
+      ready: Shell !== null,
+      settled: session === false || Shell !== null,
+      enable,
+      wantsLogin,
+      loginOpened: () => setWantsLogin(false),
+    }),
+    [Shell, session, enable, wantsLogin],
   );
   return <AuthContext.Provider value={value}>{Shell ? <Shell>{children}</Shell> : children}</AuthContext.Provider>;
 }

@@ -9,6 +9,7 @@ const LINKS = [
   { href: '/collection', label: 'Collection' },
   { href: '/tonight', label: 'Tonight' },
   { href: '/node', label: 'Observatory' },
+  { href: '/voyage', label: 'Voyage' },
 ] as const;
 
 /** The Sidera destinations. Client-side only to mark the current page. */
