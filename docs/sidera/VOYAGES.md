@@ -1,6 +1,12 @@
 # Voyages — a holder flies to the object on their card
 
-Status: V0 done 2026-09-27 (4c3b69f): Explore flies at `/voyage`. V1 next.
+Status: V0 done 2026-09-27 (4c3b69f): Explore flies at `/voyage`. V1 done
+2026-09-27 (aee4733): 35 cards have a destination (`src/lib/sidera/voyage.ts`),
+`GET /api/sidera/voyage?wallet=` returns a holder's, and `/voyage` loads them
+into `src/game/destinations.ts` for the game to read. V2 next.
+V1 notes: no surface has named spots yet, so the four surface cards land on
+the Moon or Mars with no `spot`; KRAKEN-MARE flies to Titan (no Titan surface);
+CEN-A was added (it is placed); M31 and MILKY-WAY have no game id yet.
 
 A holder opens Explore, finds every card they hold marked as a destination,
 flies there, and looks at the object. The visit is recorded against their
