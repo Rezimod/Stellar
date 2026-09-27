@@ -765,7 +765,7 @@ interface GalaxyDef {
 // alone, then its two Magellanic satellites, then Andromeda and Triangulum
 // as the Local Group, and only then the rest of the nearby universe. Before
 // this they all sat inside 6000 units and piled onto the Milky Way at once.
-const OTHER_GALAXIES: GalaxyDef[] = [
+export const OTHER_GALAXIES: GalaxyDef[] = [
   // M31 lives in makeAndromedaGalaxy as a full particle galaxy. Sizes are
   // relative to the Milky Way's 8800-unit disk: the Magellanic Clouds really
   // are small next to it, and they should look it.

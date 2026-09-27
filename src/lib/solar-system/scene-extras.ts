@@ -2482,7 +2482,7 @@ interface MoonSpec {
   roughness: number;
 }
 
-const MOON_SPECS: MoonSpec[] = [
+export const MOON_SPECS: MoonSpec[] = [
   // Mars — Phobos laps Mars 3×/day, faster than Mars rotates.
   { planet: 'mars', name: 'Phobos', radiusMul: 0.09, distMul: 1.9, inclination: 0.02, phase: 0.0, periodDays: 0.3189, color: 0x8a7d6e, roughness: 0.95 },
   { planet: 'mars', name: 'Deimos', radiusMul: 0.06, distMul: 2.7, inclination: 0.03, phase: 1.4, periodDays: 1.2624, color: 0x9b8d7c, roughness: 0.95 },
