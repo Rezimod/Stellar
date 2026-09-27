@@ -5,7 +5,7 @@ import {
   Rotation_EQJ_ECL,
   RotateVector,
   type Vector,
-} from 'astronomy-engine';
+} from '@/lib/solar-system/astronomy';
 
 /** J2000 mean ecliptic → Three.js Y-up (ecliptic plane mostly XZ). */
 const ROT_EQJ_ECL = Rotation_EQJ_ECL();
