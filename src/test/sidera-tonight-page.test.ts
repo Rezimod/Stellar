@@ -69,7 +69,7 @@ it('warns when the forecast cloud is over the limit, and only then', async () =>
   const decided = { designation: 'M45', name: 'Pleiades', rarity: 'common', artUrl: null, basis: 'x', plannedAt: '2026-09-20T21:54:00Z', cloudForecast: 98, capture: null };
   const cloudy = await render({ ...base, decided });
   expect(cloudy).toContain('Cloud is forecast over the 70% limit.');
-  expect(cloudy).toContain('If it holds at 01:54, the night is lost and Pleiades is carried to the next night, if it is up.');
+  expect(cloudy).toContain('If it holds at 01:54, the night is lost and Pleiades is carried to the next night, if it is up — for up to three nights in a row.');
   const clear = await render({ ...base, decided: { ...decided, cloudForecast: 40 } });
   expect(clear).not.toContain('Cloud is forecast over');
 });
