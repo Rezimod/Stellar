@@ -37,7 +37,7 @@ const T0_MS = Date.UTC(2026, 0, 1);
 const MS_YEAR = 365.25 * 86_400_000;
 
 // Positions cross-checked against the mission "where are they now" trackers.
-const PROBE_SPECS: ProbeSpec[] = [
+export const PROBE_SPECS: ProbeSpec[] = [
   { name: 'VOYAGER 1', id: 'voyager1', r0Au: 169.0, auPerYear: 3.57, eclLonDeg: 255.3, eclLatDeg: 35.0 },
   { name: 'VOYAGER 2', id: 'voyager2', r0Au: 141.4, auPerYear: 3.16, eclLonDeg: 289.9, eclLatDeg: -32.5 },
   { name: 'PIONEER 10', id: 'pioneer10', r0Au: 137.1, auPerYear: 2.54, eclLonDeg: 76.0, eclLatDeg: 3.0 },
