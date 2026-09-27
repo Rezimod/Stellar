@@ -224,4 +224,9 @@ most reversible option; each needs a yes/no from Rezi.
   removed before Gate 3. Tier listing: Chondrite 40, Iron 25, Pallasite 10, Lunar 5.
 - 27: the ten original Frontier cards stay; no film licence.
 - Payments stay in rehearsal until the owner says otherwise.
-- V-1..V-4: not yet answered.
+- Tier odds: option B, in tiers.ts (8600/1250/140/10, 6000/3200/700/100,
+  2500/5200/2000/300, 0/5300/4000/700). Applies to capsules listed after;
+  the unsold shelf is to be voided and relisted at 40 / 25 / 10 / 5.
+- V-1: drop the phase-7 card renderer with tools/explore. V-2: no rooms in
+  the first version. V-3: a voyage is a record only. V-4: stellarr.club/play
+  redirects to /voyage a week after /voyage goes live.

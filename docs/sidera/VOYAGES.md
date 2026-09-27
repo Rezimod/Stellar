@@ -114,3 +114,6 @@ HALLEY, OUMUAMUA.
   card), or be a record only? The recommendation is record only, matching
   "records, not rewards" from the Explore upgrade.
 - **V-4** Retire stellarr.club/play once `/voyage` is live, or keep both?
+
+Answered 2026-09-27: V-1 drop it, V-2 no rooms at first, V-3 record only,
+V-4 redirect /play to /voyage a week after launch.
