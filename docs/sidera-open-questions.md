@@ -212,3 +212,16 @@ most reversible option; each needs a yes/no from Rezi.
     URL stay SET001 and /set/001. **For the owner:** whether to license any
     real film property (a separate, paid agreement), and the final rarity
     of each card.
+
+## Owner's answers (2026-09-27)
+
+- 22: the site stays open; no invite gate.
+- 23: vote weights stay 1 / 2 / 5 / 20. A card lost to cloud is carried up to
+  three nights in a row (`MAX_CARRIED_NIGHTS`, night.ts), then the vote decides.
+- 24: the redirected Stellar pages stay as they are (307).
+- 25/26: tier odds to be rebalanced against First Light's supply; proposal put
+  to the owner before any change. The 20 capsules listed before the tiers are
+  removed before Gate 3. Tier listing: Chondrite 40, Iron 25, Pallasite 10, Lunar 5.
+- 27: the ten original Frontier cards stay; no film licence.
+- Payments stay in rehearsal until the owner says otherwise.
+- V-1..V-4: not yet answered.

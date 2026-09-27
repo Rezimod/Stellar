@@ -106,7 +106,7 @@ export default async function TonightPage() {
               {facts.length > 0 && <DataRow className="sd-facts" items={facts} />}
               {d && !d.capture && d.cloudForecast !== null && d.cloudForecast > CLOUD_LIMIT && (
                 <p className="sd-alert">
-                  <strong>Cloud is forecast over the {CLOUD_LIMIT}% limit.</strong> If it holds at {d.plannedAt ? localTime(d.plannedAt) : 'the planned hour'}, the night is lost and {d.name} is carried to the next night, if it is up.
+                  <strong>Cloud is forecast over the {CLOUD_LIMIT}% limit.</strong> If it holds at {d.plannedAt ? localTime(d.plannedAt) : 'the planned hour'}, the night is lost and {d.name} is carried to the next night, if it is up — for up to three nights in a row.
                 </p>
               )}
               {lastLost && (

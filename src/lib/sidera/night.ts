@@ -5,11 +5,11 @@
  * over the site was above the cloud limit at the hour the card was planned,
  * the night is recorded as lost, with the figure. Then tonight is decided,
  * once: a card carried from a night lost to cloud takes it if its object is
- * still up; otherwise the holders' weighted votes among the cards Node 01 can
+ * still up, for at most MAX_CARRIED_NIGHTS nights in a row; otherwise the holders' weighted votes among the cards Node 01 can
  * photograph tonight; with no votes, the object standing highest.
  */
 
-import { and, desc, eq, isNull, lt, sql } from 'drizzle-orm'
+import { and, desc, eq, isNull, lt, lte, sql } from 'drizzle-orm'
 import { card, cardVote, edition, nightlyTarget, observatoryCapture } from '@/lib/schema'
 import { fetchOpenMeteo } from '@/lib/open-meteo'
 import { CLOUD_LIMIT } from '@/lib/observatory/adapter'
@@ -24,6 +24,9 @@ import { observableTonight, siteDarkWindow, siteNightDate, standing, type Observ
 
 type CardRow = typeof card.$inferSelect
 type NightRow = typeof nightlyTarget.$inferSelect
+
+/** How many nights in a row a card lost to cloud keeps the night before the vote decides again. PROVISIONAL (Gate 4). */
+export const MAX_CARRIED_NIGHTS = 3
 
 /** Cloud cover at the site for the hour containing `at`, percent, or null when not known. */
 export type CloudAt = (node: ObservatoryNode, at: Date) => Promise<number | null>
@@ -157,6 +160,32 @@ export async function closeNight(db: Db, node: ObservatoryNode, night: string, n
   return lost ?? (await nightRow(db, night))
 }
 
+/**
+ * The card carried into the night after `nights[0]`, or null. `nights` runs
+ * most recent first. The card of a night lost to cloud is carried while it has
+ * been lost no more than MAX_CARRIED_NIGHTS nights in a row.
+ */
+export function carryFrom(nights: NightRow[]): { cardId: string; night: string } | null {
+  const last = nights[0]
+  if (!last?.lostAt) return null
+  let streak = 0
+  for (const n of nights) {
+    if (!n.lostAt || n.cardId !== last.cardId || n.nightDate !== addDays(last.nightDate, -streak)) break
+    streak++
+  }
+  return streak <= MAX_CARRIED_NIGHTS ? { cardId: last.cardId, night: last.nightDate } : null
+}
+
+/** The nights ending with `night`, most recent first, enough to count a carry. */
+async function nightsTo(db: Db, night: string): Promise<NightRow[]> {
+  return db
+    .select()
+    .from(nightlyTarget)
+    .where(lte(nightlyTarget.nightDate, night))
+    .orderBy(desc(nightlyTarget.nightDate))
+    .limit(MAX_CARRIED_NIGHTS + 1)
+}
+
 /** Close last night, then decide tonight. Safe to run twice. */
 export async function runNight(db: Db, node: ObservatoryNode, now: Date, cloudAt: CloudAt = openMeteoCloudAt) {
   const tonight = siteNightDate(node.timezone, now)
@@ -166,7 +195,7 @@ export async function runNight(db: Db, node: ObservatoryNode, now: Date, cloudAt
   if (existing) return { night: tonight, last, decided: existing, fresh: false }
 
   const observable = observableTonight(await allCards(db), node, tonight)
-  const carried = last?.lostAt ? { cardId: last.cardId, night: last.nightDate } : null
+  const carried = last?.lostAt ? carryFrom(await nightsTo(db, last.nightDate)) : null
   const choice = chooseNight(observable, await tallies(db, tonight), node, tonight, carried)
   if (!choice) return { night: tonight, last, decided: null, fresh: false }
 
@@ -261,10 +290,10 @@ export async function tonightView(db: Db, node: ObservatoryNode, now: Date): Pro
   }
 
   const vNight = row ? addDays(night, 1) : night
-  const before = row?.nightDate === addDays(vNight, -1) ? row : await nightRow(db, addDays(vNight, -1))
+  const before = carryFrom(await nightsTo(db, addDays(vNight, -1)))
   const votes = await tallies(db, vNight)
   const observable = observableTonight(cards, node, vNight)
-  const carriedCard = before?.lostAt ? observable.find((o) => o.card.id === before.cardId) : undefined
+  const carriedCard = before ? observable.find((o) => o.card.id === before.cardId) : undefined
 
   const recent = await recentNights(db, night)
   const dark = siteDarkWindow(node, vNight)

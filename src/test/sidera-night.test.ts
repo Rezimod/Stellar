@@ -1,9 +1,9 @@
 // @vitest-environment node
 import { describe, expect, it } from 'vitest';
 import { NODES } from '@/lib/observatory/nodes';
-import { chooseNight } from '@/lib/sidera/night';
+import { carryFrom, chooseNight } from '@/lib/sidera/night';
 import type { Observable } from '@/lib/sidera/target';
-import type { card } from '@/lib/schema';
+import type { card, nightlyTarget } from '@/lib/schema';
 
 type Card = typeof card.$inferSelect;
 const node = NODES[0];
@@ -50,5 +50,31 @@ describe('the night goes to', () => {
 
   it('nobody when nothing is observable', () => {
     expect(chooseNight([], new Map(), node, NIGHT, null)).toBeNull();
+  });
+});
+
+type Night = typeof nightlyTarget.$inferSelect;
+const lost = (nightDate: string, cardId = 'moon') => ({ nightDate, cardId, lostAt: new Date() }) as Night;
+const kept = (nightDate: string, cardId = 'moon') => ({ nightDate, cardId, lostAt: null }) as Night;
+
+describe('a card lost to cloud is carried', () => {
+  it('into the next night', () => {
+    expect(carryFrom([lost('2026-09-19')])).toEqual({ cardId: 'moon', night: '2026-09-19' });
+  });
+
+  it('for three nights in a row, and not a fourth', () => {
+    const three = [lost('2026-09-19'), lost('2026-09-18'), lost('2026-09-17'), kept('2026-09-16', 'm31')];
+    expect(carryFrom(three)).toEqual({ cardId: 'moon', night: '2026-09-19' });
+    expect(carryFrom([lost('2026-09-20'), ...three])).toBeNull();
+  });
+
+  it('counting only its own lost nights, day after day', () => {
+    expect(carryFrom([lost('2026-09-20'), lost('2026-09-19', 'm31'), lost('2026-09-18'), lost('2026-09-17'), lost('2026-09-16')])).not.toBeNull();
+    expect(carryFrom([lost('2026-09-20'), lost('2026-09-18'), lost('2026-09-17'), lost('2026-09-16')])).not.toBeNull();
+  });
+
+  it('not at all after a night that was not lost', () => {
+    expect(carryFrom([kept('2026-09-19')])).toBeNull();
+    expect(carryFrom([])).toBeNull();
   });
 });
