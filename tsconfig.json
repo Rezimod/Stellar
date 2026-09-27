@@ -41,7 +41,6 @@
     "drizzle.config.ts",
     "apps/**",
     "scripts/**",
-    "anchor/**",
-    "tools/**"
+    "anchor/**"
   ]
 }

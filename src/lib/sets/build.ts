@@ -81,7 +81,7 @@ export const JUDGING_NODE_ID = 'tbilisi-01';
 /** One placeholder until the art exists. */
 export const PLACEHOLDER_ART = '/cards/placeholder.svg';
 
-/** Rendered from Explore's own planet maps by tools/explore/render-card.ts —
+/** Rendered from Explore's own planet maps by the phase-7 card renderer (since retired) —
  *  art, not a Node 01 frame. Everything else is drawn from its record. */
 const RENDERED = new Set(['SATURN', 'JUPITER']);
 
