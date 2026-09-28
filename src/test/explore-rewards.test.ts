@@ -4,7 +4,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   localRewardSink, memoryRewardSink, syncedRewardSink, MISSION_ACHIEVEMENTS, OBJECTIVE_ACHIEVEMENTS,
-  type Achievement,
+  type Achievement, type AchievementSubmit,
 } from '@/lib/solar-system/achievements';
 import {
   EXPLORE_ACHIEVEMENT_IDS, EXPLORE_ACHIEVEMENT_STARS, EXPLORE_MAX_STARS,
@@ -47,7 +47,7 @@ describe('the catalogue', () => {
 
 describe('the synced sink', () => {
   it('reports a new record and remembers that it was credited', async () => {
-    const submit = vi.fn(async () => true);
+    const submit = vi.fn<AchievementSubmit>(async () => true);
     const sink = syncedRewardSink(memoryRewardSink(() => 1), submit);
     expect(sink.record('explore.first_steps')).toBe(true);
     await flushMicrotasks();
@@ -59,7 +59,7 @@ describe('the synced sink', () => {
   });
 
   it('does not report a record it already holds', async () => {
-    const submit = vi.fn(async () => true);
+    const submit = vi.fn<AchievementSubmit>(async () => true);
     const local = memoryRewardSink();
     local.record('explore.power_restored');
     const sink = syncedRewardSink(local, submit);
@@ -70,7 +70,7 @@ describe('the synced sink', () => {
 
   it('keeps a record the platform could not take and tries again on the next flush', async () => {
     let online = false;
-    const submit = vi.fn(async () => online);
+    const submit = vi.fn<AchievementSubmit>(async () => online);
     const sink = syncedRewardSink(memoryRewardSink(), submit);
     sink.record('explore.comms_restored');
     await flushMicrotasks();
@@ -83,7 +83,7 @@ describe('the synced sink', () => {
   });
 
   it('treats a report that throws as one to try again', async () => {
-    const submit = vi.fn<(a: Achievement) => Promise<boolean>>().mockRejectedValueOnce(new Error('offline')).mockResolvedValue(true);
+    const submit = vi.fn<AchievementSubmit>().mockRejectedValueOnce(new Error('offline')).mockResolvedValue(true);
     const sink = syncedRewardSink(memoryRewardSink(), submit);
     sink.record('explore.lunar_geology');
     await flushMicrotasks();
@@ -96,7 +96,7 @@ describe('the synced sink', () => {
     // Earlier session, signed out: the local sink alone.
     localRewardSink(() => 5).record('explore.first_steps');
     localRewardSink(() => 6).record('explore.earthrise_photo');
-    const submit = vi.fn(async () => true);
+    const submit = vi.fn<AchievementSubmit>(async () => true);
     const sink = syncedRewardSink(localRewardSink(), submit);
     await sink.flush();
     expect(submit.mock.calls.map((c) => c[0].id).sort()).toEqual(['explore.earthrise_photo', 'explore.first_steps']);
@@ -110,7 +110,7 @@ describe('the synced sink', () => {
     const local = memoryRewardSink();
     local.record('explore.first_steps');
     local.record('explore.power_restored');
-    const submit = vi.fn(async () => true);
+    const submit = vi.fn<AchievementSubmit>(async () => true);
     const sink = syncedRewardSink(local, submit);
     sink.markCredited(['explore.first_steps']);
     await sink.flush();
