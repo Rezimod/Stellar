@@ -185,8 +185,8 @@ export function buildSuitGear(joints: GearJoints, bareHead = false): SuitGear {
       // Off, the flame and its sprites are scaled to nothing rather than
       // hidden, so the host's compile pass builds their programs with the
       // scene's and the first ignition does not stall on the shader compiler.
-      const cone = new THREE.Mesh(geo(new THREE.CylinderGeometry(0.05, 0.006, 0.6, 12, 4, true)), flameMat);
-      cone.position.y = -0.3;
+      const cone = new THREE.Mesh(geo(new THREE.CylinderGeometry(0.058, 0.006, 0.85, 12, 4, true)), flameMat);
+      cone.position.y = -0.425;
       cone.frustumCulled = false;
       flame.add(cone);
       flame.scale.setScalar(OFF);
@@ -225,11 +225,12 @@ export function buildSuitGear(joints: GearJoints, bareHead = false): SuitGear {
     for (let i = 0; i < 3; i++) part(small, rbox(0.014, 0.014, 0.006, 0.002, 1), leds[i], CHEST, -0.05 + i * 0.05, 1.365, 0.301);
     for (const s of [-1, 1]) {
       part(small, rbox(0.07, 0.02, 0.3, 0.005, 1), pad, CHEST, s * 0.17, 1.675, 0);
-      part(g, rbox(0.075, 0.05, 0.09, 0.008), pad, CHEST, s * 0.27, 1.645, 0.05);
-      const lens = geo(new THREE.CylinderGeometry(0.02, 0.02, 0.012, 12));
+      // The lamp housings sit on the collar, inboard of the shoulder bearings, lenses forward.
+      part(g, rbox(0.075, 0.05, 0.09, 0.008), pad, CHEST, s * 0.24, 1.665, 0.09);
+      const lens = geo(new THREE.CylinderGeometry(0.024, 0.024, 0.012, 12));
       lens.rotateX(Math.PI / 2);
-      part(g, lens, lamp, CHEST, s * 0.27, 1.645, 0.1);
-      part(small, rbox(0.02, 0.03, 0.02, 0.003, 1), metal, CHEST, s * 0.27, 1.61, 0.05);
+      part(g, lens, lamp, CHEST, s * 0.24, 1.665, 0.14);
+      part(small, rbox(0.02, 0.03, 0.02, 0.003, 1), metal, CHEST, s * 0.24, 1.63, 0.09);
     }
   }
 
@@ -237,7 +238,8 @@ export function buildSuitGear(joints: GearJoints, bareHead = false): SuitGear {
   if (!bareHead) {
     const { g } = assembly(joints.helmet, 'helmet-ring');
     const arc = 3.6;
-    const torus = geo(new THREE.TorusGeometry(0.19, 0.011, 6, 28, arc));
+    // Proud of the helmet's shell (about 0.2 m across at the brow), so it reads as a ring and not a seam.
+    const torus = geo(new THREE.TorusGeometry(0.215, 0.012, 6, 28, arc));
     // The torus lies in XY with its arc from +x; laid flat and turned so the arc's middle faces +z.
     torus.rotateX(Math.PI / 2);
     torus.rotateY(arc / 2 - Math.PI / 2);
