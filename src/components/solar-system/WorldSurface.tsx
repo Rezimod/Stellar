@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Camera, ChevronsDown, ChevronsUp, Eye, EyeOff, Flame, Flashlight, Hand, HelpCircle, Menu, Rocket, Trophy, Volume2, VolumeX, Wind, X } from 'lucide-react';
+import { Camera, ChevronsDown, ChevronsUp, Eye, EyeOff, Flame, Flashlight, Gem, Hand, HelpCircle, Menu, Rocket, Trophy, Volume2, VolumeX, Wind, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { makeWorldSurface, type WorldSurfaceHandle } from '@/lib/solar-system/world-surface';
 import type { ShipKind } from '@/lib/solar-system/ship-mesh';
@@ -106,6 +106,8 @@ export function WorldSurface({ world, onReturn, room, paused, onProgress, onPaus
   const hrRef = useRef<HTMLSpanElement>(null);
   const tempRef = useRef<HTMLSpanElement>(null);
   const jetRef = useRef<HTMLSpanElement>(null);
+  const crystalsRef = useRef<HTMLSpanElement>(null);
+  const crystalsCountRef = useRef<HTMLSpanElement>(null);
   const jetBarRef = useRef<HTMLElement>(null);
   const outRef = useRef<HTMLSpanElement>(null);
   const evaRef = useRef<HTMLSpanElement>(null);
@@ -268,6 +270,9 @@ export function WorldSurface({ world, onReturn, room, paused, onProgress, onPaus
         if (jetBarRef.current) jetBarRef.current.style.width = `${Math.max(0, Math.min(100, tel.jetFuel * 100))}%`;
       }
       show(lampRef.current, tel.headlamp);
+      // The crystal tally: only on worlds that grew any, and only once one is held.
+      show(crystalsRef.current, tel.crystalsTotal > 0 && tel.crystals > 0);
+      text(crystalsCountRef.current, `${tel.crystals} / ${tel.crystalsTotal}`);
       // The rest are read rather than watched: these refs are only mounted
       // while the log is open.
       text(gravRef.current, `${handle.profile.gravity.toFixed(2)} m/s²`);
@@ -530,6 +535,7 @@ export function WorldSurface({ world, onReturn, room, paused, onProgress, onPaus
         {/* ── Bottom right: the lamp. ── */}
         <div className="moon-hud__hands">
           <span ref={lampRef} className="moon-hud__carry moon-hud__lamp" hidden><Flashlight size={14} aria-hidden /><i>{tc('lampOn')}</i></span>
+          <span ref={crystalsRef} className="moon-hud__carry moon-hud__crystals" hidden><Gem size={14} aria-hidden /><i>{tw('crystals')}</i><span ref={crystalsCountRef} /></span>
         </div>
 
         <button type="button" className="moon-hud__round moon-hud__unhide" onClick={() => setImmersive(false)} aria-label={t('hudShow')} title={t('hudShow')}>

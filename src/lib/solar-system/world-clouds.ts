@@ -110,7 +110,8 @@ export const CLOUD_GLSL = /* glsl */`
       tf = min(tf, tn + reach);
       float len = tf - tn;
       float dt = len / float(CLOUD_STEPS);
-      float jitter = chash(dir.xz * 977.0 + dir.y * 131.0) * dt;
+      // A little jitter hides the step banding; too much and the deck reads as grain at four steps.
+      float jitter = chash(dir.xz * 977.0 + dir.y * 131.0) * dt * 0.35;
       float phase = 0.55 * hg(dot(dir, sunDir), 0.62) + 0.35 * hg(dot(dir, sunDir), -0.18) + 0.08;
       vec3 col = vec3(0.0); float T = 1.0;
       float lstep = (uCloudTop - uCloudBase) * 0.55;

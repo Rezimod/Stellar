@@ -35,7 +35,11 @@ Phases 0–8 are on `origin/main` (`4900130` + `c74816e`); 9, 10, 11 and 12 are 
 ```
 
 - **One state machine** (`src/game/state.ts`), not booleans: `game.travel()`, `game.pause()`, `game.restart()`, `game.exit()`. The checkpoint (`src/game/save.ts`) records the scene; `progress('ready')` writes it.
-- **One quality authority** (`src/game/quality.ts`): three presets, `auto` picked from device signals, a governed floor the runtime governor can lower (never raise), and a preset the player names in Settings that overrides both. `surface-host` applies a change live for everything the renderer owns; build-time detail (props, stars, LOD distances) follows on the next scene.
+- **One quality authority** (`src/game/quality.ts`): four presets (`performance`, `balanced`, `high`, `ultra` — the last only ever chosen by hand in Settings), `auto` picked from device signals, a governed floor the runtime governor can lower (never raise), and a preset the player names in Settings that overrides both. `surface-host` applies a change live for everything the renderer owns; build-time detail (props, stars, LOD distances) follows on the next scene.
+- **One post chain shape, twice** (`moon-post.ts` for the surfaces, `post-processing.ts` for flight, passes in `post-flare.ts`): Render → god rays (HDR, radial blur toward the sun) → bloom → lens flare (ghosts, halo, anamorphic streak, occluded by the HDR buffer at the sun's pixel) → Output → colour grade (LDR: lift/gamma/gain, split tone) → film (surface only). Each pass follows the profile's `bloom`, `flare`, `godRays`, `grade` flags live; the hosts feed the sun's screen position every frame.
+- **The look of the worlds** (`world-sky.ts`, `world-clouds.ts`, `world-giant.ts`, `world-formations.ts`, `world-crystals.ts`, `world-terrain.ts`): an analytic single-scattering sky per profile (`atmosphere`), a raymarched 2.5D cloud deck (`clouds`, steps from the profile's `clouds` level), sun-tinted aerial perspective through the `world-earth-haze` hook, domain-warped relief with terraced mesas and slope-blended rock and sand, instanced mesas, hoodoos, arches, spires and boulders (`formations`), a dramatised ringed giant over Proxima b (`giant`), and collectible emissive crystal clusters (`crystals`, `telemetry.crystals/crystalsTotal`). The Moon keeps to realism: sharper crater crests, stronger ejecta, grazing-angle regolith detail.
+- **The suit** (`suit-gear.ts`, `suit-jetpack.ts`): procedural hardware on the rig joints — jet module with tanks and nozzles, chest console, shoulder lamps, helmet ring — and a jetpack (hold jump in the air or J; fuel `telemetry.jetFuel`, regen on the ground, HDR flame cones and a spark stream). Remote crews carry the flame through the sign of `PoseMsg.v` until `room-link.ts` gains a field.
+- **The landing is flown** (`flight-approach.ts`, `moon-lander.ts`): transit → approach → entry (plasma, buffet, planet title card) → glide, or a retro burn over airless bodies; the shell's loader shows an `entry` variant on the way down and `ascent` on the way up; the surface opens on the player's own ship (`shipKind` threaded from the session; `lander.glb` stays the fallback) coming down on its plumes, and the crew steps out on "Exit ship".
 - **One frame accountant** (`moon-perf.ts`): stats every frame, a pixel-ratio governor in quarter steps, and `onOverBudget` for the preset step. `?fixedpx` pins it for benches.
 - **One interaction resolver** (`moon-interactions.ts`) shared by the Moon and the worlds: priority, facing, distance; `tap` / `hold` with progress; `requires` blocks rather than hides.
 - **One mission engine** (`missions.ts` + `mission-store.ts`), five Moon missions in `moon-missions.ts`, their props in `moon-mission-props.ts`.
@@ -51,6 +55,7 @@ Phases 0–8 are on `origin/main` (`4900130` + `c74816e`); 9, 10, 11 and 12 are 
 | `stellar_explore_save` | `game/save.ts` | `{v, scene, savedAt}` — the checkpoint |
 | `stellar_explore_achievements_v1` | `achievements.ts` | one record per finished mission |
 | `stellar_explore_credited_v1` | `achievements.ts` | the record ids the platform has credited as Stars |
+| `stellar_explore_crystals_v1` | `world-crystals.ts` | `{v, worlds: {[worldId]: collectedIds[]}}` — crystal clusters collected per world |
 | `stellar_explore_arrival` | `PlayerShip.tsx` | the arrival has been watched once |
 | `stellar_explore_help` / `stellar_hud_layout_v2` | `PlayerShip.tsx` | help seen; touch deck layout |
 | `stellar_sound` / `stellar_sound_level` | `sound-prefs.ts` | the switch and the master level |
@@ -91,6 +96,8 @@ Phase 0 ran at load 16–33, Phase 12 at 5.8–9.1: the frame times are not meas
 - **The other worlds have no missions.** Mars, Proxima b and Tbilisi have places, people and things to use; the mission engine supports them, and the content is out of this plan's scope.
 - **Mid-act progress is not saved**: drill depth, the active job step, rover battery and position, the ship kind and camera zoom all reset. Missions, jobs, records and the checkpoint survive.
 - **`stellar_proxima_contact` is written and never read** (E18).
+- **Haze reaches what the worlds own.** The base kit, lander, suit, flora and aliens still take the linear fog fallback rather than the sun-tinted haze hook; the two agree to about 300 m.
+- **Clouds cast no shadows**, and at 4 steps the deck shows mild grain.
 - **Lint is not configured** — the repo has no ESLint config, so no run has ever claimed lint passed.
 - **`world-earth-life.test.ts` "a car stops for someone standing in the road" is flaky**: one failure in a full suite run on 2026-09-21, passing on three runs of its own and every run since.
 

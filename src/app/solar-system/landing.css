@@ -190,3 +190,5 @@
   .cosmic-loader__planet, .cosmic-loader__shock { transform: scale(1); }
   .cosmic-loader__plasma i::before { transform: translateX(30%) scaleX(0.5); opacity: 0.6; }
 }
+
+.moon-hud__crystals span:last-child { margin-left: 4px; color: var(--hud-accent); font-variant-numeric: tabular-nums; }
