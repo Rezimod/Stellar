@@ -230,9 +230,9 @@ export const MARS: WorldProfile = {
   // dust absorbs blue and scatters red, and blue right round the sun because
   // micron dust throws blue forward. Thin, so the stars would show at night.
   atmosphere: {
-    rayleigh: [0.30, 0.21, 0.14], absorb: [0.03, 0.10, 0.26], mie: 0.030, mieTint: [0.30, 0.55, 1.0], mieG: 0.86, turbidity: 3.2,
-    sunIntensity: 34, sunTint: [1, 0.96, 0.9], ambient: [0.05, 0.035, 0.02],
-    hazeBeta: 1.3e-3, hazeColor: [0.74, 0.54, 0.38], hazeSun: [0.86, 0.72, 0.62],
+    rayleigh: [0.30, 0.20, 0.13], absorb: [0.03, 0.14, 0.34], mie: 0.026, mieTint: [0.30, 0.55, 1.0], mieG: 0.86, turbidity: 3.2,
+    sunIntensity: 22, sunTint: [1, 0.96, 0.9], ambient: [0.04, 0.026, 0.014],
+    hazeBeta: 1.3e-3, hazeColor: [0.60, 0.40, 0.25], hazeSun: [0.80, 0.62, 0.48],
   },
   // High, thin water-ice wisps, as the rovers photograph them before dawn.
   clouds: { coverage: 0.30, altitude: 900, thickness: 260, scale: 1500, wind: [9, 3], lit: [1.0, 0.94, 0.86], shade: [0.72, 0.56, 0.46], kind: 'wisps' },
@@ -285,7 +285,7 @@ export const PROXIMA_B: WorldProfile = {
   // there is scatters, salmon along the horizon and a wide orange wash
   // round the sun that never sets.
   atmosphere: {
-    rayleigh: [0.05, 0.06, 0.20], absorb: [0.0, 0.05, 0.02], mie: 0.018, mieTint: [1.0, 0.55, 0.30], mieG: 0.80, turbidity: 4,
+    rayleigh: [0.05, 0.06, 0.20], absorb: [0.0, 0.05, 0.02], mie: 0.010, mieTint: [1.0, 0.55, 0.30], mieG: 0.72, turbidity: 4,
     sunIntensity: 30, sunTint: [1, 0.55, 0.42], ambient: [0.12, 0.06, 0.30],
     hazeBeta: 1.5e-3, hazeColor: [0.40, 0.24, 0.36], hazeSun: [0.82, 0.46, 0.30],
   },
@@ -297,8 +297,8 @@ export const PROXIMA_B: WorldProfile = {
   // beside the star would be a crescent), dramatised for the view.
   giant: {
     dir: v(-0.58, 0.30, -0.66), angularDeg: 24, tilt: 0.42, roll: -0.35, ringInner: 1.35, ringOuter: 2.25,
-    bands: [[0.58, 0.42, 0.50], [0.86, 0.66, 0.58], [0.70, 0.48, 0.52], [0.92, 0.78, 0.68], [0.62, 0.40, 0.46], [0.88, 0.70, 0.62], [0.54, 0.36, 0.48]],
-    ringColor: [0.82, 0.68, 0.64], air: 0.34,
+    bands: [[0.40, 0.26, 0.36], [0.90, 0.70, 0.60], [0.52, 0.32, 0.40], [0.96, 0.82, 0.70], [0.44, 0.26, 0.34], [0.92, 0.74, 0.64], [0.36, 0.22, 0.34]],
+    ringColor: [0.86, 0.72, 0.66], air: 0.2,
   },
   formations: {
     mesas: 0, hoodoos: 0, arches: 3, spires: 12, boulders: 10,

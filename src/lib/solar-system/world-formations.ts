@@ -90,7 +90,8 @@ export function placeFormations(profile: WorldProfile, opts: FormationsOptions):
     for (let i = 0; i < want * 12 && placed < want; i++) {
       n += 1;
       const a = hash(n, 1, seed) * Math.PI * 2;
-      const d = rMin + Math.sqrt(hash(n, 2, seed)) * (rMax - rMin);
+      // Linear in distance, not in area: the near ground gets its share, which is where the eye is.
+      const d = rMin + hash(n, 2, seed) * (rMax - rMin);
       const x = pad.x + Math.cos(a) * d; const z = pad.z + Math.sin(a) * d;
       if (inSquare && (Math.abs(x) > 172 || Math.abs(z) > 172)) continue;
       const { sx, sy } = size();
@@ -102,7 +103,7 @@ export function placeFormations(profile: WorldProfile, opts: FormationsOptions):
   };
   const rnd = (k: number) => hash(n, 10 + k, seed);
   // Mesas: landscape, past the fence, out to where the haze takes them.
-  place('mesa', F.mesas, opts.walkRadius + 60, 680, () => { const sx = 16 + rnd(1) * 30; return { sx, sy: 18 + rnd(2) * 34 }; }, false);
+  place('mesa', F.mesas, opts.walkRadius + 50, 520, () => { const sx = 16 + rnd(1) * 30; return { sx, sy: 18 + rnd(2) * 34 }; }, false);
   place('hoodoo', F.hoodoos, PAD_RADIUS + 26, opts.walkRadius + 40, () => { const sx = 1.1 + rnd(1) * 1.5; return { sx, sy: 6 + rnd(2) * 9 }; }, true);
   place('spire', F.spires, PAD_RADIUS + 30, opts.walkRadius + 40, () => { const sx = 1.8 + rnd(1) * 2.4; return { sx, sy: 14 + rnd(2) * 18 }; }, true);
   place('arch', F.arches, PAD_RADIUS + 34, opts.walkRadius - 16, () => { const sx = 7 + rnd(1) * 6; return { sx, sy: sx * (0.9 + rnd(2) * 0.5) }; }, true);
