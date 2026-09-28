@@ -40,7 +40,7 @@ Phases 0–8 are on `origin/main` (`4900130` + `c74816e`); 9, 10, 11 and 12 are 
 - **One interaction resolver** (`moon-interactions.ts`) shared by the Moon and the worlds: priority, facing, distance; `tap` / `hold` with progress; `requires` blocks rather than hides.
 - **One mission engine** (`missions.ts` + `mission-store.ts`), five Moon missions in `moon-missions.ts`, their props in `moon-mission-props.ts`.
 - **One model cache** (`src/game/models.ts`): ref-counted glTF, meshopt, `keepNodes` for skinned meshes and named empties, and a prefetch that rides the arrival.
-- **Records, not rewards** (`achievements.ts`): a `RewardSink` interface with a localStorage implementation behind it. No network, no chain.
+- **Records first, then rewards** (`achievements.ts`): a `RewardSink` interface. `localRewardSink` keeps the records on the device; `syncedRewardSink` wraps it and reports each new one to `POST /api/games/explore/complete`, which prices it from `src/lib/games/explore.ts`, claims a row in the shared Stars ledger (same daily and monthly caps as every other game) and mints to the signed-in Privy wallet, once per achievement per wallet. `useExploreRewards` (in `components/play/`) owns the sink, flushes records made while signed out once a wallet appears, and shows the award on the glass. `GET /api/games/explore` reports what is credited to the mission panel and the `/missions` card.
 - **Multiplayer** rides in `GameWorld`: one `RoomLink`, Supabase Realtime, remote crews on the surfaces and a remote fleet in flight.
 
 ### 0.2 Persistence (all of Explore)
@@ -50,6 +50,7 @@ Phases 0–8 are on `origin/main` (`4900130` + `c74816e`); 9, 10, 11 and 12 are 
 | `stellar_explore_settings` | `game/settings.ts` | `{v, quality, sensitivity, invertY, fov}` |
 | `stellar_explore_save` | `game/save.ts` | `{v, scene, savedAt}` — the checkpoint |
 | `stellar_explore_achievements_v1` | `achievements.ts` | one record per finished mission |
+| `stellar_explore_credited_v1` | `achievements.ts` | the record ids the platform has credited as Stars |
 | `stellar_explore_arrival` | `PlayerShip.tsx` | the arrival has been watched once |
 | `stellar_explore_help` / `stellar_hud_layout_v2` | `PlayerShip.tsx` | help seen; touch deck layout |
 | `stellar_sound` / `stellar_sound_level` | `sound-prefs.ts` | the switch and the master level |
@@ -85,7 +86,7 @@ Phase 0 ran at load 16–33, Phase 12 at 5.8–9.1: the frame times are not meas
 ### 0.5 Known limitations at Phase 12
 
 - **The arrival's longest frame is over the 100 ms the plan asked for**: 1067–1183 ms at load 8–17, 2.9 s at load 25. The planet maps decode off the main thread now (`texture-load.ts`); what is left is the GPU upload, which cannot leave it, and the glTF parse behind the prefetch.
-- **`TODO(explore-slice)` — one, in `achievements.ts`**: records are self-reported and worth nothing on chain. A verified one needs a server (see `docs/reputation-economy.md`).
+- **Records are self-reported.** The platform now credits them as Stars (`/api/games/explore/complete`), bounded by the shared caps and paid once per achievement, but nothing verifies that the mission was played. A verified record needs the server in the loop (see `docs/reputation-economy.md`).
 - **Selecting a planet in the orrery shows no facts** and no "observe tonight" link (A20). `PlanetDetailPanel`, `planet-data.ts` and `planet-visibility.ts` were built for it, were never rendered, and were deleted in Phase 12 — they are in git history if that screen is built.
 - **The other worlds have no missions.** Mars, Proxima b and Tbilisi have places, people and things to use; the mission engine supports them, and the content is out of this plan's scope.
 - **Mid-act progress is not saved**: drill depth, the active job step, rover battery and position, the ship kind and camera zoom all reset. Missions, jobs, records and the checkpoint survive.

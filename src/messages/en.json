@@ -1864,7 +1864,7 @@
         },
         "records": {
           "title": "Records",
-          "note": "Kept on this device. Nothing was awarded or minted.",
+          "note": "Kept on this device. Signed in, each record is credited to your account as Stars.",
           "tonight": "See {target} over your sky tonight",
           "first_steps": "First bootprints at Stellar Base",
           "earthrise_photo": "Earthrise photographed from the ridge",
@@ -3612,6 +3612,11 @@
       "back": "Back",
       "missionsCardDesc": "30-second sky game — tap shooting stars",
       "missionsCardScored": "Today: {score} caught"
+    },
+    "explore": {
+      "title": "Stellar Explore",
+      "missionsCardDesc": "Land at Stellar Base on the Moon — every mission finished is credited as Stars",
+      "missionsCardProgress": "{stars} of {max} Stars credited"
     }
   },
   "observatory": {
@@ -4215,6 +4220,12 @@
       "discoveries": "{n} of {total} discoveries logged",
       "empty": "Nothing logged yet. Land at Stellar Base to begin."
     },
-    "qualityDrop": "Detail reduced to hold the frame rate — change it in Settings."
+    "qualityDrop": "Detail reduced to hold the frame rate — change it in Settings.",
+    "stars": {
+      "awarded": "+{n} Stars — {name}",
+      "credited": "{n} of {max} Stars credited to your account",
+      "signIn": "Sign in and each mission you finish is credited as Stars — up to {max} for the expedition.",
+      "signInAction": "Sign in"
+    }
   }
 }

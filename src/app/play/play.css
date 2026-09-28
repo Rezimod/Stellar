@@ -48,6 +48,11 @@
   animation: game-notice 0.3s ease-out both;
 }
 @keyframes game-notice { from { opacity: 0; transform: translate(-50%, -6px); } to { opacity: 1; transform: translate(-50%, 0); } }
+/* Stars just credited to the account: the same line, in the reward colour. */
+.game-shell__notice--stars {
+  border-color: rgba(255, 179, 71, 0.45);
+  color: var(--terracotta, #ffb347);
+}
 
 /* ── Full-screen menus: title, pause, panels ── */
 .game-menu {
@@ -232,3 +237,6 @@
 .game-missions__track { display: block; height: 4px; border-radius: 2px; background: rgba(168, 180, 200, 0.18); overflow: hidden; }
 .game-missions__track i { display: block; height: 100%; background: var(--terracotta, #ffb347); }
 .game-missions__empty { margin: 0; font: 500 13px/1.5 var(--font-body, system-ui), sans-serif; color: rgba(186, 214, 240, 0.9); }
+.game-missions__signin { margin: 12px 0 0; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; font: 500 13px/1.5 var(--font-body, system-ui), sans-serif; color: rgba(186, 214, 240, 0.9); }
+.game-missions__signin-btn { padding: 6px 12px; border: 1px solid rgba(255, 179, 71, 0.45); border-radius: 6px; background: rgba(255, 179, 71, 0.1); color: var(--terracotta, #ffb347); font: 600 12px/1 var(--font-mono, ui-monospace), monospace; letter-spacing: 0.04em; cursor: pointer; }
+.game-missions__signin-btn:hover { background: rgba(255, 179, 71, 0.2); }

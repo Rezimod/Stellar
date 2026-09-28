@@ -18,12 +18,15 @@ import { attachSurfaceControls, type SurfaceControls } from '@/game/surface-cont
 import { useLoadingTips } from './useLoadingTips';
 import { useSoundPref } from './useSoundPref';
 import type { RoomLink } from '@/lib/multiplayer/room-link';
+import type { RewardSink } from '@/lib/solar-system/achievements';
 import { BuildHud } from './BuildHud';
 import { MissionPanel } from './MissionPanel';
 
 interface MoonSurfaceProps {
   onReturn: () => void;
   room: RoomLink;
+  /** Where finished missions go: the shell's sink reports them to the platform. */
+  sink?: RewardSink;
   /** The game shell's pause: the sim, the sound and the keys all stop. */
   paused?: boolean;
   /** Where the build is; the shell's loading screen follows it and this one stays hidden. */
@@ -43,7 +46,7 @@ const fmtApprox = (m: number) => `~${fmtRange(Math.round(m / 10) * 10)}`;
 const PPD = 3.1;
 const TURNS = 3;
 
-export function MoonSurface({ onReturn, room, paused, onProgress, onPauseRequest }: MoonSurfaceProps) {
+export function MoonSurface({ onReturn, room, sink, paused, onProgress, onPauseRequest }: MoonSurfaceProps) {
   const t = useTranslations('solarSystem.moon');
   const tl = useTranslations('solarSystem.loading');
   const tc = useTranslations('solarSystem.controls');
@@ -68,6 +71,9 @@ export function MoonSurface({ onReturn, room, paused, onProgress, onPauseRequest
   const landTitleRef = useRef<HTMLSpanElement>(null);
   const onReturnRef = useRef(onReturn);
   onReturnRef.current = onReturn;
+  // Read through a ref: a new sink identity must not rebuild the scene.
+  const sinkRef = useRef(sink);
+  sinkRef.current = sink;
   const onProgressRef = useRef(onProgress);
   onProgressRef.current = onProgress;
   const onPauseRequestRef = useRef(onPauseRequest);
@@ -176,6 +182,7 @@ export function MoonSurface({ onReturn, room, paused, onProgress, onPauseRequest
     onProgressRef.current?.('build');
     const handle = makeMoonSurface(mount, {
       room,
+      sink: sinkRef.current,
       startOnSurface: resumeRef.current,
       onContextLost: () => {
         setGpuLost(true);

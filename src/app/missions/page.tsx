@@ -27,6 +27,7 @@ import {
   Rocket, Clock, Eye, Cloud, ChevronRight, Lightbulb, Satellite, Users, Check, Compass,
 } from 'lucide-react';
 import { NIGHT_STAR_GOAL, MAIN_QUEST_ID, GLOBAL_MISSION } from '@/lib/missions-tonight';
+import { EXPLORE_ACHIEVEMENT_IDS, EXPLORE_MAX_STARS, type ExploreProgress } from '@/lib/games/explore';
 import type { LucideIcon } from 'lucide-react';
 import { Body, Illumination, MoonPhase } from 'astronomy-engine';
 
@@ -183,6 +184,7 @@ export default function MissionsPage() {
   const tSky = useTranslations('sky');
   const tUpNow = useTranslations('games.upNow');
   const tShootingStars = useTranslations('games.shootingStars');
+  const tExplore = useTranslations('games.explore');
 
   // Missions are location-aware (what's up tonight from here) — prompt for GPS
   // on open rather than on site entry.
@@ -330,6 +332,20 @@ export default function MissionsPage() {
     return () => { cancelled = true; };
   }, [authenticated, getAccessToken]);
 
+  // Stellar Explore: what the platform has credited for the Moon missions.
+  const [exploreProgress, setExploreProgress] = useState<ExploreProgress | null>(null);
+  useEffect(() => {
+    if (!authenticated) { setExploreProgress(null); return; }
+    let cancelled = false;
+    getAccessToken().catch(() => null).then((token) => {
+      if (cancelled || !token) return;
+      fetch('/api/games/explore', { headers: { Authorization: `Bearer ${token}` } })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d: ExploreProgress | null) => { if (!cancelled && d) setExploreProgress(d); })
+        .catch(() => {});
+    });
+    return () => { cancelled = true; };
+  }, [authenticated, getAccessToken]);
 
   const skyPositions = useMemo(() => {
     const out: Record<string, SkyPos> = {};
@@ -818,6 +834,17 @@ export default function MissionsPage() {
                   reward={10}
                   done={false}
                   onClick={() => router.push('/games/shooting-stars')}
+                />
+                <QuizRow
+                  Icon={Rocket}
+                  gradient={HUB_GRADIENTS.violet}
+                  title={tExplore('title')}
+                  meta={exploreProgress && exploreProgress.credited.length > 0
+                    ? tExplore('missionsCardProgress', { stars: exploreProgress.totalStars, max: exploreProgress.maxStars })
+                    : tExplore('missionsCardDesc')}
+                  reward={EXPLORE_MAX_STARS}
+                  done={!!exploreProgress && exploreProgress.credited.length >= EXPLORE_ACHIEVEMENT_IDS.length}
+                  onClick={() => router.push('/play')}
                 />
               </div>
             </section>

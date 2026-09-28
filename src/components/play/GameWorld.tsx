@@ -18,6 +18,7 @@ import { ExploreRoomBadge } from '@/components/solar-system/ExploreRoomBadge';
 import { game, type GameState } from '@/game/state';
 import type { GameScene } from '@/game/save';
 import { settle } from '@/game/settle';
+import { useExploreRewards } from './useExploreRewards';
 
 /** The climb back to orbit stays up at least this long, and until the deck has flown a few frames. */
 const ORBIT_MIN_MS = 1600;
@@ -39,8 +40,11 @@ interface GameWorldProps {
  *  The orbit canvas is not built until the player first goes to orbit. */
 export function GameWorld({ scene, state }: GameWorldProps) {
   const t = useTranslations('solarSystem');
+  const tp = useTranslations('play');
   const format = useFormatter();
   const landed = scene === 'orbit' ? null : scene;
+  // The platform connection: records the surfaces write go out as Stars.
+  const rewards = useExploreRewards();
   const paused = state === 'paused';
   const flightRef = useRef<FlightSession | null>(null);
   if (!flightRef.current) flightRef.current = createFlightSession({ combat: false });
@@ -164,9 +168,14 @@ export function GameWorld({ scene, state }: GameWorldProps) {
           <PlayerShip session={session} onActiveChange={setFlightActive} onLand={(site) => { setLandscape(false); game.travel(site); }} landed={landed !== null} returnedFrom={returnedFrom} onReturned={onReturned}
             landscape={landscape} onLandscape={setLandscape} shellPaused={paused} onPauseRequest={game.pause} />
         </>}
-        {landed === 'moon' && <MoonSurface onReturn={returnToOrbit} room={roomLinkRef.current} paused={paused} onProgress={game.progress} onPauseRequest={game.pause} />}
+        {landed === 'moon' && <MoonSurface onReturn={returnToOrbit} room={roomLinkRef.current} sink={rewards.sink} paused={paused} onProgress={game.progress} onPauseRequest={game.pause} />}
         {landed !== null && landed !== 'moon' && <WorldSurface world={landed} onReturn={returnToOrbit} room={roomLinkRef.current} paused={paused} onProgress={game.progress} onPauseRequest={game.pause} />}
       </div>
+      {rewards.award && (
+        <p className="game-shell__notice game-shell__notice--stars" role="status">
+          {tp('stars.awarded', { n: rewards.award.stars, name: t(`moon.missions.records.${rewards.award.id.split('.').pop()}`) })}
+        </p>
+      )}
       {room.code && !roomOpen && <ExploreRoomBadge code={room.code} roster={room.roster} onOpen={() => setRoomOpen(true)} />}
       {roomOpen && (
         <ExploreRoomPanel room={room} onClose={() => setRoomOpen(false)}

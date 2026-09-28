@@ -36,7 +36,7 @@ import { makeLander, type LanderInput, type LanderTelemetry } from '@/lib/solar-
 import { makeMission, missionComplete, type MissionContext, type MissionTelemetry } from '@/lib/solar-system/moon-mission';
 import { makeJobs, type JobId, type JobsTelemetry } from '@/lib/solar-system/moon-jobs';
 import { makeMoonMissions } from '@/lib/solar-system/moon-missions';
-import { localRewardSink, MISSION_ACHIEVEMENTS, OBJECTIVE_ACHIEVEMENTS, type Achievement } from '@/lib/solar-system/achievements';
+import { localRewardSink, MISSION_ACHIEVEMENTS, OBJECTIVE_ACHIEVEMENTS, type Achievement, type RewardSink } from '@/lib/solar-system/achievements';
 import type { MissionsTelemetry } from '@/lib/solar-system/missions';
 import type { MissionPropsTelemetry } from '@/lib/solar-system/moon-mission-props';
 import type { PerfSample } from '@/lib/solar-system/moon-perf';
@@ -105,6 +105,9 @@ export interface SurfaceOptions {
   onContextLost?: () => void;
   /** A multiplayer room: this explorer's steps go out, the others walk in. */
   room?: RoomLink;
+  /** Where finished missions are recorded. The game shell passes the sink
+   *  that reports to the platform; alone, the Moon keeps them on the device. */
+  sink?: RewardSink;
 }
 
 export interface SurfaceTelemetry {
@@ -474,9 +477,10 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
     interact: false, use: false, viewToggle: false, viewCycle: false, headlamp: false, throttle: 0, gearRequest: null,
   };
   const interactions = makeInteractions();
-  // What the crew earns up here is a record of what they did, kept on the
-  // device: no Stars are awarded and nothing is minted from the Moon.
-  const sink = localRewardSink();
+  // What the crew earns up here is a record of what they did. The Moon
+  // awards nothing itself: the shell's sink reports each record to the
+  // platform, and without one the records stay on the device.
+  const sink = opts.sink ?? localRewardSink();
   // The five missions: their props, their engine, and the world changes they
   // make. They own the base's power, dish, dome and charger from here on.
   const moonMissions = makeMoonMissions({
