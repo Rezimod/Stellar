@@ -179,7 +179,9 @@ describe('the ship as the descent vehicle', () => {
     // The crew step off clear of the hull, but within a few strides of it.
     const off = Math.hypot(l.telemetry.egressX - l.position.x, l.telemetry.egressZ - l.position.z);
     expect(off).toBeGreaterThan(l.hull);
-    expect(off).toBeLessThan(l.hull + 4);
+    // Outside the hull, and far enough out that the chase camera behind the
+    // crew is not pressed against it.
+    expect(off).toBeLessThan(l.hull + 6);
     l.dispose();
   });
 

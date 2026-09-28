@@ -122,6 +122,9 @@ interface VehicleSpec {
 
 const DOWN = new THREE.Vector3(0, -1, 0);
 const DOWN_AFT = new THREE.Vector3(0, -1, -0.42).normalize();
+// The step-out point sits about five metres beyond the hull sphere: the chase
+// camera hangs five metres behind the crew, and closer than that it is pushed
+// in against the hull on the first frame outside.
 const VEHICLES: Record<DescentKind, VehicleSpec> = {
   lander: {
     url: LANDER_MODEL, rest: 0.35, egress: { x: 0, z: 6.5 }, hull: 3.4, chase: 17, yaw: 0,
@@ -129,17 +132,17 @@ const VEHICLES: Record<DescentKind, VehicleSpec> = {
     thrust: DOWN, drive: 0x9fd4ff, gear: null, gearNode: null,
   },
   kestrel: {
-    url: KESTREL_MODEL, rest: 3.1, egress: { x: 8.6, z: 1.2 }, hull: 6.4, chase: 27, yaw: Math.PI,
+    url: KESTREL_MODEL, rest: 3.1, egress: { x: 11.4, z: 1.2 }, hull: 6.4, chase: 27, yaw: Math.PI,
     engines: [{ x: 0, y: 0.08, z: -7.73, r: 0.96 }, { x: 4.65, y: 0, z: -5.57, r: 0.87 }, { x: -4.65, y: 0, z: -5.57, r: 0.87 }],
     thrust: DOWN_AFT, drive: 0xff9448, gear: null, gearNode: 'Gear',
   },
   xfoil: {
-    url: XFOIL_MODEL, rest: 1.9, egress: { x: 6.2, z: 0.6 }, hull: 4.8, chase: 21, yaw: Math.PI,
+    url: XFOIL_MODEL, rest: 1.9, egress: { x: 9.4, z: 0.6 }, hull: 4.8, chase: 21, yaw: Math.PI,
     engines: [{ x: 1.55, y: -0.05, z: -5.2, r: 0.4 }, { x: -1.55, y: -0.05, z: -5.2, r: 0.4 }],
     thrust: DOWN_AFT, drive: 0x8ad8ff, gear: [[1.7, -0.78, -2.6], [-1.7, -0.78, -2.6], [0, -0.78, 3.4]], gearNode: null,
   },
   cruiser: {
-    url: CRUISER_MODEL, rest: 2.3, egress: { x: 9.4, z: 2 }, hull: 7.8, chase: 34, yaw: Math.PI,
+    url: CRUISER_MODEL, rest: 2.3, egress: { x: 12.8, z: 2 }, hull: 7.8, chase: 34, yaw: Math.PI,
     engines: [{ x: 0, y: 0.65, z: -14.23, r: 0.52 }, { x: 2.1, y: 0.5, z: -14.41, r: 0.36 }, { x: -2.1, y: 0.5, z: -14.41, r: 0.36 }],
     thrust: DOWN_AFT, drive: 0x5eead4, gear: [[3.4, -0.75, -6.5], [-3.4, -0.75, -6.5], [0, -0.75, 8.5]], gearNode: null,
   },
