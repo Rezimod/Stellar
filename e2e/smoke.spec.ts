@@ -19,9 +19,9 @@ test.describe('smoke — golden routes', () => {
     expect(response?.ok()).toBeTruthy();
 
     const nav = page.getByRole('navigation', { name: 'Sidera' });
-    await expect(nav.getByRole('link', { name: 'Set 001', exact: true })).toBeVisible();
+    await expect(nav.getByRole('link', { name: 'First Light', exact: true })).toBeVisible();
     await expect(nav.getByRole('link', { name: 'Tonight', exact: true })).toBeVisible();
-    await expect(page.locator('.sd-shop__panel')).toBeVisible();
+    await expect(page.locator('.sd-shop')).toBeVisible();
 
     expect(errors, `pageerrors on /: ${errors.join('\n')}`).toEqual([]);
   });
