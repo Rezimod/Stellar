@@ -41,10 +41,11 @@ export const CEILINGS: Record<GlobeWorld, { local: number; far: number }> = {
   // globe under it draws as well.
   moon: { local: 8000, far: 8000 },
   mars: { local: 8000, far: 8000 },
-  // Earth's city and walk grids (12 km across) go at 12 km, the valley and
-  // the Caucasus (480 km across, and folded into the far plane by the haze
-  // hook) at 60 km, where the globe's own relief and clouds take over.
-  earth: { local: 12000, far: 60000 },
+  // Earth's city and walk grids (12 km across) go at 12 km, and so do the
+  // valley and the Caucasus (480 km across): higher up the flat square's
+  // edge shows against the sphere through thinning haze, and the globe
+  // already carries the same Terrarium relief out there, so it takes over.
+  earth: { local: 12000, far: 12000 },
 };
 
 /** The air, for the skies: how much of it glows (1 on the ground, 0 in
@@ -188,7 +189,7 @@ export function patchTiers(world: GlobeWorld, objects: readonly (THREE.Object3D 
 
 /** Earth's: the city, the walk area and everything in them to 12 km up; the
  *  valley and the Caucasus, folded into the far plane by their own shader
- *  (so the far plane need not grow for them), to 60 km. */
+ *  (so the far plane need not grow for them), to 12 km, with the city. */
 export function earthTiers(earth: Pick<EarthWorld, 'group' | 'terrain'>, extra: readonly (THREE.Object3D | null | undefined)[] = []): OrbitTier[] {
   const { valley, caucasus, city } = earth.terrain.rings;
   const near = [

@@ -52,8 +52,8 @@ describe('ceilings', () => {
     expect(tierShown(7500, 8000, false)).toBe(true);
   });
 
-  it('gives Earth its far ground to 60 km and the rest to 12 km; the Moon and Mars 8 km', () => {
-    expect(CEILINGS.earth).toEqual({ local: 12000, far: 60000 });
+  it('gives Earth all its local ground to 12 km; the Moon and Mars 8 km', () => {
+    expect(CEILINGS.earth).toEqual({ local: 12000, far: 12000 });
     expect(CEILINGS.moon.local).toBe(8000);
     expect(CEILINGS.mars.local).toBe(8000);
   });
@@ -157,7 +157,7 @@ describe('curvature', () => {
 });
 
 describe('tiers', () => {
-  it('splits Earth into the city to 12 km and the far rings to 60 km', () => {
+  it('splits Earth into the city and the far rings, both gone above 12 km', () => {
     const ringOf = (half: number, name: string) => {
       const m = new THREE.Mesh(new THREE.PlaneGeometry(half * 2, half * 2).rotateX(-Math.PI / 2));
       m.name = name;
@@ -181,7 +181,7 @@ describe('tiers', () => {
     expect(near.ceiling).toBe(12000);
     expect(near.patch).toBeCloseTo(6000);
     expect(far.objects).toEqual([valley, caucasus]);
-    expect(far.ceiling).toBe(60000);
+    expect(far.ceiling).toBe(12000);
     expect(far.reach).toBe(0);
     expect(far.patch).toBeCloseTo(240000);
   });
