@@ -57,17 +57,20 @@ uniform float uTime;
 uniform float uGain;
 uniform vec3 uHot;
 uniform vec3 uWhite;
+uniform float uFade;
 varying vec3 vN;
 varying vec3 vV;
 varying vec3 vP;
 void main() {
   vec3 n = normalize(vN);
+  // The shock cone thins out toward its open end (z = -1), so it has no rim.
+  float fade = mix(1.0, smoothstep(-1.0, -0.3, vP.z), uFade);
   float front = max(0.0, dot(n, uFlow));
   float rim = pow(1.0 - abs(dot(n, normalize(vV))), 2.2);
   float flick = 0.78 + 0.22 * sin(uTime * 41.0 + vP.x * 2.3 + vP.y * 3.1) * sin(uTime * 23.0 + vP.z * 1.7);
   float k = uHeat * (front * front * 1.3 + rim * 0.55 * (0.4 + front)) * flick;
   vec3 col = mix(uHot, uWhite, clamp(uHeat * front * 0.9, 0.0, 1.0));
-  gl_FragColor = vec4(col * k * uGain, 1.0);
+  gl_FragColor = vec4(col * k * uGain * fade, 1.0);
 }`;
 
 // A ribbon along −Z (0 at the hull, 1 at its tail): bright at the root,
@@ -139,7 +142,7 @@ export function makeEntryFx(size: number, lite: boolean): EntryFx {
   const sheathMat = new THREE.ShaderMaterial({
     vertexShader: SHEATH_VERT, fragmentShader: SHEATH_FRAG,
     uniforms: {
-      uFlow: { value: new THREE.Vector3(0, 0, 1) }, uHeat: { value: 0 }, uTime: { value: 0 }, uGain: { value: 1.25 },
+      uFlow: { value: new THREE.Vector3(0, 0, 1) }, uHeat: { value: 0 }, uTime: { value: 0 }, uGain: { value: 1.25 }, uFade: { value: 0 },
       uHot: { value: new THREE.Color(1.0, 0.3, 0.06) }, uWhite: { value: new THREE.Color(1.0, 0.72, 0.45) },
     },
     transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
@@ -162,7 +165,7 @@ export function makeEntryFx(size: number, lite: boolean): EntryFx {
   const shockMat = new THREE.ShaderMaterial({
     vertexShader: SHEATH_VERT, fragmentShader: SHEATH_FRAG,
     uniforms: {
-      uFlow: { value: new THREE.Vector3(0, 0, 1) }, uHeat: { value: 0 }, uTime: { value: 0 }, uGain: { value: 0.35 },
+      uFlow: { value: new THREE.Vector3(0, 0, 1) }, uHeat: { value: 0 }, uTime: { value: 0 }, uGain: { value: 0.35 }, uFade: { value: 1 },
       uHot: { value: new THREE.Color(1.0, 0.42, 0.14) }, uWhite: { value: new THREE.Color(1.0, 0.7, 0.45) },
     },
     transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,

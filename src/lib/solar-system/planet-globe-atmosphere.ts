@@ -73,7 +73,11 @@ export const GLOBE_AIR: Record<GlobeWorld, GlobeAir | null> = {
     layerB: { beta: [0, 0, 0], h: 8 },
     mie: { beta: 0.01, h: 1.2, g: 0.76, tint: [1, 1, 1] },
     sunIntensity: 11,
-    airBeta: [5.8e-3, 13.5e-3, 33.1e-3],
+    // The ground's share of the Rayleigh column, thinned: a haze model
+    // with one colour saturates faster than the real spectrum does, and at
+    // full strength the day side from orbit reads as fog. Where it counts,
+    // at the horizon, the colour is the saturated one either way.
+    airBeta: [3.5e-3, 8.1e-3, 19.9e-3],
     airH: 8,
     hazeBeta: 0.13,
     hazeH: 1.2,
