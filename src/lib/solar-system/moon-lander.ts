@@ -202,7 +202,9 @@ export function makeLander(
   const drive = new THREE.Color(spec.drive);
   // The exhaust: a soft haze in the drive's colour round a long HDR core —
   // the blue-white streak a ship hovers on — and a glow at each nozzle.
-  const plumeMat = new THREE.MeshBasicMaterial({ color: drive.clone().multiplyScalar(1.3), transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
+  // The haze is the drive's hue pulled toward the blue-white the reference
+  // ships hover on, and over 1 so the bloom takes it.
+  const plumeMat = new THREE.MeshBasicMaterial({ color: drive.clone().lerp(new THREE.Color(0.75, 0.88, 1.0), 0.45).multiplyScalar(1.6), transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
   const coreMat = new THREE.MeshBasicMaterial({ color: plumeCoreColor(drive), transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
   const glowMat = new THREE.SpriteMaterial({ map: softSpriteTexture(), color: plumeCoreColor(drive).multiplyScalar(0.5), transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending });
   const strutMat = new THREE.MeshStandardMaterial({ color: 0x4a5058, roughness: 0.55, metalness: 0.7 });
@@ -234,8 +236,8 @@ export function makeLander(
     for (const e of engines) {
       // The haze is short and wide, the core long and narrow; both hang from
       // the throat (apex up) so scaling in Y stretches them away from it.
-      const haze = keep(mesh(hull, new THREE.ConeGeometry(e.r * 1.05, e.r * 9, seg, 1, true), plumeMat, e.x, e.y, e.z));
-      const core = keep(mesh(hull, new THREE.ConeGeometry(e.r * 0.5, e.r * 15, seg, 1, true), coreMat, e.x, e.y, e.z));
+      const haze = keep(mesh(hull, new THREE.ConeGeometry(e.r * 1.5, e.r * 10, seg, 1, true), plumeMat, e.x, e.y, e.z));
+      const core = keep(mesh(hull, new THREE.ConeGeometry(e.r * 0.7, e.r * 15, seg, 1, true), coreMat, e.x, e.y, e.z));
       for (const m of [haze, core]) {
         // Wide end at the throat, tip trailing down the thrust line (-Y here).
         m.geometry.rotateX(Math.PI);
@@ -248,7 +250,7 @@ export function makeLander(
       cores.push(core);
       const glow = new THREE.Sprite(glowMat);
       glow.position.set(e.x, e.y, e.z).addScaledVector(spec.thrust, e.r * 0.6);
-      glow.scale.setScalar(e.r * 5.5);
+      glow.scale.setScalar(e.r * 8);
       hull.add(glow);
       glows.push(glow);
     }
@@ -259,9 +261,9 @@ export function makeLander(
     for (const c of cores) c.scale.set(x * 0.9, y * 1.25, z * 0.9);
   };
   const plumeOpacity = (k: number) => {
-    plumeMat.opacity = k * 0.55;
+    plumeMat.opacity = Math.min(1, k * 0.9);
     coreMat.opacity = Math.min(1, k * 0.95);
-    glowMat.opacity = Math.min(1, k * 0.9);
+    glowMat.opacity = Math.min(1, k * 1.1);
     const show = k > 0.01;
     for (const p of plumes) p.visible = show;
     for (const c of cores) c.visible = show;
