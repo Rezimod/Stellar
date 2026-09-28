@@ -168,8 +168,8 @@ export function GameWorld({ scene, state }: GameWorldProps) {
           <PlayerShip session={session} onActiveChange={setFlightActive} onLand={(site) => { setLandscape(false); game.travel(site); }} landed={landed !== null} returnedFrom={returnedFrom} onReturned={onReturned}
             landscape={landscape} onLandscape={setLandscape} shellPaused={paused} onPauseRequest={game.pause} />
         </>}
-        {landed === 'moon' && <MoonSurface onReturn={returnToOrbit} room={roomLinkRef.current} sink={rewards.sink} paused={paused} onProgress={game.progress} onPauseRequest={game.pause} />}
-        {landed !== null && landed !== 'moon' && <WorldSurface world={landed} onReturn={returnToOrbit} room={roomLinkRef.current} paused={paused} onProgress={game.progress} onPauseRequest={game.pause} />}
+        {landed === 'moon' && <MoonSurface onReturn={returnToOrbit} room={roomLinkRef.current} sink={rewards.sink} paused={paused} onProgress={game.progress} onPauseRequest={game.pause} shipKind={session.shipKind} />}
+        {landed !== null && landed !== 'moon' && <WorldSurface world={landed} onReturn={returnToOrbit} room={roomLinkRef.current} paused={paused} onProgress={game.progress} onPauseRequest={game.pause} shipKind={session.shipKind} />}
       </div>
       {rewards.award && (
         <p className="game-shell__notice game-shell__notice--stars" role="status">

@@ -4,8 +4,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Camera, ChevronsDown, ChevronsUp, Eye, EyeOff, Flame, Flashlight, Hand, HelpCircle, Menu, Rocket, Trophy, Volume2, VolumeX, Wind, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { makeWorldSurface, type WorldSurfaceHandle } from '@/lib/solar-system/world-surface';
+import type { ShipKind } from '@/lib/solar-system/ship-mesh';
 import { WORLDS, type WorldId } from '@/lib/solar-system/world-profiles';
-import { motionShown, suitLevel, suitShown } from '@/lib/solar-system/moon-hud';
+import { JET_LOW, motionShown, suitLevel, suitShown } from '@/lib/solar-system/moon-hud';
 import { loadTbilisi, type EarthData } from '@/lib/solar-system/world-earth-data';
 import type { SkyTarget } from '@/lib/solar-system/world-earth-tonight';
 import { TelescopeEyepiece } from './TelescopeEyepiece';
@@ -30,6 +31,8 @@ interface WorldSurfaceProps {
   onProgress?: (stage: 'build' | 'compile' | 'ready') => void;
   /** The mouse was let go of (Esc under pointer lock): the shell should pause. */
   onPauseRequest?: () => void;
+  /** The hull the crew flew here in: it is what comes down and what they board to leave. */
+  shipKind?: ShipKind;
 }
 
 /** Each world's own notes under the controls: the place, not the keys. */
@@ -40,7 +43,7 @@ const fmtRange = (m: number) => (m >= 1000 ? `${(m / 1000).toFixed(2)} km` : `${
 const PPD = 3.1;
 const TURNS = 3;
 
-export function WorldSurface({ world, onReturn, room, paused, onProgress, onPauseRequest }: WorldSurfaceProps) {
+export function WorldSurface({ world, onReturn, room, paused, onProgress, onPauseRequest, shipKind }: WorldSurfaceProps) {
   const t = useTranslations('solarSystem.moon');
   const tw = useTranslations(`solarSystem.worlds.${world}`);
   const tl = useTranslations('solarSystem.loading');
@@ -69,6 +72,10 @@ export function WorldSurface({ world, onReturn, room, paused, onProgress, onPaus
   const landRateRef = useRef<HTMLSpanElement>(null);
   const landOffRef = useRef<HTMLSpanElement>(null);
   const landDriftRef = useRef<HTMLSpanElement>(null);
+  const plaqueExitRef = useRef<HTMLSpanElement>(null);
+  // The hull is read once, when the scene is built: a later change is the next landing's.
+  const shipKindRef = useRef(shipKind);
+  shipKindRef.current = shipKind;
   const landFuelRef = useRef<HTMLElement>(null);
   const landThrRef = useRef<HTMLElement>(null);
   const assistRef = useRef<HTMLDivElement>(null);
@@ -98,6 +105,8 @@ export function WorldSurface({ world, onReturn, room, paused, onProgress, onPaus
   const o2BarRef = useRef<HTMLElement>(null);
   const hrRef = useRef<HTMLSpanElement>(null);
   const tempRef = useRef<HTMLSpanElement>(null);
+  const jetRef = useRef<HTMLSpanElement>(null);
+  const jetBarRef = useRef<HTMLElement>(null);
   const outRef = useRef<HTMLSpanElement>(null);
   const evaRef = useRef<HTMLSpanElement>(null);
   const distRef = useRef<HTMLSpanElement>(null);
@@ -169,6 +178,7 @@ export function WorldSurface({ world, onReturn, room, paused, onProgress, onPaus
     const handle = makeWorldSurface(mount, world, {
       room,
       earth: earthData ?? undefined,
+      shipKind: shipKindRef.current,
       startOnSurface: resumeRef.current,
       onContextLost: () => {
         setGpuLost(true);
@@ -227,6 +237,7 @@ export function WorldSurface({ world, onReturn, room, paused, onProgress, onPaus
         if (tel.phase === 'touchdown') {
           text(plaqueGradeRef.current, tt(`grades.${tel.grade || 'good'}`));
           text(plaqueSpeedRef.current, tt('landing.touchdown', { n: l.touchdown.toFixed(2) }));
+          show(plaqueExitRef.current, tel.exitReady);
         }
         return;
       }
@@ -243,7 +254,7 @@ export function WorldSurface({ world, onReturn, room, paused, onProgress, onPaus
 
       // ── The suit, on a world that needs one, when it is low or in front of
       // the crew. There is no suit power out here, so the oxygen decides. ──
-      const glance = { o2: tel.o2, power: 100, sinceChange: 99, firstPerson: tel.view === 'helmet' };
+      const glance = { o2: tel.o2, power: 100, sinceChange: 99, firstPerson: tel.view === 'helmet', jetFuel: tel.jetFuel, jetting: tel.jetting };
       const suit = suitRef.current;
       const suitOn = !breathable && suitShown(glance);
       show(suit, suitOn);
@@ -252,6 +263,9 @@ export function WorldSurface({ world, onReturn, room, paused, onProgress, onPaus
         text(o2Ref.current, `${tel.o2.toFixed(1)}%`);
         if (o2BarRef.current) o2BarRef.current.style.width = `${Math.max(0, Math.min(100, tel.o2))}%`;
         text(tempRef.current, `${tel.suitTemp.toFixed(1)}°`);
+        suit.dataset.jet = tel.jetFuel < JET_LOW ? 'low' : tel.jetting ? 'on' : '';
+        text(jetRef.current, `${Math.round(tel.jetFuel * 100)}%`);
+        if (jetBarRef.current) jetBarRef.current.style.width = `${Math.max(0, Math.min(100, tel.jetFuel * 100))}%`;
       }
       show(lampRef.current, tel.headlamp);
       // The rest are read rather than watched: these refs are only mounted
@@ -406,13 +420,14 @@ export function WorldSurface({ world, onReturn, room, paused, onProgress, onPaus
     };
   };
   /** Hold a key on the touch deck. */
-  const deck = (key: 'jump' | 'throttle' | 'use') => hold((on) => {
+  const deck = (key: 'jump' | 'jet' | 'throttle' | 'use') => hold((on) => {
     const c = controlsRef.current;
     if (!c) return;
     c.touchDeck[key] = on;
     c.sync();
   });
   const jumpKey = deck('jump');
+  const jetKey = deck('jet');
   const throttleKey = deck('throttle');
   const useKey = deck('use');
   const actionKey = {
@@ -463,6 +478,7 @@ export function WorldSurface({ world, onReturn, room, paused, onProgress, onPaus
           <div ref={plaqueRef} className="moon-hud__plaque" role="status" hidden>
             <span ref={plaqueGradeRef} className="moon-hud__plaque-grade" />
             <span ref={plaqueSpeedRef} className="moon-hud__plaque-speed" />
+            <span ref={plaqueExitRef} className="moon-hud__plaque-exit" hidden><kbd>E</kbd>{t('landing.exit')}</span>
           </div>
         </div>
 
@@ -508,6 +524,7 @@ export function WorldSurface({ world, onReturn, room, paused, onProgress, onPaus
         <div ref={suitRef} className="moon-hud__suit" data-level="ok" role="status" hidden>
           <span className="moon-hud__vital"><i>O₂</i><span ref={o2Ref} /><b className="moon-hud__bar"><i ref={o2BarRef} /></b></span>
           <span className="moon-hud__vital"><i>{t('suitTemp')}</i><span ref={tempRef} /></span>
+          <span className="moon-hud__vital moon-hud__vital--jet"><i>{t('jetpack')}</i><span ref={jetRef} /><b className="moon-hud__bar"><i ref={jetBarRef} /></b></span>
         </div>
 
         {/* ── Bottom right: the lamp. ── */}
@@ -621,6 +638,12 @@ export function WorldSurface({ world, onReturn, room, paused, onProgress, onPaus
           <button type="button" className="moon-hud__jump" {...jumpKey} aria-label={t('jump')}>
             <Wind size={18} aria-hidden /><span>{t('jump')}</span>
           </button>
+          {/* No pack where there is air to breathe: the pilot came out without it. */}
+          {!breathable && (
+            <button type="button" className="moon-hud__jet" {...jetKey} aria-label={t('jet')}>
+              <Rocket size={18} aria-hidden /><span>{t('jet')}</span>
+            </button>
+          )}
           <button type="button" className="moon-hud__throttle" {...throttleKey} aria-label={t('landing.throttle')}>
             <span className="moon-hud__throttle-fill"><i ref={landThrRef} /></span>
             <Flame size={22} aria-hidden /><span>{t('landing.throttle')}</span>

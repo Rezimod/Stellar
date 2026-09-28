@@ -78,6 +78,9 @@ export interface LanderHandle {
   update: (dt: number, input: LanderInput, heightAt: (x: number, z: number) => number) => void;
   /** The crew is aboard: light the engine and go back up. */
   launch: () => void;
+  /** Put it straight down on the ground where it is, on its gear, as if it
+   *  had just touched down gently — the skip, and the resume on the surface. */
+  settle: (heightAt: (x: number, z: number) => number) => void;
   dispose: () => void;
 }
 
@@ -517,6 +520,23 @@ export function makeLander(
       if (!telemetry.landed || telemetry.climb >= 0) return;
       telemetry.climb = 0;
       vel.set(0, 0, 0);
+    },
+    settle(height) {
+      const g2 = height(position.x, position.z);
+      position.y = g2 + REST;
+      vel.set(0, 0, 0);
+      squat = squatVel = 0;
+      hull.position.y = 0;
+      group.rotation.x = group.rotation.z = 0;
+      telemetry.landed = true;
+      telemetry.altitude = 0;
+      telemetry.descent = 0;
+      telemetry.ground = g2;
+      telemetry.offset = Math.hypot(position.x - padX, position.z - padZ);
+      telemetry.drift = telemetry.driftX = telemetry.driftZ = 0;
+      telemetry.throttle = 0;
+      plumeOpacity(0);
+      egressAt();
     },
     dispose() {
       disposed = true;

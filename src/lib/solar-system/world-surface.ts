@@ -17,6 +17,7 @@ import { headlamp, jetLight, makeFixedStep, makePressEdge, makeSprintLatch, spri
 import { makePrints } from '@/lib/solar-system/moon-prints';
 import { makeSuitAudio } from '@/lib/solar-system/moon-audio';
 import { makeLander, type LanderTelemetry } from '@/lib/solar-system/moon-lander';
+import type { ShipKind } from '@/lib/solar-system/ship-mesh';
 import type { PerfSample } from '@/lib/solar-system/moon-perf';
 import { makeSurfaceHost } from '@/lib/solar-system/surface-host';
 import { onQualityChange } from '@/game/quality';
@@ -78,6 +79,8 @@ export interface WorldOptions {
   earth?: EarthData;
   /** A multiplayer room: this explorer's steps go out, the others walk in. */
   room?: RoomLink;
+  /** The hull the crew flew here in: it is what comes down. Left out, the lander does. */
+  shipKind?: ShipKind;
 }
 
 export interface WorldTelemetry {
@@ -85,6 +88,8 @@ export interface WorldTelemetry {
   phase: 'descent' | 'touchdown' | 'surface' | 'ascent';
   /** The lander has climbed out of sight: the scene is done and orbit can take over. */
   ascended: boolean;
+  /** Down, plaque read: the crew may step out on the key, or will in a moment. */
+  exitReady: boolean;
   landing: LanderTelemetry;
   grade: string;
   view: WorldView;
@@ -156,6 +161,12 @@ declare global {
 }
 
 const EGRESS_HOLD = 4.2;
+/** How much of that before the exit key is offered. */
+const EXIT_AFTER = 1.4;
+/** Nose-first into the air: the entry flies a carrier with its blunt end
+ *  (-Y) into the wind; the ship rides in it turned so its nose (+Z) is
+ *  what goes first, and comes level as the entry does. */
+const NOSE_FIRST = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 2);
 const STEP = 1 / 120;
 const MAX_STEPS = 12;
 /** The first-contact record, kept on the device. */
@@ -252,11 +263,24 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
   scene.add(cosmonaut.group);
   const crowd = opts.room ? makeRemoteCrew(scene, world, lite, !!profile.breathable) : null;
   const padX = profile.pad.x; const padZ = profile.pad.z + 26;
-  const lander = makeLander(padX, padZ, heightAt, dust, lite, lightPool, profile.gravity, earth ? EARTH_DESCENT : undefined);
+  // The crew's own ship comes down; the lander only when no hull is named.
+  const lander = makeLander(padX, padZ, heightAt, dust, lite, lightPool, profile.gravity, earth ? EARTH_DESCENT : undefined, { kind: opts.shipKind });
   scene.add(lander.group);
-  // Earth first comes in hot: the entry flies the vehicle down to where the powered descent starts.
-  const entry = earth ? makeEarthEntry(lander.group, lander.position.clone(), new THREE.Vector3(-EARTH_DESCENT.offsetX, 0, -EARTH_DESCENT.offsetZ).normalize()) : null;
+  // Earth first comes in hot: the entry flies a carrier down to where the
+  // powered descent starts, and the ship is posed from it each frame —
+  // nose into the wind, and levelling off as the entry hands over.
+  const carrier = new THREE.Object3D();
+  const entry = earth ? makeEarthEntry(carrier, lander.position.clone(), new THREE.Vector3(-EARTH_DESCENT.offsetX, 0, -EARTH_DESCENT.offsetZ).normalize()) : null;
   if (entry) scene.add(entry.group);
+  const entryPose = new THREE.Quaternion();
+  const level = new THREE.Quaternion();
+  const rideEntry = () => {
+    if (!entry) return;
+    lander.position.copy(carrier.position);
+    entryPose.copy(NOSE_FIRST).slerp(level, THREE.MathUtils.smoothstep(entry.progress, 0.6, 0.95));
+    lander.group.quaternion.copy(carrier.quaternion).multiply(entryPose);
+    if (entry.done) lander.group.quaternion.identity().setFromAxisAngle(new THREE.Vector3(0, 1, 0), lander.yaw);
+  };
   const flightAudio = entry ? makeFlightAudio() : null;
   const walkRadius = earth ? EARTH_WALK_RADIUS : profile.walkRadius;
 
@@ -281,7 +305,7 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
     interact: false, use: false, viewToggle: false, viewCycle: false, headlamp: false, throttle: 0,
   };
   const telemetry: WorldTelemetry = {
-    ready: false, phase: 'descent', ascended: false, landing: lander.telemetry, grade: '', view: 'chase', headlamp: false, poiId: '',
+    ready: false, phase: 'descent', ascended: false, exitReady: false, landing: lander.telemetry, grade: '', view: 'chase', headlamp: false, poiId: '',
     altitude: 0, speed: 0, jetFuel: 1, jetting: false, hint: 'walk', driving: false, o2: 97.4, heartRate: 64, suitTemp: 21.5, outsideC: profile.ambientC,
     evaSeconds: 0, distanceM: 0, crouched: false, stumbling: false, sliding: false, heading: 0,
     prompt: interactions.prompt, readout: '', readoutHold: 0, banner: '', bannerHold: 0,
@@ -310,13 +334,13 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
   function settleLander() {
     if (landerSettled) return;
     landerSettled = true;
-    pois.push({ id: 'ourLander', x: lander.position.x, z: lander.position.z, r: 8 });
-    colliders.push({ x: lander.position.x, z: lander.position.z, r: 3.4 });
+    pois.push({ id: 'ourLander', x: lander.position.x, z: lander.position.z, r: lander.hull + 4.5 });
+    colliders.push({ x: lander.position.x, z: lander.position.z, r: lander.hull });
     // The people in the park come over to see who has landed.
     earth?.welcome(lander.position.x, lander.position.z, lander.telemetry.egressX, lander.telemetry.egressZ);
     interactions.add({
       id: 'boardLander', priority: 4,
-      where: () => (telemetry.phase === 'surface' && !earth?.driving() ? { x: lander.position.x, z: lander.position.z, r: 5.2 } : null),
+      where: () => (telemetry.phase === 'surface' && !earth?.driving() ? { x: lander.position.x, z: lander.position.z, r: lander.hull + 1.8 } : null),
       kind: () => 'tap', label: () => 'boardLander',
       use: () => {
         telemetry.phase = 'ascent';
@@ -340,6 +364,8 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
   let exertion = 0;
   let egressHold = 0;
   let entryHandoff = !!entry;
+  /** The descent camera's lean into the drift, rad. */
+  let descentRoll = 0;
   const walk: WalkInput = { moveX: 0, moveZ: 0, jump: false, run: false, crouch: false, work: false };
   const tmp = new THREE.Vector3();
   const descentFocus = new THREE.Vector3();
@@ -406,6 +432,7 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
 
     if (entry && !entry.done) {
       entry.update(dt);
+      rideEntry();
       telemetry.entry = !entry.done;
       const lt = lander.telemetry;
       const ground = heightAt(lander.position.x, lander.position.z);
@@ -448,14 +475,20 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
       } else {
         lander.update(dt, { throttle: 0, moveX: 0, moveY: 0 }, heightAt);
       }
+      // The key steps the crew out once the plaque has been read; until
+      // then it does nothing, and after the hold they step out anyway.
+      const pressed = input.interact;
       input.interact = false;
       const snapCam = t < dt * 2 || entryHandoff;
       entryHandoff = false;
       const close = THREE.MathUtils.clamp(1 - lt.altitude / 80, 0, 1);
-      tmp.copy(lander.position).y += 3.0;
+      tmp.copy(lander.position).y += 2.0;
       descentFocus.lerp(tmp, snapCam ? 1 : 1 - Math.exp(-dt * 3.5));
-      const dist = 17 + close * 4;
-      const pitch = cam.pitch - 0.26 + close * 0.34;
+      // The chase rides low on the tail — behind and a little above the
+      // hull, so the ground fills the glass past its nose — and closes in
+      // as the ground comes up.
+      const dist = lander.chase * (1 - close * 0.18);
+      const pitch = 0.17 + close * 0.1 + Math.max(0, cam.pitch - 0.3) * 0.4;
       const sway = lt.throttle * 0.18;
       descentPos.set(
         descentFocus.x + Math.sin(cam.yaw) * dist * Math.cos(pitch) + Math.sin(t * 0.9) * sway,
@@ -468,14 +501,20 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
       else camera.position.lerp(descentPos, 1 - Math.exp(-dt * 4.5));
       if (lt.throttle > 0.05 && lt.altitude < 40) camera.position.y += Math.sin(t * 37) * 0.02 * lt.throttle;
       camera.lookAt(descentFocus);
-      const wantFov = baseFov + 6;
+      // The rig rolls a little with the drift, the way a pilot leans into it.
+      const driftRight = -(lt.driftX * Math.cos(cam.yaw) - lt.driftZ * Math.sin(cam.yaw));
+      descentRoll += (THREE.MathUtils.clamp(driftRight * 0.02, -0.09, 0.09) - descentRoll) * (1 - Math.exp(-dt * 2.5));
+      camera.rotateZ(descentRoll);
+      const wantFov = baseFov + 8;
       if (Math.abs(camera.fov - wantFov) > 0.01) { camera.fov += (wantFov - camera.fov) * (1 - Math.exp(-dt * 2)); camera.updateProjectionMatrix(); }
       crew.set(lt.egressX, heightAt(lt.egressX, lt.egressZ), lt.egressZ);
       cosmonaut.settle();
       cosmonaut.group.visible = false;
       if (telemetry.phase === 'touchdown') {
         egressHold -= dt;
-        if (egressHold <= 0) {
+        telemetry.exitReady = egressHold < EGRESS_HOLD - EXIT_AFTER;
+        if (egressHold <= 0 || (pressed && telemetry.exitReady)) {
+          telemetry.exitReady = false;
           telemetry.phase = 'surface';
           cosmonaut.position.set(lt.egressX, heightAt(lt.egressX, lt.egressZ), lt.egressZ);
           cosmonaut.yaw = Math.PI;
@@ -648,15 +687,14 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
     skipDescent() {
       if (telemetry.phase === 'surface') return;
       entry?.skip();
+      if (entry) rideEntry();
       telemetry.entry = false;
       flightAudio?.reentry(0);
-      lander.position.set(padX, heightAt(padX, padZ) + 0.35, padZ);
-      lander.telemetry.landed = true;
+      // Set straight down on the pad: the vehicle's own touchdown puts it
+      // on its gear and works out where the crew step off.
+      lander.position.set(padX, heightAt(padX, padZ) + 200, padZ);
+      lander.settle(heightAt);
       lander.telemetry.touchdown = 0.6;
-      lander.telemetry.offset = 0;
-      lander.telemetry.drift = 0;
-      lander.telemetry.egressX = padX;
-      lander.telemetry.egressZ = padZ + 4.2;
       settleLander();
       telemetry.phase = 'touchdown';
       telemetry.grade = 'feather';

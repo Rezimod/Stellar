@@ -1471,12 +1471,21 @@
         "transit": "Transit",
         "approach": "Approach",
         "pitchover": "Powered descent",
+        "entry": "Atmospheric entry",
+        "burn": "Descent burn",
+        "glide": "Final approach",
         "skip": "Press any key to skip",
         "load": {
           "habitat": "Habitat",
           "vehicle": "Vehicles",
           "crew": "Crew"
         }
+      },
+      "worlds": {
+        "moon": { "name": "Moon", "descriptors": "Airless moon · Grey craters · Vacuum", "temp": "−170 °C" },
+        "mars": { "name": "Mars", "descriptors": "Cold desert · Rust plains · Thin CO₂ air", "temp": "−63 °C" },
+        "proximaB": { "name": "Proxima b", "descriptors": "Tidally locked · Red twilight · Living shore", "temp": "4 °C" },
+        "earth": { "name": "Earth", "descriptors": "Blue world · Tbilisi · Breathable air", "temp": "18 °C" }
       }
     },
     "moon": {
@@ -1509,7 +1518,9 @@
         "t7": "Hold the engine key on the way down. Leave it too late and guidance takes over.",
         "r13": "The mission computer in OPS-B, through the airlock, hands out the day’s jobs",
         "t10": "The mission computer in OPS-B, through the airlock, hands out the day’s jobs",
-        "r16": "The rover: E to climb in · hold E at a roll to bail out · Space is the handbrake"
+        "r16": "The rover: E to climb in · hold E at a roll to bail out · Space is the handbrake",
+        "r17": "The jetpack: hold Space in the air, or J. It burns for a few seconds and refills on the ground.",
+        "t11": "The jetpack: keep the jump key held in the air, or hold the jet key beside it. It refills on the ground."
       },
       "pois": {
         "habitatA": "Habitat A — crew quarters",
@@ -1564,7 +1575,8 @@
         "throttle": "Engine",
         "touchdown": "{n} m/s at contact",
         "drift": "Drift",
-        "ascent": "Lift-off"
+        "ascent": "Take-off",
+        "exit": "Exit ship"
       },
       "gears": {
         "creep": "Creep",
@@ -1657,7 +1669,7 @@
         },
         "placeBeacon": "Set up the beacon",
         "logSinkhole": "Log the sinkhole",
-        "boardLander": "Board the lander — lift off",
+        "boardLander": "Board ship — Take off",
         "enterAirlock": "Enter the airlock",
         "exitAirlock": "Leave through the airlock",
         "getIn": "Get in",
@@ -1875,6 +1887,8 @@
         }
       },
       "suitPower": "Power",
+      "jetpack": "Jetpack",
+      "jet": "Jet",
       "items": {
         "coupling": "Cable coupling",
         "feed": "Feed horn",
@@ -1946,7 +1960,7 @@
             "isru": "Plant status",
             "power": "Reactor status"
           },
-          "boardLander": "Board the lander — lift off"
+          "boardLander": "Board ship — Take off"
         },
         "readout": {
           "habitat": "HAB-1 · 101 kPa · 21 °C · CO₂ 0.4 % · shielding 2.1 m regolith · 4 crew asleep",
@@ -1988,7 +2002,7 @@
         },
         "act": {
           "greet": "Greet",
-          "boardLander": "Board the lander — lift off"
+          "boardLander": "Board ship — Take off"
         },
         "readout": {
           "none": ""
@@ -2059,7 +2073,7 @@
           "slew": "Slew to the target",
           "eyepiece": "Look through the eyepiece",
           "closeEyepiece": "Close the eyepiece",
-          "boardLander": "Board the lander — lift off",
+          "boardLander": "Board ship — Take off",
           "drive": "Get in the car",
           "getOut": "Get out",
           "stopToExit": "Stop to get out"
@@ -2181,6 +2195,7 @@
       "look": "look around (click once to take the mouse; Esc lets go and pauses)",
       "zoom": "zoom; out past the far stop is the wide view",
       "jump": "jump; on the way down, the descent engine",
+      "jet": "the jetpack: hold in the air to climb; the jump key held does the same. A few seconds of burn, refilled on the ground",
       "sprint": "sprint: hold it, or tap it to latch. In one-sixth g it is a two-footed bound",
       "walk": "walk on purpose",
       "crouch": "crouch: slow, low and steady",
@@ -2195,6 +2210,7 @@
         "move": "Left stick — walk; push it to the rim to lope",
         "look": "Right half — drag to look around",
         "jump": "Jump — bottom right; on the way down, hold the engine key",
+        "jet": "Jet — beside Jump; hold it in the air, or keep holding Jump",
         "sprint": "Lope — the key beside the stick",
         "crouch": "Crouch — beside the stick",
         "interact": "The amber key — tap to use, hold to work",

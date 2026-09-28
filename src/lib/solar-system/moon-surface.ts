@@ -271,6 +271,8 @@ declare global {
 
 /** How long the touchdown plaque stays up before the crew steps out. */
 const EGRESS_HOLD = 4.2;
+/** How much of that before the exit key is offered. */
+const EXIT_AFTER = 1.4;
 /** How long the crew is outside before the base gets round to mentioning the
  *  hum on channel two. Long enough not to talk over the first expedition act,
  *  short enough that nobody leaves without hearing it. */
@@ -676,16 +678,16 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
     }
   };
 
-  /** The lander is down: a thing to walk around, and a place to find again. */
+  /** The ship is down: a thing to walk around, and a place to find again. */
   const settleLander = () => {
-    base.pois.push({ id: 'ourLander', x: lander.position.x, z: lander.position.z, r: 8 });
-    const hull = { x: lander.position.x, z: lander.position.z, r: 3.4 };
+    base.pois.push({ id: 'ourLander', x: lander.position.x, z: lander.position.z, r: lander.hull + 4.5 });
+    const hull = { x: lander.position.x, z: lander.position.z, r: lander.hull };
     base.colliders.push(hull);
     base.walkColliders.push(hull);
-    // The way home: climb aboard and go back up.
+    // The way home: climb aboard and take off.
     interactions.add({
       id: 'boardLander', priority: 4,
-      where: () => (telemetry.phase === 'surface' && !driving() && !br && !fall.active ? { x: lander.position.x, z: lander.position.z, r: 5.2 } : null),
+      where: () => (telemetry.phase === 'surface' && !driving() && !br && !fall.active ? { x: lander.position.x, z: lander.position.z, r: lander.hull + 1.8 } : null),
       kind: () => 'tap', label: () => 'boardLander',
       use: () => {
         telemetry.phase = 'ascent';
@@ -870,6 +872,8 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
   /** Air moving in the chamber: set when a cycle starts, gone when it ends. */
   let hissK = 0;
   let egressHold = 0;
+  /** The descent camera's lean into the drift, rad. */
+  let descentRoll = 0;
   const walk: WalkInput = { moveX: 0, moveZ: 0, jump: false, run: false, crouch: false, work: false };
   const tmp = new THREE.Vector3();
   const roverVel = new THREE.Vector3();
@@ -971,13 +975,19 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
         landerIn.throttle = 0; landerIn.moveX = 0; landerIn.moveY = 0;
         lander.update(dt, landerIn, terrain.heightAt);
       }
+      // The key steps the crew out once the plaque has been read; until
+      // then it does nothing, and after the hold they step out anyway.
+      const pressed = input.interact;
       input.interact = false;
       telemetry.touchdownIn = lt.descent > 0.2 ? lt.altitude / lt.descent : 0;
       const close = THREE.MathUtils.clamp(1 - lt.altitude / 80, 0, 1);
-      tmp.copy(lander.position).y += 3.0;
+      tmp.copy(lander.position).y += 2.0;
       descentFocus.lerp(tmp, t < dt * 2 ? 1 : 1 - Math.exp(-dt * 3.5));
-      const dist = 17 + close * 4;
-      const pitch = cam.pitch - 0.26 + close * 0.34;
+      // The chase rides low on the tail — behind and a little above the
+      // hull, so the ground fills the glass past its nose — and closes in
+      // as the ground comes up.
+      const dist = lander.chase * (1 - close * 0.18);
+      const pitch = 0.17 + close * 0.1 + Math.max(0, cam.pitch - 0.3) * 0.4;
       const sway = lt.throttle * 0.18;
       descentPos.set(
         descentFocus.x + Math.sin(cam.yaw) * dist * Math.cos(pitch) + Math.sin(t * 0.9) * sway,
@@ -990,7 +1000,11 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
       else camera.position.lerp(descentPos, 1 - Math.exp(-dt * 4.5));
       if (lt.throttle > 0.05 && lt.altitude < 40) camera.position.y += Math.sin(t * 37) * 0.02 * lt.throttle;
       camera.lookAt(descentFocus);
-      const wantFov = baseFov + 6;
+      // The rig rolls a little with the drift, the way a pilot leans into it.
+      const driftRight = -(lt.driftX * Math.cos(cam.yaw) - lt.driftZ * Math.sin(cam.yaw));
+      descentRoll += (THREE.MathUtils.clamp(driftRight * 0.02, -0.09, 0.09) - descentRoll) * (1 - Math.exp(-dt * 2.5));
+      camera.rotateZ(descentRoll);
+      const wantFov = baseFov + 8;
       if (Math.abs(camera.fov - wantFov) > 0.01) { camera.fov += (wantFov - camera.fov) * (1 - Math.exp(-dt * 2)); camera.updateProjectionMatrix(); }
       crew.set(lt.egressX, terrain.heightAt(lt.egressX, lt.egressZ), lt.egressZ);
       cosmonaut.settle();
@@ -999,7 +1013,9 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
       rover.present(1);
       if (telemetry.phase === 'touchdown') {
         egressHold -= dt;
-        if (egressHold <= 0) {
+        telemetry.exitReady = egressHold < EGRESS_HOLD - EXIT_AFTER;
+        if (egressHold <= 0 || (pressed && telemetry.exitReady)) {
+          telemetry.exitReady = false;
           telemetry.phase = 'surface';
           cosmonaut.position.set(lt.egressX, terrain.heightAt(lt.egressX, lt.egressZ), lt.egressZ);
           cosmonaut.yaw = Math.PI;
@@ -1335,11 +1351,11 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
     },
     skipDescent() {
       if (telemetry.phase === 'surface') return;
-      lander.position.set(PAD_CENTER.x, terrain.heightAt(PAD_CENTER.x, PAD_CENTER.y + 26) + 0.35, PAD_CENTER.y + 26);
-      lander.telemetry.landed = true;
+      // Set straight down on the pad: the vehicle's own touchdown puts it
+      // on its gear and works out where the crew step off.
+      lander.position.set(PAD_CENTER.x, terrain.heightAt(PAD_CENTER.x, PAD_CENTER.y + 26) + 200, PAD_CENTER.y + 26);
+      lander.settle(terrain.heightAt);
       lander.telemetry.touchdown = 0.6;
-      lander.telemetry.egressX = lander.position.x;
-      lander.telemetry.egressZ = lander.position.z + 4.2;
       settleLander();
       telemetry.phase = 'touchdown';
       telemetry.grade = 'feather';

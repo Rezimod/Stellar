@@ -7,8 +7,9 @@ import {
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { makeMoonSurface, type MoonSurfaceHandle } from '@/lib/solar-system/moon-surface';
+import type { ShipKind } from '@/lib/solar-system/ship-mesh';
 import { DRILL_BAND } from '@/lib/solar-system/moon-mission';
-import { motionShown, suitLevel, suitShown } from '@/lib/solar-system/moon-hud';
+import { JET_LOW, motionShown, suitLevel, suitShown } from '@/lib/solar-system/moon-hud';
 import { GameStick, tapKey } from './GameStick';
 import { CosmicLoader } from './CosmicLoader';
 import { ControlsHelp } from './ControlsHelp';
@@ -33,11 +34,13 @@ interface MoonSurfaceProps {
   onProgress?: (stage: 'build' | 'compile' | 'ready') => void;
   /** The mouse was let go of (Esc under pointer lock): the shell should pause. */
   onPauseRequest?: () => void;
+  /** The hull the crew flew here in: it is what comes down and what they board to leave. */
+  shipKind?: ShipKind;
 }
 
 /** The Moon's own notes under the controls: the place, not the keys. */
-const KEY_TIPS = ['r16', 'r10', 'r8', 'r13', 'r7'] as const;
-const TOUCH_TIPS = ['t7', 't6', 't10', 't5'] as const;
+const KEY_TIPS = ['r17', 'r16', 'r10', 'r8', 'r13', 'r7'] as const;
+const TOUCH_TIPS = ['t11', 't7', 't6', 't10', 't5'] as const;
 const fmtTime = (s: number) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 const fmtRange = (m: number) => (m >= 1000 ? `${(m / 1000).toFixed(2)} km` : `${Math.round(m)} m`);
 /** A rough range: to the nearest ten metres, marked as such. */
@@ -46,7 +49,7 @@ const fmtApprox = (m: number) => `~${fmtRange(Math.round(m / 10) * 10)}`;
 const PPD = 3.1;
 const TURNS = 3;
 
-export function MoonSurface({ onReturn, room, sink, paused, onProgress, onPauseRequest }: MoonSurfaceProps) {
+export function MoonSurface({ onReturn, room, sink, paused, onProgress, onPauseRequest, shipKind }: MoonSurfaceProps) {
   const t = useTranslations('solarSystem.moon');
   const tl = useTranslations('solarSystem.loading');
   const tc = useTranslations('solarSystem.controls');
@@ -69,6 +72,10 @@ export function MoonSurface({ onReturn, room, sink, paused, onProgress, onPauseR
   // Landing panel.
   const landAltRef = useRef<HTMLSpanElement>(null);
   const landTitleRef = useRef<HTMLSpanElement>(null);
+  const plaqueExitRef = useRef<HTMLSpanElement>(null);
+  // The hull is read once, when the scene is built: a later change is the next landing's.
+  const shipKindRef = useRef(shipKind);
+  shipKindRef.current = shipKind;
   const onReturnRef = useRef(onReturn);
   onReturnRef.current = onReturn;
   // Read through a ref: a new sink identity must not rebuild the scene.
@@ -133,6 +140,8 @@ export function MoonSurface({ onReturn, room, sink, paused, onProgress, onPauseR
   const o2BarRef = useRef<HTMLSpanElement>(null);
   const pwrRef = useRef<HTMLSpanElement>(null);
   const pwrBarRef = useRef<HTMLSpanElement>(null);
+  const jetRef = useRef<HTMLSpanElement>(null);
+  const jetBarRef = useRef<HTMLSpanElement>(null);
   const handsRef = useRef<HTMLSpanElement>(null);
   const handsTextRef = useRef<HTMLSpanElement>(null);
   const hrRef = useRef<HTMLSpanElement>(null);
@@ -183,6 +192,7 @@ export function MoonSurface({ onReturn, room, sink, paused, onProgress, onPauseR
     const handle = makeMoonSurface(mount, {
       room,
       sink: sinkRef.current,
+      shipKind: shipKindRef.current,
       startOnSurface: resumeRef.current,
       onContextLost: () => {
         setGpuLost(true);
@@ -286,6 +296,7 @@ export function MoonSurface({ onReturn, room, sink, paused, onProgress, onPauseR
         if (tel.phase === 'touchdown') {
           text(plaqueGradeRef.current, tt(`grades.${tel.grade || 'good'}`));
           text(plaqueSpeedRef.current, tt('landing.touchdown', { n: l.touchdown.toFixed(2) }));
+          show(plaqueExitRef.current, tel.exitReady);
         }
         return;
       }
@@ -342,7 +353,7 @@ export function MoonSurface({ onReturn, room, sink, paused, onProgress, onPauseR
       if (motion.altitude) text(altRef.current, `${tel.altitude.toFixed(1)} m`);
 
       // ── The suit, when it is low, just changed, or in front of the crew. ──
-      const glance = { o2: tel.o2, power: tel.suitPower, sinceChange: tel.pressureAgo, firstPerson: tel.view === 'helmet' };
+      const glance = { o2: tel.o2, power: tel.suitPower, sinceChange: tel.pressureAgo, firstPerson: tel.view === 'helmet', jetFuel: tel.jetFuel, jetting: tel.jetting };
       const suit = suitRef.current;
       const suitOn = suitShown(glance);
       show(suit, suitOn);
@@ -352,6 +363,10 @@ export function MoonSurface({ onReturn, room, sink, paused, onProgress, onPauseR
         if (o2BarRef.current) o2BarRef.current.style.width = `${Math.max(0, Math.min(100, tel.o2))}%`;
         text(pwrRef.current, `${Math.round(tel.suitPower)}%`);
         if (pwrBarRef.current) pwrBarRef.current.style.width = `${Math.max(0, Math.min(100, tel.suitPower))}%`;
+        // The jetpack beside the life support: lit while it burns, blinking when there is little left.
+        suit.dataset.jet = tel.jetFuel < JET_LOW ? 'low' : tel.jetting ? 'on' : '';
+        text(jetRef.current, `${Math.round(tel.jetFuel * 100)}%`);
+        if (jetBarRef.current) jetBarRef.current.style.width = `${Math.max(0, Math.min(100, tel.jetFuel * 100))}%`;
       }
       // ── What is in the crew's hands, and whether the lamp is burning. ──
       const carried = tel.props.carrying;
@@ -516,13 +531,14 @@ export function MoonSurface({ onReturn, room, sink, paused, onProgress, onPauseR
     };
   };
   /** Hold a key on the touch deck. */
-  const deck = (key: 'jump' | 'throttle' | 'use') => hold((on) => {
+  const deck = (key: 'jump' | 'jet' | 'throttle' | 'use') => hold((on) => {
     const c = controlsRef.current;
     if (!c) return;
     c.touchDeck[key] = on;
     c.sync();
   });
   const jumpKey = deck('jump');
+  const jetKey = deck('jet');
   const throttleKey = deck('throttle');
   /** The action key: pressing it presses the job in front of you; holding it holds it. */
   const useKey = deck('use');
@@ -597,6 +613,7 @@ export function MoonSurface({ onReturn, room, sink, paused, onProgress, onPauseR
           <div ref={plaqueRef} className="moon-hud__plaque" role="status" hidden>
             <span ref={plaqueGradeRef} className="moon-hud__plaque-grade" />
             <span ref={plaqueSpeedRef} className="moon-hud__plaque-speed" />
+            <span ref={plaqueExitRef} className="moon-hud__plaque-exit" hidden><kbd>E</kbd>{t('landing.exit')}</span>
           </div>
         </div>
 
@@ -646,6 +663,7 @@ export function MoonSurface({ onReturn, room, sink, paused, onProgress, onPauseR
         <div ref={suitRef} className="moon-hud__suit" data-level="ok" role="status" hidden>
           <span className="moon-hud__vital"><i>O₂</i><span ref={o2Ref} /><b className="moon-hud__bar"><i ref={o2BarRef} /></b></span>
           <span className="moon-hud__vital"><i>{t('suitPower')}</i><span ref={pwrRef} /><b className="moon-hud__bar"><i ref={pwrBarRef} /></b></span>
+          <span className="moon-hud__vital moon-hud__vital--jet"><i>{t('jetpack')}</i><span ref={jetRef} /><b className="moon-hud__bar"><i ref={jetBarRef} /></b></span>
         </div>
 
         {/* ── Bottom right: the hands, and the lamp. ── */}
@@ -788,6 +806,9 @@ export function MoonSurface({ onReturn, room, sink, paused, onProgress, onPauseR
           </button>
           <button type="button" className="moon-hud__jump" {...jumpKey} aria-label={t('jump')}>
             <Wind size={18} aria-hidden /><span>{t('jump')}</span>
+          </button>
+          <button type="button" className="moon-hud__jet" {...jetKey} aria-label={t('jet')}>
+            <Rocket size={18} aria-hidden /><span>{t('jet')}</span>
           </button>
           <button type="button" className="moon-hud__throttle" {...throttleKey} aria-label={t('landing.throttle')}>
             <span className="moon-hud__throttle-fill"><i ref={landThrRef} /></span>

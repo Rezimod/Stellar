@@ -8,7 +8,7 @@ import {
 import type { LucideIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { attachDesktopControls, clearFlightInput, zoomFlightCamera } from '@/lib/solar-system/flight-input';
-import { APPROACH_SECONDS } from '@/lib/solar-system/flight-approach';
+import { APPROACH_LEGS, APPROACH_SECONDS, titleCard } from '@/lib/solar-system/flight-approach';
 import { assetsFor, SURFACE_GROUPS } from '@/lib/solar-system/surface-assets';
 import { prefetchModels, prefetchDone } from '@/game/models';
 import { type FlightSession, type ShipKind } from '@/lib/solar-system/player-ship';
@@ -53,7 +53,7 @@ const HELP_SEEN = 'stellar_explore_help';
 /** The arrival has been watched once; from now on it can be skipped from the first second. */
 const ARRIVAL_SEEN = 'stellar_explore_arrival';
 /** On the first run the way out opens once the transit is behind them. */
-const ARRIVAL_SKIP_AFTER = 4.5;
+const ARRIVAL_SKIP_AFTER = APPROACH_LEGS[0].seconds + 1;
 const ICONS = [Shield, Zap, ChevronsUp];
 /** How long a passing moment stays up in the popup. */
 const POPUP_MS = 4200;
@@ -152,6 +152,9 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, returnedFr
   const arrBarRef = useRef<HTMLSpanElement>(null);
   const arrHintRef = useRef<HTMLParagraphElement>(null);
   const arrListRef = useRef<HTMLUListElement>(null);
+  const arrBoxRef = useRef<HTMLDivElement>(null);
+  /** The world's name across the glass through the entry. */
+  const titleRef = useRef<HTMLDivElement>(null);
   const radarRef = useRef<HTMLCanvasElement>(null);
   const placeRef = useRef<HTMLSpanElement>(null);
   const subRef = useRef<HTMLSpanElement>(null);
@@ -296,7 +299,8 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, returnedFr
    *  approach, pitch-over — and the surface's files come down while it does. */
   const land = () => {
     const site = landSiteRef.current;
-    prefetchModels(assetsFor(site));
+    // The surface's own files, and the ship the crew are flying: it is what comes down.
+    prefetchModels(assetsFor(site, session.shipKind));
     // Seen once, and it can be skipped from the first second; the first
     // time, the way out opens when the transit is behind them.
     try {
@@ -474,6 +478,10 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, returnedFr
       root?.style.setProperty('--flash', tel.jumpFlash.toFixed(3));
       root?.style.setProperty('--warp', (tel.jumpPhase === 'charge' ? tel.jumpT * 0.6
         : tel.jumpPhase === 'travel' ? 0.6 + 0.4 * Math.sin(Math.min(1, tel.jumpT) * Math.PI) : 0).toFixed(3));
+      // The air on the hull, at the edges of the glass: the entry, or any
+      // dive into an atmosphere. The glide's haze comes up under it.
+      root?.style.setProperty('--heat', Math.min(1, tel.heat).toFixed(3));
+      root?.style.setProperty('--glide', (tel.approachPhase === 'glide' ? tel.approachLegT : 0).toFixed(3));
       if (root) root.dataset.view = tel.view;
       let status = '';
       if (tel.crashed) status = t('respawn', { n: Math.ceil(tel.respawnIn) });
@@ -529,8 +537,12 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, returnedFr
         // The sim names the leg from its first frame; until then there is
         // nothing to say, and nothing to ask the translator for.
         if (ph !== '') text(arrPhaseRef.current, t(`arrival.${ph}`));
+        if (arrBoxRef.current && arrBoxRef.current.dataset.phase !== ph) arrBoxRef.current.dataset.phase = ph;
         text(arrPlaceRef.current, name(arrivalRef.current));
         arrBarRef.current?.style.setProperty('--t', tel.approachT.toFixed(3));
+        // The title card follows the profile's own curve, from the deck's
+        // clock: up a beat into the entry, gone before the ground.
+        titleRef.current?.style.setProperty('--title', titleCard(tel.approachT * APPROACH_SECONDS).toFixed(3));
         if (!arrivalSkipRef.current && tel.approachT * APPROACH_SECONDS >= ARRIVAL_SKIP_AFTER) arrivalSkipRef.current = true;
         const hint = arrHintRef.current;
         if (hint && hint.hidden === arrivalSkipRef.current) hint.hidden = !arrivalSkipRef.current;
