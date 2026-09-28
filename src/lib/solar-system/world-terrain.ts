@@ -8,10 +8,43 @@
 
 import * as THREE from 'three';
 import { fbm } from '@/lib/solar-system/moon-terrain';
+import { withHaze } from '@/lib/solar-system/world-earth-haze';
 import type { WorldProfile } from '@/lib/solar-system/world-profiles';
 
 export const WORLD_SIZE = 360;
 export const PAD_RADIUS = 40;
+
+/** Flat treads and steep risers: 0…1 in, 0…1 out, in `n` steps. */
+export function terrace(m: number, n: number): number {
+  if (n <= 0) return m;
+  const s = Math.min(m, 0.9999) * n;
+  const i = Math.floor(s); const f = s - i;
+  return (i + smooth(Math.max(0, (f - 0.72) / 0.28))) / n;
+}
+
+/** The sun's direction as the ground shaders read it (world space); set by the scene. */
+const sunWorld = { value: new THREE.Vector3(0, 1, 0) };
+export function setGroundSun(dir: THREE.Vector3) { sunWorld.value.copy(dir).normalize(); }
+
+/** GLSL shared by everything made of this world's rock: a rim of the star's
+ *  light along edges seen against it, so a boulder or a spire reads as a
+ *  solid against the haze instead of a flat silhouette. */
+export const RIM_GLSL = /* glsl */`
+  {
+    vec3 rNw = inverseTransformDirection( normal, viewMatrix );
+    vec3 rVw = normalize( cameraPosition - vEarthPos );
+    float rim = pow( 1.0 - max( dot( rNw, rVw ), 0.0 ), 3.5 );
+    float toward = smoothstep( -0.25, 0.55, dot( rNw, uSunW ) ) * smoothstep( -0.4, 0.6, dot( -rVw, uSunW ) );
+    reflectedLight.indirectDiffuse += uRimColor * rim * toward * diffuseColor.rgb * 2.2;
+  }
+`;
+export function injectRim(shader: THREE.WebGLProgramParametersWithUniforms, rimColor: THREE.Color) {
+  shader.uniforms.uSunW = sunWorld;
+  shader.uniforms.uRimColor = { value: rimColor };
+  shader.fragmentShader = shader.fragmentShader
+    .replace('#include <common>', '#include <common>\nuniform vec3 uSunW; uniform vec3 uRimColor;')
+    .replace('#include <lights_fragment_end>', `#include <lights_fragment_end>\n${RIM_GLSL}`);
+}
 
 function hash(ix: number, iy: number, seed: number): number {
   let n = (ix * 374761393 + iy * 668265263 + seed * 1442695041) | 0;
@@ -41,6 +74,12 @@ export interface WorldTerrain {
   normalAt: (x: number, z: number, out: THREE.Vector3) => THREE.Vector3;
   /** Firm ground for boots: the water surface where there is water. */
   floorAt: (x: number, z: number) => number;
+  /** The ground anywhere the eye can reach: the square inside, the horizon ring's hills beyond it. */
+  groundAt: (x: number, z: number) => number;
+  /** The grain normal map, for anything else made of this ground. */
+  grain: THREE.Texture;
+  /** Slope 0…1 (1 − normal.y) off the heightfield. */
+  slopeAt: (x: number, z: number) => number;
   dispose: () => void;
 }
 
@@ -136,7 +175,8 @@ function rockGeometry(seed: number, detail: number): THREE.BufferGeometry {
 
 /** `density` scales the rock count (the preset's prop density). */
 export function makeWorldTerrain(profile: WorldProfile, lite: boolean, density = 1): WorldTerrain {
-  const N = lite ? 160 : 320;
+  // Ultra (prop density 1.5 and up) gets a finer grid: the same field, sampled closer.
+  const N = lite ? 160 : density >= 1.5 ? 448 : 320;
   const size = WORLD_SIZE;
   const half = size / 2;
   const cell = size / N;
@@ -156,7 +196,18 @@ export function makeWorldTerrain(profile: WorldProfile, lite: boolean, density =
     craters.push({ x, z, r, depth: r * (0.12 + hash(i, 24, seed) * 0.1) });
   }
   const rawHeight = (x: number, z: number): number => {
-    let h = fbm(x / 110, z / 110, 4, seed) * G.relief;
+    // The relief is read through a bent lens: a second noise shifts where
+    // the first is sampled, so ridges curl and basins are not round.
+    const wx = x + fbm(x / 70 + 11, z / 70, 2, seed + 51) * G.warp;
+    const wz = z + fbm(x / 70, z / 70 + 7, 2, seed + 53) * G.warp;
+    let h = fbm(wx / 110, wz / 110, 4, seed) * G.relief;
+    if (G.mesas > 0) {
+      // Plateaus: where a broad noise is high the ground steps up in
+      // terraces — the strata of the mesas outside, at a size a crew can climb.
+      const macro = fbm(wx / 85 + 3, wz / 85, 3, seed + 61);
+      const m = clamp01((macro - 0.10) / 0.5);
+      h += terrace(m, G.terraces) * G.mesas * smooth(clamp01(m * 4));
+    }
     h += fbm(x / 24, z / 24, 3, seed + 9) * 1.1;
     // Dunes: long ripples across the plain, bent by the wind's own noise.
     const bend = fbm(x / 60, z / 60, 2, seed + 41) * 6;
@@ -207,17 +258,25 @@ export function makeWorldTerrain(profile: WorldProfile, lite: boolean, density =
     const h = heightAt(x, z);
     return water && Math.hypot(x - water.x, z - water.z) < water.r * 1.3 ? Math.max(h, water.level - 0.4) : h;
   };
+  const slopeTmp = new THREE.Vector3();
+  const slopeAt = (x: number, z: number): number => 1 - normalAt(x, z, slopeTmp).y;
 
-  // ── The colour of the ground: the plain, its dark patches, its pale streaks. ──
+  // ── The colour of the ground: the plain, its dark patches, its pale streaks;
+  // bare rock where it is steep, sand where it is flat and low. ──
   const colorAt = (x: number, z: number, out: number[]) => {
     const dark = clamp01(fbm(x / 34, z / 34, 3, seed + 33) * 1.6 + 0.1);
     const pale = clamp01(fbm(x / 18 + 40, z / 52, 3, seed + 37) * 2.2 - 0.55);
     const grain = 1 + fbm(x / 5, z / 5, 2, seed + 35) * 0.12;
+    const slope = slopeAt(x, z);
+    const rock = smooth(clamp01((slope - 0.22) / 0.3));
+    const sand = (1 - smooth(clamp01(slope / 0.08))) * clamp01(fbm(x / 28 + 9, z / 28, 2, seed + 39) * 1.8 + 0.2);
     let wet = 0;
     if (water) wet = clamp01(1 - (Math.hypot(x - water.x, z - water.z) - water.r) / 22);
     for (let k = 0; k < 3; k++) {
       let v = G.plain[k] * (1 - dark) + G.dark[k] * dark;
       v = v * (1 - pale) + G.pale[k] * pale;
+      v = v * (1 - sand * 0.6) + G.sand[k] * sand * 0.6;
+      v = v * (1 - rock) + G.slopeRock[k] * rock;
       // Damp ground is darker and, on a living world, greener where the moss takes.
       if (wet > 0) v = v * (1 - wet * 0.45) + (k === 1 ? 0.22 : 0.08) * wet;
       out[k] = v * grain;

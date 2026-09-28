@@ -338,13 +338,14 @@
   -webkit-touch-callout: none !important;
 }
 .flight-hud {
-  /* The deck's palette: ice on deep navy glass. */
-  --hud-ink: #eaf2fd;
-  --hud-dim: rgba(166, 190, 220, 0.74);
-  --hud-accent: #4da3ff;
-  --hud-line: rgba(122, 162, 216, 0.22);
-  --hud-glass: rgba(10, 18, 33, 0.62);
-  --hud-deep: rgba(8, 14, 27, 0.9);
+  /* The deck's palette: white on near-black glass, teal for what is live
+     and amber for what is spent — the same two accents as the surfaces. */
+  --hud-ink: #f4f8ff;
+  --hud-dim: rgba(176, 196, 222, 0.7);
+  --hud-accent: #5eead4;
+  --hud-line: rgba(140, 180, 220, 0.18);
+  --hud-glass: rgba(6, 10, 20, 0.58);
+  --hud-deep: rgba(5, 9, 18, 0.9);
   --hud-ok: #46d68a;
   /* Shapes and sizes; every breakpoint sets these and the rest follows. */
   --hud-radius: 18px;
@@ -1275,13 +1276,15 @@
 .moon-surface__canvas { position: absolute; inset: 0; touch-action: none; cursor: grab; }
 .moon-surface__canvas:active { cursor: grabbing; }
 .moon-hud {
-  --hud-ink: #eef6ff;
-  --hud-dim: rgba(186, 214, 240, 0.62);
-  --hud-accent: #4db2ff;
-  --hud-warm: #ffc266;
-  --hud-line: rgba(120, 180, 235, 0.3);
-  --hud-glass: rgba(6, 14, 28, 0.52);
-  --hud-solid: rgba(5, 11, 22, 0.86);
+  /* White on near-black glass; teal for what is live, amber for what is
+     spent. Thin lines, so the glass reads as a visor and not a window. */
+  --hud-ink: #f4f8ff;
+  --hud-dim: rgba(186, 206, 232, 0.62);
+  --hud-accent: #5eead4;
+  --hud-warm: #ffb347;
+  --hud-line: rgba(140, 180, 220, 0.2);
+  --hud-glass: rgba(6, 10, 20, 0.5);
+  --hud-solid: rgba(5, 9, 18, 0.86);
   --edge-top: max(14px, env(safe-area-inset-top));
   --edge-right: max(14px, env(safe-area-inset-right));
   --edge-bottom: max(14px, env(safe-area-inset-bottom));

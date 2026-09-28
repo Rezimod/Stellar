@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from 'next';
 import PlayClient from '@/components/play/PlayClient';
 import '../solar-system/solar-system.css';
+import '../solar-system/suit-jet.css';
+import '../solar-system/landing.css';
 import './play.css';
 
 export const metadata: Metadata = {

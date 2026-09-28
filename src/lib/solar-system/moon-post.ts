@@ -8,6 +8,11 @@
 // The scene is drawn into the composer's own target, so that is where the
 // anti-aliasing has to live: MSAA samples on the target, by preset. Bloom is
 // a blur, so it runs at half resolution and can be dropped altogether.
+//
+// The whole chain: Render → god rays (HDR) → Bloom → lens flare (HDR) →
+// Output (tone map) → grade (LDR) → Film. The three Sun-and-grade passes
+// come from post-flare.ts, shared with flight, and each preset switches
+// them on or off; off, they are skipped by the composer and cost nothing.
 
 import * as THREE from 'three';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
@@ -15,13 +20,19 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
+import { bloomFor, makeGodRaysPass, makeGradePass, makeLensFlarePass } from '@/lib/solar-system/post-flare';
+import type { QualityLevel } from '@/game/quality';
 
 /** What the post chain takes from a quality preset. */
 export interface PostQuality {
+  level: QualityLevel;
   bloom: boolean;
   bloomScale: number;
   msaa: number;
   lite: boolean;
+  flare: boolean;
+  godRays: boolean;
+  grade: boolean;
 }
 
 export interface MoonPostHandle {
@@ -39,6 +50,9 @@ export interface MoonPostHandle {
   setBlack: (k: number) => void;
   /** A new preset: bloom on or off, and the samples on the target. */
   setQuality: (q: PostQuality) => void;
+  /** Where the Sun is on the screen this frame (texture space, y up), for
+   *  the flare and the light shafts; `visible` false fades them out. */
+  setSun: (x: number, y: number, visible: boolean, strength: number) => void;
   /** Where the scene is drawn: a pre-compile must target it to build the variants the frame uses. */
   drawTarget: () => THREE.WebGLRenderTarget;
   dispose: () => void;
@@ -97,17 +111,27 @@ const FilmShader = {
 export function makeMoonPost(renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE.Camera, quality: PostQuality): MoonPostHandle {
   const size = renderer.getSize(new THREE.Vector2());
   const pr = renderer.getPixelRatio();
-  const target = new THREE.WebGLRenderTarget(size.x * pr, size.y * pr, { type: THREE.HalfFloatType, samples: quality.msaa });
+  // `ultra` asks for 8 samples; the context may not have them, and three
+  // would clamp silently. Clamping here keeps the target's own record true.
+  const samplesFor = (n: number) => Math.min(n, renderer.capabilities.maxSamples ?? 0);
+  const target = new THREE.WebGLRenderTarget(size.x * pr, size.y * pr, { type: THREE.HalfFloatType, samples: samplesFor(quality.msaa) });
   const composer = new EffectComposer(renderer, target);
   let q = quality;
+  let bl = bloomFor(q.level, 'surface');
   const renderPass = new RenderPass(scene, camera);
-  const bloom = new UnrealBloomPass(new THREE.Vector2(size.x * q.bloomScale, size.y * q.bloomScale), 0.35, 0.6, 0.9);
+  const godRays = makeGodRaysPass(q.level, q.godRays);
+  const bloom = new UnrealBloomPass(new THREE.Vector2(size.x * q.bloomScale, size.y * q.bloomScale), bl.strength, bl.radius, bl.threshold);
   bloom.enabled = q.bloom;
+  const flare = makeLensFlarePass(q.level, q.flare);
+  const grade = makeGradePass(q.grade);
   const film = new ShaderPass(FilmShader);
   const output = new OutputPass();
   composer.addPass(renderPass);
+  composer.addPass(godRays.pass);
   composer.addPass(bloom);
+  composer.addPass(flare.pass);
   composer.addPass(output);
+  composer.addPass(grade.pass);
   composer.addPass(film);
   let time = 0;
   let helmet = 0;
@@ -128,9 +152,13 @@ export function makeMoonPost(renderer: THREE.WebGLRenderer, scene: THREE.Scene, 
       film.uniforms.uHelmet.value = helmet;
       film.uniforms.uGrain.value = q.lite ? 0.03 : 0.045;
       film.uniforms.uBack.value = back;
-      bloom.strength = 0.35 + back * 0.3;
-      bloom.threshold = 0.9 - back * 0.05;
+      bloom.strength = bl.strength + back * 0.3;
+      bloom.threshold = bl.threshold - back * 0.05;
       composer.render(dt);
+    },
+    setSun(x, y, visible, strength) {
+      godRays.setSun(x, y, visible, strength);
+      flare.setSun(x, y, visible, strength);
     },
     setSize,
     setHelmet(k) { helmetTarget = k; },
@@ -141,16 +169,23 @@ export function makeMoonPost(renderer: THREE.WebGLRenderer, scene: THREE.Scene, 
     drawTarget: () => composer.renderTarget1,
     setQuality(next) {
       q = next;
+      bl = bloomFor(q.level, 'surface');
       bloom.enabled = q.bloom;
+      bloom.radius = bl.radius;
+      godRays.setEnabled(q.godRays);
+      godRays.setQuality(q.level);
+      flare.setEnabled(q.flare);
+      flare.setQuality(q.level);
+      grade.setEnabled(q.grade);
       // The targets keep their sample count from creation: drop them and
       // they come back at the new one on the next frame.
       for (const rt of [composer.renderTarget1, composer.renderTarget2]) {
-        rt.samples = q.msaa;
+        rt.samples = samplesFor(q.msaa);
         rt.dispose();
       }
     },
     dispose() {
-      renderPass.dispose(); bloom.dispose(); film.dispose(); output.dispose(); composer.dispose();
+      renderPass.dispose(); godRays.dispose(); bloom.dispose(); flare.dispose(); grade.dispose(); film.dispose(); output.dispose(); composer.dispose();
     },
   };
 }

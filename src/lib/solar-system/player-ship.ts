@@ -23,7 +23,7 @@ import { buildCosmonaut, buildCruiser, buildEndurance, buildKestrel, buildXfoil,
 import { shapeMouse } from '@/lib/solar-system/flight-input';
 import { makeMissionTracker, type MissionContext } from '@/lib/solar-system/flight-missions';
 import { projectTarget, stepTarget, type TargetCandidate, type TargetKind, type TargetScreen } from '@/lib/solar-system/flight-targeting';
-import { approachPose, APPROACH_SECONDS, type ApproachPhase } from '@/lib/solar-system/flight-approach';
+import { approachPose, APPROACH_SECONDS, descentBurn, entryHeat, isAirlessSite, type ApproachPhase } from '@/lib/solar-system/flight-approach';
 
 export type { ShipKind } from '@/lib/solar-system/ship-mesh';
 export { zoomFlightCamera, clearFlightInput } from '@/lib/solar-system/flight-input';
@@ -1154,6 +1154,12 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
   let arrival: FlightBody | null = null;
   let arrivalClock = 0;
   let arrivalRadii = 12;
+  /** No air on the way down: the entry leg is a burn, and nothing glows. */
+  let arrivalAirless = false;
+  /** What the profile says the air is doing to the hull this frame, and how
+   *  hard the engines are flaring against the fall. */
+  let arrivalHeat = 0;
+  let arrivalBurn = 0;
   const arrivalFrom = new THREE.Vector3();
   const arrivalTo = new THREE.Vector3();
   const arrivalAt = new THREE.Vector3();
@@ -1394,6 +1400,7 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
     orbitYaw: 0,
     orbitPitch: 0,
     heat: 0,
+    entry: 0,
     crashLook,
   };
 
@@ -1413,6 +1420,9 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
     camFrame.orbitYaw = input.orbiting ? input.orbitYaw : 0;
     camFrame.orbitPitch = input.orbiting ? input.orbitPitch : 0;
     camFrame.heat = heat;
+    // The entry shakes the rig harder than ordinary heating, and a retro
+    // burn shakes it a little: the frame under the seat, not the air.
+    camFrame.entry = arrival ? Math.max(arrivalHeat, arrivalBurn * 0.35) : 0;
     rig.update(dt, camFrame, camera);
   };
 
@@ -1557,6 +1567,9 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
     if (!body || pilot !== 'ship' || crashT >= 0 || jumpPhase !== 'none') return;
     arrival = body;
     arrivalClock = 0;
+    arrivalAirless = isAirlessSite(id, body.atmosphere);
+    arrivalHeat = 0;
+    arrivalBurn = 0;
     autodock = null;
     dockedTo = null;
     arrivalFrom.copy(group.position).sub(body.position);
@@ -1586,8 +1599,10 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
     } else {
       arrivalClock += dt;
     }
-    const pose = approachPose(arrivalClock, arrivalRadii);
-    const ahead = approachPose(arrivalClock + Math.max(dt, 1 / 120), arrivalRadii);
+    const pose = approachPose(arrivalClock, arrivalRadii, arrivalAirless);
+    const ahead = approachPose(arrivalClock + Math.max(dt, 1 / 120), arrivalRadii, arrivalAirless);
+    arrivalHeat = entryHeat(arrivalClock, arrivalAirless);
+    arrivalBurn = descentBurn(arrivalClock, arrivalAirless);
     arrivalPointAt(pose.radii, pose.swing, body, arrivalAt);
     arrivalPointAt(ahead.radii, ahead.swing, body, arrivalNext);
     // The integrator does the move; this is the velocity that lands on it.
@@ -1607,9 +1622,10 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
     angVel.set(0, 0, 0);
     // The camera walks around to the nose through the approach, so the Earth
     // they came from stands behind the ship over the mare, then falls back
-    // onto the tail for the pitch-over and the way down.
+    // onto the tail as the air (or the burn) takes hold, and rides there,
+    // behind and a little above, through the glide to the ground.
     const around = pose.phase === 'approach' ? THREE.MathUtils.smoothstep(pose.legT, 0, 1)
-      : pose.phase === 'pitchover' ? 1 - THREE.MathUtils.smoothstep(pose.legT, 0, 1) : 0;
+      : pose.phase === 'entry' || pose.phase === 'burn' ? 1 - THREE.MathUtils.smoothstep(pose.legT, 0, 0.55) : 0;
     input.orbitYaw = around * Math.PI * 0.86;
     input.orbitPitch = around * 0.22;
     tel.approachPhase = pose.phase;
@@ -1618,6 +1634,8 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
     // Down: the deck takes the con from here and opens the surface.
     if (pose.done) {
       arrival = null;
+      arrivalHeat = 0;
+      arrivalBurn = 0;
       input.orbitYaw = 0;
       input.orbitPitch = 0;
     }
@@ -2202,7 +2220,10 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
       }
       regionHold -= dt;
       tel.region = regionHold > 0 ? region : '';
-      heat += (heatTarget - heat) * (1 - Math.exp(-dt * 4));
+      // The arrival's entry is scripted: the profile says how hot the hull
+      // is, whatever the air under it happens to compute.
+      if (arrival) heatTarget = Math.max(heatTarget, arrivalHeat);
+      heat += (heatTarget - heat) * (1 - Math.exp(-dt * (arrival ? 7 : 4)));
       if (heat > 0.05 && !arrival) {
         damage(18 * heat * dt, true);
         if (crashT >= 0) {
@@ -2213,10 +2234,23 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
       }
       if (!alert && isDrive(mode) && wellK < 0.6 && jumpPhase === 'none' && pilot === 'ship') alert = 'gravity';
       const live = parts();
-      live.plasmaMat.opacity = Math.min(1, heat * 1.3);
+      live.plasmaMat.opacity = Math.min(1, heat * 1.4);
       const plasmaBase = pilot === 'ship' ? H : E;
-      live.plasma.scale.set((4 + 6 * heat) * plasmaBase, (3 + 2 * heat) * plasmaBase, 1);
+      live.plasma.scale.set((4 + 7 * heat) * plasmaBase, (3 + 2.5 * heat) * plasmaBase, 1);
       live.skinMat.emissive.setRGB(1.0, 0.35, 0.08).multiplyScalar(heat * 0.9);
+      // The shock layer: ribbons of plasma off the nose, longer and brighter
+      // as the heat comes up, flickering the way a real one does.
+      if (live.streakMat) {
+        const lit = heat > 0.02;
+        live.streakMat.opacity = Math.min(1, heat * 0.95);
+        for (let i = 0; i < live.streaks.length; i++) {
+          const s = live.streaks[i];
+          s.visible = lit;
+          if (!lit) continue;
+          const flick = 1 + 0.18 * Math.sin(timeSec * (31 + i * 3.7) + i);
+          s.scale.set(0.6 + heat * 0.9, (0.15 + heat * 0.85) * flick, 0.6 + heat * 0.9);
+        }
+      }
       if (jumpPhase === 'charge') alert = 'charging';
       else if (jumpPhase === 'travel') alert = 'jump';
       else if (alertHold > 0) alert = heldAlert;
@@ -2236,12 +2270,15 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
       // plume stretches with thrust and boost, the bells soak heat under
       // sustained burn, RCS jets flash with the controls, and the hull
       // shivers under full power. ──
-      const thrusting = jumpPhase === 'none' && input.thrust > 0;
+      // On the way down the profile has the throttle: the retro burn over an
+      // airless world, the engines coming up for the last of a glide in air.
+      const burn = arrival ? arrivalBurn : 0;
+      const thrusting = jumpPhase === 'none' && (input.thrust > 0 || burn > 0.05);
       const chargeK = jumpPhase === 'charge' ? jumpT / JUMP_CHARGE : jumpPhase === 'travel' ? 1 : 0;
-      const throttle = jumpPhase === 'none' ? Math.max(0, input.thrust) : 1;
+      const throttle = jumpPhase === 'none' ? Math.max(0, input.thrust, burn) : 1;
       heatSoak += ((thrusting ? (tel.boost ? 1 : 0.55) : 0) - heatSoak) * (1 - Math.exp(-dt * (thrusting ? 0.5 : 0.9)));
       const pulse = 0.8 + 0.08 * Math.sin(timeSec * 7)
-        + (thrusting ? 0.55 : 0) + (tel.boost ? 1.0 : 0)
+        + (thrusting ? 0.55 : 0) + (tel.boost ? 1.0 : 0) + burn * 0.9
         + (mode === 'fast' ? 0.5 : mode === 'ultra' ? 1.1 : 0) + chargeK * 1.6;
       live.engineMat.emissiveIntensity = 1.5 * pulse;
       live.bellMat.emissive.setRGB(0.9, 0.22, 0.05).multiplyScalar(heatSoak * 0.6);
@@ -2256,7 +2293,17 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
         const stretch = 0.35 + 0.85 * Math.min(1.6, pulse - 0.75);
         const flicker = 1 + 0.06 * Math.sin(timeSec * 43) * (thrusting ? 1 : 0.3);
         for (const pl of live.plumes) pl.scale.set(1, Math.max(0.12, stretch * flicker), 1);
+        // The core runs longer than the haze and only really shows under
+        // power: idling it is a short bright tongue at the nozzle.
+        if (live.plumeCoreMat) {
+          live.plumeCoreMat.opacity = Math.min(1, 0.22 + 0.5 * (pulse - 0.8));
+          const coreFlicker = 1 + 0.09 * Math.sin(timeSec * 61 + 1) * (thrusting ? 1 : 0.3);
+          const coreStretch = 0.22 + 0.95 * Math.min(1.6, pulse - 0.75);
+          for (const pc of live.plumeCores) pc.scale.set(0.85 + 0.3 * Math.min(1, pulse - 0.8), Math.max(0.1, coreStretch * coreFlicker), 0.85 + 0.3 * Math.min(1, pulse - 0.8));
+        }
       }
+      // A retro burn is flown on the braking nozzles as well as the mains.
+      if (burn > 0.05) rcsBrake = Math.max(rcsBrake, burn);
       for (const j of shipParts.rcs) {
         const k = Math.max(0, j.yaw * rcsYaw + j.pitch * rcsPitch + j.roll * rcsRoll + j.brake * rcsBrake);
         const target = Math.min(1, k) * (pilot === 'ship' && jumpPhase === 'none' ? 0.9 : 0);

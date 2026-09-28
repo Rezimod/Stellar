@@ -56,6 +56,7 @@ import {
 } from '@/lib/solar-system/scene-extras';
 import { makeSunSurface } from '@/lib/solar-system/sun-surface';
 import { makePostFx } from '@/lib/solar-system/post-processing';
+import { projectSunPoint, type SunScreen } from '@/lib/solar-system/post-flare';
 import { currentQuality, onQualityChange, pixelRatioFor } from '@/game/quality';
 import { compileFor, uploadSceneTextures } from '@/lib/solar-system/gpu-warm';
 import { probeCalls } from '@/lib/solar-system/moon-perf';
@@ -352,6 +353,10 @@ export function SolarSystemCanvas({
     // Scene → bloom → tone-mapped output (the Sun, engine glows and bolts
     // bloom; lit planet surfaces sit under the threshold and stay sharp).
     const postFx = makePostFx(renderer, scene, camera, quality);
+    // The Sun sits at the origin; its place on the glass drives the flare
+    // and the light shafts, and it fades as it leaves the frame.
+    const sunOrigin = new THREE.Vector3();
+    const sunScreen: SunScreen = { x: 0.5, y: 0.5, visible: false, edge: 0 };
 
     // Space lighting: the sun is the only real source, but a dim ambient
     // keeps night sides identifiable — without it, the Moon and any planet
@@ -1073,10 +1078,10 @@ export function SolarSystemCanvas({
       postFx.setSize(mount.clientWidth, mount.clientHeight);
     };
     window.addEventListener('resize', onResize);
-    // A new preset: the pixel ratio follows at once. What was decided when the
-    // scene was built — the bloom chain, the star and belt counts — follows on
-    // the next build, as it does on the surfaces.
-    const offQuality = onQualityChange(onResize);
+    // A new preset: the pixel ratio and the post chain follow at once. What
+    // was decided when the scene was built — the star and belt counts —
+    // follows on the next build, as it does on the surfaces.
+    const offQuality = onQualityChange((q) => { postFx.setQuality(q); onResize(); });
 
     // How much of the glass a sunlit world is filling, eased: see worldGlare().
     let bodyGlare = 0;
@@ -1537,6 +1542,8 @@ export function SolarSystemCanvas({
       // so they fade away as the camera closes on the subject.
       setOrbitRingsFade(orbitRings, ship ? 0.14 : focus ? 0 : THREE.MathUtils.clamp((sysRadius - 9) / 9, 0, 1));
 
+      projectSunPoint(sunOrigin, camera, sunScreen);
+      postFx.setSun(sunScreen.x, sunScreen.y, sunScreen.visible, sunScreen.edge);
       postFx.render(dtSec);
       if (!readyFired) {
         if (mapsPending > 0 && now < mapsDeadline) {

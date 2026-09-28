@@ -4190,6 +4190,8 @@
       "qualityPerformance": "Performance",
       "qualityBalanced": "Balanced",
       "qualityHigh": "High",
+      "qualityUltra": "Ultra",
+      "qualityUltraNote": "Ultra is for a desktop with a discrete GPU: 4K shadows, 8× anti-aliasing, lens flare and light shafts. Star and rock counts take effect on the next landing.",
       "qualityNote": "Automatic picks a preset from your device. Star and rock counts take effect on the next landing.",
       "sensitivity": "Look sensitivity",
       "invertY": "Invert vertical look",

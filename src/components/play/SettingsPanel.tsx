@@ -11,7 +11,7 @@ interface SettingsPanelProps {
 }
 
 const LOCALES = ['en', 'ka'] as const;
-const QUALITY_LABEL: Record<QualityLevel, string> = { performance: 'qualityPerformance', balanced: 'qualityBalanced', high: 'qualityHigh' };
+const QUALITY_LABEL: Record<QualityLevel, string> = { performance: 'qualityPerformance', balanced: 'qualityBalanced', high: 'qualityHigh', ultra: 'qualityUltra' };
 
 export function SettingsPanel({ onClose }: SettingsPanelProps) {
   const t = useTranslations('play');
@@ -38,7 +38,9 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
         <p className="game-setting__note">
           {governed && s.quality === 'auto'
             ? t('settingsPanel.qualityGoverned', { level: t(`settingsPanel.${QUALITY_LABEL[governed]}`) })
-            : t('settingsPanel.qualityNote')}
+            : s.quality === 'ultra'
+              ? t('settingsPanel.qualityUltraNote')
+              : t('settingsPanel.qualityNote')}
         </p>
       </div>
       <div className="game-setting">

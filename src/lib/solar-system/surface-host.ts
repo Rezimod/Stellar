@@ -11,6 +11,7 @@ import { makeMoonPost, type MoonPostHandle } from '@/lib/solar-system/moon-post'
 import { makeMoonPerf, probeCalls, type MoonPerf } from '@/lib/solar-system/moon-perf';
 import { makeLightPool, type LightPool } from '@/lib/solar-system/moon-lights';
 import { compileFor, uploadSceneTextures } from '@/lib/solar-system/gpu-warm';
+import { projectSunDirection, type SunScreen } from '@/lib/solar-system/post-flare';
 import { getSettings } from '@/game/settings';
 import { currentQuality, onQualityChange, pixelRatioFor, stepQualityDown, type QualityProfile } from '@/game/quality';
 
@@ -71,7 +72,10 @@ export function makeSurfaceHost(mount: HTMLElement, opts: SurfaceHostOptions): S
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = opts.exposure;
   renderer.shadowMap.enabled = quality.shadowMapSize > 0;
-  renderer.shadowMap.type = THREE.PCFShadowMap;
+  // Soft PCF is the extra taps a desktop can spare; three recompiles the
+  // materials itself when the type changes live.
+  const shadowTypeFor = (q: QualityProfile) => (q.level === 'high' || q.level === 'ultra' ? THREE.PCFSoftShadowMap : THREE.PCFShadowMap);
+  renderer.shadowMap.type = shadowTypeFor(quality);
   renderer.setClearColor(opts.clearColor, 1);
   mount.appendChild(renderer.domElement);
   renderer.domElement.style.cssText = 'display:block;width:100%;height:100%;touch-action:none;';
@@ -103,6 +107,20 @@ export function makeSurfaceHost(mount: HTMLElement, opts: SurfaceHostOptions): S
   const shadowV = new THREE.Vector3();
 
   const post = makeMoonPost(renderer, scene, camera, quality);
+  // The Sun the post chain flares from is this light: its direction is the
+  // sprite's in every sky, and at infinity a direction is all the flare
+  // needs. Its strength follows the light's own — Earth's key light is the
+  // Moon at night, and that is not a Sun to flare from.
+  const sunDir = new THREE.Vector3();
+  const sunScreen: SunScreen = { x: 0.5, y: 0.5, visible: false, edge: 0 };
+  const feedSun = () => {
+    sunDir.copy(sun.position).sub(sun.target.position);
+    if (sunDir.lengthSq() < 1e-8) { post.setSun(0.5, 0.5, false, 0); return; }
+    sunDir.normalize();
+    projectSunDirection(sunDir, camera, sunScreen);
+    const strength = THREE.MathUtils.clamp(sun.intensity / Math.max(1e-3, opts.sun.intensity), 0, 1);
+    post.setSun(sunScreen.x, sunScreen.y, sunScreen.visible, sunScreen.edge * strength);
+  };
   const pinned = process.env.NODE_ENV !== 'production' && new URLSearchParams(window.location.search).has('fixedpx');
   const perf = makeMoonPerf(renderer, mount, {
     minRatio: pinned ? maxRatio : Math.min(1, maxRatio),
@@ -126,6 +144,7 @@ export function makeSurfaceHost(mount: HTMLElement, opts: SurfaceHostOptions): S
     sun.shadow.map?.dispose();
     sun.shadow.map = null;
     renderer.shadowMap.enabled = q.shadowMapSize > 0;
+    renderer.shadowMap.type = shadowTypeFor(q);
     post.setQuality(q);
     post.setSize(mount.clientWidth, mount.clientHeight);
   });
@@ -229,6 +248,7 @@ export function makeSurfaceHost(mount: HTMLElement, opts: SurfaceHostOptions): S
     },
     render(dt) {
       perf.mark();
+      feedSun();
       post.render(dt);
       perf.end();
     },
