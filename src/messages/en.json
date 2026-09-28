@@ -1483,10 +1483,26 @@
         }
       },
       "worlds": {
-        "moon": { "name": "Moon", "descriptors": "Airless moon · Grey craters · Vacuum", "temp": "−170 °C" },
-        "mars": { "name": "Mars", "descriptors": "Cold desert · Rust plains · Thin CO₂ air", "temp": "−63 °C" },
-        "proximaB": { "name": "Proxima b", "descriptors": "Tidally locked · Red twilight · Living shore", "temp": "4 °C" },
-        "earth": { "name": "Earth", "descriptors": "Blue world · Tbilisi · Breathable air", "temp": "18 °C" }
+        "moon": {
+          "name": "Moon",
+          "descriptors": "Airless moon · Grey craters · Vacuum",
+          "temp": "−170 °C"
+        },
+        "mars": {
+          "name": "Mars",
+          "descriptors": "Cold desert · Rust plains · Thin CO₂ air",
+          "temp": "−63 °C"
+        },
+        "proximaB": {
+          "name": "Proxima b",
+          "descriptors": "Tidally locked · Red twilight · Living shore",
+          "temp": "4 °C"
+        },
+        "earth": {
+          "name": "Earth",
+          "descriptors": "Blue world · Tbilisi · Breathable air",
+          "temp": "18 °C"
+        }
       }
     },
     "moon": {
@@ -2167,7 +2183,8 @@
             "star": "{name}"
           }
         },
-        "entry": "Entry interface"
+        "entry": "Entry interface",
+        "crystals": "Crystals"
       }
     },
     "room": {
