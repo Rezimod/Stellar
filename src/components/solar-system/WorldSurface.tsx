@@ -7,6 +7,7 @@ import { makeWorldSurface, type WorldSurfaceHandle } from '@/lib/solar-system/wo
 import type { ShipKind } from '@/lib/solar-system/ship-mesh';
 import { WORLDS, type WorldId } from '@/lib/solar-system/world-profiles';
 import { JET_LOW, motionShown, suitLevel, suitShown } from '@/lib/solar-system/moon-hud';
+import { formatAltitude, formatRange, formatSpeed, formatVertical, orbitTitle } from '@/lib/solar-system/orbital-descent';
 import { loadTbilisi, type EarthData } from '@/lib/solar-system/world-earth-data';
 import type { SkyTarget } from '@/lib/solar-system/world-earth-tonight';
 import { TelescopeEyepiece } from './TelescopeEyepiece';
@@ -46,6 +47,8 @@ const TURNS = 3;
 export function WorldSurface({ world, onReturn, room, paused, onProgress, onPauseRequest, shipKind }: WorldSurfaceProps) {
   const t = useTranslations('solarSystem.moon');
   const tw = useTranslations(`solarSystem.worlds.${world}`);
+  /** The world's own card over the orbit, as the flight deck words it. */
+  const tworld = useTranslations(`solarSystem.flight.worlds.${world}`);
   const tl = useTranslations('solarSystem.loading');
   const tc = useTranslations('solarSystem.controls');
   const tips = useLoadingTips();
@@ -69,6 +72,19 @@ export function WorldSurface({ world, onReturn, room, paused, onProgress, onPaus
   const rootRef = useRef<HTMLDivElement>(null);
   const handleRef = useRef<WorldSurfaceHandle | null>(null);
   const landAltRef = useRef<HTMLSpanElement>(null);
+  // The flight from orbit (and back up to it): its panel, the title card.
+  const orbRef = useRef<HTMLDivElement>(null);
+  const orbPhaseRef = useRef<HTMLSpanElement>(null);
+  const orbAltRef = useRef<HTMLSpanElement>(null);
+  const orbSpeedRef = useRef<HTMLSpanElement>(null);
+  const orbVsRef = useRef<HTMLSpanElement>(null);
+  const orbSiteLabelRef = useRef<HTMLSpanElement>(null);
+  const orbSiteRef = useRef<HTMLSpanElement>(null);
+  const orbHeatRef = useRef<HTMLElement>(null);
+  const orbWarpRef = useRef<HTMLSpanElement>(null);
+  const orbMachRef = useRef<HTMLSpanElement>(null);
+  const orbSkipRef = useRef<HTMLSpanElement>(null);
+  const orbTitleRef = useRef<HTMLDivElement>(null);
   const landRateRef = useRef<HTMLSpanElement>(null);
   const landOffRef = useRef<HTMLSpanElement>(null);
   const landDriftRef = useRef<HTMLSpanElement>(null);
@@ -225,9 +241,37 @@ export function WorldSurface({ world, onReturn, room, paused, onProgress, onPaus
       root.dataset.view = tel.view;
 
       if (tel.ascended) { tel.ascended = false; onReturnRef.current(); return; }
+      // From orbit, and back up to it: the flight panel, the heat at the
+      // edges of the glass and the glass shaking with the air (--heat,
+      // --shake), and the world's name over the orbit.
+      const ob = tel.orbital;
+      const flying = !!ob && (tel.phase === 'orbit' || tel.phase === 'ascent');
+      root.dataset.flight = String(flying);
+      show(orbRef.current, flying);
+      root.style.setProperty('--heat', flying && ob ? ob.heat.toFixed(3) : '0');
+      root.style.setProperty('--shake', flying && ob ? Math.min(1, ob.turbulence + ob.burn * 0.06).toFixed(3) : '0');
+      orbTitleRef.current?.style.setProperty('--title', ob && tel.phase === 'orbit' ? orbitTitle(ob).toFixed(3) : '0');
+      if (flying && ob) {
+        const down = tel.phase === 'orbit';
+        text(orbPhaseRef.current, tt(`landing.orbital.phases.${ob.phase}`));
+        text(orbAltRef.current, formatAltitude(ob.altitude));
+        text(orbSpeedRef.current, formatSpeed(ob.speed));
+        text(orbVsRef.current, formatVertical(ob.vertical));
+        text(orbSiteLabelRef.current, tt(down ? 'landing.orbital.toSite' : 'landing.orbital.downrange'));
+        text(orbSiteRef.current, formatRange(ob.downrangeKm));
+        if (orbHeatRef.current) orbHeatRef.current.style.transform = `scaleX(${Math.min(1, ob.heat).toFixed(3)})`;
+        const warp = ob.timeWarp > 1.05;
+        text(orbWarpRef.current, warp ? tt('landing.orbital.warp', { n: ob.timeWarp < 10 ? ob.timeWarp.toFixed(1) : Math.round(ob.timeWarp) }) : tt('landing.orbital.realTime'));
+        if (orbWarpRef.current) orbWarpRef.current.dataset.warp = String(warp);
+        // The speed of sound, once there is air enough to have one.
+        show(orbMachRef.current, ob.mach > 0.05);
+        if (ob.mach > 0.05) text(orbMachRef.current, tt('landing.orbital.mach', { n: ob.mach.toFixed(ob.mach < 3 ? 2 : 1) }));
+        show(orbSkipRef.current, down);
+        if (orbRef.current) orbRef.current.dataset.leg = ob.phase;
+      }
       if (tel.phase !== 'surface') {
         const l = tel.landing;
-        text(landTitleRef.current, tel.entry ? ttw('entry') : tel.phase === 'ascent' ? tt('landing.ascent') : tt('landing.title'));
+        text(landTitleRef.current, tel.phase === 'ascent' ? tt('landing.ascent') : tt('landing.title'));
         text(landAltRef.current, `${l.altitude.toFixed(l.altitude < 10 ? 1 : 0)} m`);
         text(landRateRef.current, `${Math.abs(l.descent).toFixed(1)} m/s`);
         text(landOffRef.current, `${Math.round(l.offset)} m`);
@@ -468,6 +512,32 @@ export function WorldSurface({ world, onReturn, room, paused, onProgress, onPaus
         <div className="moon-hud__visor" aria-hidden />
 
         <div className="moon-hud__landing">
+          {/* From orbit: the air at the edges of the glass, the world's
+              name over the orbit, and the flight's own numbers. */}
+          <div className="orbital-heat" aria-hidden />
+          <div ref={orbTitleRef} className="flight-title orbital-title" aria-hidden>
+            <span className="flight-title__name">{tworld('name')}</span>
+            <span className="flight-title__line">{tworld('descriptors')} · {tworld('temp')}</span>
+          </div>
+          <div ref={orbRef} className="orbital-hud" role="status" hidden>
+            <span ref={orbPhaseRef} className="moon-hud__land-title" />
+            <span ref={orbAltRef} className="moon-hud__land-alt" />
+            <div className="moon-hud__land-rows">
+              <span className="moon-hud__reading"><span>{t('landing.orbital.speed')}</span><span ref={orbSpeedRef} /></span>
+              <span className="moon-hud__reading"><span>{t('landing.orbital.vertical')}</span><span ref={orbVsRef} /></span>
+              <span className="moon-hud__reading"><span ref={orbSiteLabelRef}>{t('landing.orbital.toSite')}</span><span ref={orbSiteRef} /></span>
+            </div>
+            <span className="orbital-hud__heat"><span>{t('landing.orbital.heat')}</span><i><b ref={orbHeatRef} /></i></span>
+            <span className="orbital-hud__foot">
+              <span ref={orbWarpRef} className="orbital-hud__warp" data-warp="true" />
+              <span ref={orbMachRef} className="orbital-hud__mach" hidden />
+            </span>
+            <span ref={orbSkipRef} className="orbital-hud__skip">
+              {touch
+                ? <button type="button" onClick={() => handleRef.current?.skipOrbit()}>{t('landing.orbital.skipTouch')}</button>
+                : <><kbd>E</kbd>{t('landing.orbital.skip')}</>}
+            </span>
+          </div>
           <div className="moon-hud__land-card">
             <span ref={landTitleRef} className="moon-hud__land-title">{t('landing.title')}</span>
             <span className="moon-hud__land-alt" ref={landAltRef} />

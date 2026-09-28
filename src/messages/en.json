@@ -1474,6 +1474,7 @@
         "entry": "Atmospheric entry",
         "burn": "Descent burn",
         "glide": "Final approach",
+        "orbit": "Orbit insertion",
         "skip": "Press any key to skip",
         "load": {
           "habitat": "Habitat",
@@ -1576,7 +1577,31 @@
         "touchdown": "{n} m/s at contact",
         "drift": "Drift",
         "ascent": "Take-off",
-        "exit": "Exit ship"
+        "exit": "Exit ship",
+        "orbital": {
+          "phases": {
+            "orbit": "Orbit",
+            "deorbit": "Deorbit burn",
+            "entry": "Atmospheric entry",
+            "braking": "Braking burn",
+            "glide": "Glide",
+            "approach": "Approach",
+            "climb": "Lift-off",
+            "ascent": "Ascent",
+            "done": "Powered descent"
+          },
+          "altitude": "Altitude",
+          "speed": "Speed",
+          "vertical": "Vertical",
+          "heat": "Heat",
+          "toSite": "To site",
+          "downrange": "Downrange",
+          "warp": "Time ×{n}",
+          "realTime": "Real time",
+          "mach": "Mach {n}",
+          "skip": "Skip to landing",
+          "skipTouch": "Tap to skip to landing"
+        }
       },
       "gears": {
         "creep": "Creep",
@@ -4202,6 +4227,11 @@
         "mars": "Descending to Mars",
         "proximaB": "Descending to Proxima b",
         "earth": "Descending to Tbilisi"
+      },
+      "insertion": {
+        "moon": "Orbit insertion — the Moon",
+        "mars": "Orbit insertion — Mars",
+        "earth": "Orbit insertion — Earth"
       }
     },
     "settingsPanel": {

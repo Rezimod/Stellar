@@ -3,7 +3,9 @@
 // camera positions, the suit, the world's own sky and weather, and what is
 // there — on Mars the base and its readouts, on Proxima b the biosphere and
 // the people who live in it; on Earth, Tbilisi (world-earth), with its own
-// ground, sky and air, a short re-entry before the descent, and no helmet.
+// ground, sky and air, and no helmet. On Mars and Earth the ship first
+// comes all the way down from orbit, through the entry, in this scene
+// (surface-flight); Proxima b opens on the powered descent.
 // The Moon's rig (camera, suit, dust, prints, lights, post, perf) is reused
 // as it is; only gravity, gait and colour change.
 //
@@ -37,7 +39,8 @@ import { makeAliens, type AlienTelemetry } from '@/lib/solar-system/world-aliens
 import { WORLDS, type WorldId, type WorldProfile } from '@/lib/solar-system/world-profiles';
 import type { EarthData } from '@/lib/solar-system/world-earth-data';
 import { EARTH_DESCENT, EARTH_WALK_RADIUS, makeEarthWorld, type EarthState } from '@/lib/solar-system/world-earth';
-import { makeEarthEntry } from '@/lib/solar-system/world-earth-entry';
+import { makeSurfaceFlight } from '@/lib/solar-system/surface-flight';
+import type { OrbitalTelemetry } from '@/lib/solar-system/orbital-descent';
 import { haze } from '@/lib/solar-system/world-earth-haze';
 import { makeFlightAudio } from '@/lib/solar-system/flight-audio';
 import { getSettings, onSettingsChange } from '@/game/settings';
@@ -45,6 +48,8 @@ import { EARTH_CHASE, earthGait } from '@/lib/solar-system/world-earth-gait';
 import { makeRemoteCrew, writeSurfacePose } from '@/lib/multiplayer/remote-crew';
 import type { RoomLink } from '@/lib/multiplayer/room-link';
 import { makeBuildMode, type BuildHandle } from '@/lib/solar-system/build-mode';
+import { isGlobeWorld } from '@/lib/solar-system/planet-frame';
+import { attachOrbitView, earthTiers, patchTiers } from '@/lib/solar-system/surface-orbit';
 import { BUILD_SITES } from '@/lib/solar-system/build-rules';
 
 export type WorldView = 'chase' | 'helmet' | 'wide';
@@ -88,8 +93,12 @@ export interface WorldOptions {
 
 export interface WorldTelemetry {
   ready: boolean;
-  phase: 'descent' | 'touchdown' | 'surface' | 'ascent';
-  /** The lander has climbed out of sight: the scene is done and orbit can take over. */
+  /** `orbit` is the whole way down from orbit to the powered descent on
+   *  the worlds flown down to from orbit (its legs are in `orbital`). */
+  phase: 'orbit' | 'descent' | 'touchdown' | 'surface' | 'ascent';
+  /** The flight from or to orbit while one is being flown, else null. */
+  orbital: OrbitalTelemetry | null;
+  /** The ship is back in orbit (or, on Proxima b, climbed out of sight): orbit can take over. */
   ascended: boolean;
   /** Down, plaque read: the crew may step out on the key, or will in a moment. */
   exitReady: boolean;
@@ -126,7 +135,7 @@ export interface WorldTelemetry {
   aliens: AlienTelemetry | null;
   /** Earth only. */
   earth: EarthState | null;
-  /** Coming in hot, before the powered descent (Earth). */
+  /** Coming in hot: the entry leg of the flight down from orbit. */
   entry: boolean;
   /** Crystal clusters collected on this world (world-crystals), restored from the device; 0 where there are none. The HUD paints it under the world's `crystals` label. */
   crystals: number;
@@ -143,7 +152,11 @@ export interface WorldSurfaceHandle {
   /** Point the camera so that "forward" is this world direction. */
   face: (dx: number, dz: number) => void;
   where: () => { x: number; z: number; y: number };
+  /** Straight to the ground (tests, benches, the resume after a lost GPU). */
   skipDescent: () => void;
+  /** Development: from orbit straight to the powered descent, or to the top of the entry. */
+  skipOrbit: () => void;
+  skipToEntry: () => void;
   perf: () => PerfSample;
   probe: (within?: string) => Record<string, number>;
   /** The game shell's pause: no frames, no sim, no sound until resumed. */
@@ -170,10 +183,8 @@ declare global {
 const EGRESS_HOLD = 4.2;
 /** How much of that before the exit key is offered. */
 const EXIT_AFTER = 1.4;
-/** Nose-first into the air: the entry flies a carrier with its blunt end
- *  (-Y) into the wind; the ship rides in it turned so its nose (+Z) is
- *  what goes first, and comes level as the entry does. */
-const NOSE_FIRST = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 2);
+/** Seconds of the lander's own climb before the flight back to orbit takes it. */
+const ASCENT_HANDOFF = 6;
 const STEP = 1 / 120;
 const MAX_STEPS = 12;
 /** The first-contact record, kept on the device. */
@@ -314,6 +325,17 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
     for (const i of earth.interactables) interactions.add(i);
   }
 
+  // ── The planet under the patch, from the ground to orbit (surface-orbit):
+  // the sky on its own layer, the ground under its ceilings. ──
+  const orbit = isGlobeWorld(world) ? attachOrbitView(host, world, {
+    sky: [sky?.group, earth?.sky.group], skies: [sky, earth?.sky],
+    sunDir: earth ? earth.sky.state.sunDir : SUN_DIR, groundAt: heightAt,
+    siteColor: earth ? undefined : profile.ground.plain,
+    curve: [terrain?.horizon.material],
+    tiers: earth ? earthTiers(earth, [dust.points, prints.mesh])
+      : patchTiers(world, [terrain?.mesh, terrain?.rocks, terrain?.horizon, dust.points, prints.mesh, base?.group, formations?.group, crystals?.group]),
+  }) : null;
+
   // Earth's air: no pressure suit, so an ordinary gait, and no helmet.
   const cosmonaut = makeCosmonaut(dust, lite, profile.gravity, !profile.breathable, !!profile.breathable);
   cosmonaut.onStep = (e) => { prints.stamp(e.x, e.y, e.z, e.yaw, e.side); audio.step(e.hard); cam.footfall(e.hard, cosmonaut.state.gait === 'run' || cosmonaut.state.gait === 'sprint' ? 1 : 0.25); };
@@ -325,22 +347,16 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
   // The crew's own ship comes down; the lander only when no hull is named.
   const lander = makeLander(padX, padZ, heightAt, dust, lite, lightPool, profile.gravity, earth ? EARTH_DESCENT : undefined, { kind: opts.shipKind });
   scene.add(lander.group);
-  // Earth first comes in hot: the entry flies a carrier down to where the
-  // powered descent starts, and the ship is posed from it each frame —
-  // nose into the wind, and levelling off as the entry hands over.
-  const carrier = new THREE.Object3D();
-  const entry = earth ? makeEarthEntry(carrier, lander.position.clone(), new THREE.Vector3(-EARTH_DESCENT.offsetX, 0, -EARTH_DESCENT.offsetZ).normalize()) : null;
-  if (entry) scene.add(entry.group);
-  const entryPose = new THREE.Quaternion();
-  const level = new THREE.Quaternion();
-  const rideEntry = () => {
-    if (!entry) return;
-    lander.position.copy(carrier.position);
-    entryPose.copy(NOSE_FIRST).slerp(level, THREE.MathUtils.smoothstep(entry.progress, 0.6, 0.95));
-    lander.group.quaternion.copy(carrier.quaternion).multiply(entryPose);
-    if (entry.done) lander.group.quaternion.identity().setFromAxisAngle(new THREE.Vector3(0, 1, 0), lander.yaw);
-  };
-  const flightAudio = entry ? makeFlightAudio() : null;
+  // Mars and Earth: the ship comes down from orbit in this scene — the
+  // retro burn, the entry and the glide (surface-flight) — to where the
+  // lander's powered descent begins. The air roars on the hull and thuds
+  // as the ship comes down through the speed of sound.
+  const globe = isGlobeWorld(world) && (world !== 'earth' || !!earth);
+  const flightAudio = globe ? makeFlightAudio() : null;
+  const flight = globe ? makeSurfaceFlight({
+    world: world as 'mars' | 'earth', lander, scene, camera, lite, baseFov: () => baseFov,
+    sounds: { reentry: (k) => flightAudio?.reentry(k), boom: () => flightAudio?.sonicBoom() },
+  }) : null;
   const walkRadius = earth ? EARTH_WALK_RADIUS : profile.walkRadius;
 
   // The collider lists are rebuilt into the same arrays: the camera asks
@@ -364,13 +380,13 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
     interact: false, use: false, viewToggle: false, viewCycle: false, headlamp: false, throttle: 0,
   };
   const telemetry: WorldTelemetry = {
-    ready: false, phase: 'descent', ascended: false, exitReady: false, landing: lander.telemetry, grade: '', view: 'chase', headlamp: false, poiId: '',
+    ready: false, phase: flight ? 'orbit' : 'descent', orbital: flight?.telemetry ?? null, ascended: false, exitReady: false, landing: lander.telemetry, grade: '', view: 'chase', headlamp: false, poiId: '',
     altitude: 0, speed: 0, jetFuel: 1, jetting: false, hint: 'walk', driving: false, o2: 97.4, heartRate: 64, suitTemp: 21.5, outsideC: profile.ambientC,
     evaSeconds: 0, distanceM: 0, crouched: false, stumbling: false, sliding: false, heading: 0,
     prompt: interactions.prompt, readout: '', readoutHold: 0, banner: '', bannerHold: 0,
     aliens: aliens ? aliens.telemetry : null,
     earth: earth ? earth.state : null,
-    entry: !!entry,
+    entry: false,
     crystals: crystals ? crystals.count : 0, crystalsTotal: crystals ? crystals.total : 0,
   };
   function banner(key: string) { telemetry.banner = key; telemetry.bannerHold = 5; }
@@ -423,7 +439,7 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
   let lastPoi = '';
   let exertion = 0;
   let egressHold = 0;
-  let entryHandoff = !!entry;
+  let entryHandoff = false;
   /** The descent camera's lean into the drift, rad. */
   let descentRoll = 0;
   const walk: WalkInput = { moveX: 0, moveZ: 0, jump: false, run: false, crouch: false, work: false };
@@ -490,36 +506,47 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
       crowd?.update(dt, opts.room, performance.now());
     }
 
-    if (entry && !entry.done) {
-      entry.update(dt);
-      rideEntry();
-      telemetry.entry = !entry.done;
-      const lt = lander.telemetry;
-      const ground = heightAt(lander.position.x, lander.position.z);
-      lt.altitude = Math.max(0, lander.position.y - ground);
-      lt.offset = Math.hypot(lander.position.x - padX, lander.position.z - padZ);
-      flightAudio?.reentry(entry.done ? 0 : entry.heat);
-      if (t < dt * 2) camera.position.copy(entry.cameraFrom);
-      else camera.position.lerp(entry.cameraFrom, 1 - Math.exp(-dt * 6));
-      camera.position.x += Math.sin(t * 43) * entry.heat * 0.6;
-      camera.position.y += Math.sin(t * 37 + 1) * entry.heat * 0.4;
-      camera.lookAt(entry.cameraAt);
-      input.interact = false;
+    if (telemetry.phase === 'orbit' && flight) {
+      // ── From orbit: the ship flies itself down the corridor — the burn,
+      // the entry, the glide — to where the powered descent begins; the
+      // stick leans on it, the action key skips to the end, and the lander
+      // takes over with no seam. ──
+      if (input.interact) { input.interact = false; flight.skip(); }
+      const step = flight.update(dt, { moveX: input.moveX, moveY: input.moveY, throttle: input.throttle });
+      telemetry.orbital = flight.telemetry;
+      telemetry.entry = flight.telemetry.phase === 'entry';
+      if (step === 'handover') {
+        telemetry.phase = 'descent';
+        telemetry.orbital = null;
+        telemetry.entry = false;
+        cam.yaw = flight.cameraYaw();
+        descentFocus.copy(lander.position).y += 2.0;
+        descentRoll = 0;
+      }
       cosmonaut.group.visible = false;
     } else if (telemetry.phase === 'ascent') {
-      // ── Going home. The camera stays on the ground a moment, then rises
-      // after the vehicle and lets it go up into the sky. ──
-      lander.update(dt, { throttle: 0, moveX: 0, moveY: 0 }, heightAt);
       input.interact = false;
-      const climb = lander.telemetry.climb;
-      tmp.copy(lander.position).y += 2.5;
-      const rise = THREE.MathUtils.smoothstep(climb, 1.5, 6);
-      descentPos.copy(ascentFrom).lerp(tmp, rise * 0.55);
-      descentPos.y = Math.max(ascentFrom.y, descentPos.y);
-      if (camera.position.distanceTo(descentPos) > 0.01) camera.position.lerp(descentPos, 1 - Math.exp(-dt * 3));
-      camera.lookAt(tmp);
-      if (lander.telemetry.throttle > 0.3 && lander.telemetry.altitude < 25) camera.position.y += Math.sin(t * 41) * 0.03 * lander.telemetry.throttle;
-      if (climb > 7.5) telemetry.ascended = true;
+      if (flight?.leg === 'ascent') {
+        // ── On up through the air to orbit, where the flight scene takes over. ──
+        if (flight.update(dt, { moveX: 0, moveY: 0, throttle: 0 }) === 'orbit') { telemetry.ascended = true; telemetry.orbital = null; }
+        else telemetry.orbital = flight.telemetry;
+      } else {
+        // ── Going home. The camera stays on the ground a moment, then rises
+        // after the vehicle and lets it go up into the sky. ──
+        lander.update(dt, { throttle: 0, moveX: 0, moveY: 0 }, heightAt);
+        const climb = lander.telemetry.climb;
+        tmp.copy(lander.position).y += 2.5;
+        const rise = THREE.MathUtils.smoothstep(climb, 1.5, 6);
+        descentPos.copy(ascentFrom).lerp(tmp, rise * 0.55);
+        descentPos.y = Math.max(ascentFrom.y, descentPos.y);
+        if (camera.position.distanceTo(descentPos) > 0.01) camera.position.lerp(descentPos, 1 - Math.exp(-dt * 3));
+        camera.lookAt(tmp);
+        if (lander.telemetry.throttle > 0.3 && lander.telemetry.altitude < 25) camera.position.y += Math.sin(t * 41) * 0.03 * lander.telemetry.throttle;
+        // Clear of the ground: the climb becomes the flight back to orbit.
+        // Proxima b has no flight to orbit here: the climb is the end of it.
+        if (climb > ASCENT_HANDOFF && flight) { flight.beginAscent(); telemetry.orbital = flight.telemetry; }
+        else if (climb > 7.5 && !flight) telemetry.ascended = true;
+      }
     } else if (telemetry.phase !== 'surface') {
       const lt = lander.telemetry;
       if (!lt.landed) {
@@ -673,6 +700,8 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
     }
     audio.update(dt, exertion, view === 'helmet');
     audio.jet(cosmonaut.state.jetK);
+    // The ship's engines through the frame, while there is a ship to fly.
+    audio.engine(telemetry.phase === 'orbit' || telemetry.phase === 'descent' || telemetry.phase === 'ascent' ? lander.telemetry.throttle : 0);
 
     let best = ''; let bestD = 1e9;
     for (const poi of pois) {
@@ -712,14 +741,16 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
     if (!earth?.driving()) jetLight(lightPool, crew, cosmonaut.yaw, cosmonaut.state.jetK);
     lightPool.flush(crew.x, crew.y, crew.z);
     if (telemetry.phase === 'surface') build?.update(crew.x, crew.z, camera);
+    orbit?.update(dt);
     host.render(dt);
   };
   host.start(frame, () => { telemetry.ready = true; }, cosmonaut.ready);
 
   const release = () => {
+    orbit?.dispose();
     build?.dispose();
+    flight?.dispose();
     lander.dispose();
-    entry?.dispose();
     flightAudio?.dispose();
     earth?.dispose();
     crowd?.dispose();
@@ -749,10 +780,12 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
     where: () => ({ x: cosmonaut.position.x, y: cosmonaut.position.y, z: cosmonaut.position.z }),
     skipDescent() {
       if (telemetry.phase === 'surface') return;
-      entry?.skip();
-      if (entry) rideEntry();
+      // Out of the flight from orbit, if it is still being flown.
+      flight?.stop();
+      telemetry.orbital = null;
       telemetry.entry = false;
       flightAudio?.reentry(0);
+      lander.group.quaternion.setFromAxisAngle(tmp.set(0, 1, 0), lander.yaw);
       // Set straight down on the pad: the vehicle's own touchdown puts it
       // on its gear and works out where the crew step off.
       lander.position.set(padX, heightAt(padX, padZ) + 200, padZ);
@@ -763,6 +796,8 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
       telemetry.grade = 'feather';
       egressHold = 0.2;
     },
+    skipOrbit() { if (telemetry.phase === 'orbit') flight?.skip(); },
+    skipToEntry() { if (telemetry.phase === 'orbit') flight?.skipToEntry(); },
     perf: perf.sample,
     probe: host.probe,
     setPaused: host.setPaused,

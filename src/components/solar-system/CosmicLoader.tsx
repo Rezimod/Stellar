@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
-export type LoaderVariant = 'orrery' | 'descent' | 'ascent' | 'hyperspace' | 'entry';
+export type LoaderVariant = 'orrery' | 'descent' | 'ascent' | 'hyperspace' | 'entry' | 'insertion';
 /** The world in the middle of the screen, photographed where there is a photograph. */
 export type LoaderBody = 'earth' | 'moon' | 'mars' | 'proximaB';
 
@@ -11,8 +11,11 @@ interface CosmicLoaderProps {
   detail?: string;
   className?: string;
   /** What turns in the middle: a world with its moon, a world's limb with
-   *  a lander going down or up, the star streaks of a ship under way, or the
-   *  entry — the world growing in the windscreen through a sheet of plasma. */
+   *  a lander going down or up, the star streaks of a ship under way, the
+   *  entry — the world growing in the windscreen through a sheet of plasma —
+   *  or orbit insertion: the world turning below, a ship settling onto a low
+   *  orbit round it. The entry itself is flown in the surface scene now, so
+   *  insertion is calm: no plasma. */
   variant?: LoaderVariant;
   /** Which world; each variant has its own default. */
   body?: LoaderBody;
@@ -123,6 +126,12 @@ export function CosmicLoader({ label, detail, className, variant = 'orrery', bod
           <div className="cosmic-loader__streaks">
             {STREAKS.map((i) => <span key={i} style={{ '--i': i } as React.CSSProperties} />)}
             <b />
+          </div>
+        )}
+        {variant === 'insertion' && (
+          <div className="cosmic-loader__insertion" data-body={world}>
+            <Globe body={world} className="cosmic-loader__below" />
+            <span className="cosmic-loader__track"><i className="cosmic-loader__ship" /></span>
           </div>
         )}
         {variant === 'entry' && (

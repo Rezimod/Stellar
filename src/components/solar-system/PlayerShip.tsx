@@ -8,7 +8,7 @@ import {
 import type { LucideIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { attachDesktopControls, clearFlightInput, zoomFlightCamera } from '@/lib/solar-system/flight-input';
-import { APPROACH_LEGS, APPROACH_SECONDS, titleCard } from '@/lib/solar-system/flight-approach';
+import { APPROACH_LEGS, APPROACH_SECONDS, approachProfileFor, titleCard } from '@/lib/solar-system/flight-approach';
 import { assetsFor, SURFACE_GROUPS } from '@/lib/solar-system/surface-assets';
 import { prefetchModels, prefetchDone } from '@/game/models';
 import { type FlightSession, type ShipKind } from '@/lib/solar-system/player-ship';
@@ -541,8 +541,9 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, returnedFr
         text(arrPlaceRef.current, name(arrivalRef.current));
         arrBarRef.current?.style.setProperty('--t', tel.approachT.toFixed(3));
         // The title card follows the profile's own curve, from the deck's
-        // clock: up a beat into the entry, gone before the ground.
-        titleRef.current?.style.setProperty('--title', titleCard(tel.approachT * APPROACH_SECONDS).toFixed(3));
+        // clock: up a beat into the entry, gone before the ground. A world
+        // flown down from orbit in its own scene gets its card there.
+        titleRef.current?.style.setProperty('--title', titleCard(tel.approachT * APPROACH_SECONDS, approachProfileFor(arrivalRef.current)).toFixed(3));
         if (!arrivalSkipRef.current && tel.approachT * APPROACH_SECONDS >= ARRIVAL_SKIP_AFTER) arrivalSkipRef.current = true;
         const hint = arrHintRef.current;
         if (hint && hint.hidden === arrivalSkipRef.current) hint.hidden = !arrivalSkipRef.current;

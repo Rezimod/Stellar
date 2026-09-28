@@ -42,6 +42,10 @@ export interface SurfaceHost {
   readonly paused: boolean;
   /** Keep the shadow box on the crew, one texel at a time, so its edges never crawl. */
   followShadow: (crew: THREE.Vector3, sunDir: THREE.Vector3) => void;
+  /** Another scene the frame draws (the planet globe under the surface):
+   *  compiled and uploaded with the surface scene's own, under the loader.
+   *  Register it before `start` compiles. */
+  compileExtra: (scene: THREE.Scene, camera: THREE.Camera) => void;
   /** Compile every program (once `after` settles: models still loading), then run `frame` once per drawn frame. */
   start: (frame: (dt: number) => void, onReady: () => void, after?: Promise<unknown>) => void;
   /** Draw through the post chain, inside the frame accounting. */
@@ -203,6 +207,7 @@ export function makeSurfaceHost(mount: HTMLElement, opts: SurfaceHostOptions): S
   document.addEventListener('visibilitychange', onVis);
 
   let compiling: Promise<unknown> = Promise.resolve();
+  const extras: { scene: THREE.Scene; camera: THREE.Camera }[] = [];
   const host: SurfaceHost = {
     renderer, scene, camera, sun, lightPool, post, perf, mount, quality, lite,
     get ready() { return ready; },
@@ -215,6 +220,7 @@ export function makeSurfaceHost(mount: HTMLElement, opts: SurfaceHostOptions): S
       sun.target.position.copy(shadowU).multiplyScalar(su).addScaledVector(shadowV, sv).addScaledVector(sunDir, crew.dot(sunDir));
       sun.position.copy(sun.target.position).addScaledVector(sunDir, 220);
     },
+    compileExtra(extraScene, extraCamera) { extras.push({ scene: extraScene, camera: extraCamera }); },
     start(frame, onReady, after) {
       frameFn = frame;
       // Compile every program before the first frame — in parallel where the
@@ -232,6 +238,7 @@ export function makeSurfaceHost(mount: HTMLElement, opts: SurfaceHostOptions): S
             // their maps go up too.
             try {
               uploadSceneTextures(renderer, scene);
+              for (const e of extras) uploadSceneTextures(renderer, e.scene);
               post.render(0);
             } catch { /* a lost context mid-warm: the loss handler rebuilds */ }
           }
@@ -242,7 +249,10 @@ export function makeSurfaceHost(mount: HTMLElement, opts: SurfaceHostOptions): S
           onReady();
           resume();
         };
-        return compileFor(renderer, post.drawTarget(), () => renderer.compileAsync(scene, camera)).then(begin, begin);
+        return compileFor(renderer, post.drawTarget(), () => Promise.all([
+          renderer.compileAsync(scene, camera),
+          ...extras.map((e) => renderer.compileAsync(e.scene, e.camera)),
+        ])).then(begin, begin);
       };
       compiling = after ? after.then(compile, compile) : compile() ?? Promise.resolve();
     },

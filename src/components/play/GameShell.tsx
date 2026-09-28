@@ -12,6 +12,7 @@ import { currentQuality, governedQuality, onQualityChange, setDetectedQuality, s
 import { CosmicLoader, type LoaderBody, type LoaderVariant } from '@/components/solar-system/CosmicLoader';
 import { useLoadingTips } from '@/components/solar-system/useLoadingTips';
 import { warmAudioService } from '@/lib/solar-system/sound-prefs';
+import { isGlobeWorld } from '@/lib/solar-system/planet-frame';
 import { GameWorld } from './GameWorld';
 import { TitleScreen } from './TitleScreen';
 import { PauseMenu } from './PauseMenu';
@@ -140,7 +141,11 @@ export default function GameShell() {
   const inWorld = state !== 'boot' && state !== 'title' && state !== 'exiting';
   const from = playedScene.current;
   const fromSurface = from !== null && from !== 'orbit';
-  const loaderVariant: LoaderVariant = scene === 'orbit' ? (fromSurface ? 'ascent' : 'orrery') : 'entry';
+  // The Moon, Mars and Earth are flown down from orbit in their own scene:
+  // the wait on the way there is orbit insertion, calm, with the entry still
+  // to come. Proxima b keeps the plasma of the entry here.
+  const insertion = scene !== 'orbit' && isGlobeWorld(scene);
+  const loaderVariant: LoaderVariant = scene === 'orbit' ? (fromSurface ? 'ascent' : 'orrery') : insertion ? 'insertion' : 'entry';
   const loaderBody: LoaderBody = scene === 'orbit' ? (fromSurface ? from : 'earth') : scene;
 
   return (
@@ -148,7 +153,7 @@ export default function GameShell() {
       {inWorld && <GameWorld key={snap.generation} scene={scene} state={state} />}
       {(state === 'loading' || loaderFading) && (
         <CosmicLoader className={state === 'loading' ? 'game-shell__loader' : 'game-shell__loader is-done'} variant={loaderVariant} body={loaderBody}
-          label={loaderVariant === 'ascent' ? tl('ascent') : t(`loading.scene.${scene}`)} detail={t(`loading.${stage}`)} progress={STAGE_PROGRESS[stage]} tips={tips} />
+          label={loaderVariant === 'ascent' ? tl('ascent') : insertion ? t(`loading.insertion.${scene}`) : t(`loading.scene.${scene}`)} detail={t(`loading.${stage}`)} progress={STAGE_PROGRESS[stage]} tips={tips} />
       )}
       {dropped && state === 'playing' && <p className="game-shell__notice" role="status">{t('qualityDrop')}</p>}
       {state === 'title' && overlay === 'none' && <TitleScreen onStart={start} />}

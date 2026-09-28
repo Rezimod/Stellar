@@ -13,10 +13,17 @@
 // Output (tone map) → grade (LDR) → Film. The three Sun-and-grade passes
 // come from post-flare.ts, shared with flight, and each preset switches
 // them on or off; off, they are skipped by the composer and cost nothing.
+//
+// Under a sky that reaches orbit, the Render step is three draws into the
+// one target (`setLayers`): the sky layer through its own camera, the planet
+// globe (kilometres, its own scene) over it with only the depth cleared, and
+// the surface scene over both, again with only the depth cleared. Each keeps
+// the full precision of the depth buffer for its own range, and everything
+// after the Render step sees one HDR image as before.
 
 import * as THREE from 'three';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
-import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { Pass } from 'three/examples/jsm/postprocessing/Pass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
@@ -35,6 +42,62 @@ export interface PostQuality {
   grade: boolean;
 }
 
+/** The two extra draws under the surface scene: its sky, then the planet. */
+export interface PostLayers {
+  /** Sees only the sky layer of the surface scene. */
+  skyCamera: THREE.Camera;
+  globe: { scene: THREE.Scene; camera: THREE.Camera };
+}
+
+/**
+ * The Render step. Single, it is three's RenderPass. Layered, the surface
+ * scene is drawn twice — the sky through `skyCamera`, the rest through the
+ * main camera, which no longer sees the sky layer — with the globe between.
+ * The layers belong to the scene they were set with: a different scene put
+ * in (the Moon's Backrooms) is drawn single.
+ */
+class SurfaceRenderPass extends Pass {
+  layers: PostLayers | null = null;
+  home: THREE.Scene;
+
+  constructor(public scene: THREE.Scene, public camera: THREE.Camera) {
+    super();
+    this.home = scene;
+    this.needsSwap = false;
+  }
+
+  render(renderer: THREE.WebGLRenderer, _writeBuffer: THREE.WebGLRenderTarget, readBuffer: THREE.WebGLRenderTarget) {
+    const autoClear = renderer.autoClear;
+    renderer.autoClear = false;
+    renderer.setRenderTarget(this.renderToScreen ? null : readBuffer);
+    renderer.clear(renderer.autoClearColor, renderer.autoClearDepth, renderer.autoClearStencil);
+    const L = this.scene === this.home ? this.layers : null;
+    if (!L) {
+      renderer.render(this.scene, this.camera);
+    } else {
+      const scene = this.scene;
+      // The sky pass leaves the shadow map to three: seen from the sky
+      // camera it has no casters, so it is only cleared, and the surface
+      // pass draws it again. Held back instead, the lit sky objects would
+      // sample a map that does not exist yet on the first frame.
+      renderer.render(scene, L.skyCamera);
+      renderer.clearDepth();
+      renderer.render(L.globe.scene, L.globe.camera);
+      renderer.clearDepth();
+      // A background would paint over the globe; the sky pass has drawn it.
+      // Nothing moved since the sky pass updated the matrices.
+      const background = scene.background;
+      const autoMatrix = scene.matrixWorldAutoUpdate;
+      scene.background = null;
+      scene.matrixWorldAutoUpdate = false;
+      renderer.render(scene, this.camera);
+      scene.background = background;
+      scene.matrixWorldAutoUpdate = autoMatrix;
+    }
+    renderer.autoClear = autoClear;
+  }
+}
+
 export interface MoonPostHandle {
   render: (dt: number) => void;
   setSize: (w: number, h: number) => void;
@@ -42,6 +105,9 @@ export interface MoonPostHandle {
   setHelmet: (k: number) => void;
   /** Draw a different scene through the same passes. */
   setScene: (scene: THREE.Scene) => void;
+  /** Sky, globe, surface as three draws (see the head of the file); `null`
+   *  goes back to the one. Only for the scene the chain was made with. */
+  setLayers: (layers: PostLayers | null) => void;
   /** The scene being drawn. */
   scene: () => THREE.Scene;
   /** 0 the Moon, 1 the Backrooms' camcorder look. */
@@ -118,7 +184,7 @@ export function makeMoonPost(renderer: THREE.WebGLRenderer, scene: THREE.Scene, 
   const composer = new EffectComposer(renderer, target);
   let q = quality;
   let bl = bloomFor(q.level, 'surface');
-  const renderPass = new RenderPass(scene, camera);
+  const renderPass = new SurfaceRenderPass(scene, camera);
   const godRays = makeGodRaysPass(q.level, q.godRays);
   const bloom = new UnrealBloomPass(new THREE.Vector2(size.x * q.bloomScale, size.y * q.bloomScale), bl.strength, bl.radius, bl.threshold);
   bloom.enabled = q.bloom;
@@ -163,7 +229,8 @@ export function makeMoonPost(renderer: THREE.WebGLRenderer, scene: THREE.Scene, 
     setSize,
     setHelmet(k) { helmetTarget = k; },
     setScene(next) { renderPass.scene = next; },
-    scene: () => renderPass.scene as THREE.Scene,
+    setLayers(layers) { renderPass.layers = layers; },
+    scene: () => renderPass.scene,
     setBackrooms(k) { back = k; },
     setBlack(k) { film.uniforms.uBlack.value = k; },
     drawTarget: () => composer.renderTarget1,

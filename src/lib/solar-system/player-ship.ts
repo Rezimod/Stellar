@@ -23,7 +23,7 @@ import { buildCosmonaut, buildCruiser, buildEndurance, buildKestrel, buildXfoil,
 import { shapeMouse } from '@/lib/solar-system/flight-input';
 import { makeMissionTracker, type MissionContext } from '@/lib/solar-system/flight-missions';
 import { projectTarget, stepTarget, type TargetCandidate, type TargetKind, type TargetScreen } from '@/lib/solar-system/flight-targeting';
-import { approachPose, APPROACH_SECONDS, descentBurn, entryHeat, isAirlessSite, type ApproachPhase } from '@/lib/solar-system/flight-approach';
+import { approachPose, approachProfileFor, APPROACH_SECONDS, descentBurn, entryHeat, type ApproachPhase, type ApproachProfile } from '@/lib/solar-system/flight-approach';
 
 export type { ShipKind } from '@/lib/solar-system/ship-mesh';
 export { zoomFlightCamera, clearFlightInput } from '@/lib/solar-system/flight-input';
@@ -1156,8 +1156,10 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
   let arrival: FlightBody | null = null;
   let arrivalClock = 0;
   let arrivalRadii = 12;
-  /** No air on the way down: the entry leg is a burn, and nothing glows. */
-  let arrivalAirless = false;
+  /** Which run: the entry through air, the burn over vacuum, or — for the
+   *  worlds flown down from orbit in their own scene — orbit insertion, where
+   *  nothing glows and the air the orrery draws is not flown through. */
+  let arrivalProfile: ApproachProfile = 'air';
   /** What the profile says the air is doing to the hull this frame, and how
    *  hard the engines are flaring against the fall. */
   let arrivalHeat = 0;
@@ -1569,7 +1571,7 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
     if (!body || pilot !== 'ship' || crashT >= 0 || jumpPhase !== 'none') return;
     arrival = body;
     arrivalClock = 0;
-    arrivalAirless = isAirlessSite(id, body.atmosphere);
+    arrivalProfile = approachProfileFor(id, body.atmosphere);
     arrivalHeat = 0;
     arrivalBurn = 0;
     autodock = null;
@@ -1601,10 +1603,10 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
     } else {
       arrivalClock += dt;
     }
-    const pose = approachPose(arrivalClock, arrivalRadii, arrivalAirless);
-    const ahead = approachPose(arrivalClock + Math.max(dt, 1 / 120), arrivalRadii, arrivalAirless);
-    arrivalHeat = entryHeat(arrivalClock, arrivalAirless);
-    arrivalBurn = descentBurn(arrivalClock, arrivalAirless);
+    const pose = approachPose(arrivalClock, arrivalRadii, arrivalProfile);
+    const ahead = approachPose(arrivalClock + Math.max(dt, 1 / 120), arrivalRadii, arrivalProfile);
+    arrivalHeat = entryHeat(arrivalClock, arrivalProfile);
+    arrivalBurn = descentBurn(arrivalClock, arrivalProfile);
     arrivalPointAt(pose.radii, pose.swing, body, arrivalAt);
     arrivalPointAt(ahead.radii, ahead.swing, body, arrivalNext);
     // The integrator does the move; this is the velocity that lands on it.
@@ -1627,7 +1629,7 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
     // onto the tail as the air (or the burn) takes hold, and rides there,
     // behind and a little above, through the glide to the ground.
     const around = pose.phase === 'approach' ? THREE.MathUtils.smoothstep(pose.legT, 0, 1)
-      : pose.phase === 'entry' || pose.phase === 'burn' ? 1 - THREE.MathUtils.smoothstep(pose.legT, 0, 0.55) : 0;
+      : pose.phase === 'entry' || pose.phase === 'burn' || pose.phase === 'orbit' ? 1 - THREE.MathUtils.smoothstep(pose.legT, 0, 0.55) : 0;
     input.orbitYaw = around * Math.PI * 0.86;
     input.orbitPitch = around * 0.22;
     tel.approachPhase = pose.phase;
@@ -2226,8 +2228,11 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
       regionHold -= dt;
       tel.region = regionHold > 0 ? region : '';
       // The arrival's entry is scripted: the profile says how hot the hull
-      // is, whatever the air under it happens to compute.
-      if (arrival) heatTarget = Math.max(heatTarget, arrivalHeat);
+      // is, whatever the air under it happens to compute. Orbit insertion
+      // stays out of the air altogether (the entry is flown in the surface
+      // scene), so nothing the orrery's thick atmosphere shell computes counts.
+      if (arrival && arrivalProfile === 'orbit') { heatTarget = arrivalHeat; atmo = 0; if (alert === 'entry') alert = ''; }
+      else if (arrival) heatTarget = Math.max(heatTarget, arrivalHeat);
       heat += (heatTarget - heat) * (1 - Math.exp(-dt * (arrival ? 7 : 4)));
       if (heat > 0.05 && !arrival) {
         damage(18 * heat * dt, true);

@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
   AIRLESS_LEGS, APPROACH_END_RADII, APPROACH_LEGS, APPROACH_MAX_RADII, APPROACH_MIN_RADII, APPROACH_SECONDS, approachPose,
-  descentBurn, entryHeat, isAirlessSite, titleCard,
+  approachProfileFor, descentBurn, entryHeat, isAirlessSite, ORBIT_END_RADII, ORBIT_LEGS, titleCard,
 } from '@/lib/solar-system/flight-approach';
 import { SURFACE_ASSETS, SURFACE_GROUPS, assetsFor, shipAssetFor } from '@/lib/solar-system/surface-assets';
 
@@ -114,6 +114,54 @@ describe('the arrival profile', () => {
     expect(skipped.radii).toBeGreaterThan(1);
     expect(skipped.radii).toBeLessThan(1.1);
     expect(approachPose(-5, START).phase).toBe('transit');
+  });
+});
+
+// The Moon, Mars and Earth are flown down from orbit in their own scene
+// (orbital-descent): the orrery's arrival for them ends at orbit insertion.
+describe('the arrival to orbit insertion', () => {
+  it('is the profile for the worlds flown down from orbit, and only for them', () => {
+    expect(approachProfileFor('moon')).toBe('orbit');
+    expect(approachProfileFor('mars')).toBe('orbit');
+    expect(approachProfileFor('earth', 1.1)).toBe('orbit');
+    expect(approachProfileFor('proximaB')).toBe('air');
+    expect(approachProfileFor('ceres', 1)).toBe('airless');
+  });
+
+  it('runs transit, approach and orbit on the same clock and ends above the drawn air', () => {
+    expect(ORBIT_LEGS.map((l) => l.phase)).toEqual(['transit', 'approach', 'orbit']);
+    expect(ORBIT_LEGS.reduce((a, l) => a + l.seconds, 0)).toBe(APPROACH_SECONDS);
+    expect(approachPose(1, START, 'orbit').phase).toBe('transit');
+    expect(approachPose(6, START, 'orbit').phase).toBe('approach');
+    expect(approachPose(12, START, 'orbit').phase).toBe('orbit');
+    const end = approachPose(APPROACH_SECONDS, START, 'orbit');
+    expect(end.done).toBe(true);
+    expect(end.radii).toBeCloseTo(ORBIT_END_RADII, 5);
+    // Above the top of the air the flight world draws round Earth (1.1) and Mars (1.15).
+    expect(ORBIT_END_RADII).toBeGreaterThan(1.15);
+    let last = approachPose(0, START, 'orbit');
+    for (let t = 0.1; t <= APPROACH_SECONDS; t += 0.1) {
+      const now = approachPose(t, START, 'orbit');
+      expect(now.radii).toBeLessThanOrEqual(last.radii + 1e-9);
+      expect(now.radii).toBeGreaterThan(ORBIT_END_RADII - 1e-9);
+      // Flying along the orbit, not pitched at the ground.
+      expect(now.pitch).toBeLessThan(0.2);
+      last = now;
+    }
+  });
+
+  it('never heats, puts up no title card, and burns only for the insertion', () => {
+    const insertAt = ORBIT_LEGS[0].seconds + ORBIT_LEGS[1].seconds;
+    for (let t = 0; t <= APPROACH_SECONDS; t += 0.25) {
+      expect(entryHeat(t, 'orbit')).toBe(0);
+      expect(titleCard(t, 'orbit')).toBe(0);
+    }
+    expect(descentBurn(insertAt - 0.1, 'orbit')).toBe(0);
+    expect(descentBurn(insertAt + 1.5, 'orbit')).toBeGreaterThan(0.5);
+    expect(descentBurn(APPROACH_SECONDS, 'orbit')).toBe(0);
+    // The older flag still means what it did.
+    expect(entryHeat(ENTRY_AT + 1.5, false)).toBeCloseTo(entryHeat(ENTRY_AT + 1.5, 'air'), 9);
+    expect(descentBurn(ENTRY_AT + 1, true)).toBeCloseTo(descentBurn(ENTRY_AT + 1, 'airless'), 9);
   });
 });
 

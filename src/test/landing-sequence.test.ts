@@ -1,14 +1,16 @@
-// The landing as a sequence: the ship flies the entry in orbit — plasma over
-// an atmosphere, a burn over vacuum, the title card on the profile's clock —
-// and the same ship comes down on the surface, whichever hull it is, with
-// the telemetry the landing HUD reads unchanged from the lander's.
+// The landing as a sequence: the ship flies the arrival in the orrery —
+// plasma over an atmosphere, a burn over vacuum, the title card on the
+// profile's clock, or, for the Moon, Mars and Earth (flown down from orbit
+// in their own scene), a calm orbit insertion — and the same ship comes down
+// on the surface, whichever hull it is, with the telemetry the landing HUD
+// reads unchanged from the lander's.
 
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import * as THREE from 'three';
 import {
   createFlightSession, createPlayerShip, type FlightBody, type FlightSession, type FlightWorld, type PlayerShipHandle,
 } from '@/lib/solar-system/player-ship';
-import { APPROACH_LEGS, APPROACH_SECONDS, titleCard } from '@/lib/solar-system/flight-approach';
+import { APPROACH_LEGS, APPROACH_SECONDS, ORBIT_END_RADII, titleCard } from '@/lib/solar-system/flight-approach';
 import { makeLander, type DescentKind, type LanderTelemetry } from '@/lib/solar-system/moon-lander';
 import { buildShip } from '@/lib/solar-system/player-ship';
 import type { DustHandle } from '@/lib/solar-system/moon-fx';
@@ -34,11 +36,15 @@ function body(id: string, x: number, radius: number, radiusKm: number, surfaceG:
 }
 
 function makeWorld(): FlightWorld {
-  const earth = body('earth', 1, EARTH_R, 6371, 9.81, 1.25);
+  // Earth's air as the flight world draws it (SolarSystemCanvas ATMOSPHERE).
+  const earth = body('earth', 1, EARTH_R, 6371, 9.81, 1.1);
   // The Moon a few tenths out along +X: airless, and far from Earth's air.
   const moon = body('moon', 1.3, EARTH_R * 0.27, 1737, 1.62, 1, 'moon');
+  // Worlds whose whole arrival is still flown here: one with air, one without.
+  const proxima = body('proximaB', 3, EARTH_R, 6371, 9.81, 1.25);
+  const ceres = body('ceres', 2.2, EARTH_R * 0.07, 470, 0.28, 1, 'moon');
   return {
-    bodies: [body('sun', 0, 0.152, 696_000, 274, 1.3, 'star'), earth, moon],
+    bodies: [body('sun', 0, 0.152, 696_000, 274, 1.3, 'star'), earth, moon, proxima, ceres],
     pois: [],
     home: { position: new THREE.Vector3(1, 0, EARTH_R * 5), lookAt: earth.position.clone(), yaw: 0 },
     jump: { name: 'alphaCentauri', distanceLy: 4.37, position: new THREE.Vector3(-14, -25, 8), lookAt: new THREE.Vector3(-15, -26, 8), yaw: 0 },
@@ -67,6 +73,9 @@ describe('the entry, flown from orbit', () => {
   /** Fly the whole arrival to `site`, recording the legs, the heat and the ship's own parts. */
   const fly = (site: string) => {
     const tel = session.telemetry;
+    // Start from a low pass over the world, as the land key comes up.
+    const b = world.bodies.find((x) => x.id === site)!;
+    if (b.id !== 'earth') ship.spawn({ position: b.position.clone().add(new THREE.Vector3(0, 0, b.radius * 5)), lookAt: b.position.clone(), yaw: 0 });
     const parts = ship.parts;
     session.input.approachRequest = site;
     const phases: string[] = [];
@@ -86,8 +95,8 @@ describe('the entry, flown from orbit', () => {
     return { phases, heatBy, streaksLit, coreUnderBurn, coreBefore };
   };
 
-  it('over the Earth it is an entry: the legs in order, the hull hot through it and cool by the ground', () => {
-    const run = fly('earth');
+  it('over Proxima b it is an entry: the legs in order, the hull hot through it and cool by the ground', () => {
+    const run = fly('proximaB');
     expect(run.phases).toEqual(['transit', 'approach', 'entry', 'glide', 'done']);
     expect(run.heatBy.transit ?? 0).toBeLessThan(0.05);
     expect(run.heatBy.entry).toBeGreaterThan(0.8);
@@ -98,16 +107,37 @@ describe('the entry, flown from orbit', () => {
     expect(session.telemetry.crashed).toBe(false);
   });
 
-  it('over the Moon it is a burn: no plasma, and the engines up against the fall', () => {
-    const run = fly('moon');
+  it('over an airless world it is a burn: no plasma, and the engines up against the fall', () => {
+    const run = fly('ceres');
     expect(run.phases).toEqual(['transit', 'approach', 'burn', 'glide', 'done']);
     for (const ph of ['transit', 'approach', 'burn', 'glide']) expect(run.heatBy[ph] ?? 0).toBeLessThan(0.02);
     expect(run.streaksLit).toBe(false);
     expect(run.coreUnderBurn).toBeGreaterThan(run.coreBefore + 0.2);
   });
 
+  // The Moon, Mars and Earth are flown all the way down from orbit in the
+  // surface scene (orbital-descent): here the arrival ends at orbit
+  // insertion — calm, nothing on the hull, the engines lit for the burn onto
+  // the orbit, and the ship left above the air the orrery draws.
+  it.each(['earth', 'moon'])('over %s it ends at orbit insertion: no plasma, an insertion burn, above the air', (site) => {
+    const run = fly(site);
+    expect(run.phases).toEqual(['transit', 'approach', 'orbit', 'done']);
+    for (const ph of ['transit', 'approach', 'orbit']) expect(run.heatBy[ph] ?? 0).toBeLessThan(0.02);
+    expect(run.streaksLit).toBe(false);
+    expect(session.telemetry.alert).not.toBe('entry');
+    const b = world.bodies.find((x) => x.id === site)!;
+    const radii = ship.group.position.distanceTo(b.position) / b.radius;
+    expect(radii).toBeGreaterThan(ORBIT_END_RADII - 0.02);
+    expect(radii).toBeGreaterThan(b.atmosphere);
+    expect(session.telemetry.crashed).toBe(false);
+    // Orbit insertion carries no title card in the orrery: the scene shows it.
+    for (let t = 0; t <= APPROACH_SECONDS; t += 0.5) expect(titleCard(t, 'orbit')).toBe(0);
+  });
+
   it('the deck reads the title card off the same clock the ship flies', () => {
-    session.input.approachRequest = 'earth';
+    const px = world.bodies.find((x) => x.id === 'proximaB')!;
+    ship.spawn({ position: px.position.clone().add(new THREE.Vector3(0, 0, px.radius * 5)), lookAt: px.position.clone(), yaw: 0 });
+    session.input.approachRequest = 'proximaB';
     const tel = session.telemetry;
     let seen = 0;
     let atEntryStart = -1;

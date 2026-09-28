@@ -33,6 +33,8 @@ import { makePrints } from '@/lib/solar-system/moon-prints';
 import { makeSuitAudio } from '@/lib/solar-system/moon-audio';
 import { makeRover, type RoverGear } from '@/lib/solar-system/moon-rover';
 import { makeLander, type LanderInput, type LanderTelemetry } from '@/lib/solar-system/moon-lander';
+import { makeSurfaceFlight } from '@/lib/solar-system/surface-flight';
+import type { OrbitalTelemetry } from '@/lib/solar-system/orbital-descent';
 import type { ShipKind } from '@/lib/solar-system/ship-mesh';
 import { makeMission, missionComplete, type MissionContext, type MissionTelemetry } from '@/lib/solar-system/moon-mission';
 import { makeJobs, type JobId, type JobsTelemetry } from '@/lib/solar-system/moon-jobs';
@@ -54,6 +56,7 @@ import { loadBackrooms, recordEntry, recordEscape } from '@/lib/solar-system/bac
 import { MOON_G } from '@/lib/solar-system/moon-fx';
 import { makeBuildMode, type BuildHandle } from '@/lib/solar-system/build-mode';
 import { BUILD_SITES } from '@/lib/solar-system/build-rules';
+import { attachOrbitView, patchTiers } from '@/lib/solar-system/surface-orbit';
 
 /** Three ways to watch the crew, three to ride the rover. */
 export type SurfaceView = 'chase' | 'helmet' | 'wide' | 'rover' | 'cockpit' | 'mast';
@@ -118,8 +121,12 @@ export interface SurfaceOptions {
 export interface SurfaceTelemetry {
   /** Programs are compiled and frames are being drawn. */
   ready: boolean;
-  phase: 'descent' | 'touchdown' | 'surface' | 'ascent';
-  /** The lander has climbed out of sight: orbit can take over. */
+  /** `orbit` is the whole way down from orbit to the powered descent (its
+   *  own legs are in `orbital`); `ascent` runs on up to orbit again. */
+  phase: 'orbit' | 'descent' | 'touchdown' | 'surface' | 'ascent';
+  /** The flight from or to orbit while one is being flown, else null. */
+  orbital: OrbitalTelemetry | null;
+  /** The ship has climbed back to orbit: the flight scene can take over. */
   ascended: boolean;
   /** Down, plaque read: the crew may step out on the key, or will in a moment. */
   exitReady: boolean;
@@ -239,7 +246,11 @@ export interface MoonSurfaceHandle {
   /** Use the thing with this id, wherever the crew is and whatever it asks
    *  for first: development only, for scripted runs. */
   forceInteract: (id: string, seconds?: number) => boolean;
+  /** Straight to the ground (tests, benches, the resume after a lost GPU). */
   skipDescent: () => void;
+  /** Development: from orbit straight to the powered descent, or to the top of the braking burn. */
+  skipOrbit: () => void;
+  skipToEntry: () => void;
   perf: () => PerfSample;
   /** Development: draw calls per scene layer. */
   probe: (within?: string) => Record<string, number>;
@@ -277,6 +288,8 @@ const EXIT_AFTER = 1.4;
  *  hum on channel two. Long enough not to talk over the first expedition act,
  *  short enough that nobody leaves without hearing it. */
 const HOLE_CALL_AFTER = 75;
+/** Seconds of the lander's own climb before the flight back to orbit takes it. */
+const ASCENT_HANDOFF = 6;
 const STEP = 1 / 120;
 const MAX_STEPS = 12;
 // Near the south pole the Sun never climbs far: a low sun out of the south-west,
@@ -443,6 +456,9 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
   // The crew's own ship comes down; the lander only when no hull is named.
   const lander = makeLander(PAD_CENTER.x, PAD_CENTER.y + 26, terrain.heightAt, dust, lite, lightPool, MOON_G, undefined, { kind: opts.shipKind });
   scene.add(lander.group);
+  // The way down from orbit to where the lander's powered descent begins,
+  // and the way back up: flown in this scene (surface-flight).
+  const flight = makeSurfaceFlight({ world: 'moon', lander, scene, camera, lite, baseFov: () => baseFov });
   const mission = makeMission(terrain.heightAt, dig, dust, lite, lightPool, base.zones.anchors.scienceTerminal);
   scene.add(mission.group);
   base.colliders.push(...mission.colliders);
@@ -510,8 +526,15 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
     bus: interactions.bus,
   });
   scene.add(moonMissions.props.group);
+  // ── The Moon under the patch, from the ground to orbit (surface-orbit):
+  // the sky on its own layer, the ground and the base under the ceiling. ──
+  const orbit = attachOrbitView(host, 'moon', {
+    sky: [sky.group], sunDir: SUN_DIR, groundAt: terrain.heightAt, curve: [horizon.material],
+    tiers: patchTiers('moon', [terrain.mesh, terrain.rocks, horizon, sinkhole.group, dust.points, prints.mesh, history.mesh, base.group,
+      mission.group, meteors.group, jobs.group, moonMissions.props.group]),
+  });
   const telemetry: SurfaceTelemetry = {
-    ready: false, phase: 'descent', ascended: false, exitReady: false, touchdownIn: 0, landing: lander.telemetry, grade: '',
+    ready: false, phase: 'orbit', orbital: flight.telemetry, ascended: false, exitReady: false, touchdownIn: 0, landing: lander.telemetry, grade: '',
     view: 'chase', driving: false, headlamp: false, poiId: '', poiDist: 0, impactDist: 0, impactHold: 0,
     airborne: false, altitude: 0, speed: 0, jetFuel: 1, jetting: false, hint: 'walk', craters: 0,
     o2: 97.4, suitPower: 100, pressureAgo: 1e4, heartRate: 64, suitTemp: 21.5, evaSeconds: 0, distanceM: 0,
@@ -804,6 +827,7 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
       bt.crack = fall.crack;
       post.setBlack(fall.black);
       if (fall.done) enterBackrooms();
+      orbit.update(dt);
       host.render(dt);
       return;
     }
@@ -944,20 +968,44 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
       underground(dt);
       return;
     }
-    if (telemetry.phase === 'ascent') {
-      // ── Going home: the camera stays on the ground a moment, then follows the vehicle up. ──
-      landerIn.throttle = 0; landerIn.moveX = 0; landerIn.moveY = 0;
-      lander.update(dt, landerIn, terrain.heightAt);
-      input.interact = false;
-      const climb = lander.telemetry.climb;
-      tmp.copy(lander.position).y += 2.5;
-      descentPos.copy(ascentFrom).lerp(tmp, THREE.MathUtils.smoothstep(climb, 1.5, 6) * 0.55);
-      descentPos.y = Math.max(ascentFrom.y, descentPos.y);
-      camera.position.lerp(descentPos, 1 - Math.exp(-dt * 3));
-      camera.lookAt(tmp);
+    if (telemetry.phase === 'orbit') {
+      // ── From orbit: the ship flies itself down the corridor to where the
+      // powered descent begins; the stick leans on it, the action key
+      // skips to the end, and the lander takes over with no seam. ──
+      if (input.interact) { input.interact = false; flight.skip(); }
+      const step = flight.update(dt, { moveX: input.moveX, moveY: input.moveY, throttle: input.throttle });
+      telemetry.orbital = flight.telemetry;
+      if (step === 'handover') {
+        telemetry.phase = 'descent';
+        telemetry.orbital = null;
+        cam.yaw = flight.cameraYaw();
+        descentFocus.copy(lander.position).y += 2.0;
+        descentRoll = 0;
+      }
+      cosmonaut.group.visible = false;
       rover.update(dt, 0, 0, base.colliders, TERRAIN_WALK_RADIUS);
       rover.present(1);
-      if (climb > 7.5) telemetry.ascended = true;
+    } else if (telemetry.phase === 'ascent') {
+      input.interact = false;
+      if (flight.leg === 'ascent') {
+        // ── On up through the black to orbit, where the flight scene takes over. ──
+        if (flight.update(dt, { moveX: 0, moveY: 0, throttle: 0 }) === 'orbit') { telemetry.ascended = true; telemetry.orbital = null; }
+        else telemetry.orbital = flight.telemetry;
+      } else {
+        // ── Going home: the camera stays on the ground a moment, then follows the vehicle up. ──
+        landerIn.throttle = 0; landerIn.moveX = 0; landerIn.moveY = 0;
+        lander.update(dt, landerIn, terrain.heightAt);
+        const climb = lander.telemetry.climb;
+        tmp.copy(lander.position).y += 2.5;
+        descentPos.copy(ascentFrom).lerp(tmp, THREE.MathUtils.smoothstep(climb, 1.5, 6) * 0.55);
+        descentPos.y = Math.max(ascentFrom.y, descentPos.y);
+        camera.position.lerp(descentPos, 1 - Math.exp(-dt * 3));
+        camera.lookAt(tmp);
+        // Clear of the ground: the climb becomes the flight back to orbit.
+        if (climb > ASCENT_HANDOFF) { flight.beginAscent(); telemetry.orbital = flight.telemetry; }
+      }
+      rover.update(dt, 0, 0, base.colliders, TERRAIN_WALK_RADIUS);
+      rover.present(1);
     } else if (telemetry.phase !== 'surface') {
       // ── The landing. The vehicle is flown; the camera rides low on its
       // quarter, so it looms, and it sways with the engine. ──
@@ -1223,7 +1271,7 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
     // are felt, not heard. The hiss and the habitat's machinery need air, so
     // they sound only in a chamber that has some and on a deck that is lit.
     audio.motor(Math.min(1, Math.abs(rover.speed) / Math.max(1, rover.top)), onRover && Math.abs(rover.speed) > 0.2);
-    audio.engine(telemetry.phase === 'descent' || telemetry.phase === 'ascent' ? lander.telemetry.throttle : 0);
+    audio.engine(telemetry.phase === 'descent' || telemetry.phase === 'ascent' || telemetry.phase === 'orbit' ? lander.telemetry.throttle : 0);
     hissK = Math.max(0, hissK - dt / EQUALISE_SECONDS);
     audio.hiss(hissK);
     audio.hum(base.inside && base.state.power ? 1 : 0);
@@ -1272,13 +1320,16 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
     sky.update(dt, camera, renderer.getPixelRatio());
     if (surfacing > 0) { surfacing = Math.max(0, surfacing - dt * 0.7); post.setBlack(surfacing); }
     if (telemetry.phase === 'surface') build.update(crew.x, crew.z, camera);
+    orbit.update(dt);
     host.render(dt);
   };
   host.start(frame, () => { telemetry.ready = true; }, cosmonaut.ready);
 
   const release = () => {
+    orbit.dispose();
     build.dispose();
     sinkhole.dispose();
+    flight.dispose();
     lander.dispose();
     mission.dispose();
     jobs.dispose();
@@ -1353,6 +1404,10 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
     },
     skipDescent() {
       if (telemetry.phase === 'surface') return;
+      // Out of the flight from orbit, if it is still being flown.
+      flight.stop();
+      telemetry.orbital = null;
+      lander.group.quaternion.setFromAxisAngle(tmp.set(0, 1, 0), lander.yaw);
       // Set straight down on the pad: the vehicle's own touchdown puts it
       // on its gear and works out where the crew step off.
       lander.position.set(PAD_CENTER.x, terrain.heightAt(PAD_CENTER.x, PAD_CENTER.y + 26) + 200, PAD_CENTER.y + 26);
@@ -1363,6 +1418,8 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
       telemetry.grade = 'feather';
       egressHold = 0.2;
     },
+    skipOrbit() { if (telemetry.phase === 'orbit') flight.skip(); },
+    skipToEntry() { if (telemetry.phase === 'orbit') flight.skipToEntry(); },
     perf: perf.sample,
     probe: host.probe,
     baseState(next) { if (next) base.setState(next); return base.state; },

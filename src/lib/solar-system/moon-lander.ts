@@ -68,8 +68,18 @@ export interface LanderHandle {
   telemetry: LanderTelemetry;
   /** The point the chase camera should hold. */
   position: THREE.Vector3;
-  /** Which way the nose points (rad about +Y); the lander has no nose and reads 0. */
+  /** Which way the nose points (rad about +Y); the lander has no nose and reads 0.
+   *  A descent flown down from orbit hands over on the heading it came in on. */
   yaw: number;
+  /** Where the powered descent begins and how it is moving then, local m and
+   *  m/s: what a descent from orbit has to arrive at. */
+  start: { position: THREE.Vector3; velocity: THREE.Vector3 };
+  /** The pad the guidance aims at. */
+  pad: { x: number; z: number };
+  /** The physics velocity, m/s (read it; the lander owns it). */
+  velocity: THREE.Vector3;
+  /** How far the plumes lean aft of straight down, rad: 0 for the lander. */
+  thrustTilt: number;
   /** Which hull this is, and how far back a chase camera should sit to frame it. */
   kind: DescentKind;
   chase: number;
@@ -81,6 +91,15 @@ export interface LanderHandle {
   /** Put it straight down on the ground where it is, on its gear, as if it
    *  had just touched down gently — the skip, and the resume on the surface. */
   settle: (heightAt: (x: number, z: number) => number) => void;
+  /** Flown from outside, high up (the way down from orbit and the way back
+   *  up to it): the hull is put where it is told, turned as it is told, and
+   *  the engines burn at `burn` (0…1) with no ground under them to stir. */
+  fly: (dt: number, position: THREE.Vector3, attitude: THREE.Quaternion, burn: number) => void;
+  /** The powered descent takes over from a flight down from orbit: from
+   *  here, moving like this, level on this heading. */
+  handover: (position: THREE.Vector3, velocity: THREE.Vector3, yaw: number) => void;
+  /** Heat on the hull, 0…1: the skin glows orange and then white. */
+  setHeat: (k: number) => void;
   dispose: () => void;
 }
 
@@ -121,6 +140,7 @@ interface VehicleSpec {
 }
 
 const DOWN = new THREE.Vector3(0, -1, 0);
+const UP = new THREE.Vector3(0, 1, 0);
 const DOWN_AFT = new THREE.Vector3(0, -1, -0.42).normalize();
 // The step-out point sits about five metres beyond the hull sphere: the chase
 // camera hangs five metres behind the crew, and closer than that it is pushed
@@ -194,7 +214,10 @@ export function makeLander(
   const REST = spec.rest;
   const group = new THREE.Group();
   group.name = spec === VEHICLES.lander ? 'lander' : 'ship';
-  group.rotation.y = spec.yaw;
+  /** The heading the hull stands on: the spec's, or the one a descent from
+   *  orbit came in on. */
+  let yaw = spec.yaw;
+  group.rotation.y = yaw;
   /** The visible vehicle, under the physics origin: it squats on its gear at touchdown. */
   const hull = new THREE.Group();
   group.add(hull);
@@ -303,6 +326,20 @@ export function makeLander(
   // never far from the camera on the ground. ──
   let releaseModel: (() => void) | null = null;
   let disposed = false;
+  /** The hull's own materials and what they glowed before the heat. */
+  const skins: { mat: THREE.MeshStandardMaterial; base: THREE.Color; baseI: number }[] = [];
+  let heatK = 0;
+  const hot = new THREE.Color();
+  const paintHeat = () => {
+    // Dull red to orange, a little toward yellow at the peak: a glow in the
+    // skin, not a lamp — the plasma round it carries the brightness.
+    hot.setRGB(0.9, 0.2 + 0.22 * heatK, 0.03 + 0.05 * heatK).multiplyScalar(0.55 * heatK);
+    for (const sk of skins) {
+      if (heatK <= 0.001) { sk.mat.emissive.copy(sk.base); sk.mat.emissiveIntensity = sk.baseI; continue; }
+      sk.mat.emissive.copy(sk.base).multiplyScalar(sk.baseI).add(hot);
+      sk.mat.emissiveIntensity = 1;
+    }
+  };
   acquireModel(spec.url, true).then((handle) => {
     if (disposed) { handle.release(); return; }
     releaseModel = handle.release;
@@ -312,12 +349,27 @@ export function makeLander(
     const pos = new THREE.Vector3();
     const scl = new THREE.Vector3();
     shell.updateMatrixWorld(true);
+    const cloned = new Map<THREE.Material, THREE.Material>();
     shell.traverse((o) => {
       if (/_LOD\d$/.test(o.name)) drop.push(o);
       const mm = o as THREE.Mesh;
       if (mm.isMesh) {
         mm.castShadow = true;
         mm.receiveShadow = !lite;
+        // The skin glows on the way in. The file's materials are shared
+        // with every other copy in the model cache (the flight deck's
+        // hull among them), so this copy takes its own to heat.
+        const src = mm.material as THREE.MeshStandardMaterial;
+        if (!Array.isArray(mm.material) && src.isMeshStandardMaterial && !src.transparent) {
+          let own = cloned.get(src) as THREE.MeshStandardMaterial | undefined;
+          if (!own) {
+            own = src.clone();
+            cloned.set(src, own);
+            owned.push(own);
+            skins.push({ mat: own, base: own.emissive.clone(), baseI: own.emissiveIntensity });
+          }
+          mm.material = own;
+        }
       } else if (o.name.startsWith('Engine')) {
         o.getWorldPosition(pos);
         o.getWorldScale(scl);
@@ -327,6 +379,7 @@ export function makeLander(
     for (const o of drop) o.removeFromParent();
     if (engines.length) buildPlumes(engines);
     hull.add(shell);
+    paintHeat();
   }, () => undefined);
   if (kind === 'lander') mesh(hull, new THREE.SphereGeometry(0.1, 8, 6), lampMat, 0, 2.95, 2.6);
 
@@ -349,7 +402,7 @@ export function makeLander(
   const grain: DustBurst = { x: 0, y: 0, z: 0, count: 1, speedMin: 2, speedMax: 4, cone: 1.5, size: 0.15, dirX: 0, dirZ: 0, bias: 2.4 };
   /** Where the crew step off, in the world: the spec's point turned by the nose. */
   const egressAt = () => {
-    const c = Math.cos(spec.yaw); const s = Math.sin(spec.yaw);
+    const c = Math.cos(yaw); const s = Math.sin(yaw);
     telemetry.egressX = position.x + spec.egress.x * c + spec.egress.z * s;
     telemetry.egressZ = position.z - spec.egress.x * s + spec.egress.z * c;
   };
@@ -467,8 +520,14 @@ export function makeLander(
     }
   };
 
+  const startAt = {
+    position: position.clone(),
+    velocity: vel.clone(),
+  };
+  const thrustTilt = Math.atan2(-spec.thrust.z, -spec.thrust.y);
   const handle: LanderHandle = {
     group, telemetry, position, yaw: spec.yaw, kind, chase: spec.chase, hull: spec.hull,
+    start: startAt, pad: { x: padX, z: padZ }, velocity: vel, thrustTilt,
     update(dt, input, height) {
       if (telemetry.climb >= 0) {
         // Going home: the engines come up to full over a second, the vehicle
@@ -513,11 +572,12 @@ export function makeLander(
       // ── The exhaust, and what it does to the ground. ──
       exhaust(dt, telemetry.throttle, alt, g2, 60);
       // The vehicle leans a touch into the translation it is asking for —
-      // in its own frame, so a hull with its nose the other way leans the
-      // same way the pilot pushed.
-      const facing = Math.cos(spec.yaw);
-      group.rotation.z += (-tx * 0.06 * facing - group.rotation.z) * (1 - Math.exp(-dt * 3));
-      group.rotation.x += (tz * 0.06 * facing - group.rotation.x) * (1 - Math.exp(-dt * 3));
+      // in its own frame, so a hull with its nose any way round leans the
+      // way the pilot pushed.
+      const hx = tx * Math.cos(yaw) - tz * Math.sin(yaw);
+      const hz = tx * Math.sin(yaw) + tz * Math.cos(yaw);
+      group.rotation.z += (-hx * 0.06 - group.rotation.z) * (1 - Math.exp(-dt * 3));
+      group.rotation.x += (hz * 0.06 - group.rotation.x) * (1 - Math.exp(-dt * 3));
 
       telemetry.altitude = Math.max(0, alt);
       telemetry.descent = Math.max(0, -vel.y);
@@ -526,6 +586,47 @@ export function makeLander(
       telemetry.driftX = vel.x;
       telemetry.driftZ = vel.z;
       telemetry.drift = Math.hypot(vel.x, vel.z);
+    },
+    fly(dt, at, attitude, burn) {
+      position.copy(at);
+      group.quaternion.copy(attitude);
+      hull.position.y = 0;
+      squat = squatVel = 0;
+      flicker += dt * 30;
+      const k = THREE.MathUtils.clamp(burn, 0, 1);
+      telemetry.throttle += (k - telemetry.throttle) * (1 - Math.exp(-dt * 6));
+      const lit = telemetry.throttle;
+      // Out here the engines are lit or they are not: no idle tongue, and
+      // nothing under them to throw about.
+      plumeOpacity(lit < 0.03 ? 0 : lit * (0.85 + 0.15 * Math.sin(flicker)));
+      plumeScale(0.8 + lit * 0.45, 0.3 + lit * 1.3 + 0.08 * Math.sin(flicker * 1.7), 0.8 + lit * 0.45);
+      if (lit > 0.03) lights?.request(position.x, position.y, position.z, spec.drive, lit * 30 * Math.max(1, spec.hull / 3.4), 30 + spec.hull * 3, 2);
+    },
+    handover(at, v, heading) {
+      position.copy(at);
+      vel.copy(v);
+      yaw = heading;
+      handle.yaw = heading;
+      group.quaternion.setFromAxisAngle(UP, heading);
+      hull.position.y = 0;
+      squat = squatVel = 0;
+      const g2 = heightAt(position.x, position.z);
+      telemetry.landed = false;
+      telemetry.assist = false;
+      telemetry.climb = -1;
+      telemetry.ground = g2;
+      telemetry.altitude = Math.max(0, position.y - g2 - REST);
+      telemetry.descent = Math.max(0, -vel.y);
+      telemetry.offset = Math.hypot(position.x - padX, position.z - padZ);
+      telemetry.driftX = vel.x;
+      telemetry.driftZ = vel.z;
+      telemetry.drift = Math.hypot(vel.x, vel.z);
+    },
+    setHeat(k) {
+      const next = THREE.MathUtils.clamp(k, 0, 1);
+      if (Math.abs(next - heatK) < 0.004 && (next > 0 || heatK === 0)) return;
+      heatK = next;
+      paintHeat();
     },
     launch() {
       if (!telemetry.landed || telemetry.climb >= 0) return;

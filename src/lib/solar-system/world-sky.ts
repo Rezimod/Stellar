@@ -9,6 +9,11 @@
 // in it, the starfield shows through by however much the sky lets it, and,
 // where the star flares, aurora curtains roll overhead. A ringed giant
 // (world-giant) hangs in Proxima b's.
+//
+// From height (surface-orbit), the dome is laid out against the true
+// horizon, which sinks below the level as the camera climbs, and the air in
+// it fades to black space — the star's disc stays, now unfiltered, and the
+// stars come out. The planet globe is drawn over the dome below the horizon.
 
 import * as THREE from 'three';
 import { softSpriteTexture } from '@/lib/solar-system/soft-sprite';
@@ -16,6 +21,8 @@ import { starfield } from '@/lib/solar-system/moon-surface';
 import { CLOUD_GLSL, cloudSteps, cloudUniforms, driftClouds } from '@/lib/solar-system/world-clouds';
 import { makeGiant } from '@/lib/solar-system/world-giant';
 import type { WorldProfile } from '@/lib/solar-system/world-profiles';
+import { isGlobeWorld } from '@/lib/solar-system/planet-frame';
+import { skyAt } from '@/lib/solar-system/surface-orbit';
 
 export interface WorldSky {
   group: THREE.Group;
@@ -24,6 +31,9 @@ export interface WorldSky {
   /** The star's light as it reaches the ground, after the air: for the key light's tint. */
   sunTint: THREE.Color;
   update: (dt: number, cameraPos: THREE.Vector3) => void;
+  /** The camera's height above the planet's reference sphere, m: the air
+   *  thins to space, the horizon sinks, the cloud deck goes. Globe worlds only. */
+  setAltitude: (altitudeM: number, cameraPos: THREE.Vector3) => void;
   dispose: () => void;
 }
 
@@ -69,29 +79,33 @@ const SkyShader = {
   fragmentShader: /* glsl */`
     ${SCATTER_GLSL}
     ${CLOUD_GLSL}
-    uniform float uCamY;
+    uniform float uCamY; uniform float uAir; uniform float uDip; uniform float uCloudVis;
     varying vec3 vDir;
     void main() {
       vec3 dir = normalize(vDir);
+      // Against the true horizon, which sinks by uDip below the level with height.
+      float el = asin(clamp(dir.y, -1.0, 1.0)) + uDip;
+      vec3 sky = vec3(normalize(dir.xz + vec2(1e-6)) * cos(el), sin(el)).xzy;
       // The sky is evaluated a hair above the ground line, so the horizon band has a value to fade to.
-      vec3 up = vec3(dir.x, max(dir.y, 0.006), dir.z);
+      vec3 up = vec3(sky.x, max(sky.y, 0.006), sky.z);
       vec3 fex;
-      vec3 col = skyRadiance(normalize(up), fex);
-      // The star: its disc through the air, and a tight corona.
+      // The air glows by how much of it is over the camera: none in space.
+      vec3 col = skyRadiance(normalize(up), fex) * uAir;
+      // The star: its disc through the air (none left in space), and a tight corona.
       float c = dot(dir, uSun);
-      vec3 sunT = sunTransmittance();
+      vec3 sunT = mix(vec3(1.0), sunTransmittance(), uAir);
       float edge = (1.0 - uSunCos) * 0.35;
       float disc = smoothstep(uSunCos - edge, uSunCos + edge * 0.4, c);
-      col += uSunDisc * sunT * disc * step(0.0, dir.y + 0.02);
+      col += uSunDisc * sunT * disc * step(0.0, sky.y + 0.02);
       col += uSunDisc * sunT * pow(max(c, 0.0), 800.0) * 0.12;
       // Clouds, above the horizon, lit by the star's light at their height.
       #if CLOUD_STEPS > 0
         // High cloud sees less of the dust than the ground does: half the extinction.
         vec4 cl = marchClouds(vec3(0.0, uCamY, 0.0), dir, uSun, pow(sunT, vec3(0.5)));
-        col = col * cl.a + cl.rgb * uCloudGain;
+        col = mix(col, col * cl.a + cl.rgb * uCloudGain, uCloudVis);
       #endif
       // Below the ground line the dome is the colour of the air at a distance, dimmer.
-      col = mix(col, uHaze * uSunI * 0.05 + uGround, smoothstep(0.012, -0.05, dir.y));
+      col = mix(col, (uHaze * uSunI * 0.05 + uGround) * uAir, smoothstep(0.012, -0.05, sky.y));
       gl_FragColor = vec4(col, 1.0);
     }`,
 };
@@ -152,6 +166,8 @@ function skyUniforms(profile: WorldProfile) {
     uHaze: { value: new THREE.Color(...A.hazeColor) },
     uCloudGain: { value: A.sunIntensity * 0.05 },
     uCamY: { value: 0 },
+    /** 1 on the ground, 0 in space; the horizon's dip, rad; the cloud deck, 1…0. */
+    uAir: { value: 1 }, uDip: { value: 0 }, uCloudVis: { value: 1 },
   };
 }
 
@@ -188,7 +204,8 @@ export function makeWorldSky(renderer: THREE.WebGLRenderer, profile: WorldProfil
   const stars = starfield(lite ? 2200 : 4200, lite ? 4000 : 9000);
   // Added over the sky, so they show through a dim one and drown in a bright one.
   const starMat = stars.material as THREE.PointsMaterial;
-  starMat.opacity = 0.9 * S.stars;
+  const starsGround = 0.9 * S.stars;
+  starMat.opacity = starsGround;
   starMat.blending = THREE.AdditiveBlending;
   stars.visible = S.stars > 0;
   stars.renderOrder = -9;
@@ -266,6 +283,17 @@ export function makeWorldSky(renderer: THREE.WebGLRenderer, profile: WorldProfil
     group,
     environment,
     sunTint: sunAtGround(profile),
+    setAltitude(altitudeM, cameraPos) {
+      if (!isGlobeWorld(profile.id)) return;
+      const k = skyAt(profile.id, altitudeM);
+      uniforms.uAir.value = k.air;
+      uniforms.uDip.value = k.dip;
+      uniforms.uCloudVis.value = k.clouds;
+      uniforms.uCamY.value = cameraPos.y;
+      // The stars come out as the air goes, and only once the sky is dark.
+      starMat.opacity = starsGround + (0.9 - starsGround) * Math.pow(1 - k.air, 3);
+      stars.visible = starMat.opacity > 0.001;
+    },
     update(dt, cameraPos) {
       t += dt;
       group.position.copy(cameraPos);
