@@ -94,6 +94,7 @@ uniform vec3 uHazeColor;
 uniform vec3 uHazeSun;
 uniform vec3 uTwilight;
 uniform float uCamAlt;
+uniform float uCamAgl;
 
 // Mean density of an exponential layer along a straight path from height a
 // to height b (both over the scale height), times the path length.
@@ -105,8 +106,11 @@ float layerDepth(float hc, float hp, float L, float H) {
 }
 
 vec3 aerial(vec3 col, float L, float hp, vec3 viewDir, vec3 up, vec3 sun) {
-  float hc = max(uCamAlt, -2.0);
-  vec3 tau = uAirBeta * layerDepth(hc, hp, L, uAirH) + uHazeBeta * layerDepth(hc, hp, L, uHazeH);
+  // The air by height over the datum; the low haze by height over the
+  // ground, which it hugs (measured from the datum, a basin kilometres deep
+  // would fill with exp(depth / 250 m) of it).
+  float hc = max(uCamAlt, -9.0);
+  vec3 tau = uAirBeta * layerDepth(hc, max(hp, -9.0), L, uAirH) + uHazeBeta * layerDepth(max(uCamAgl, 0.0), 0.0, L, uHazeH);
   vec3 T = exp(-tau);
   float mu = dot(up, sun);
   float day = smoothstep(-0.14, 0.22, mu);
@@ -127,6 +131,7 @@ export function aerialUniforms(air: GlobeAir): Record<string, THREE.IUniform> {
     uHazeSun: { value: new THREE.Vector3(...air.hazeSun) },
     uTwilight: { value: new THREE.Vector3(...air.twilight) },
     uCamAlt: { value: 0 },
+    uCamAgl: { value: 0 },
   };
 }
 

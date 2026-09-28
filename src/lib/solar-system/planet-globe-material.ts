@@ -64,11 +64,22 @@ vec4 noised(vec3 x) {
     k3 + k6 * u.x + k5 * u.y + k7 * u.x * u.y);
   return vec4(2.0 * dv, 2.0 * v - 1.0);
 }
-// Two octaves of it at wavelength lam (m), gradient per metre.
+// Value noise lines up with its lattice; turning each octave's domain by a
+// rotation that shares no axis with the last hides the grid.
+const mat3 ROT = mat3(0.00, 0.80, 0.60, -0.80, 0.36, -0.48, -0.60, -0.48, 0.64);
+// Three octaves of it at wavelength lam (m), gradient per metre (in the
+// unrotated frame: R is orthonormal, so the gradient goes back by Rᵀ).
 vec4 detail2(vec3 p, float lam) {
-  vec4 a = noised(p / lam);
-  vec4 b = noised(p / (lam * 0.43) + 17.3);
-  return vec4(a.xyz / lam + b.xyz * 0.5 / (lam * 0.43), a.w + 0.5 * b.w);
+  vec3 q = p / lam;
+  vec4 a = noised(q);
+  vec3 q2 = ROT * q * 2.03 + 17.3;
+  vec4 b = noised(q2);
+  vec3 q3 = ROT * q2 * 2.01 - 5.1;
+  vec4 c = noised(q3);
+  vec3 gb = transpose(ROT) * b.xyz * 2.03;
+  vec3 gc = transpose(ROT) * (transpose(ROT) * c.xyz * 2.01) * 2.03;
+  vec3 g = (a.xyz + 0.5 * gb + 0.25 * gc) / lam;
+  return vec4(g, (a.w + 0.5 * b.w + 0.25 * c.w) / 1.75);
 }
 `;
 

@@ -511,7 +511,10 @@ export function makePlanetGlobe(world: GlobeWorld, opts: GlobeOptions): PlanetGl
 
     // The air and the clouds.
     shell?.setAltitude(camAltKm);
-    if (air) ground.uniforms.uCamAlt.value = camAltKm;
+    if (air) {
+      ground.uniforms.uCamAlt.value = camAltKm;
+      ground.uniforms.uCamAgl.value = Math.max(0, camAltKm - groundUnderKm);
+    }
     if (cloudMat && clouds) {
       cloudShift = (cloudShift + dt * 4e-6) % 1;
       cloudMat.uniforms.uCloudShift.value = cloudShift;
