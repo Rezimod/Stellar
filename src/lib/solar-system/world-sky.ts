@@ -33,6 +33,7 @@ const DOME = 1800;
 const SCATTER_GLSL = /* glsl */`
   uniform vec3 uSun; uniform vec3 uBetaR; uniform vec3 uBetaM; uniform vec3 uBetaA; uniform float uG; uniform float uSunI;
   uniform float uSunCos; uniform vec3 uSunDisc; uniform vec3 uGround; uniform vec3 uHaze; uniform float uCloudGain;
+  uniform vec3 uSunTint; uniform vec3 uAmbient;
   // Optical path through a flat-ish atmosphere: 1 at the zenith, ~38 at the horizon (Kasten-Young).
   float airMass(float y) {
     float yc = max(y, 0.0);
@@ -51,11 +52,14 @@ const SCATTER_GLSL = /* glsl */`
     vec3 beta = uBetaR + uBetaM + uBetaA;
     fex = exp(-beta * m);
     float c = dot(dir, uSun);
-    vec3 sunE = uSunI * sunTransmittance();
+    vec3 sunE = uSunI * uSunTint * sunTransmittance();
     vec3 scat = (uBetaR * rayleighPhase(c) + uBetaM * miePhase(c, uG)) / beta;
     vec3 L = sunE * scat * (1.0 - fex);
     // Multiple scattering, roughly: a floor of the sky's own colour so the shadowed side is never black.
     L += sunE * (uBetaR / beta) * 0.035 * (1.0 - fex);
+    // Skylight from beyond the model — the day side over the horizon on a
+    // locked world — strongest overhead, where the air in front is thinnest.
+    L += uAmbient * (0.4 + 0.6 * fex);
     return L;
   }
 `;
@@ -142,10 +146,11 @@ function skyUniforms(profile: WorldProfile) {
     uBetaM: { value: new THREE.Vector3(A.mieTint[0] * mie, A.mieTint[1] * mie, A.mieTint[2] * mie) },
     uBetaA: { value: new THREE.Vector3(...A.absorb) },
     uG: { value: A.mieG }, uSunI: { value: A.sunIntensity },
+    uSunTint: { value: new THREE.Vector3(...A.sunTint) }, uAmbient: { value: new THREE.Color(...A.ambient) },
     uSunCos: { value: Math.cos(discRad) }, uSunDisc: { value: profile.sun.disc.clone() },
     uGround: { value: profile.sky.horizon.clone().multiplyScalar(0.35) },
     uHaze: { value: new THREE.Color(...A.hazeColor) },
-    uCloudGain: { value: A.sunIntensity * 0.032 },
+    uCloudGain: { value: A.sunIntensity * 0.05 },
     uCamY: { value: 0 },
   };
 }
@@ -157,7 +162,7 @@ function sunAtGround(profile: WorldProfile): THREE.Color {
   const zen = (Math.acos(y) * 180) / Math.PI;
   const m = 1 / (y + 0.15 * Math.pow(Math.max(93.885 - zen, 0.1), -1.253));
   const mie = A.mie * A.turbidity;
-  const t = (k: number) => Math.exp(-(A.rayleigh[k] + A.mieTint[k] * mie + A.absorb[k]) * m);
+  const t = (k: number) => A.sunTint[k] * Math.exp(-(A.rayleigh[k] + A.mieTint[k] * mie + A.absorb[k]) * m);
   return new THREE.Color(t(0), t(1), t(2));
 }
 

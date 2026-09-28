@@ -54,8 +54,11 @@ export interface WorldAtmosphere {
   mieG: number;
   /** How much dust or haze there is: scales the Mie term with height. */
   turbidity: number;
-  /** The star's brightness as seen through the air; the sky's overall exposure. */
+  /** The star's brightness as seen through the air (the sky's overall exposure), and its colour, normalised. */
   sunIntensity: number;
+  sunTint: [number, number, number];
+  /** Skylight from beyond the model — multiple scattering, the day side over the horizon — added everywhere, linear RGB. */
+  ambient: [number, number, number];
   /** Aerial perspective: Koschmieder β (1/m), the colour of the air at a distance and toward the sun. */
   hazeBeta: number;
   hazeColor: [number, number, number];
@@ -227,8 +230,9 @@ export const MARS: WorldProfile = {
   // dust absorbs blue and scatters red, and blue right round the sun because
   // micron dust throws blue forward. Thin, so the stars would show at night.
   atmosphere: {
-    rayleigh: [0.36, 0.24, 0.13], absorb: [0.05, 0.20, 0.50], mie: 0.030, mieTint: [0.30, 0.55, 1.0], mieG: 0.86, turbidity: 3.2, sunIntensity: 80,
-    hazeBeta: 1.9e-3, hazeColor: [0.74, 0.54, 0.38], hazeSun: [0.86, 0.72, 0.62],
+    rayleigh: [0.30, 0.21, 0.14], absorb: [0.03, 0.10, 0.26], mie: 0.030, mieTint: [0.30, 0.55, 1.0], mieG: 0.86, turbidity: 3.2,
+    sunIntensity: 34, sunTint: [1, 0.96, 0.9], ambient: [0.05, 0.035, 0.02],
+    hazeBeta: 1.3e-3, hazeColor: [0.74, 0.54, 0.38], hazeSun: [0.86, 0.72, 0.62],
   },
   // High, thin water-ice wisps, as the rovers photograph them before dawn.
   clouds: { coverage: 0.30, altitude: 900, thickness: 260, scale: 1500, wind: [9, 3], lit: [1.0, 0.94, 0.86], shade: [0.72, 0.56, 0.46], kind: 'wisps' },
@@ -281,16 +285,18 @@ export const PROXIMA_B: WorldProfile = {
   // there is scatters, salmon along the horizon and a wide orange wash
   // round the sun that never sets.
   atmosphere: {
-    rayleigh: [0.30, 0.16, 0.62], absorb: [0.04, 0.10, 0.03], mie: 0.024, mieTint: [1.0, 0.62, 0.36], mieG: 0.78, turbidity: 6, sunIntensity: 60,
+    rayleigh: [0.05, 0.06, 0.20], absorb: [0.0, 0.05, 0.02], mie: 0.018, mieTint: [1.0, 0.55, 0.30], mieG: 0.80, turbidity: 4,
+    sunIntensity: 30, sunTint: [1, 0.55, 0.42], ambient: [0.12, 0.06, 0.30],
     hazeBeta: 1.5e-3, hazeColor: [0.40, 0.24, 0.36], hazeSun: [0.82, 0.46, 0.30],
   },
   // Broken cumulus, lit from the side by a star that never climbs.
   clouds: { coverage: 0.52, altitude: 520, thickness: 420, scale: 900, wind: [4, -6], lit: [1.0, 0.80, 0.70], shade: [0.30, 0.18, 0.34], kind: 'cumulus' },
   // "Proxima c": the real one is a Neptune-mass planet 1.5 au out, which
-  // from here would be a point of light. It is drawn as a ringed giant a
-  // few degrees off the star's side of the sky, dramatised for the view.
+  // from here would be a point of light. It is drawn as a ringed giant low
+  // in the north-west, opposite the star so it shows its lit face (a giant
+  // beside the star would be a crescent), dramatised for the view.
   giant: {
-    dir: v(0.10, 0.30, 0.95), angularDeg: 24, tilt: 0.42, roll: -0.35, ringInner: 1.35, ringOuter: 2.25,
+    dir: v(-0.58, 0.30, -0.66), angularDeg: 24, tilt: 0.42, roll: -0.35, ringInner: 1.35, ringOuter: 2.25,
     bands: [[0.58, 0.42, 0.50], [0.86, 0.66, 0.58], [0.70, 0.48, 0.52], [0.92, 0.78, 0.68], [0.62, 0.40, 0.46], [0.88, 0.70, 0.62], [0.54, 0.36, 0.48]],
     ringColor: [0.82, 0.68, 0.64], air: 0.34,
   },
@@ -332,7 +338,7 @@ export const EARTH: WorldProfile = {
   },
   // Unused: Earth's sky and air are the real ones (world-earth-sky, world-earth-haze).
   atmosphere: {
-    rayleigh: [0.18, 0.32, 0.62], absorb: [0, 0, 0], mie: 0.01, mieTint: [1, 1, 1], mieG: 0.76, turbidity: 2, sunIntensity: 60,
+    rayleigh: [0.18, 0.32, 0.62], absorb: [0, 0, 0], mie: 0.01, mieTint: [1, 1, 1], mieG: 0.76, turbidity: 2, sunIntensity: 30, sunTint: [1, 1, 1], ambient: [0, 0, 0],
     hazeBeta: 1.3e-4, hazeColor: [0.6, 0.7, 0.85], hazeSun: [1, 0.9, 0.75],
   },
   clouds: null, giant: null, formations: null, crystals: null,

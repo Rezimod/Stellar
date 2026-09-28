@@ -157,6 +157,8 @@ const FUEL_BURN = 0.035;
 /** How much of the engine's braking the profile asks for: the rest is the
  *  margin that makes the profile flyable at all. */
 const PROFILE = 0.8;
+/** How much plume the engines show with the throttle closed, in the air. */
+const IDLE_PLUME = 0.32;
 /** Radius of the laid pad the crew aims at, as moon-base-zones draws it. The
  *  other worlds have no paint, so this simply makes their guidance precise. */
 const PAD_R = 11.5;
@@ -352,8 +354,12 @@ export function makeLander(
    *  sheet of it going sideways faster than the vehicle is coming down. */
   const exhaust = (dt: number, t: number, alt: number, g2: number, rate: number) => {
     flicker += dt * 30;
-    plumeOpacity(t * (0.85 + 0.15 * Math.sin(flicker)));
-    plumeScale(0.8 + t * 0.35, 0.35 + t * 0.85 + 0.07 * Math.sin(flicker * 1.7), 0.8 + t * 0.35);
+    // Airborne, the engines are never dark: an idle tongue at the throat
+    // that the throttle stretches into the full plume. The dust answers
+    // the real throttle only.
+    const lit = Math.max(t, IDLE_PLUME);
+    plumeOpacity(lit * (0.85 + 0.15 * Math.sin(flicker)));
+    plumeScale(0.8 + lit * 0.35, 0.3 + lit * 0.9 + 0.07 * Math.sin(flicker * 1.7), 0.8 + lit * 0.35);
     lights?.request(position.x, position.y - REST * 0.5, position.z, spec.drive, t * 28 * Math.max(1, spec.hull / 3.4), 20 + alt * 0.6 + spec.hull * 2, 2);
     const blast = t * Math.max(0, 1 - alt / 30);
     dustAcc += blast * dt * rate;
