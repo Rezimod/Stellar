@@ -819,6 +819,8 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
         walk.crouch = input.crouch;
         walk.jump = jumpPress.take();
         walk.work = false;
+        // No jet under the ground: the Backrooms are walked.
+        walk.jet = false;
         b.step(h, walk);
       });
       cosmonaut.present(alpha);

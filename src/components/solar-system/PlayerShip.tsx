@@ -824,19 +824,32 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, returnedFr
               and the flash goes off at both ends of the jump. */}
           <div className="flight-hud__warp" aria-hidden />
           <div className="flight-hud__flash" aria-hidden />
+          {/* The air on the hull, seen from the seat: an orange glow at the
+              edges of the glass that follows the heat, and the ground's haze
+              coming up through the glide. */}
+          <div className="flight-heat" aria-hidden />
+
+          {/* The world's name, letter-spaced across the glass, with one line
+              of what it is like down there — the entry's title card. */}
+          {arrival !== null && (
+            <div ref={titleRef} className="flight-title" aria-hidden>
+              <span className="flight-title__name">{t(`worlds.${arrival}.name`)}</span>
+              <span className="flight-title__line">{t(`worlds.${arrival}.descriptors`)} · {t(`worlds.${arrival}.temp`)}</span>
+            </div>
+          )}
 
           {/* The arrival: the ship has the con. What it is doing, how far
               through it is, what has come down for the surface waiting at
               the end of it, and the way to skip it once it is familiar. */}
           {arrival !== null && (
-            <div className="flight-arrival" role="status" aria-live="polite">
+            <div ref={arrBoxRef} className="flight-arrival" role="status" aria-live="polite">
               <p className="flight-arrival__head">
                 <span ref={arrPhaseRef} className="flight-arrival__phase" />
                 <span ref={arrPlaceRef} className="flight-arrival__place" />
               </p>
               <span ref={arrBarRef} className="flight-arrival__bar" aria-hidden><i /></span>
               <ul ref={arrListRef} className="flight-arrival__list">
-                {SURFACE_GROUPS.filter((g) => assetsFor(arrival).some((a) => a.group === g)).map((g) => (
+                {SURFACE_GROUPS.filter((g) => assetsFor(arrival, session.shipKind).some((a) => a.group === g)).map((g) => (
                   <li key={g} data-group={g} data-done="false">
                     <Check size={13} aria-hidden />
                     <span>{t(`arrival.load.${g}`)}</span>

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
-export type LoaderVariant = 'orrery' | 'descent' | 'ascent' | 'hyperspace';
+export type LoaderVariant = 'orrery' | 'descent' | 'ascent' | 'hyperspace' | 'entry';
 /** The world in the middle of the screen, photographed where there is a photograph. */
 export type LoaderBody = 'earth' | 'moon' | 'mars' | 'proximaB';
 
@@ -11,7 +11,8 @@ interface CosmicLoaderProps {
   detail?: string;
   className?: string;
   /** What turns in the middle: a world with its moon, a world's limb with
-   *  a lander going down or up, or the star streaks of a ship under way. */
+   *  a lander going down or up, the star streaks of a ship under way, or the
+   *  entry — the world growing in the windscreen through a sheet of plasma. */
   variant?: LoaderVariant;
   /** Which world; each variant has its own default. */
   body?: LoaderBody;
@@ -40,6 +41,8 @@ function starShadows(count: number, seed: number): string {
 const NEAR = starShadows(90, 7);
 const FAR = starShadows(160, 131);
 const STREAKS = Array.from({ length: 24 }, (_, i) => i);
+/** The plasma of the entry: fewer, and they come from the world ahead. */
+const PLASMA = Array.from({ length: 18 }, (_, i) => i);
 /** How long each tip stays up. */
 const TIP_MS = 3800;
 const MAPS: Record<LoaderBody, string> = {
@@ -120,6 +123,16 @@ export function CosmicLoader({ label, detail, className, variant = 'orrery', bod
           <div className="cosmic-loader__streaks">
             {STREAKS.map((i) => <span key={i} style={{ '--i': i } as React.CSSProperties} />)}
             <b />
+          </div>
+        )}
+        {variant === 'entry' && (
+          <div className="cosmic-loader__entry" data-body={world}>
+            <Globe body={world} className="cosmic-loader__planet" />
+            <span className="cosmic-loader__plasma">
+              {PLASMA.map((i) => <i key={i} style={{ '--i': i } as React.CSSProperties} />)}
+            </span>
+            <span className="cosmic-loader__shock" />
+            <span className="cosmic-loader__heat" />
           </div>
         )}
       </div>

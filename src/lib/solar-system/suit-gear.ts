@@ -57,6 +57,9 @@ const NOZZLE_Y = 0.85;
 const NOZZLE_Z = -0.4;
 const NOZZLE_X = 0.11;
 
+/** A flame that is out: drawn at no size, so its program stays warm. */
+const OFF = 1e-3;
+
 const FLAME_VERT = /* glsl */ `
   varying vec2 vUv;
   void main() {
@@ -112,8 +115,11 @@ export function buildSuitGear(joints: GearJoints, bareHead = false): SuitGear {
     blending: THREE.AdditiveBlending,
     side: THREE.DoubleSide,
   }));
-  const coreMat = own(new THREE.SpriteMaterial({ map: softSpriteTexture(), color: new THREE.Color(2.5, 2.8, 3), blending: THREE.AdditiveBlending, depthWrite: false, transparent: true }));
-  const glowMat = own(new THREE.SpriteMaterial({ map: softSpriteTexture(), color: new THREE.Color(0.5, 0.75, 1.6), blending: THREE.AdditiveBlending, depthWrite: false, transparent: true }));
+  // No 2D canvas (a test, a locked-down browser): the sprites go without a map rather than the suit without its gear.
+  let spriteMap: THREE.Texture | null = null;
+  try { spriteMap = softSpriteTexture(); } catch { spriteMap = null; }
+  const coreMat = own(new THREE.SpriteMaterial({ map: spriteMap, color: new THREE.Color(2.5, 2.8, 3), blending: THREE.AdditiveBlending, depthWrite: false, transparent: true }));
+  const glowMat = own(new THREE.SpriteMaterial({ map: spriteMap, color: new THREE.Color(0.5, 0.75, 1.6), blending: THREE.AdditiveBlending, depthWrite: false, transparent: true }));
 
   const geoms: THREE.BufferGeometry[] = [];
   const geo = <T extends THREE.BufferGeometry>(g: T): T => { geoms.push(g); return g; };
@@ -176,22 +182,23 @@ export function buildSuitGear(joints: GearJoints, bareHead = false): SuitGear {
       nozzles.push(mouth);
       // The flame hangs from the mouth and is scaled about it: a cone open at the mouth, tip down.
       const flame = keep(new THREE.Object3D());
+      // Off, the flame and its sprites are scaled to nothing rather than
+      // hidden, so the host's compile pass builds their programs with the
+      // scene's and the first ignition does not stall on the shader compiler.
       const cone = new THREE.Mesh(geo(new THREE.CylinderGeometry(0.05, 0.006, 0.6, 12, 4, true)), flameMat);
       cone.position.y = -0.3;
       cone.frustumCulled = false;
       flame.add(cone);
-      flame.visible = false;
+      flame.scale.setScalar(OFF);
       mouth.add(flame);
       flames.push(flame);
       const core = new THREE.Sprite(coreMat);
-      core.scale.setScalar(0.16);
-      core.visible = false;
+      core.scale.setScalar(OFF);
       mouth.add(core);
       cores.push(core);
       const glow = new THREE.Sprite(glowMat);
-      glow.scale.setScalar(0.5);
+      glow.scale.setScalar(OFF);
       glow.position.y = -0.12;
-      glow.visible = false;
       mouth.add(glow);
       glows.push(glow);
     }
@@ -260,14 +267,12 @@ export function buildSuitGear(joints: GearJoints, bareHead = false): SuitGear {
       rim.emissiveIntensity = k * 4;
       for (let i = 0; i < flames.length; i++) {
         const flicker = 0.85 + 0.15 * Math.sin(t * 37 + i * 2.1) + 0.06 * Math.sin(t * 91 + i);
-        flames[i].visible = on;
-        flames[i].scale.set(0.8 + 0.2 * k, k * flicker, 0.8 + 0.2 * k);
-        cores[i].visible = on;
-        cores[i].scale.setScalar(0.1 + 0.1 * k * flicker);
-        glows[i].visible = on;
-        glows[i].scale.setScalar(0.3 + 0.35 * k);
-        (glows[i].material as THREE.SpriteMaterial).opacity = 0.6 * k;
+        if (on) flames[i].scale.set(0.8 + 0.2 * k, k * flicker, 0.8 + 0.2 * k); else flames[i].scale.setScalar(OFF);
+        cores[i].scale.setScalar(on ? 0.1 + 0.1 * k * flicker : OFF);
+        glows[i].scale.setScalar(on ? 0.3 + 0.35 * k : OFF);
       }
+      glowMat.opacity = 0.6 * k;
+      coreMat.opacity = Math.min(1, k * 1.5);
     },
     setLamps(on) {
       lamp.emissiveIntensity = on ? LAMP_ON : LAMP_OFF;

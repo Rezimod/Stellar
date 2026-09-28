@@ -512,11 +512,15 @@ describe('the suit on the mesh', () => {
     expect(c.state.anim).toBe('jet');
     expect(c.state.jetFuel).toBeLessThan(1);
     expect(c.state.jetK).toBeGreaterThan(0.5);
-    // The sparks fly free of the suit, beside it in its scene.
-    const sparks = scene.children.find((o) => o.name === 'jet-sparks');
+    // The sparks ride under the suit's group but stay in world space: their
+    // world matrix is identity when they draw, whatever the suit has done.
+    const sparks = c.group.children.find((o) => o.name === 'jet-sparks') as THREE.Points;
     expect(sparks).toBeDefined();
+    c.group.position.set(3, 1, -2);
+    c.group.updateMatrixWorld(true);
+    sparks.onBeforeRender(null as never, scene, null as never, sparks.geometry, sparks.material as THREE.Material, null as never);
+    expect(sparks.matrixWorld.equals(new THREE.Matrix4())).toBe(true);
     const flame = c.group.getObjectByName('nozzle')!.children.find((o) => o.children.length > 0)!;
-    expect(flame.visible).toBe(true);
     expect(flame.scale.y).toBeGreaterThan(0.3);
     // Down again: the landing after a flight kicks up a bigger cloud than a step.
     (dust.burst as ReturnType<typeof vi.fn>).mockClear();
@@ -527,7 +531,7 @@ describe('the suit on the mesh', () => {
     expect(Math.max(...counts)).toBeGreaterThanOrEqual(34);
     expect(c.state.jetting).toBe(false);
     c.dispose();
-    expect(scene.children.find((o) => o.name === 'jet-sparks')).toBeUndefined();
+    expect(c.group.children.find((o) => o.name === 'jet-sparks')).toBeUndefined();
     HTMLCanvasElement.prototype.getContext = getContext;
   });
 

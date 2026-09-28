@@ -63,17 +63,22 @@ function ridged(x: number, y: number, seed: number): number {
 
 interface Crater { x: number; z: number; r: number; depth: number }
 
-/** A bowl with a raised rim: −depth at the centre, +rim at r, fading out by 1.5r. */
+/** A bowl with a raised rim: −depth at the centre, +rim at r, fading out by
+ *  1.5r. The crest is narrow — the inner wall climbs late and the outer
+ *  flank drops fast — so a low sun draws a sharp bright arc on one side and
+ *  a hard shadow on the other, the way Apollo's surface photographs read. */
 function craterProfile(d: number, c: Crater): number {
   const q = d / c.r;
   if (q >= 1.55) return 0;
   const rim = c.depth * 0.42;
   if (q < 1) {
     const bowl = 1 - q * q;
-    return -c.depth * bowl * bowl + rim * smooth(Math.max(0, (q - 0.55) / 0.45));
+    const climb = smooth(Math.max(0, (q - 0.62) / 0.38));
+    return -c.depth * bowl * bowl + rim * climb * climb;
   }
-  const t = (q - 1) / 0.55;
-  return rim * (1 - smooth(t));
+  const t = Math.min(1, (q - 1) / 0.5);
+  const fall = 1 - smooth(t);
+  return rim * fall * fall;
 }
 
 export interface TerrainHandle {
@@ -370,22 +375,24 @@ export function makeMoonTerrain(lite: boolean, density = 1): TerrainHandle {
     const x = pos.getX(i); const z = pos.getZ(i);
     // Macro albedo: darker maria patches, brighter crater floors, a faint
     // bright halo on the pad where the landers have scattered dust.
-    let v = 0.96 + fbm(x / 40, z / 40, 3, seed + 33) * 0.16 + fbm(x / 7, z / 7, 2, seed + 35) * 0.03;
+    let v = 0.96 + fbm(x / 40, z / 40, 3, seed + 33) * 0.2 + fbm(x / 7, z / 7, 2, seed + 35) * 0.03;
     // Old craters: floors a shade darker, and round the bigger ones a
-    // brighter blanket of ejecta thrown out in rays.
+    // brighter blanket of ejecta thrown out in rays — fresh, unweathered
+    // material that stands well clear of the mature regolith round it.
     for (const c of craters) {
       const dx = x - c.x; const dz = z - c.z;
       if (dx > c.r * 2.4 || dx < -c.r * 2.4 || dz > c.r * 2.4 || dz < -c.r * 2.4) continue;
       const q = Math.hypot(dx, dz) / c.r;
-      if (q < 0.85) v -= 0.05 * (1 - q / 0.85);
+      if (q < 0.85) v -= 0.07 * (1 - q / 0.85);
       else if (c.r > 5 && q < 2.4) {
-        const rays = 0.55 + 0.45 * Math.sin(Math.atan2(dz, dx) * 7 + c.x * 0.3) * Math.sin(Math.atan2(dz, dx) * 3 + c.z * 0.2);
-        v += 0.08 * (1 - (q - 0.85) / 1.55) * rays;
+        const ang = Math.atan2(dz, dx);
+        const rays = 0.45 + 0.55 * Math.pow(0.5 + 0.5 * Math.sin(ang * 7 + c.x * 0.3) * Math.sin(ang * 3 + c.z * 0.2), 1.6);
+        v += 0.13 * Math.pow(1 - (q - 0.85) / 1.55, 1.3) * rays;
       }
     }
     const d = Math.hypot(x - PAD_CENTER.x, z - PAD_CENTER.y);
     if (d < PAD_RADIUS + 10) v += 0.06 * (1 - d / (PAD_RADIUS + 10));
-    colors[i * 3] = colors[i * 3 + 1] = colors[i * 3 + 2] = THREE.MathUtils.clamp(v, 0.7, 1.1);
+    colors[i * 3] = colors[i * 3 + 1] = colors[i * 3 + 2] = THREE.MathUtils.clamp(v, 0.64, 1.14);
   }
   geom.setAttribute('color', new THREE.BufferAttribute(colors, 3));
   // Normals straight off the heightfield, so a fresh crater can re-light
@@ -419,15 +426,23 @@ export function makeMoonTerrain(lite: boolean, density = 1): TerrainHandle {
   // behind the viewer (the opposition surge — why the ground round your own
   // shadow glows in Apollo photographs). A second, finer normal sample
   // breaks the tiling so the same grain never lines up twice.
+  // At a grazing angle — the ground a long way off, seen nearly edge-on — a
+  // third, finer sample projected off the world position adds the grain
+  // the tiled map has run out of, without changing the ground underfoot.
   const sunView = { value: new THREE.Vector3(0, 1, 0) };
   mat.onBeforeCompile = (shader) => {
     shader.uniforms.uSunView = sunView;
+    shader.vertexShader = shader.vertexShader
+      .replace('#include <common>', '#include <common>\nvarying vec3 vMoonPos;')
+      .replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvMoonPos = ( modelMatrix * vec4( transformed, 1.0 ) ).xyz;');
     shader.fragmentShader = shader.fragmentShader
-      .replace('#include <common>', '#include <common>\nuniform vec3 uSunView;')
+      .replace('#include <common>', '#include <common>\nuniform vec3 uSunView; varying vec3 vMoonPos;')
       .replace('#include <normal_fragment_maps>', `
         vec3 mapN = texture2D( normalMap, vNormalMapUv ).xyz * 2.0 - 1.0;
         vec3 mapN2 = texture2D( normalMap, vNormalMapUv * 6.37 + vec2(0.31, 0.77) ).xyz * 2.0 - 1.0;
-        mapN = normalize( vec3( mapN.xy * normalScale + mapN2.xy * normalScale * 0.35, mapN.z * mapN2.z ) );
+        float graze = pow( 1.0 - max( dot( normal, normalize( vViewPosition ) ), 0.0 ), 3.0 );
+        vec3 mapN3 = texture2D( normalMap, vMoonPos.xz * 0.61 + vec2( 0.13, 0.49 ) ).xyz * 2.0 - 1.0;
+        mapN = normalize( vec3( mapN.xy * normalScale + mapN2.xy * normalScale * 0.35 + mapN3.xy * normalScale * 0.45 * graze, mapN.z * mapN2.z ) );
         normal = normalize( tbn * mapN );`)
       .replace('#include <lights_fragment_begin>', `
         {
@@ -445,7 +460,17 @@ export function makeMoonTerrain(lite: boolean, density = 1): TerrainHandle {
   // Rocks: three cuts, a few hundred seats. Small stuff everywhere, boulders
   // only out on the plain and up the ridge.
   const rockGeoms = [rockGeometry(1, lite ? 1 : 2), rockGeometry(2, lite ? 1 : 2), rockGeometry(3, lite ? 1 : 2)];
-  const rockMat = new THREE.MeshStandardMaterial({ color: 0xa8a5a0, roughness: 0.92, metalness: 0.02, normalMap: maps.normal, normalScale: new THREE.Vector2(0.5, 0.5) });
+  const rockMat = new THREE.MeshStandardMaterial({ color: 0xa8a5a0, roughness: 0.92, metalness: 0.02, normalMap: maps.normal, normalScale: new THREE.Vector2(0.8, 0.8) });
+  // A boulder's grain at two scales, so a two-metre block reads as pitted
+  // breccia rather than a smooth stone wearing the ground's texture.
+  rockMat.onBeforeCompile = (shader) => {
+    shader.fragmentShader = shader.fragmentShader.replace('#include <normal_fragment_maps>', `
+      vec3 mapN = texture2D( normalMap, vNormalMapUv ).xyz * 2.0 - 1.0;
+      vec3 mapN2 = texture2D( normalMap, vNormalMapUv * 4.13 + vec2( 0.17, 0.61 ) ).xyz * 2.0 - 1.0;
+      mapN = normalize( vec3( mapN.xy * normalScale + mapN2.xy * normalScale * 0.6, mapN.z * mapN2.z ) );
+      normal = normalize( tbn * mapN );`);
+  };
+  rockMat.customProgramCacheKey = () => 'moon-rock';
   const perCut = Math.round((lite ? 90 : 180) * density);
   const rocks = new THREE.Group();
   rocks.name = 'moon-rocks';

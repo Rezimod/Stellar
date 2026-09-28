@@ -188,7 +188,7 @@ export function makeLander(
   /** How high the origin stands over the ground with the gear on it. */
   const REST = spec.rest;
   const group = new THREE.Group();
-  group.name = kind === 'lander' ? 'lander' : 'ship';
+  group.name = spec === VEHICLES.lander ? 'lander' : 'ship';
   group.rotation.y = spec.yaw;
   /** The visible vehicle, under the physics origin: it squats on its gear at touchdown. */
   const hull = new THREE.Group();

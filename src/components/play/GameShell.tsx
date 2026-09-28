@@ -9,7 +9,7 @@ import { exitToStellar } from '@/game/platform';
 import { takeEscape } from '@/game/escape';
 import { registerServiceWorker } from '@/game/sw';
 import { currentQuality, governedQuality, onQualityChange, setDetectedQuality, stepQualityDown } from '@/game/quality';
-import { CosmicLoader } from '@/components/solar-system/CosmicLoader';
+import { CosmicLoader, type LoaderBody, type LoaderVariant } from '@/components/solar-system/CosmicLoader';
 import { useLoadingTips } from '@/components/solar-system/useLoadingTips';
 import { warmAudioService } from '@/lib/solar-system/sound-prefs';
 import { GameWorld } from './GameWorld';
@@ -49,6 +49,7 @@ declare global {
 export default function GameShell() {
   const snap = useSyncExternalStore(game.subscribe, game.get, game.get);
   const t = useTranslations('play');
+  const tl = useTranslations('solarSystem.loading');
   const tips = useLoadingTips();
   const rootRef = useRef<HTMLDivElement>(null);
   /** The governor had to take a level off: say so once, then get out of the way. */
@@ -58,6 +59,10 @@ export default function GameShell() {
   /** The loader fades off the first frames rather than vanishing from over them. */
   const [loaderFading, setLoaderFading] = useState(false);
   const wasLoading = useRef(false);
+  // The scene last played, so the wait between two reads as the way between
+  // them: orbit to a surface is the entry, a surface back to orbit the climb.
+  const playedScene = useRef<GameScene | null>(null);
+  useEffect(() => { if (state === 'playing') playedScene.current = scene; }, [state, scene]);
   useEffect(() => {
     if (state === 'loading') { warmAudioService(); wasLoading.current = true; setLoaderFading(false); return; }
     if (!wasLoading.current) return;
@@ -133,13 +138,17 @@ export default function GameShell() {
     game.resume();
   };
   const inWorld = state !== 'boot' && state !== 'title' && state !== 'exiting';
+  const from = playedScene.current;
+  const fromSurface = from !== null && from !== 'orbit';
+  const loaderVariant: LoaderVariant = scene === 'orbit' ? (fromSurface ? 'ascent' : 'orrery') : 'entry';
+  const loaderBody: LoaderBody = scene === 'orbit' ? (fromSurface ? from : 'earth') : scene;
 
   return (
     <div ref={rootRef} className="game-shell" data-state={state}>
       {inWorld && <GameWorld key={snap.generation} scene={scene} state={state} />}
       {(state === 'loading' || loaderFading) && (
-        <CosmicLoader className={state === 'loading' ? 'game-shell__loader' : 'game-shell__loader is-done'} variant={scene === 'orbit' ? 'orrery' : 'descent'} body={scene === 'orbit' ? 'earth' : scene}
-          label={t(`loading.scene.${scene}`)} detail={t(`loading.${stage}`)} progress={STAGE_PROGRESS[stage]} tips={tips} />
+        <CosmicLoader className={state === 'loading' ? 'game-shell__loader' : 'game-shell__loader is-done'} variant={loaderVariant} body={loaderBody}
+          label={loaderVariant === 'ascent' ? tl('ascent') : t(`loading.scene.${scene}`)} detail={t(`loading.${stage}`)} progress={STAGE_PROGRESS[stage]} tips={tips} />
       )}
       {dropped && state === 'playing' && <p className="game-shell__notice" role="status">{t('qualityDrop')}</p>}
       {state === 'title' && overlay === 'none' && <TitleScreen onStart={start} />}

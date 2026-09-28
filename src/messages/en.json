@@ -1921,6 +1921,7 @@
         "loading": "Descending to Mars Base",
         "loadingDetail": "Preparing the plain — 0.38 g, thin air, dust in it",
         "outside": "Outside",
+        "crystals": "Crystals",
         "run": "Run",
         "hints": {
           "walk": "W A S D — walk. Hold Shift to run. Mars holds you down twice as hard as the Moon.",
@@ -1960,6 +1961,7 @@
             "isru": "Plant status",
             "power": "Reactor status"
           },
+          "collectCrystal": "Collect the crystals",
           "boardLander": "Board ship — Take off"
         },
         "readout": {
@@ -1980,6 +1982,7 @@
         "loading": "Descending to Proxima b",
         "loadingDetail": "A red dwarf's day side — 1.1 g, warm, and something is alive",
         "outside": "Outside",
+        "crystals": "Crystals",
         "run": "Run",
         "hints": {
           "walk": "W A S D — walk. Hold Shift to run. The ground pulls harder than home.",
@@ -2002,6 +2005,7 @@
         },
         "act": {
           "greet": "Greet",
+          "collectCrystal": "Collect the crystals",
           "boardLander": "Board ship — Take off"
         },
         "readout": {

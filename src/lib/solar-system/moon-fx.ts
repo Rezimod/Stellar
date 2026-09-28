@@ -169,8 +169,11 @@ export function makeSparkStream(max: number, g = MOON_G, tint: [number, number, 
   geom.setAttribute('position', posAttr);
   geom.setAttribute('aSize', sizeAttr);
   geom.setAttribute('aShade', shadeAttr);
+  // Built with the suit, which a test builds without a 2D canvas: then the sparks go without their sprite.
+  let map: THREE.Texture | null = null;
+  try { map = softSpriteTexture(); } catch { map = null; }
   const mat = new THREE.ShaderMaterial({
-    uniforms: { uMap: { value: softSpriteTexture() }, uScale: { value: 500 }, uTint: { value: new THREE.Vector3(...tint) } },
+    uniforms: { uMap: { value: map }, uScale: { value: 500 }, uTint: { value: new THREE.Vector3(...tint) } },
     vertexShader: `
       attribute float aSize; attribute float aShade; varying float vShade;
       uniform float uScale;
@@ -196,6 +199,13 @@ export function makeSparkStream(max: number, g = MOON_G, tint: [number, number, 
   const points = new THREE.Points(geom, mat);
   points.frustumCulled = false;
   points.name = 'jet-sparks';
+  // The grains are in world space whatever the points are parented to: the
+  // suit carries them so they are in the scene (and its compile pass) from
+  // the start, and the world matrix is put back to identity before each
+  // draw, which is after any forced update from above.
+  points.matrixAutoUpdate = false;
+  points.matrixWorldAutoUpdate = false;
+  points.onBeforeRender = () => { points.matrixWorld.identity(); };
   let head = 0;
   let alive = false;
   const emit: SparkHandle['emit'] = (x, y, z, dx, dy, dz, vx, vy, vz, n, speed) => {

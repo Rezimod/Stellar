@@ -49,13 +49,13 @@ describe('the hardware on the rig', () => {
     expect(fittings.every((f) => !f.visible)).toBe(true);
     gear.setDetail(true);
     expect(fittings.every((f) => f.visible)).toBe(true);
-    // The flame is off until the throttle comes up, then scales with it.
+    // The flame is drawn at no size until the throttle comes up, then scales with it.
     const flames = gear.nozzles.map((n) => n.children.find((o) => o.children.length > 0)!);
-    expect(flames.every((f) => !f.visible)).toBe(true);
+    expect(flames.every((f) => f.scale.y < 0.01)).toBe(true);
     gear.setThrottle(1, 0.5);
-    expect(flames.every((f) => f.visible && f.scale.y > 0.7)).toBe(true);
+    expect(flames.every((f) => f.scale.y > 0.7)).toBe(true);
     gear.setThrottle(0, 1);
-    expect(flames.every((f) => !f.visible)).toBe(true);
+    expect(flames.every((f) => f.scale.y < 0.01)).toBe(true);
     gear.dispose();
     expect(pack.children).toHaveLength(0);
   });

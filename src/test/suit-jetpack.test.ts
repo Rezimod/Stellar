@@ -21,10 +21,11 @@ function run(jet: ReturnType<typeof makeJetpack>, seconds: number, want: boolean
 describe('the jetpack tank', () => {
   it('burns at its rate while lit, and not at all on the ground or unheld', () => {
     const jet = makeJetpack();
+    // Half a second in the air unheld: nothing burned, and the pack is armed.
     run(jet, 0.5, false, false);
     expect(jet.state.fuel).toBe(1);
     run(jet, 1, true, false);
-    expect(jet.state.fuel).toBeCloseTo(1 - JET.burn * (1 - JET.arm), 2);
+    expect(jet.state.fuel).toBeCloseTo(1 - JET.burn, 2);
     expect(jet.state.jetting).toBe(true);
     // Held on the ground it does nothing.
     const f = jet.state.fuel;

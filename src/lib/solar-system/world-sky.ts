@@ -82,7 +82,8 @@ const SkyShader = {
       col += uSunDisc * sunT * pow(max(c, 0.0), 800.0) * 0.12;
       // Clouds, above the horizon, lit by the star's light at their height.
       #if CLOUD_STEPS > 0
-        vec4 cl = marchClouds(vec3(0.0, uCamY, 0.0), dir, uSun, sunT * (0.85 + 0.15 * uSun.y));
+        // High cloud sees less of the dust than the ground does: half the extinction.
+        vec4 cl = marchClouds(vec3(0.0, uCamY, 0.0), dir, uSun, pow(sunT, vec3(0.5)));
         col = col * cl.a + cl.rgb * uCloudGain;
       #endif
       // Below the ground line the dome is the colour of the air at a distance, dimmer.

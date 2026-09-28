@@ -822,6 +822,8 @@ export interface PlayerShipHandle {
   fxGroup: THREE.Group;
   /** The pilot's suit, placed in world space while out on EVA. */
   eva: THREE.Group;
+  /** The hull's animated parts — plumes, plasma, streaks — as the flight model drives them. */
+  parts: ShipParts;
   spawn: (anchor: FlightAnchor) => void;
   takeDamage: (amount: number) => void;
   update: (
@@ -1671,6 +1673,7 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
     boltGroup,
     fxGroup,
     eva: evaG,
+    parts: shipParts,
     spawn,
     takeDamage(amount) {
       damage(amount, false);
@@ -2106,7 +2109,9 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
           const t = segLen2 > 0 ? THREE.MathUtils.clamp(tmp.dot(seg) / segLen2, 0, 1) : 0;
           tmp2.copy(prevPos).addScaledVector(seg, t).sub(b.position);
           const d = tmp2.length();
-          if (d < b.radius + hr) {
+          // The arrival is flown by the profile down to just over the ground,
+          // closer than the hull's own sphere on a small world: it cannot crash.
+          if (d < b.radius + hr && !arrival) {
             tmp2.divideScalar(Math.max(d, 1e-9));
             tmp.copy(b.position).addScaledVector(tmp2, b.radius);
             if (b.kind === 'station' && speed <= DOCK_SPEED && pilot === 'ship') {

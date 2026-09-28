@@ -102,9 +102,10 @@ const ease = (rate: number, dt: number) => 1 - Math.exp(-dt * rate);
 export function makeCosmonaut(dust: DustHandle, lite = false, g = MOON_G, suited = true, bareHead = false): CosmonautHandle {
   const rig = buildSuit(lite, bareHead);
   const { group, helmet } = rig;
-  // The exhaust's sparks fly free of the body, so they live beside the suit
-  // in whatever scene the owner puts it in (see update), not under it.
+  // The exhaust's sparks fly free of the body: their points ride under the
+  // suit's group so they are in the scene with it, but stay in world space.
   const sparks = makeSparkStream(lite ? 160 : 320, g);
+  group.add(sparks.points);
 
   const position = new THREE.Vector3();
   const vel = new THREE.Vector3();
@@ -218,7 +219,6 @@ export function makeCosmonaut(dust: DustHandle, lite = false, g = MOON_G, suited
       if (ls.jetting) flown = true;
       else if (flown && ls.grounded) { flown = false; burst(heightAt, 34, 3.2); }
       if (ls.jetK > 0.05 && rig.gear.nozzles.length) {
-        if (sparks.points.parent !== group.parent && group.parent) { sparks.points.removeFromParent(); group.parent.add(sparks.points); }
         sparkDebt += dt * 70 * ls.jetK;
         const n = Math.floor(sparkDebt);
         if (n > 0) {

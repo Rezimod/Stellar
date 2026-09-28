@@ -28,6 +28,9 @@ import type { Collider } from '@/lib/solar-system/moon-cosmonaut';
 import type { PointOfInterest } from '@/lib/solar-system/moon-base';
 import { makeWorldTerrain } from '@/lib/solar-system/world-terrain';
 import { makeWorldSky } from '@/lib/solar-system/world-sky';
+import { setGroundSun } from '@/lib/solar-system/world-terrain';
+import { makeFormations } from '@/lib/solar-system/world-formations';
+import { COLLECT_RANGE, makeCrystals } from '@/lib/solar-system/world-crystals';
 import { makeMarsBase } from '@/lib/solar-system/world-mars-base';
 import { makeFlora } from '@/lib/solar-system/world-flora';
 import { makeAliens, type AlienTelemetry } from '@/lib/solar-system/world-aliens';
@@ -125,6 +128,10 @@ export interface WorldTelemetry {
   earth: EarthState | null;
   /** Coming in hot, before the powered descent (Earth). */
   entry: boolean;
+  /** Crystal clusters collected on this world (world-crystals), restored from the device; 0 where there are none. The HUD paints it under the world's `crystals` label. */
+  crystals: number;
+  /** How many clusters this world grew, so the glass can say "3 / 22". */
+  crystalsTotal: number;
 }
 
 export interface WorldSurfaceHandle {
@@ -183,8 +190,24 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
   });
   const { renderer, scene, camera, sun, lightPool, post, perf, lite, quality } = host;
   const earth = isEarth && opts.earth ? makeEarthWorld(renderer, opts.earth, lite) : null;
-  // Earth's air is in its own materials (world-earth-haze), out to the Caucasus.
-  if (!earth) scene.fog = new THREE.Fog(profile.sky.fog, profile.sky.fogNear, profile.sky.fogFar);
+  // The air. Earth's is in its own materials (world-earth-haze), out to the
+  // Caucasus. Mars and Proxima b use the same hook — exp(−β·d), the colour
+  // of the air warmer toward the star — on the ground, the rocks, the
+  // formations and the crystals; the scene fog stays, linear in the same
+  // colour and matching exp(−β·d) out to a few hundred metres, for the
+  // materials that do not take the hook (the base kit, the lander, the suit,
+  // the flora), so nothing near is left un-hazed.
+  if (!earth) {
+    const A = profile.atmosphere;
+    haze.uHazeColor.value.setRGB(...A.hazeColor);
+    haze.uHazeSunColor.value.setRGB(...A.hazeSun);
+    haze.uHazeSunDir.value.copy(profile.sunDir).normalize();
+    haze.uHazeBeta.value = A.hazeBeta;
+    // No thinning with height for a few hundred metres: the haze hook's thin term starts here.
+    haze.uHazeBase.value = 2000;
+    scene.fog = new THREE.Fog(new THREE.Color(...A.hazeColor).getHex(), 0, 1.15 / A.hazeBeta);
+    setGroundSun(profile.sunDir);
+  }
   let baseFov = getSettings().fov;
   const SUN_DIR = earth ? earth.sky.state.keyDir.clone() : profile.sunDir;
 
@@ -192,7 +215,8 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
   const hemi = new THREE.HemisphereLight(profile.sky.fillSky, profile.sky.fillGround, profile.sky.fill);
   scene.add(hemi);
 
-  const sky = earth ? null : makeWorldSky(renderer, profile, lite);
+  const cloudLevel = (quality as { clouds?: number }).clouds ?? (lite ? 0 : 1);
+  const sky = earth ? null : makeWorldSky(renderer, profile, lite, cloudLevel);
   if (sky) {
     scene.add(sky.group);
     scene.environment = sky.environment;
@@ -247,6 +271,41 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
     colliders.push(...flora.colliders);
     pois.push(...flora.pois);
     for (const i of aliens.interactables) interactions.add(i);
+  }
+
+  // ── The big rock and the crystals, placed clear of everything above. ──
+  const keepOut = [
+    ...pois.map((p) => ({ x: p.x, z: p.z, r: p.r + 4 })),
+    ...(flora ? [{ x: flora.village.x, z: flora.village.z, r: flora.village.r + 12 }] : []),
+    ...(build ? [{ x: BUILD_SITES.mars.colony.x, z: BUILD_SITES.mars.colony.z, r: BUILD_SITES.mars.colony.r + 6 }] : []),
+  ];
+  const formations = terrain ? makeFormations(profile, terrain, { density: quality.propDensity, lite, keepOut, walkRadius: profile.walkRadius }) : null;
+  if (formations) {
+    scene.add(formations.group);
+    colliders.push(...formations.colliders);
+  }
+  const crystals = terrain ? makeCrystals(profile, terrain, {
+    density: quality.propDensity, lite, walkRadius: profile.walkRadius,
+    keepOut: [...keepOut, ...(formations ? formations.placed.map((f) => ({ x: f.x, z: f.z, r: f.r })) : [])],
+  }) : null;
+  if (crystals && crystals.total > 0) {
+    scene.add(crystals.group);
+    interactions.add({
+      id: 'collectCrystal', priority: 3,
+      where: () => {
+        if (telemetry.phase !== 'surface') return null;
+        const c = crystals.nearest(cosmonaut.position.x, cosmonaut.position.z, COLLECT_RANGE);
+        return c ? { x: c.x, z: c.z, r: COLLECT_RANGE } : null;
+      },
+      kind: () => 'tap', label: () => 'collectCrystal',
+      use: () => {
+        const c = crystals.nearest(cosmonaut.position.x, cosmonaut.position.z, COLLECT_RANGE);
+        if (!c || !crystals.collect(c.id)) return;
+        telemetry.crystals = crystals.count;
+        audio.bleep();
+        dust.burst({ x: c.x, y: c.y + 0.3, z: c.z, count: 26, speedMin: 0.8, speedMax: 2.6, cone: 0.9, size: 0.12, brightness: 1.6 });
+      },
+    });
   }
 
   if (earth) {
@@ -312,6 +371,7 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
     aliens: aliens ? aliens.telemetry : null,
     earth: earth ? earth.state : null,
     entry: !!entry,
+    crystals: crystals ? crystals.count : 0, crystalsTotal: crystals ? crystals.total : 0,
   };
   function banner(key: string) { telemetry.banner = key; telemetry.bannerHold = 5; }
 
@@ -645,6 +705,7 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
     }
     base?.update(dt, t, crew.x, crew.z, lightPool);
     flora?.update(dt, t);
+    crystals?.update(dt, crew.x, crew.y, crew.z, lightPool);
     if (aliens && telemetry.phase === 'surface') aliens.update(dt, t, crew.x, crew.z, lightPool);
     host.followShadow(crew, SUN_DIR);
     if (telemetry.headlamp && !earth?.driving()) headlamp(lightPool, crew, view === 'helmet' ? cam.yaw + Math.PI : cosmonaut.yaw);
@@ -669,6 +730,8 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
     kit.dispose();
     prints.dispose();
     dust.dispose();
+    crystals?.dispose();
+    formations?.dispose();
     terrain?.dispose();
     sky?.dispose();
   };

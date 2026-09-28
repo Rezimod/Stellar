@@ -122,7 +122,7 @@ export function formationColliders(placed: readonly Formation[], walkRadius: num
     } else if (f.kind === 'mesa') {
       out.push({ x: f.x, z: f.z, r: f.sx * 1.1 });
     } else {
-      out.push({ x: f.x, z: f.z, r: f.sx * (f.kind === 'boulder' ? 0.85 : 0.75) });
+      out.push({ x: f.x, z: f.z, r: f.sx * (f.kind === 'boulder' ? 0.85 : f.kind === 'spire' ? 0.95 : 0.75) });
     }
   }
   return out;
@@ -200,7 +200,7 @@ const shade = (c: RGB, k: number): RGB => [c[0] * k, c[1] * k, c[2] * k];
 function mesaGeometry(strata: RGB[], seed: number, seg: number): THREE.BufferGeometry {
   const b = newBuilder();
   const outline = (s: number, amp: number) => (a: number) => 1 + fbm(Math.cos(a) * 1.6 + s, Math.sin(a) * 1.6, 3, seed + s) * amp;
-  const varnish = (a: number, y: number) => 0.86 + 0.14 * Math.abs(fbm(a * 1.2, y * 5 + seed, 2, seed + 3));
+  const varnish = (a: number, y: number) => 0.86 + 0.14 * Math.abs(fbm(Math.cos(a) * 1.4 + y * 2, Math.sin(a) * 1.4 + y * 5 + seed, 2, seed + 3));
   const tint = (c: RGB, y: number) => (a: number): RGB => shade(c, varnish(a, y));
   const n = strata.length;
   // The skirt.
@@ -252,7 +252,7 @@ function hoodooGeometry(strata: RGB[], rock: RGB, seed: number, seg: number): TH
     rings.push({
       y: yy,
       r: (a) => Math.pow(0.5 + 0.5 * Math.abs(Math.sin(yy * Math.PI * bulges + phase)), 0.85) * (1 - 0.3 * yy) * (1 + fbm(Math.cos(a) * 1.4 + yy * 3, Math.sin(a) * 1.4 + seed, 3, seed) * 0.16),
-      color: (a) => shade(band, 0.85 + 0.15 * Math.abs(fbm(a, yy * 4, 2, seed + 5))),
+      color: (a) => shade(band, 0.85 + 0.15 * Math.abs(fbm(Math.cos(a) * 1.3, Math.sin(a) * 1.3 + yy * 4, 2, seed + 5))),
     });
   }
   tube(b, rings, seg);
@@ -280,7 +280,7 @@ function spireGeometry(strata: RGB[], seed: number, seg: number): THREE.BufferGe
     rings.push({
       y: yy,
       r: (a) => Math.max(0.03, (1 - 0.92 * Math.pow(yy, 1.15)) * (1 + fbm(Math.cos(a + yy * twist) * 1.5, Math.sin(a + yy * twist) * 1.5 + seed, 3, seed) * 0.22)),
-      color: (a) => shade(band, 0.8 + 0.2 * Math.abs(fbm(a * 2 + yy * twist, yy * 6, 2, seed + 6))),
+      color: (a) => shade(band, 0.8 + 0.2 * Math.abs(fbm(Math.cos(a + yy * twist) * 2, Math.sin(a + yy * twist) * 2 + yy * 6, 2, seed + 6))),
     });
   }
   tube(b, rings, seg);
@@ -310,7 +310,7 @@ function archGeometry(strata: RGB[], seed: number, seg: number): THREE.BufferGeo
       const rr = r * (1 + 0.14 * Math.cos(3 * th + t * 5)) * (1 + fbm(Math.cos(th) * 1.3 + t * 6, Math.sin(th) * 1.3 + seed, 3, seed) * 0.18);
       b.pos.push(P.x + N.x * Math.cos(th) * rr, P.y + N.y * Math.cos(th) * rr, B.z * Math.sin(th) * rr);
       b.nrm.push(0, 0, 0);
-      const k = 0.82 + 0.18 * Math.abs(fbm(th, t * 8, 2, seed + 7));
+      const k = 0.82 + 0.18 * Math.abs(fbm(Math.cos(th) * 1.5, Math.sin(th) * 1.5 + t * 8, 2, seed + 7));
       b.col.push(band[0] * k, band[1] * k, band[2] * k);
       b.uv.push((s / seg) * rr * 6, t * 9);
     }
