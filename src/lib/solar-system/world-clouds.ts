@@ -97,7 +97,7 @@ export const CLOUD_GLSL = /* glsl */`
   }
   float hg(float c, float g) { float k = 1.0 + g * g - 2.0 * g * c; return (1.0 - g * g) / (4.0 * 3.14159 * k * sqrt(k)); }
 
-  // March `dir` from `origin` through the slab; returns rgb in-scatter and transmittance in a.
+  // March dir from origin through the slab; returns rgb in-scatter and transmittance in a.
   vec4 marchClouds(vec3 origin, vec3 dir, vec3 sunDir, vec3 sunLight) {
     #if CLOUD_STEPS > 0
       if (uCloudCoverage <= 0.0 || abs(dir.y) < 0.004) return vec4(0.0, 0.0, 0.0, 1.0);

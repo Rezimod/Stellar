@@ -112,7 +112,7 @@ export function descentBurn(elapsed: number, airless = false): number {
   const { entryStart, entryEnd, end } = marks();
   if (airless) {
     const up = ramp(elapsed, entryStart, entryStart + 0.7);
-    const ease = 1 - 0.55 * ramp(elapsed, entryEnd, end);
+    const ease = 1 - 0.4 * ramp(elapsed, entryEnd, end);
     return up * ease;
   }
   return 0.5 * ramp(elapsed, entryEnd - 0.6, entryEnd + 1.2);

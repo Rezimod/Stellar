@@ -232,6 +232,8 @@ export function makeLander(
       const haze = keep(mesh(hull, new THREE.ConeGeometry(e.r * 1.05, e.r * 9, seg, 1, true), plumeMat, e.x, e.y, e.z));
       const core = keep(mesh(hull, new THREE.ConeGeometry(e.r * 0.5, e.r * 15, seg, 1, true), coreMat, e.x, e.y, e.z));
       for (const m of [haze, core]) {
+        // Wide end at the throat, tip trailing down the thrust line (-Y here).
+        m.geometry.rotateX(Math.PI);
         m.geometry.translate(0, -(m.geometry as THREE.ConeGeometry).parameters.height / 2, 0);
         m.quaternion.copy(plumeFrame);
         m.castShadow = false;
@@ -387,7 +389,7 @@ export function makeLander(
     // flyable rather than theoretical. Cross it by a clear margin and the
     // computer takes the stick, because from there on nothing the pilot
     // does gets it down gently.
-    const safe = Math.sqrt(2 * net * Math.max(0, alt - 1.2)) * PROFILE;
+    const safe = Math.sqrt(2 * net * Math.max(0, alt - REST - 0.85)) * PROFILE;
     const want = Math.max(0.6, Math.min(Math.max(START_DESCENT, start.descent * (1 - 1 / (1 + alt / 60))), safe));
     // Landing thirty metres off the middle of a pad that is forty-six
     // across is a landing; landing in the rocks beyond it is not, so the
@@ -431,62 +433,60 @@ export function makeLander(
     position.addScaledVector(vel, dt);
 
     const g2 = height(position.x, position.z);
-    if (position.y - g2 <= TOUCH) {
-      position.y = g2 + TOUCH;
+    if (position.y - g2 <= REST) {
+      position.y = g2 + REST;
       telemetry.landed = true;
       telemetry.touchdown = Math.max(0, -vel.y);
+      // The gear takes the hit: the harder the touchdown, the deeper the squat.
+      squatVel = Math.min(2.2, 0.5 + telemetry.touchdown * 0.45) * Math.min(1, REST / 1.2 + 0.25);
       vel.set(0, 0, 0);
       // The pads throw a ring of dust out from under the vehicle.
-      for (let i = 0; i < 26; i++) {
+      const ring = spec.hull * 0.75;
+      for (let i = 0; i < 26 + Math.round(spec.hull * 3); i++) {
         const a = Math.random() * Math.PI * 2;
-        grain.x = position.x + Math.cos(a) * 2.6; grain.y = g2; grain.z = position.z + Math.sin(a) * 2.6;
-        grain.count = 3; grain.speedMin = 1.4; grain.speedMax = 5.5; grain.cone = 1.45; grain.size = 0.17;
+        grain.x = position.x + Math.cos(a) * ring; grain.y = g2; grain.z = position.z + Math.sin(a) * ring;
+        grain.count = 3; grain.speedMin = 1.4; grain.speedMax = 5.5 + spec.hull * 0.3; grain.cone = 1.45; grain.size = 0.17;
         grain.dirX = Math.cos(a); grain.dirZ = Math.sin(a); grain.bias = 2.6;
         dust.burst(grain);
       }
-      telemetry.egressX = position.x;
-      telemetry.egressZ = position.z + 6.5;
+      egressAt();
     }
   };
 
   const handle: LanderHandle = {
-    group, telemetry, position, yaw: 0,
+    group, telemetry, position, yaw: spec.yaw, kind, chase: spec.chase, hull: spec.hull,
     update(dt, input, height) {
       if (telemetry.climb >= 0) {
-        // Going home: the engine comes up to full over a second, the vehicle
+        // Going home: the engines come up to full over a second, the vehicle
         // hangs a moment while it overcomes its own weight, then climbs.
         telemetry.climb += dt;
         telemetry.throttle += (1 - telemetry.throttle) * (1 - Math.exp(-dt * 2.5));
         vel.y += (telemetry.throttle * MAX_THRUST - g) * dt;
-        if (vel.y < 0 && position.y - height(position.x, position.z) <= TOUCH + 1e-3) vel.y = 0;
+        if (vel.y < 0 && position.y - height(position.x, position.z) <= REST + 1e-3) vel.y = 0;
         position.y += vel.y * dt;
-        flicker += dt * 30;
-        const t = telemetry.throttle;
-        plumeMat.opacity = t * (0.5 + 0.1 * Math.sin(flicker));
-        plumeScale(0.85 + t * 0.35, 0.6 + t * 0.9 + 0.08 * Math.sin(flicker * 1.7), 0.85 + t * 0.35);
         const g2 = height(position.x, position.z);
-        const alt = position.y - g2;
-        lights?.request(position.x, position.y - 1.2, position.z, 0xaad6ff, t * 30, 24 + alt * 0.6, 2);
-        const blast = t * Math.max(0, 1 - alt / 35);
-        dustAcc += blast * dt * 90;
-        while (dustAcc >= 1) {
-          dustAcc -= 1;
-          const a = Math.random() * Math.PI * 2;
-          const r = 1.5 + Math.random() * (3 + blast * 10);
-          grain.x = position.x + Math.cos(a) * r; grain.y = g2; grain.z = position.z + Math.sin(a) * r;
-          grain.count = 1; grain.speedMin = 2; grain.speedMax = 4 + blast * 9; grain.cone = 1.5; grain.size = 0.15;
-          grain.dirX = Math.cos(a); grain.dirZ = Math.sin(a); grain.bias = 2.4 + blast * 2;
-          dust.burst(grain);
+        const alt = position.y - g2 - REST;
+        exhaust(dt, telemetry.throttle, alt, g2, 90);
+        // Off the gear: the hull unloads as the thrust comes on.
+        squat += ((-0.08 * telemetry.throttle) - squat) * (1 - Math.exp(-dt * 4));
+        hull.position.y = -squat;
+        // A ship noses up a touch as it climbs away; the lander goes straight up.
+        if (kind !== 'lander' && kind !== 'endurance') {
+          group.rotation.x += ((-0.12 * Math.min(1, telemetry.climb / 4)) - group.rotation.x) * (1 - Math.exp(-dt * 1.5));
         }
-        telemetry.altitude = Math.max(0, alt - TOUCH);
+        telemetry.altitude = Math.max(0, alt);
         telemetry.descent = -vel.y;
         return;
       }
       if (telemetry.landed) {
-        // Down and quiet: the plume dies, the dust settles.
+        // Down and quiet: the plumes die, the dust settles, the gear takes the weight.
         telemetry.throttle += (0 - telemetry.throttle) * (1 - Math.exp(-dt * 6));
-        plumeMat.opacity = telemetry.throttle * 0.5;
-        lights?.request(position.x, position.y - 1.2, position.z, 0xaad6ff, telemetry.throttle * 20, 20, 2);
+        plumeOpacity(telemetry.throttle);
+        plumeScale(0.8, 0.35 + telemetry.throttle * 0.5, 0.8);
+        lights?.request(position.x, position.y - REST * 0.5, position.z, spec.drive, telemetry.throttle * 20, 20 + spec.hull * 2, 2);
+        settleGear(dt);
+        group.rotation.z += (0 - group.rotation.z) * (1 - Math.exp(-dt * 3));
+        group.rotation.x += (0 - group.rotation.x) * (1 - Math.exp(-dt * 3));
         return;
       }
       // The flight itself in steps no longer than a 120th of a second, so the
@@ -494,32 +494,18 @@ export function makeLander(
       const n = Math.max(1, Math.ceil(dt * 120 - 1e-6));
       for (let i = 0; i < n && !telemetry.landed; i++) fly(dt / n, input, height);
       const g2 = height(position.x, position.z);
-      const alt = position.y - g2;
+      const alt = position.y - g2 - REST;
 
       // ── The exhaust, and what it does to the ground. ──
-      flicker += dt * 30;
-      const t = telemetry.throttle;
-      plumeMat.opacity = t * (0.45 + 0.1 * Math.sin(flicker));
-      plumeScale(0.85 + t * 0.3, 0.5 + t * 0.7 + 0.06 * Math.sin(flicker * 1.7), 0.85 + t * 0.3);
-      lights?.request(position.x, position.y - 1.2, position.z, 0xaad6ff, t * 26, 20 + alt * 0.6, 2);
-      // Below thirty metres the blast starts to move regolith; by ten it is
-      // a sheet of it going sideways faster than the vehicle is coming down.
-      const blast = t * Math.max(0, 1 - alt / 30);
-      dustAcc += blast * dt * 60;
-      while (dustAcc >= 1) {
-        dustAcc -= 1;
-        const a = Math.random() * Math.PI * 2;
-        const r = 1.5 + Math.random() * (3 + blast * 9);
-        grain.x = position.x + Math.cos(a) * r; grain.y = g2; grain.z = position.z + Math.sin(a) * r;
-        grain.count = 1; grain.speedMin = 1.5; grain.speedMax = 3 + blast * 9; grain.cone = 1.5; grain.size = 0.14;
-        grain.dirX = Math.cos(a); grain.dirZ = Math.sin(a); grain.bias = 2.2 + blast * 2;
-        dust.burst(grain);
-      }
-      // The vehicle leans a touch into the translation it is asking for.
-      group.rotation.z += (-tx * 0.06 - group.rotation.z) * (1 - Math.exp(-dt * 3));
-      group.rotation.x += (tz * 0.06 - group.rotation.x) * (1 - Math.exp(-dt * 3));
+      exhaust(dt, telemetry.throttle, alt, g2, 60);
+      // The vehicle leans a touch into the translation it is asking for —
+      // in its own frame, so a hull with its nose the other way leans the
+      // same way the pilot pushed.
+      const facing = Math.cos(spec.yaw);
+      group.rotation.z += (-tx * 0.06 * facing - group.rotation.z) * (1 - Math.exp(-dt * 3));
+      group.rotation.x += (tz * 0.06 * facing - group.rotation.x) * (1 - Math.exp(-dt * 3));
 
-      telemetry.altitude = Math.max(0, position.y - g2 - TOUCH);
+      telemetry.altitude = Math.max(0, alt);
       telemetry.descent = Math.max(0, -vel.y);
       telemetry.ground = g2;
       telemetry.offset = Math.hypot(position.x - padX, position.z - padZ);

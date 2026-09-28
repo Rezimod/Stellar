@@ -24,7 +24,7 @@ import { makeRemoteCrew, writeSurfacePose, type RemoteCrew } from '@/lib/multipl
 import { seedFromCode, type RoomLink } from '@/lib/multiplayer/room-link';
 import type { Gait, Mode, Track } from '@/lib/solar-system/suit-locomotion';
 import { walkTrack } from '@/lib/solar-system/suit-scripted';
-import { headlamp, makeFixedStep, makePressEdge, makeSprintLatch, sprintFrom, walkFromStick, type FootStick } from '@/lib/solar-system/surface-input';
+import { headlamp, jetLight, makeFixedStep, makePressEdge, makeSprintLatch, sprintFrom, walkFromStick, type FootStick } from '@/lib/solar-system/surface-input';
 import { makeAirlockRun, EQUALISE_SECONDS, type AirlockContext, type AirlockRun } from '@/lib/solar-system/moon-airlock';
 import { bailVelocity, boardTrack, doorSide, doorSpot, seatSpotInto, type RoverFrame, type Spot } from '@/lib/solar-system/moon-rover-seat';
 import { makeMoonBase, DOOR_Z, type Airlock, type BaseState } from '@/lib/solar-system/moon-base';
@@ -33,6 +33,7 @@ import { makePrints } from '@/lib/solar-system/moon-prints';
 import { makeSuitAudio } from '@/lib/solar-system/moon-audio';
 import { makeRover, type RoverGear } from '@/lib/solar-system/moon-rover';
 import { makeLander, type LanderInput, type LanderTelemetry } from '@/lib/solar-system/moon-lander';
+import type { ShipKind } from '@/lib/solar-system/ship-mesh';
 import { makeMission, missionComplete, type MissionContext, type MissionTelemetry } from '@/lib/solar-system/moon-mission';
 import { makeJobs, type JobId, type JobsTelemetry } from '@/lib/solar-system/moon-jobs';
 import { makeMoonMissions } from '@/lib/solar-system/moon-missions';
@@ -64,6 +65,8 @@ export interface SurfaceInput {
   moveX: number;
   moveY: number;
   jump: boolean;
+  /** Held: the jetpack — the jump key kept down in the air, or its own key. */
+  jet: boolean;
   run: boolean;
   /** Held: the sprint key (a tap latches while the stick is held); the walk key. */
   sprint: boolean;
@@ -108,6 +111,8 @@ export interface SurfaceOptions {
   /** Where finished missions are recorded. The game shell passes the sink
    *  that reports to the platform; alone, the Moon keeps them on the device. */
   sink?: RewardSink;
+  /** The hull the crew flew here in: it is what comes down. Left out, the lander does. */
+  shipKind?: ShipKind;
 }
 
 export interface SurfaceTelemetry {
@@ -116,6 +121,8 @@ export interface SurfaceTelemetry {
   phase: 'descent' | 'touchdown' | 'surface' | 'ascent';
   /** The lander has climbed out of sight: orbit can take over. */
   ascended: boolean;
+  /** Down, plaque read: the crew may step out on the key, or will in a moment. */
+  exitReady: boolean;
   touchdownIn: number;
   landing: LanderTelemetry;
   grade: string;
@@ -129,6 +136,9 @@ export interface SurfaceTelemetry {
   airborne: boolean;
   altitude: number;
   speed: number;
+  /** The jetpack: 0…1 in the tank, and lit. */
+  jetFuel: number;
+  jetting: boolean;
   hint: 'walk' | 'jump' | '';
   craters: number;
   o2: number;
@@ -428,7 +438,8 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
   };
   const gears: RoverGear[] = missionComplete() ? ['creep', 'cruise', 'sprint', 'ion'] : ['creep', 'cruise', 'sprint'];
   const rover = makeRover(base.rover, base.roverCollider, base.roverParts, terrain, dust, prints, gears);
-  const lander = makeLander(PAD_CENTER.x, PAD_CENTER.y + 26, terrain.heightAt, dust, lite, lightPool);
+  // The crew's own ship comes down; the lander only when no hull is named.
+  const lander = makeLander(PAD_CENTER.x, PAD_CENTER.y + 26, terrain.heightAt, dust, lite, lightPool, MOON_G, undefined, { kind: opts.shipKind });
   scene.add(lander.group);
   const mission = makeMission(terrain.heightAt, dig, dust, lite, lightPool, base.zones.anchors.scienceTerminal);
   scene.add(mission.group);
@@ -473,7 +484,7 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
   cam.distance = isMobile ? 5.6 : 5.2;
 
   const input: SurfaceInput = {
-    moveX: 0, moveY: 0, jump: false, run: false, sprint: false, walk: false, crouch: false, shoulderSwap: false, orbitDX: 0, orbitDY: 0, zoom: 0,
+    moveX: 0, moveY: 0, jump: false, jet: false, run: false, sprint: false, walk: false, crouch: false, shoulderSwap: false, orbitDX: 0, orbitDY: 0, zoom: 0,
     interact: false, use: false, viewToggle: false, viewCycle: false, headlamp: false, throttle: 0, gearRequest: null,
   };
   const interactions = makeInteractions();
@@ -498,9 +509,9 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
   });
   scene.add(moonMissions.props.group);
   const telemetry: SurfaceTelemetry = {
-    ready: false, phase: 'descent', ascended: false, touchdownIn: 0, landing: lander.telemetry, grade: '',
+    ready: false, phase: 'descent', ascended: false, exitReady: false, touchdownIn: 0, landing: lander.telemetry, grade: '',
     view: 'chase', driving: false, headlamp: false, poiId: '', poiDist: 0, impactDist: 0, impactHold: 0,
-    airborne: false, altitude: 0, speed: 0, hint: 'walk', craters: 0,
+    airborne: false, altitude: 0, speed: 0, jetFuel: 1, jetting: false, hint: 'walk', craters: 0,
     o2: 97.4, suitPower: 100, pressureAgo: 1e4, heartRate: 64, suitTemp: 21.5, evaSeconds: 0, distanceM: 0,
     roverSpeed: 0, gear: rover.gear, gears: rover.gears, roverTop: rover.top, battery: 1, charging: false, roverFault: false,
     crouched: false, stumbling: false, sliding: false, anim: 'idle', gait: 'stand', mode: 'idle', sprinting: false, stamina: 1, gravity: cosmonaut.state.gravity, stride: 0, cadence: 0,
@@ -881,7 +892,7 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
     }
     rover.update(h, 0, 0, base.colliders, TERRAIN_WALK_RADIUS);
     const moving = Math.hypot(input.moveX, input.moveY) > 0.2;
-    stick.moveX = input.moveX; stick.moveY = input.moveY; stick.run = input.run; stick.walk = input.walk; stick.crouch = input.crouch;
+    stick.moveX = input.moveX; stick.moveY = input.moveY; stick.run = input.run; stick.walk = input.walk; stick.crouch = input.crouch; stick.jet = input.jet;
     stick.sprint = sprintFrom(sprintLatch, input.sprint, moving, h);
     walkFromStick(walk, stick, cam.yaw, jump, interactions.prompt.holding);
     const wasTracking = tracking();
@@ -917,7 +928,7 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
         writeSurfacePose(opts.room.self, brWorld, up, crew, cosmonaut.yaw, cosmonaut.state.speed);
       } else {
         const out = telemetry.phase === 'surface' && !fall.active && cosmonaut.group.visible;
-        writeSurfacePose(opts.room.self, 'moon', out, crew, cosmonaut.yaw, cosmonaut.state.speed);
+        writeSurfacePose(opts.room.self, 'moon', out, crew, cosmonaut.yaw, cosmonaut.state.speed, cosmonaut.state.jetting);
       }
       crowd?.update(dt, opts.room, performance.now());
       brCrowd?.update(dt, opts.room, performance.now());
@@ -1143,6 +1154,7 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
     telemetry.driving = onRover;
     telemetry.airborne = cosmonaut.state.airborne;
     telemetry.altitude = cosmonaut.state.altitude;
+    telemetry.jetFuel = cosmonaut.state.jetFuel; telemetry.jetting = cosmonaut.state.jetting;
     telemetry.speed = onRover ? Math.abs(rover.speed) : cosmonaut.state.speed;
     telemetry.roverSpeed = rover.speed;
     telemetry.gear = rover.gear;
@@ -1186,6 +1198,7 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
       telemetry.suitTemp += ((21.5 + exertion * 1.8) - telemetry.suitTemp) * (1 - Math.exp(-dt * 0.2));
     }
     audio.update(dt, exertion, view === 'helmet' || view === 'cockpit');
+    audio.jet(cosmonaut.state.jetK);
     const dr = mission.telemetry.drill;
     audio.drill(dr.load, mission.telemetry.stage === 'drill' && dr.engaged && !dr.stalled && !dr.ready);
     // The motor through the seat, the descent engine through the frame: both
@@ -1228,6 +1241,7 @@ export function makeMoonSurface(mount: HTMLElement, opts: SurfaceOptions = {}): 
     dust.update(dt, terrain.heightAt);
     rover.light(lightPool);
     if (telemetry.headlamp && !driving()) headlamp(lightPool, crew, view === 'helmet' ? cam.yaw + Math.PI : cosmonaut.yaw);
+    if (!driving()) jetLight(lightPool, crew, cosmonaut.yaw, cosmonaut.state.jetK);
     base.update(dt, t, sky.earthDir, crew.x, crew.z);
     sinkhole.update(dt, t);
     terrain.setSunView(tmp.copy(SUN_DIR).transformDirection(camera.matrixWorldInverse));

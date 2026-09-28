@@ -13,7 +13,7 @@
 import * as THREE from 'three';
 import { makeMoonDust } from '@/lib/solar-system/moon-fx';
 import { makeCosmonaut, type WalkInput } from '@/lib/solar-system/moon-cosmonaut';
-import { headlamp, makeFixedStep, makePressEdge, makeSprintLatch, sprintFrom, walkFromStick } from '@/lib/solar-system/surface-input';
+import { headlamp, jetLight, makeFixedStep, makePressEdge, makeSprintLatch, sprintFrom, walkFromStick } from '@/lib/solar-system/surface-input';
 import { makePrints } from '@/lib/solar-system/moon-prints';
 import { makeSuitAudio } from '@/lib/solar-system/moon-audio';
 import { makeLander, type LanderTelemetry } from '@/lib/solar-system/moon-lander';
@@ -50,6 +50,8 @@ export interface WorldInput {
   moveX: number;
   moveY: number;
   jump: boolean;
+  /** Held: the jetpack — the jump key kept down in the air, or its own key. */
+  jet: boolean;
   run: boolean;
   sprint: boolean;
   walk: boolean;
@@ -90,6 +92,9 @@ export interface WorldTelemetry {
   poiId: string;
   altitude: number;
   speed: number;
+  /** The jetpack: 0…1 in the tank, and lit. Always full where the pilot has no pack. */
+  jetFuel: number;
+  jetting: boolean;
   hint: 'walk' | 'jump' | 'drive' | '';
   /** At the wheel of the car (Earth). */
   driving: boolean;
@@ -272,12 +277,12 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
   cam.distance = earth ? EARTH_CHASE.distance : isMobile ? 5.6 : 5.2;
 
   const input: WorldInput = {
-    moveX: 0, moveY: 0, jump: false, run: false, sprint: false, walk: false, crouch: false, shoulderSwap: false, orbitDX: 0, orbitDY: 0, zoom: 0,
+    moveX: 0, moveY: 0, jump: false, jet: false, run: false, sprint: false, walk: false, crouch: false, shoulderSwap: false, orbitDX: 0, orbitDY: 0, zoom: 0,
     interact: false, use: false, viewToggle: false, viewCycle: false, headlamp: false, throttle: 0,
   };
   const telemetry: WorldTelemetry = {
     ready: false, phase: 'descent', ascended: false, landing: lander.telemetry, grade: '', view: 'chase', headlamp: false, poiId: '',
-    altitude: 0, speed: 0, hint: 'walk', driving: false, o2: 97.4, heartRate: 64, suitTemp: 21.5, outsideC: profile.ambientC,
+    altitude: 0, speed: 0, jetFuel: 1, jetting: false, hint: 'walk', driving: false, o2: 97.4, heartRate: 64, suitTemp: 21.5, outsideC: profile.ambientC,
     evaSeconds: 0, distanceM: 0, crouched: false, stumbling: false, sliding: false, heading: 0,
     prompt: interactions.prompt, readout: '', readoutHold: 0, banner: '', bannerHold: 0,
     aliens: aliens ? aliens.telemetry : null,
@@ -377,7 +382,7 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
     }
     const moving = Math.hypot(input.moveX, input.moveY) > 0.2;
     const sprint = sprintFrom(sprintLatch, input.sprint, moving, h);
-    walkFromStick(walk, { moveX: input.moveX, moveY: input.moveY, jump: false, run: input.run, sprint, walk: input.walk, crouch: input.crouch }, cam.yaw, jump, interactions.prompt.holding);
+    walkFromStick(walk, { moveX: input.moveX, moveY: input.moveY, jump: false, jet: input.jet, run: input.run, sprint, walk: input.walk, crouch: input.crouch }, cam.yaw, jump, interactions.prompt.holding);
     stepFrom.copy(cosmonaut.position);
     cosmonaut.update(h, walk, floorAt, walkColliders(), walkRadius);
     earth?.confine(cosmonaut.position, stepFrom);
@@ -395,7 +400,7 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
     input.zoom = 0;
     const crew = cosmonaut.position;
     if (opts.room) {
-      writeSurfacePose(opts.room.self, world, telemetry.phase === 'surface' && cosmonaut.group.visible, crew, cosmonaut.yaw, cosmonaut.state.speed);
+      writeSurfacePose(opts.room.self, world, telemetry.phase === 'surface' && cosmonaut.group.visible, crew, cosmonaut.yaw, cosmonaut.state.speed, cosmonaut.state.jetting);
       crowd?.update(dt, opts.room, performance.now());
     }
 
@@ -551,6 +556,7 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
     // ── The glass. ──
     telemetry.driving = !!earth?.driving();
     telemetry.altitude = cosmonaut.state.altitude;
+    telemetry.jetFuel = cosmonaut.state.jetFuel; telemetry.jetting = cosmonaut.state.jetting;
     telemetry.speed = telemetry.driving && earth ? Math.abs(earth.car.speed) : cosmonaut.state.speed;
     telemetry.crouched = cosmonaut.state.crouched;
     telemetry.stumbling = cosmonaut.state.stumble > 0;
@@ -567,6 +573,7 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
       telemetry.suitTemp += ((21.5 + exertion * 1.8) - telemetry.suitTemp) * (1 - Math.exp(-dt * 0.2));
     }
     audio.update(dt, exertion, view === 'helmet');
+    audio.jet(cosmonaut.state.jetK);
 
     let best = ''; let bestD = 1e9;
     for (const poi of pois) {
@@ -602,6 +609,7 @@ export function makeWorldSurface(mount: HTMLElement, world: WorldId, opts: World
     if (aliens && telemetry.phase === 'surface') aliens.update(dt, t, crew.x, crew.z, lightPool);
     host.followShadow(crew, SUN_DIR);
     if (telemetry.headlamp && !earth?.driving()) headlamp(lightPool, crew, view === 'helmet' ? cam.yaw + Math.PI : cosmonaut.yaw);
+    if (!earth?.driving()) jetLight(lightPool, crew, cosmonaut.yaw, cosmonaut.state.jetK);
     lightPool.flush(crew.x, crew.y, crew.z);
     if (telemetry.phase === 'surface') build?.update(crew.x, crew.z, camera);
     host.render(dt);

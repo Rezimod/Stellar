@@ -210,9 +210,9 @@ function engine(b: Builder, x: number, y: number, z: number, r: number, plumeLen
   const plume = mesh(b, plumeCone(r * 0.78, plumeLen), b.pal.plumeMat, x, y, z - 0.3 * H, parent);
   plume.rotation.x = -Math.PI / 2;
   b.plumes.push(plume);
-  const core = mesh(b, plumeCone(r * 0.42, plumeLen * 1.35), b.pal.plumeCoreMat, x, y, z - 0.3 * H, parent);
-  core.rotation.x = -Math.PI / 2;
-  b.plumeCores.push(core);
+  const plumeCore = mesh(b, plumeCone(r * 0.42, plumeLen * 1.35), b.pal.plumeCoreMat, x, y, z - 0.3 * H, parent);
+  plumeCore.rotation.x = -Math.PI / 2;
+  b.plumeCores.push(plumeCore);
   const mat = new THREE.SpriteMaterial({
     map: b.glowTex, color: b.pal.plumeMat.color, transparent: true, opacity: 0.7,
     depthWrite: false, blending: THREE.AdditiveBlending,
