@@ -3,16 +3,17 @@ import { beforeEach, expect, it, vi } from 'vitest';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 
-const mocks = vi.hoisted(() => ({ db: vi.fn(), readSetSupply: vi.fn(), holderView: vi.fn(), cardAvailability: vi.fn() }));
+const mocks = vi.hoisted(() => ({ db: vi.fn(), readSetSupply: vi.fn(), capsulesOnSale: vi.fn(), nightRow: vi.fn(), cardAvailability: vi.fn() }));
 vi.mock('@/lib/db', () => ({ getDb: mocks.db }));
-vi.mock('@/lib/sidera/capsule', () => ({ readSetSupply: mocks.readSetSupply }));
-vi.mock('@/lib/sidera/repo', () => ({ holderView: mocks.holderView }));
+vi.mock('@/lib/sidera/capsule', () => ({ readSetSupply: mocks.readSetSupply, capsulesOnSale: mocks.capsulesOnSale }));
+vi.mock('@/lib/sidera/night', () => ({ nightRow: mocks.nightRow }));
 vi.mock('@/lib/sidera/orders', () => ({ cardAvailability: mocks.cardAvailability }));
 // Client components: a Privy session sits behind both, and neither is what
 // these pages are being tested for.
 vi.mock('@/components/sidera/SideraShell', () => ({
   default: ({ children }: { children: React.ReactNode }) => createElement('div', null, children),
 }));
+vi.mock('@/components/sidera/CapsuleCounter', () => ({ default: () => createElement('aside', null, 'capsules') }));
 vi.mock('@/components/sidera/SideraBuyCard', () => ({
   default: ({ available, released }: { available: boolean; released: boolean }) =>
     createElement('p', null, !released ? 'Set not released' : available ? 'Buy this card' : 'Not for sale'),
@@ -22,8 +23,7 @@ import Set001Page from '@/app/set/001/page';
 import CardPage from '@/app/card/[designation]/page';
 import { SET_001_CARDS } from '@/lib/sets/set-001';
 
-const renderSet = async (wallet?: string) =>
-  renderToStaticMarkup(await Set001Page({ searchParams: Promise.resolve(wallet ? { wallet } : {}) }));
+const renderSet = async () => renderToStaticMarkup(await Set001Page());
 
 const renderCard = async (designation: string) =>
   renderToStaticMarkup(await CardPage({ params: Promise.resolve({ designation }) }));
@@ -32,6 +32,8 @@ beforeEach(() => {
   vi.clearAllMocks();
   mocks.db.mockReturnValue({});
   mocks.readSetSupply.mockResolvedValue(null);
+  mocks.capsulesOnSale.mockResolvedValue([]);
+  mocks.nightRow.mockResolvedValue(null);
   mocks.cardAvailability.mockResolvedValue(null);
 });
 
@@ -56,17 +58,6 @@ it('takes the set’s status from the database', async () => {
   expect(await renderSet()).toContain('Released');
   mocks.readSetSupply.mockResolvedValue({ set: 'SET001', status: 'draft', owedDraws: 0, cards: [] });
   expect(await renderSet()).toContain('Pre-release');
-});
-
-it('draws a card the holder does not own as an outline, and their own with its number', async () => {
-  mocks.holderView.mockResolvedValue([
-    { editionId: 'e1', designation: 'JUPITER', name: 'Jupiter', editionNumber: 4, editionSize: 100, rarity: 'rare', observationStatus: 'eligible', latest: null, history: [] },
-  ]);
-  const html = await renderSet('holder-1');
-  expect(mocks.holderView).toHaveBeenCalledWith({}, 'holder-1');
-  expect(html).toContain('No. 004');
-  expect(html).toContain('sd-tile--dim');
-  expect(html).toContain('Not held');
 });
 
 it('shows a card’s record, its observation verdict and its rarity', async () => {

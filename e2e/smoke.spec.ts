@@ -11,7 +11,7 @@ import { test, expect } from '@playwright/test';
  */
 
 test.describe('smoke — golden routes', () => {
-  test('home page renders the shop + Sidera nav', async ({ page }) => {
+  test('home page renders the landing + Sidera nav', async ({ page }) => {
     const errors: string[] = [];
     page.on('pageerror', (err) => errors.push(err.message));
 
@@ -21,7 +21,8 @@ test.describe('smoke — golden routes', () => {
     const nav = page.getByRole('navigation', { name: 'Sidera' });
     await expect(nav.getByRole('link', { name: 'First Light', exact: true })).toBeVisible();
     await expect(nav.getByRole('link', { name: 'Tonight', exact: true })).toBeVisible();
-    await expect(page.locator('.sd-shop')).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('Open the capsule');
+    await expect(page.getByRole('link', { name: /Open a capsule/ }).first()).toHaveAttribute('href', '/set/001');
 
     expect(errors, `pageerrors on /: ${errors.join('\n')}`).toEqual([]);
   });

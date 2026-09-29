@@ -71,6 +71,13 @@ const nextConfig: NextConfig = {
         ],
       },
       {
+        // Card art is redrawn rarely and keeps its name: a day in the browser, then refreshed in the background.
+        source: '/cards/:path*',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=86400, stale-while-revalidate=604800' },
+        ],
+      },
+      {
         source: '/(.*)',
         headers: [
           { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },

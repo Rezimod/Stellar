@@ -12,13 +12,12 @@ vi.mock('@/components/sidera/SideraShell', () => ({
   default: ({ children }: { children: React.ReactNode }) => createElement('div', null, children),
 }));
 vi.mock('@/components/sidera/SideraBuyCard', () => ({ default: () => createElement('p', null, 'Buy this card') }));
-vi.mock('@/components/sidera/CapsuleTiers', () => ({
+vi.mock('@/components/sidera/CapsuleCounter', () => ({
   default: ({ cards }: { cards: Array<{ designation: string }> }) => createElement('p', null, `pool:${cards.map((c) => c.designation).join(',')}`),
 }));
 
 import Set001Page from '@/app/set/001/page';
 import CardPage from '@/app/card/[designation]/page';
-import HomePage from '@/app/page';
 import { SET_001_CARD_BY_DESIGNATION } from '@/lib/sets/set-001';
 import { readSupply } from '@/lib/sidera/capsule';
 
@@ -39,7 +38,7 @@ afterEach(() => vi.useRealTimers());
 
 describe('once the Orionids have passed', () => {
   it('the tile says Sealed instead of a price, and the Geminids still sell', async () => {
-    const html = renderToStaticMarkup(await Set001Page({ searchParams: Promise.resolve({}) }));
+    const html = renderToStaticMarkup(await Set001Page());
     const sealed = tileOf(html, 'ORIONIDS');
     expect(sealed).toContain('Sealed');
     expect(sealed).not.toContain('$3');
@@ -57,7 +56,7 @@ describe('once the Orionids have passed', () => {
   });
 
   it('the capsule preview pool leaves it out', async () => {
-    const html = renderToStaticMarkup(await HomePage());
+    const html = renderToStaticMarkup(await Set001Page());
     const pool = html.match(/pool:([A-Z0-9,-]+)/)![1].split(',');
     expect(pool).toHaveLength(99);
     expect(pool).not.toContain('ORIONIDS');

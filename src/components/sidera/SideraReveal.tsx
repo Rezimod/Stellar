@@ -357,7 +357,7 @@ export default function SideraReveal({
               <a className="sd-btn sd-btn--primary" href="/collection">
                 {outright ? 'See it in your Collection' : 'Add to Collection'}
               </a>
-              <a className="sd-btn" href={outright ? '/set/001' : '/'}>
+              <a className="sd-btn" href="/set/001">
                 {outright ? 'Back to the set' : 'Open another'}
               </a>
             </div>

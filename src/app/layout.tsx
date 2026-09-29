@@ -4,6 +4,7 @@ import { Orbitron, Geist, JetBrains_Mono } from 'next/font/google';
 import './sidera-base.css';
 import '../styles/sidera-tokens.css';
 import '../styles/sidera-motion.css';
+import '../styles/sidera-pages.css';
 import '../styles/sidera-reveal.css';
 import { AnalyticsBoot } from '@/components/providers/AnalyticsBoot';
 import JsonLd from '@/components/shared/JsonLd';
@@ -32,7 +33,7 @@ const jetbrainsMono = JetBrains_Mono({
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#050812',
+  themeColor: '#05070f',
 };
 
 export const metadata: Metadata = {

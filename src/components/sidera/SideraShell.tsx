@@ -4,7 +4,6 @@ import Wordmark from './ui/Wordmark';
 import SideraNavLinks from './SideraNavLinks';
 import SideraAccountGate from './SideraAccountGate';
 import SideraAuth from './SideraAuth';
-import SideraMotion from './SideraMotion';
 
 /**
  * The frame every Sidera page wraps itself in:
@@ -25,22 +24,16 @@ export default function SideraShell({
   children,
   title,
   bare = false,
-  still = false,
 }: {
   children: ReactNode;
   title?: string;
   bare?: boolean;
-  /** No pointer motion: for a page that owns the pointer, like the game. */
-  still?: boolean;
 }) {
   if (bare)
     return (
       <SideraAuth>
         <div className="sidera">
-          <div className="sd-backdrop" aria-hidden="true">
-            <span className="sd-backdrop__near" />
-          </div>
-          {still ? null : <SideraMotion />}
+          <div className="sd-backdrop" aria-hidden="true" />
           {children}
         </div>
       </SideraAuth>
@@ -48,10 +41,7 @@ export default function SideraShell({
   return (
     <SideraAuth>
       <div className="sidera">
-        <div className="sd-backdrop" aria-hidden="true">
-          <span className="sd-backdrop__near" />
-        </div>
-        <SideraMotion />
+        <div className="sd-backdrop" aria-hidden="true" />
         <header className="sd-bar">
           <div className="sd-container sd-bar__inner">
             <div className="sd-bar__mark">

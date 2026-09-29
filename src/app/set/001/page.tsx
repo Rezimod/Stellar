@@ -1,120 +1,122 @@
 import type { Metadata } from 'next';
+import { eq } from 'drizzle-orm';
 import AlmanacDate from '@/components/sidera/AlmanacDate';
+import CapsuleCounter, { type TierCard } from '@/components/sidera/CapsuleCounter';
 import ShelfFilter from '@/components/sidera/ShelfFilter';
 import ShopCard from '@/components/sidera/ShopCard';
 import SideraShell from '@/components/sidera/SideraShell';
 import SideraView from '@/components/sidera/SideraView';
-import Chapter from '@/components/sidera/ui/Chapter';
-import DataRow from '@/components/sidera/ui/DataRow';
 import { getDb } from '@/lib/db';
-import { SET_GROUPS, groupCards } from '@/lib/sets/groups';
+import { getNode } from '@/lib/observatory/nodes';
+import { RARITIES, type Rarity } from '@/lib/rarity';
+import { card } from '@/lib/schema';
 import { SET_001, SET_001_CARDS } from '@/lib/sets/set-001';
 import { cardStatus } from '@/lib/sidera/almanac';
-import { readSetSupply } from '@/lib/sidera/capsule';
+import { capsulesOnSale, readSetSupply } from '@/lib/sidera/capsule';
 import { DIRECT_CARD_PRICE_USD } from '@/lib/sidera/economics';
-import { holderView } from '@/lib/sidera/repo';
-import type { Rarity } from '@/lib/rarity';
+import { nightRow } from '@/lib/sidera/night';
+import { siteNightDate } from '@/lib/sidera/target';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title: 'First Light',
-  description: 'A hundred cards, numbered outward from Earth: the Solar System, the Stars, the Deep Sky, the Galaxies, the Extremes, the Frontier and the Almanac, each a numbered edition.',
+  title: 'First Light — capsules and cards',
+  description:
+    'A hundred cards, numbered outward from Earth: the Solar System, the Stars, the Deep Sky, the Galaxies, the Extremes, the Frontier and the Almanac. Opened from four capsules, from $5.',
 };
 
-const pad = (n: number) => String(n).padStart(3, '0');
-
-type Supply = { allocated: number; editionSize: number };
-
-
-export default async function Set001Page({
-  searchParams,
-}: {
-  searchParams: Promise<{ wallet?: string | string[] }>;
-}) {
-  const { wallet: raw } = await searchParams;
-  const wallet = typeof raw === 'string' ? raw.trim() : '';
-
+export default async function FirstLightPage() {
+  const node = getNode('tbilisi-01')!;
   const db = getDb();
-  let supply: Map<string, Supply> | null = null;
+
+  let remaining = new Map<string, number>();
   let status: string = SET_001.status;
-  let held: Map<string, number> | null = null;
+  let tonight: string | null = null;
+  let onSale: Record<string, number> | null = null;
   if (db) {
     try {
-      const read = await readSetSupply(db, SET_001.code);
-      if (read) {
-        status = read.status;
-        supply = new Map(read.cards.map((c) => [c.designation, { allocated: c.allocated, editionSize: c.editionSize }]));
+      const [supply, night, listed] = await Promise.all([
+        readSetSupply(db, SET_001.code),
+        nightRow(db, siteNightDate(node.timezone, new Date())),
+        capsulesOnSale(db, { limit: 1000 }).catch((err) => {
+          console.error('[sidera] cannot read capsules on sale', err);
+          return null;
+        }),
+      ]);
+      if (supply) {
+        status = supply.status;
+        remaining = new Map(supply.cards.map((c) => [c.designation, c.remaining]));
       }
-      if (wallet) {
-        const mine = await holderView(db, wallet);
-        held = new Map(mine.map((e) => [e.designation, e.editionNumber]));
+      if (listed) {
+        onSale = {};
+        for (const c of listed) if (c.tier) onSale[c.tier] = (onSale[c.tier] ?? 0) + 1;
+      }
+      if (night) {
+        const [row] = await db.select({ designation: card.designation }).from(card).where(eq(card.id, night.cardId));
+        tonight = row?.designation ?? null;
       }
     } catch (err) {
-      console.error('[sidera] cannot read set supply', err);
+      console.error('[sidera] cannot read the set', err);
     }
   }
 
+  // Scarcest first, the way a shelf puts its best stock at eye level; the set's own order within a rarity.
   const now = new Date();
-  const totalEditions = SET_001_CARDS.reduce((sum, c) => sum + c.seed.editionSize, 0);
-  const observable = SET_001_CARDS.filter((c) => c.seed.observationStatus !== 'not_available').length;
+  const sorted = [...SET_001_CARDS].sort(
+    (a, b) => RARITIES.indexOf(b.seed.rarity as Rarity) - RARITIES.indexOf(a.seed.rarity as Rarity),
+  );
+  // A sealed card is out of every capsule.
+  const tierCards: TierCard[] = sorted
+    .filter((c) => cardStatus(c, now) === 'open')
+    .map(({ seed }) => ({ designation: seed.designation, name: seed.name, rarity: seed.rarity as Rarity, editionSize: seed.editionSize }));
+  const editions = SET_001_CARDS.reduce((sum, c) => sum + c.seed.editionSize, 0);
 
   return (
-    <SideraShell title="First Light">
+    <SideraShell>
       <SideraView step="set" />
-      <section className="sd-container sd-top">
-        <DataRow
-          className="sd-strip"
-          items={[
-            { label: 'Cards', value: SET_001_CARDS.length },
-            { label: 'Editions', value: totalEditions.toLocaleString('en-GB') },
-            { label: 'Node 01 can shoot', value: `${observable} of ${SET_001_CARDS.length}` },
-            { label: 'Status', value: status === 'released' ? 'Released' : 'Pre-release' },
-          ]}
-        />
-        <ShelfFilter />
-      </section>
+      <div className="sd-fl">
+        <CapsuleCounter cards={tierCards} onSale={onSale} />
 
-      {SET_GROUPS.map((g, gi) => {
-        const cards = groupCards(SET_001_CARDS, g.key);
-        return (
-          <section key={g.key} className="sd-container sd-chapter-block" data-shelf-section>
-            <Chapter n={String(gi + 1).padStart(2, '0')} title={g.title} aside={g.key === 'frontier' ? `${cards.length} cards · fiction` : `${cards.length} ${cards.length === 1 ? 'card' : 'cards'}`} />
-            <ul className="sd-floor__grid">
-              {cards.map((c) => {
-                const s = supply?.get(c.seed.designation);
-                const mine = held?.get(c.seed.designation);
-                const rarity = c.seed.rarity as Rarity;
-                const left = s ? s.editionSize - s.allocated : c.seed.editionSize;
-                const sealed = cardStatus(c, now) === 'sealed';
-                return (
-                  <li key={c.seed.designation} data-shelf-item data-section={c.record.family} data-rarity={rarity} className="sd-shelf__item">
-                    <ShopCard
-                      designation={c.seed.designation}
-                      name={c.seed.name}
-                      rarity={rarity}
-                      sub={
-                        c.record.section === 'almanac' ? (
-                          <AlmanacDate startUtc={c.record.eventStartUtc!} endUtc={c.record.eventEndUtc!} countdown short />
-                        ) : (
-                          `${left} of ${c.seed.editionSize} left`
-                        )
-                      }
-                      price={sealed ? 'Sealed' : `$${DIRECT_CARD_PRICE_USD[rarity]}`}
-                      tag={mine !== undefined ? `No. ${pad(mine)}` : held !== null ? 'Not held' : undefined}
-                      dim={held !== null && mine === undefined}
-                    />
-                  </li>
-                );
-              })}
-            </ul>
-          </section>
-        );
-      })}
+        <section className="sd-fl__set" aria-labelledby="fl-title">
+          <header className="sd-fl__head">
+            <div>
+              <h1 className="sd-fl__title" id="fl-title">
+                First Light
+              </h1>
+              <p className="sd-fl__meta">
+                Set 001 · {editions.toLocaleString('en-GB')} editions · {status === 'released' ? 'Released' : 'Pre-release'}
+              </p>
+            </div>
+            <ShelfFilter total={SET_001_CARDS.length} />
+          </header>
 
-      {wallet && held === null && (
-        <p className="sd-container sd-note">The Collection cannot be read at the moment, so every card is shown as held by no one.</p>
-      )}
+          <ul className="sd-fl__grid">
+            {sorted.map((c) => {
+              const { seed, record } = c;
+              const rarity = seed.rarity as Rarity;
+              const sealed = cardStatus(c, now) === 'sealed';
+              return (
+                <li key={seed.designation} data-shelf-item data-section={record.family} data-name={`${seed.name} ${seed.designation}`.toLowerCase()}>
+                  <ShopCard
+                    designation={seed.designation}
+                    name={seed.name}
+                    rarity={rarity}
+                    sub={
+                      record.section === 'almanac' ? (
+                        <AlmanacDate startUtc={record.eventStartUtc!} endUtc={record.eventEndUtc!} countdown short />
+                      ) : (
+                        `${remaining.get(seed.designation) ?? seed.editionSize} of ${seed.editionSize} left`
+                      )
+                    }
+                    price={sealed ? 'Sealed' : `$${DIRECT_CARD_PRICE_USD[rarity]}`}
+                    tag={seed.designation === tonight ? 'Tonight' : undefined}
+                  />
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      </div>
     </SideraShell>
   );
 }

@@ -1,57 +1,50 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
-import { RARITIES, rarityInfo } from '@/lib/rarity';
+import { useEffect, useState } from 'react';
 import { SET_GROUPS } from '@/lib/sets/groups';
 
-const FILTERS = [
-  { key: 'all', label: 'All' },
-  ...SET_GROUPS.map((g) => ({ key: g.key, label: g.short })),
-  ...[...RARITIES].reverse().map((r) => ({ key: r, label: `${rarityInfo(r).glyph} ${rarityInfo(r).label}` })),
-];
+const FILTERS = [{ key: 'all', label: 'All' }, ...SET_GROUPS.map((g) => ({ key: g.key, label: g.short }))];
 
 /**
- * Small buttons over the shelf. Each tile on the page carries data-section and
- * data-rarity; a filter hides the others and lets the rest settle in again,
- * staggered. Chapters with nothing left in them fold away.
+ * Search and families over the shelf. Each tile on the page carries
+ * data-section and data-name; the filter hides the rest in place, so the
+ * hundred tiles are never rendered again.
  */
-export default function ShelfFilter() {
-  const [active, setActive] = useState('all');
+export default function ShelfFilter({ total }: { total: number }) {
+  const [family, setFamily] = useState('all');
+  const [query, setQuery] = useState('');
+  const [shown, setShown] = useState(total);
 
-  const apply = useCallback((key: string) => {
-    const tiles = document.querySelectorAll<HTMLElement>('[data-shelf-item]');
-    let i = 0;
-    for (const t of tiles) {
-      const show = key === 'all' || t.dataset.section === key || t.dataset.rarity === key;
+  useEffect(() => {
+    const q = query.trim().toLowerCase();
+    let n = 0;
+    for (const t of document.querySelectorAll<HTMLElement>('[data-shelf-item]')) {
+      const show = (family === 'all' || t.dataset.section === family) && (!q || t.dataset.name!.includes(q));
       t.hidden = !show;
-      if (show) {
-        t.style.setProperty('--i', String(i++));
-        t.classList.remove('is-in');
-        void t.offsetWidth;
-        t.classList.add('is-in');
-      }
+      if (show) n++;
     }
-    for (const s of document.querySelectorAll<HTMLElement>('[data-shelf-section]')) {
-      s.hidden = !s.querySelector('[data-shelf-item]:not([hidden])');
-    }
-  }, []);
-
-  useEffect(() => apply(active), [active, apply]);
+    setShown(n);
+  }, [family, query]);
 
   return (
-    <div className="sd-shelf__chips" role="group" aria-label="Show">
-      {FILTERS.map((f) => (
-        <button
-          key={f.key}
-          type="button"
-          className="sd-shelf__chip"
-          aria-pressed={active === f.key}
-          data-rarity={f.key}
-          onClick={() => setActive(f.key)}
-        >
-          {f.label}
-        </button>
-      ))}
+    <div className="sd-filter">
+      <label className="sd-filter__search">
+        <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+          <circle cx="7" cy="7" r="4.6" fill="none" stroke="currentColor" strokeWidth="1.6" />
+          <path d="M10.4 10.4L14 14" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+        </svg>
+        <input type="search" placeholder="Search the set" aria-label="Search the set" value={query} onChange={(e) => setQuery(e.target.value)} />
+      </label>
+      <div className="sd-filter__chips" role="group" aria-label="Family">
+        {FILTERS.map((f) => (
+          <button key={f.key} type="button" className="sd-filter__chip" aria-pressed={family === f.key} onClick={() => setFamily(f.key)}>
+            {f.label}
+          </button>
+        ))}
+      </div>
+      <p className="sd-filter__count" aria-live="polite">
+        {shown === total ? `${total} cards` : shown === 0 ? 'No card matches' : `${shown} of ${total} cards`}
+      </p>
     </div>
   );
 }
