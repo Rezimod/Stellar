@@ -1,11 +1,15 @@
 'use client';
 
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
 import { usePrivySafe as usePrivy } from './usePrivySafe';
 import { useSideraHolder } from './useSideraHolder';
-import SideraPay, { type Confirmation, type SideraOrder } from './SideraPay';
-import SideraReveal from './SideraReveal';
+import type { Confirmation, SideraOrder } from './SideraPay';
 import type { Rarity } from '@/lib/rarity';
+
+// Payment and the reveal carry the wallet SDK and the animation; they load when a card is bought.
+const SideraPay = dynamic(() => import('./SideraPay'), { ssr: false });
+const SideraReveal = dynamic(() => import('./SideraReveal'), { ssr: false });
 
 /**
  * Buying one card on its own. The edition number is allocated when the

@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
-import { usePrivy } from '@privy-io/react-auth';
-import { useWallets } from '@privy-io/react-auth/solana';
+import { useSideraAuth } from './SideraAuth';
+import { usePrivySafe } from './usePrivySafe';
 import { Connection, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
 import { createTransfer, parseURL, type TransferRequestURL } from '@solana/pay';
 import bs58 from 'bs58';
@@ -58,8 +58,8 @@ export default function SideraPay({
   /** One screen: the pay button first, the code and the rest beside it, small. */
   compact?: boolean;
 }) {
-  const { getAccessToken } = usePrivy();
-  const { wallets } = useWallets();
+  const { getAccessToken } = usePrivySafe();
+  const wallets = useSideraAuth().state?.wallets ?? [];
   const [checking, setChecking] = useState(false);
   const [paying, setPaying] = useState(false);
   const [note, setNote] = useState('');

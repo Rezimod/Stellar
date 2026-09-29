@@ -21,7 +21,7 @@ import BottomNav from '@/components/shared/BottomNav';
 import DeferredGlobals from '@/components/shared/DeferredGlobals';
 import PageTransition from '@/components/layout/PageTransition';
 import { Toaster } from '@/components/ui/Toast';
-import { LegacyPrivy } from '@/components/sidera/SideraAuth';
+import LegacyPrivy from '@/components/sidera/LegacyPrivy';
 
 // Homepage hero display face — Space Grotesk (hero-only; not a global token).
 const spaceGrotesk = Space_Grotesk({

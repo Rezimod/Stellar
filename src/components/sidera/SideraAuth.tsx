@@ -1,27 +1,30 @@
 'use client';
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ComponentType, type ReactNode } from 'react';
+import type { usePrivy } from '@privy-io/react-auth';
+import type { useWallets } from '@privy-io/react-auth/solana';
+
+export type Privy = ReturnType<typeof usePrivy>;
+export type SolanaWallets = ReturnType<typeof useWallets>['wallets'];
+/** What Privy knows, read inside its provider and handed out here. */
+export type PrivyState = { privy: Privy; wallets: SolanaWallets };
 
 type Auth = {
-  /** Privy is loaded and mounted. */
+  /** Privy is loaded and has reported in. */
   ready: boolean;
-  /** Nothing will remount the page any more: no saved session, or Privy is already up. */
-  settled: boolean;
   /** Load Privy; with `login`, open its sign-in window as soon as it is up. */
   enable: (login?: boolean) => void;
   wantsLogin: boolean;
   loginOpened: () => void;
+  /** Privy's session and wallets, once Privy is up. */
+  state: PrivyState | null;
 };
 
-const AuthContext = createContext<Auth>({ ready: false, settled: true, enable: () => {}, wantsLogin: false, loginOpened: () => {} });
+const AuthContext = createContext<Auth>({ ready: false, enable: () => {}, wantsLogin: false, loginOpened: () => {}, state: null });
 export const useSideraAuth = () => useContext(AuthContext);
 
-/** Inside a legacy Stellar page, Privy is already mounted by its layout: Sidera uses that one. */
-const LegacyContext = createContext(false);
-export function LegacyPrivy({ children }: { children: ReactNode }) {
-  return <LegacyContext.Provider value>{children}</LegacyContext.Provider>;
-}
-const LEGACY: Auth = { ready: true, settled: true, enable: () => {}, wantsLogin: false, loginOpened: () => {} };
+/** Inside a legacy Stellar page, Privy is already mounted by its layout: LegacyPrivy hands its state in. */
+export const LegacyState = createContext<PrivyState | null>(null);
 
 function hadSession() {
   try {
@@ -35,17 +38,26 @@ function hadSession() {
  * Sign-in, loaded only when it is wanted. A visitor who has never signed in
  * downloads none of Privy — no SDK, no wallet list, no auth window — until
  * they press Sign in; someone with a session gets it as the page settles.
- * Privy arriving remounts the page once, under its provider.
+ *
+ * Privy's provider is mounted beside the page, not around it, and reports its
+ * state up (SideraPrivy). So Privy arriving never remounts the page: nothing
+ * the visitor has opened or pressed in the meantime is lost.
  */
 export default function SideraAuth({ children }: { children: ReactNode }) {
-  if (useContext(LegacyContext)) return <AuthContext.Provider value={LEGACY}>{children}</AuthContext.Provider>;
+  const legacy = useContext(LegacyState);
+  if (legacy) return <LegacyAuth state={legacy}>{children}</LegacyAuth>;
   return <LazyAuth>{children}</LazyAuth>;
 }
 
+function LegacyAuth({ state, children }: { state: PrivyState; children: ReactNode }) {
+  const value = useMemo(() => ({ ready: true, enable: () => {}, wantsLogin: false, loginOpened: () => {}, state }), [state]);
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
 function LazyAuth({ children }: { children: ReactNode }) {
-  const [Shell, setShell] = useState<ComponentType<{ children: ReactNode }> | null>(null);
+  const [Shell, setShell] = useState<ComponentType<{ onState: (s: PrivyState) => void }> | null>(null);
+  const [state, setState] = useState<PrivyState | null>(null);
   const [wantsLogin, setWantsLogin] = useState(false);
-  const [session, setSession] = useState<boolean | null>(null);
 
   const enable = useCallback((login = false) => {
     if (login) setWantsLogin(true);
@@ -53,20 +65,19 @@ function LazyAuth({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    const had = hadSession();
-    setSession(had);
-    if (had) enable();
+    if (hadSession()) enable();
   }, [enable]);
 
   const value = useMemo(
-    () => ({
-      ready: Shell !== null,
-      settled: session === false || Shell !== null,
-      enable,
-      wantsLogin,
-      loginOpened: () => setWantsLogin(false),
-    }),
-    [Shell, session, enable, wantsLogin],
+    () => ({ ready: state !== null, enable, wantsLogin, loginOpened: () => setWantsLogin(false), state }),
+    [state, enable, wantsLogin],
   );
-  return <AuthContext.Provider value={value}>{Shell ? <Shell>{children}</Shell> : children}</AuthContext.Provider>;
+  // The same element every render, so Privy's subtree only renders when Privy itself changes.
+  const privy = useMemo(() => (Shell ? <Shell onState={setState} /> : null), [Shell]);
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+      {privy}
+    </AuthContext.Provider>
+  );
 }
