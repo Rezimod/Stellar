@@ -57,10 +57,11 @@ export function merchantWallet(): PublicKey | null {
 /**
  * US dollars to SOL at the live rate, to the lamport-safe six places the orders
  * table already uses. Throws SolPriceUnavailableError rather than quote on a
- * fixed fallback rate, and refuses a quote that comes to nothing.
+ * fixed fallback rate, and refuses a quote that comes to nothing. A rehearsal
+ * charges nothing, so its quote may rest on the fallback rate.
  */
 export async function usdToSol(usd: number): Promise<number> {
-  const { solPerGEL, solPrice } = await fetchSolPriceRates({ strict: true });
+  const { solPerGEL, solPrice } = await fetchSolPriceRates({ strict: !simulatedPayments() });
   const sol = +priceToSol(usd, 'USD', solPerGEL, solPrice).toFixed(6);
   if (!(sol > 0)) throw new Error('A Sidera quote must be a positive amount of SOL');
   return sol;

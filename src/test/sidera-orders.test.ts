@@ -89,6 +89,20 @@ describe('quoting in SOL', () => {
     vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true, json: async () => ({ solana: { usd: 150 } }) })));
     expect(await usdToSol(39)).toBeGreaterThan(0);
   });
+
+  it('asks the next feed when one refuses', async () => {
+    vi.stubGlobal('fetch', vi.fn(async (url: string) =>
+      url.includes('coinbase') ? { ok: false } : { ok: true, json: async () => ({ result: { SOLUSD: { c: ['120.5'] } } }) },
+    ));
+    expect((await fetchSolPriceRates({ strict: true })).solPrice).toBe(120.5);
+  });
+
+  it('quotes a rehearsal without a live feed', async () => {
+    process.env.NEXT_PUBLIC_SIDERA_SIMULATED_PAYMENT = '1';
+    vi.stubGlobal('fetch', vi.fn(async () => ({ ok: false })));
+    expect(await usdToSol(39)).toBeGreaterThan(0);
+    delete process.env.NEXT_PUBLIC_SIDERA_SIMULATED_PAYMENT;
+  });
 });
 
 describe('a direct card sale', () => {
