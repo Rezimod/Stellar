@@ -26,7 +26,7 @@ export default async function CapsulesPage() {
   let onSale: Awaited<ReturnType<typeof capsulesOnSale>> | null = null;
   if (db) {
     try {
-      onSale = await capsulesOnSale(db);
+      onSale = await capsulesOnSale(db, { limit: 1000 });
     } catch (err) {
       console.error('[sidera] cannot read capsules on sale', err);
     }
@@ -45,7 +45,7 @@ export default async function CapsulesPage() {
             <span className="sd-sealed__card sd-sealed__card--front">
               <span className="sd-sealed__mark">Sidera</span>
               <span className="sd-sealed__label">Sealed · {CARDS_PER_CAPSULE} cards</span>
-              {sealed && <span className="sd-sealed__hash">{sealed.commitment.slice(0, 24)}…</span>}
+              {sealed && <span className="sd-sealed__hash">{sealed.commitment.slice(0, 16)}…</span>}
             </span>
           </div>
           <div>

@@ -813,7 +813,7 @@ export default function ObservatoryConsole({ tonight, nodeCloud }: { tonight: To
             <div className="sdo-pstats">
               <div className="sdo-stat"><span className="sdo-lbl">Tracking</span><span className="sdo-v sdo-v--sm">{rmsNow}</span></div>
               <div className="sdo-stat"><span className="sdo-lbl">Seeing</span><span className="sdo-v sdo-v--sm">{seeing.toFixed(1)}″</span></div>
-              <div className="sdo-stat"><span className="sdo-lbl">Frames</span><span className="sdo-v sdo-v--sm">{frames.length}</span><span className="sdo-mono" style={{ fontSize: 10, color: 'var(--o-ink-3)' }}>THIS SESSION</span></div>
+              <div className="sdo-stat"><span className="sdo-lbl">Frames</span><span className="sdo-v sdo-v--sm">{frames.length}</span><span className="sdo-mono" style={{ fontSize: 11, color: 'var(--o-ink-3)' }}>THIS SESSION</span></div>
             </div>
             <div className="sdo-pcap">
               <div className="sdo-pcap__head"><span className="sdo-lbl">Captured</span></div>

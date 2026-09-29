@@ -75,7 +75,7 @@ export default async function CapsuleRecordPage({ params }: { params: Promise<{ 
           className="sd-strip"
           items={[
             { label: 'Capsule', value: sequence === null ? '—' : String(sequence).padStart(3, '0') },
-            { label: 'Cards', value: outcome ? outcome.pulls.length : '—' },
+            { label: 'Cards', value: outcome ? outcome.pulls.length : 'Sealed' },
             { label: 'Listed', value: listed ? `${listed.at.slice(0, 10)}` : '—' },
           ]}
         />
@@ -128,11 +128,15 @@ export default async function CapsuleRecordPage({ params }: { params: Promise<{ 
           <p className="sd-note">{verification.problems.join('; ')}</p>
         )}
 
-        <div className="sd-chapter-block">
-          <Chapter n="03" title="Recompute it" />
-        </div>
-        <p className="sd-note">Secret committed before the sale, nonce set by the buyer after. Together they reproduce every draw.</p>
-        <SideraVerify capsuleId={id} />
+        {outcome && (
+          <>
+            <div className="sd-chapter-block">
+              <Chapter n="03" title="Recompute it" />
+            </div>
+            <p className="sd-note">Secret committed before the sale, nonce set by the buyer after. Together they reproduce every draw.</p>
+            <SideraVerify capsuleId={id} />
+          </>
+        )}
       </section>
     </SideraShell>
   );

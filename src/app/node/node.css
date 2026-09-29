@@ -215,3 +215,22 @@
 /* The clock owns the top-right corner; the panels start clear of it. */
 @media (min-width: 900px) { .sidera .sd-sim .obs-live__body { padding-top: 7.75rem; } }
 @media (min-width: 1280px) { .sidera .sd-sim .obs-live__body { padding-top: 8.5rem; } }
+
+.sidera .obs-live__tag { font-size: 11px; }
+
+/* The dock never scrolls the shutter out of reach: it wraps up to tablet width, one control per row on a phone. */
+@media (max-width: 1099px) {
+  .sidera .obs-dock { flex-wrap: wrap; overflow: visible; gap: 0.75rem 0; padding: 1rem 0.75rem; }
+  .sidera .obs-dock__seg { flex: 1 1 50%; min-width: 0; padding: 0 0.75rem; border-right: 0; }
+  .sidera .obs-dock__seg--end, .sidera .obs-dock__seg--grow { flex-basis: 100%; margin-left: 0; padding-top: 0.75rem; border-top: 1px solid var(--obs-float-border); }
+  .sidera .obs-dock__seg--end .obs-dock__control { justify-content: stretch; }
+  .sidera .obs-dock__seg--end .obs-capture { flex: 1; justify-content: center; }
+  .sidera .obs-select { width: 100%; }
+}
+@media (max-width: 519px) {
+  .sidera .obs-dock__seg { flex-basis: 100%; }
+  .sidera .obs-seg { display: flex; flex: 1; min-width: 0; }
+  .sidera .obs-seg__btn { flex: 1; }
+}
+.sidera .sd-sim-rail__inner { padding-block: 10px; }
+@media (max-width: 899px) { .sidera .sd-sim .obs-live .obs-corner { margin: 12px 16px 0; } }

@@ -134,7 +134,7 @@
 
 .sd-datarow { display: flex; flex-wrap: wrap; column-gap: 28px; row-gap: 10px; margin: 0; font-family: var(--sd-mono); font-size: 13px; line-height: 1.4; font-variant-numeric: tabular-nums; }
 .sd-datarow > div { display: flex; gap: 8px; min-width: 0; align-items: baseline; }
-.sd-datarow dt { color: var(--sd-ink-3); text-transform: uppercase; letter-spacing: 0.12em; font-size: 12px; }
+.sd-datarow dt { color: var(--sd-ink-3); text-transform: uppercase; letter-spacing: 0.12em; font-size: 12px; white-space: nowrap; flex-shrink: 0; }
 .sd-datarow dd { margin: 0; min-width: 0; overflow-wrap: anywhere; color: var(--sd-ink); }
 .sd-datarow--stacked { flex-direction: column; row-gap: 0; }
 .sd-datarow--stacked > div { justify-content: space-between; padding: 9px 0; gap: 12px; }
@@ -169,7 +169,7 @@
 .sd-bar__inner { display: grid; grid-template-columns: auto 1fr auto; grid-template-areas: "mark links account"; align-items: center; column-gap: 32px; min-height: var(--sd-bar-h); }
 .sd-bar__mark { grid-area: mark; }
 .sd-bar__account { grid-area: account; justify-self: end; }
-.sd-bar__links { grid-area: links; display: flex; gap: 28px; margin: 0; padding: 0; list-style: none; }
+.sd-bar__links { grid-area: links; display: flex; gap: 28px; margin: 0; padding: 0; list-style: none; min-width: 0; overflow-x: auto; scrollbar-width: none; }
 .sd-navlink { position: relative; font-family: var(--sd-sans); font-weight: 500; font-size: 14px; color: var(--sd-ink-3); text-decoration: none; padding-block: 10px; white-space: nowrap; transition: color var(--sd-dur-fast) var(--sd-ease); }
 .sd-navlink::after {
   content: ''; position: absolute; left: 0; right: 0; bottom: 4px; height: 1px;
@@ -179,13 +179,13 @@
 .sd-navlink:hover::after, .sd-navlink:focus-visible::after { transform: scaleX(1); }
 .sd-navlink:hover { color: var(--sd-ink); }
 .sd-navlink[aria-current="page"] { color: var(--sd-ink); }
-@media (max-width: 719px) {
+@media (max-width: 1023px) {
   .sd-bar__inner { grid-template-columns: 1fr auto; grid-template-areas: "mark account" "links links"; padding-top: 12px; }
   .sd-bar__links { gap: 14px; border-top: 1px solid var(--sd-rule); margin-top: 12px; overflow-x: auto; }
   .sd-bar__links .sd-navlink { font-size: 14px; }
 }
 .sd-foot { border-top: 1px solid var(--sd-rule); margin-top: 96px; padding-block: 32px 40px; }
-.sd-foot__inner { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 14px 24px; color: var(--sd-ink-3); }
+.sd-foot__inner { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 14px 24px; color: var(--sd-ink-3); }
 .sd-foot__links { display: flex; flex-wrap: wrap; gap: 24px; }
 .sd-foot a { color: var(--sd-ink-3); text-decoration: none; }
 .sd-foot a:hover { color: var(--sd-ink); }
@@ -458,7 +458,7 @@ html:has(.sidera) #stellar-main { padding-top: 0; padding-bottom: 0; }
 .sd-skychart__peak--lead .sd-skychart__dot { fill: var(--sd-accent); }
 .sd-skychart__halo { fill: var(--sd-accent); opacity: 0.8; }
 .sd-skychart__leader { stroke: var(--sd-ink-4); stroke-width: 1; }
-.sd-skychart__peak text { font-size: 13px; paint-order: stroke; stroke: #081230; stroke-width: 5px; stroke-linejoin: round; }
+.sd-skychart__peak text { font-size: 13px; paint-order: stroke; stroke: #081230; stroke-width: 8px; stroke-linejoin: round; }
 .sd-skychart__name { fill: var(--sd-ink-2); font-family: var(--sd-sans); font-weight: 500; }
 .sd-skychart__peak--lead .sd-skychart__name { fill: var(--sd-ink); font-weight: 600; }
 .sd-skychart__alt { fill: var(--sd-ink-3); }
@@ -542,7 +542,7 @@ html:has(.sidera) #stellar-main { padding-top: 0; padding-bottom: 0; }
   animation: sd-float 7s ease-in-out infinite;
 }
 .sd-sealed__mark { font-family: var(--sd-display); font-weight: 600; font-size: 22px; letter-spacing: 0.3em; text-transform: uppercase; }
-.sd-sealed__label { font-family: var(--sd-mono); font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sd-accent); }
+.sd-sealed__label { font-family: var(--sd-mono); font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sd-accent); white-space: nowrap; }
 .sd-sealed__hash { font-family: var(--sd-mono); font-size: 12px; letter-spacing: 0.04em; color: var(--sd-ink-3); word-break: break-all; }
 @keyframes sd-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 @media (prefers-reduced-motion: reduce) { .sd-sealed__card--front { animation: none; } }
@@ -634,7 +634,7 @@ html:has(.sidera) #stellar-main { padding-top: 0; padding-bottom: 0; }
 .sd-shelf__chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }
 .sd-shelf__chip {
   font: 500 12px/1 var(--sd-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--sd-ink-3);
-  padding: 9px 13px; border-radius: 999px; border: 1px solid var(--sd-rule); background: rgba(255, 255, 255, 0.03); cursor: pointer;
+  padding: 9px 13px; border-radius: 999px; border: 1px solid var(--sd-rule); background: rgba(255, 255, 255, 0.03); cursor: pointer; white-space: nowrap;
   transition: color var(--sd-dur-base) var(--sd-ease), border-color var(--sd-dur-base) var(--sd-ease), background var(--sd-dur-base) var(--sd-ease), transform 120ms var(--sd-ease);
 }
 .sd-shelf__chip:hover { color: var(--sd-ink); border-color: var(--sd-rule-strong); }
@@ -723,7 +723,7 @@ html:has(.sidera) #stellar-main { padding-top: 0; padding-bottom: 0; }
 .sd-bar .sd-wordmark--sm { font-size: 18px; }
 .sd-navlink { font-weight: 600; font-size: 15px; color: var(--sd-ink-3); }
 /* A phone: the tabs scroll sideways and fade at the edge that has more; the last one scrolls clear of the fade. */
-@media (max-width: 719px) {
+@media (max-width: 1023px) {
   .sd-bar__links { justify-content: flex-start; gap: 16px; padding-right: 32px; scrollbar-width: none; mask-image: linear-gradient(90deg, #000 85%, transparent); }
   .sd-bar__links::-webkit-scrollbar { display: none; }
   .sd-bar__links .sd-navlink { font-size: 13.5px; }
@@ -746,8 +746,12 @@ html:has(.sidera) #stellar-main { padding-top: 0; padding-bottom: 0; }
 .sd-avatar { width: 44px; height: 44px; padding: 0; border-radius: 50%; overflow: hidden; border: 1px solid var(--sd-rule-strong); background: none; cursor: pointer; transition: transform var(--sd-dur-fast) var(--sd-ease), border-color var(--sd-dur-fast) var(--sd-ease); }
 .sd-avatar:hover, .sd-avatar[aria-expanded='true'] { border-color: var(--sd-accent); transform: scale(1.05); }
 .sd-avatar svg { display: block; width: 100%; height: 100%; }
-@media (max-width: 719px) {
+@media (max-width: 1023px) {
   .sd-account .sd-chip:not(.sd-chip--cta) { display: none; }
+}
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .sd-bar__inner { column-gap: 24px; }
+  .sd-bar__links { gap: 20px; }
 }
 
 .sd-menu {
@@ -889,7 +893,7 @@ html:has(.sidera) #stellar-main { padding-top: 0; padding-bottom: 0; }
   .sd-sealed__card:nth-child(2) { transform: rotate(6deg) translateX(34px); }
 }
 /* A long name's outline lettering stays inside the screen. */
-.sd-cardhero__plate { overflow-x: clip; }
+@media (max-width: 959px) { .sd-cardhero__plate { overflow-x: clip; } }
 
 /* ── The shelf: four capsules ─────────────────────────────────── */
 /* Cheapest first, each lit in the colour of the rarity it reaches for. The
@@ -971,7 +975,8 @@ html:has(.sidera) #stellar-main { padding-top: 0; padding-bottom: 0; }
   color: #050b1d; font-weight: 700; font-size: 14px; letter-spacing: -0.005em;
   box-shadow: 0 8px 22px -10px var(--tier), inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
-.sd-shop__set { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px; }
+.sd-shop__set { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 12px; margin-top: 12px; }
+.sd-shop__set > * { white-space: nowrap; }
 
 /* Phones: the four capsules as four rows, all on the first screen. */
 @media (max-width: 899px) {
@@ -987,7 +992,7 @@ html:has(.sidera) #stellar-main { padding-top: 0; padding-bottom: 0; }
   .sd-tier__head { grid-area: head; }
   .sd-tier__line { grid-area: line; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .sd-tier__odds { grid-area: odds; height: 5px; }
-  .sd-tier__best { grid-area: best; font-size: 10.5px; gap: 0 10px; align-self: center; }
+  .sd-tier__best { grid-area: best; font-size: 11px; gap: 0 10px; align-self: center; }
   .sd-tier__stock { display: none; }
   .sd-tier__open { grid-area: open; min-height: 36px; padding: 6px 16px; font-size: 13px; margin-top: 2px; }
   .sd-tier__name { font-size: 17px; }

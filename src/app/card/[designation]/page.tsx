@@ -79,19 +79,6 @@ export default async function CardPage({ params }: { params: Promise<{ designati
           ? [{ label: 'Position', value: 'Held, not observed' }]
           : [{ label: 'Position', value: 'Moves — computed for the night' }];
 
-  const pairsWith: Datum[] = pair
-    ? [
-        {
-          label: 'Pairs with',
-          value: (
-            <Link href={`/card/${pair.seed.designation}`} className="sd-link">
-              {pair.seed.name}
-            </Link>
-          ),
-        },
-      ]
-    : [];
-
   return (
     <SideraShell title={seed.name}>
       <SideraView step="card" />
@@ -108,7 +95,7 @@ export default async function CardPage({ params }: { params: Promise<{ designati
 
           <div>
             <p className="sd-eyebrow">
-              {seed.designation} · {seed.objectType} · {rarityInfo(rarity).label}
+              {[seed.designation, ...seed.objectType.split(' · ').filter((t) => t.toUpperCase() !== seed.designation), rarityInfo(rarity).label].join(' · ')}
             </p>
             <p className="sd-cardhero__line">{record.line}</p>
             <DataRow
@@ -165,7 +152,6 @@ export default async function CardPage({ params }: { params: Promise<{ designati
             { label: 'Catalogue', value: seed.catalogRef },
             ...position,
             ...record.stats.map(([label, value]) => ({ label, value })),
-            ...pairsWith,
             { label: 'Editions issued', value: allocated === null ? `0 / ${seed.editionSize}` : `${allocated} / ${seed.editionSize}` },
             { label: 'Direct price', value: sealed ? 'Sealed' : `$${priceUsd}` },
           ]}
