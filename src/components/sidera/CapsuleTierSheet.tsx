@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { createPortal } from 'react-dom';
 import { RARITIES, rarityInfo } from '@/lib/rarity';
 import { CARDS_PER_TIER, type Tier } from '@/lib/sidera/tiers';
 import SideraBuyCapsule from './SideraBuyCapsule';
@@ -20,6 +21,9 @@ export default function CapsuleTierSheet({ tier, onPreview, onClose }: { tier: T
   const [next, setNext] = useState<OnSale | null | undefined>(undefined);
   const [failed, setFailed] = useState(false);
   const panel = useRef<HTMLDivElement>(null);
+  // Lifted to the page's .sidera root: opened from a sticky panel, the sheet
+  // would otherwise stack inside it, under the card grid beside it.
+  const [host] = useState(() => (typeof document === 'undefined' ? null : (document.querySelector<HTMLElement>('.sidera') ?? document.body)));
 
   useEffect(() => {
     let live = true;
@@ -49,7 +53,7 @@ export default function CapsuleTierSheet({ tier, onPreview, onClose }: { tier: T
 
   const top = Math.max(...RARITIES.map((r) => tier.oddsBps[r]));
 
-  return (
+  const sheet = (
     <div className="sd-sheet" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div
         ref={panel}
@@ -128,4 +132,6 @@ export default function CapsuleTierSheet({ tier, onPreview, onClose }: { tier: T
       </div>
     </div>
   );
+
+  return host ? createPortal(sheet, host) : sheet;
 }
