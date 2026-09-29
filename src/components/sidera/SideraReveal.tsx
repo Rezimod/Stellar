@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useId, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { createPortal } from 'react-dom';
 import CardPlate from './CardPlate';
 import CardBack from './card/CardBack';
 import type { Rarity } from '@/lib/rarity';
@@ -42,18 +43,18 @@ const rarityOf = (c: RevealedCard): Rarity => (isRarity(c.rarity) ? (c.rarity as
 /* The clock, in milliseconds, pitched to the scarcest card in the capsule. */
 
 /** The descent: from the first glint at the edge of the sky to the strike. */
-const FALL_MS: Record<Rarity, number> = { common: 1900, rare: 2100, epic: 2300, legendary: 2600 };
+const FALL_MS: Record<Rarity, number> = { common: 1500, rare: 1700, epic: 1900, legendary: 2200 };
 /** From the strike to the burst: the stone cools, cracks, and shudders harder and harder. */
-const OPEN_MS: Record<Rarity, number> = { common: 2400, rare: 2700, epic: 3000, legendary: 3200 };
+const OPEN_MS: Record<Rarity, number> = { common: 1500, rare: 1800, epic: 2200, legendary: 2600 };
 /** One of the lesser cards: up from the break, turn, hold, step aside. */
-const DEAL_MS = 2200;
+const DEAL_MS = 1800;
 /** The best card is held back: the field dims and waits on it. */
-const HOLD_MS: Record<Rarity, number> = { common: 450, rare: 600, epic: 900, legendary: 1200 };
+const HOLD_MS: Record<Rarity, number> = { common: 300, rare: 450, epic: 700, legendary: 1000 };
 /** The best card's own turn, slower the scarcer it is. */
-const BEST_MS: Record<Rarity, number> = { common: 2800, rare: 3300, epic: 3900, legendary: 4200 };
+const BEST_MS: Record<Rarity, number> = { common: 2300, rare: 2700, epic: 3300, legendary: 3800 };
 
 /** Ink speed of the provenance line, per character. */
-const TYPE_MS = 26;
+const TYPE_MS = 18;
 
 /**
  * Where each card comes to rest, in the order they are drawn: the outermost
@@ -88,8 +89,9 @@ function best(cards: RevealedCard[]): Rarity {
  * takes its place beside the first, a little forward. Both float; a light
  * passes across them; the provenance line prints itself; the buttons arrive.
  *
- * It plays on a stage over the whole screen; closing it leaves the cards in
- * the page. CSS keyframes only, timed by the variables the component sets. A
+ * It plays on a stage over the whole screen — lifted out to the page's own
+ * .sidera root, since a sheet's backdrop-filter would otherwise pin a fixed
+ * stage inside the sheet; closing it leaves the cards in the page. CSS keyframes only, timed by the variables the component sets. A
  * click, a tap or Escape goes straight to the end, and under
  * prefers-reduced-motion the cards are simply already there.
  */
@@ -131,6 +133,8 @@ export default function SideraReveal({
 
   const [done, setDone] = useState(false);
   const [staged, setStaged] = useState(true);
+  const [host, setHost] = useState<HTMLElement | null>(null);
+  useEffect(() => setHost(document.querySelector<HTMLElement>('.sidera') ?? document.body), []);
   const firstCard = useRef<HTMLLIElement>(null);
   const close = useRef<HTMLButtonElement>(null);
   const skip = useCallback(() => setDone(true), []);
@@ -144,6 +148,16 @@ export default function SideraReveal({
     const timer = window.setTimeout(() => setDone(true), clock.end + 1400);
     return () => window.clearTimeout(timer);
   }, [clock.end]);
+
+  /* A phone that can buzz feels the burst, and the best card coming round. */
+  useEffect(() => {
+    if (done || typeof navigator.vibrate !== 'function') return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const turn = clock.at[clock.at.length - 1] + BEST_MS[top] * 0.5;
+    const pattern = top === 'legendary' ? [40, 70, 90] : top === 'epic' ? [30, 60, 50] : 25;
+    const timers = [window.setTimeout(() => navigator.vibrate(35), clock.burst), window.setTimeout(() => navigator.vibrate(pattern), turn)];
+    return () => timers.forEach((t) => window.clearTimeout(t));
+  }, [done, clock, top]);
 
   useEffect(() => {
     if (!staged) return;
@@ -198,7 +212,7 @@ export default function SideraReveal({
     return { ...p, at };
   });
 
-  return (
+  const reveal = (
     <div
       className={[
         'sd-reveal',
@@ -229,8 +243,6 @@ export default function SideraReveal({
       <span className="sd-reveal__negative" aria-hidden="true" />
       <span className="sd-reveal__burst" aria-hidden="true" />
       <span className="sd-reveal__inhale" aria-hidden="true" />
-      <span className="sd-reveal__dim" aria-hidden="true" />
-      <span className="sd-reveal__spot" aria-hidden="true" />
 
       <div className="sd-reveal__stage">
         {staged && (
@@ -256,6 +268,9 @@ export default function SideraReveal({
         </p>
 
         <div className="sd-reveal__field">
+          {/* Inside the field, so the best card can stand above the dark it waits in. */}
+          <span className="sd-reveal__dim" aria-hidden="true" />
+          <span className="sd-reveal__spot" aria-hidden="true" />
           <div className="sd-reveal__fx" aria-hidden="true">
             <Meteor />
             <Impact />
@@ -294,7 +309,7 @@ export default function SideraReveal({
                       '--sd-at': `${clock.at[i]}ms`,
                       '--sd-d': `${isBest ? BEST_MS[top] : DEAL_MS}ms`,
                       '--sd-tone': info.color,
-                      zIndex: i + 1,
+                      zIndex: isBest ? 20 : i + 1,
                     } as CSSProperties
                   }
                 >
@@ -366,4 +381,6 @@ export default function SideraReveal({
       </div>
     </div>
   );
+
+  return staged && host ? createPortal(reveal, host) : reveal;
 }
