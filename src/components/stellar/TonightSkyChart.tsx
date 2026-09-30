@@ -11,7 +11,7 @@ const HORIZON = 316;
 
 /**
  * The night drawn as it will happen: each object's altitude from dusk to dawn
- * over Caucasus Eye, the horizon at the foot. The leading card is the lit path; the
+ * over Live Telescope V1, the horizon at the foot. The leading card is the lit path; the
  * rest are faint. Objects on the same body — four craters on one Moon — share
  * one path and one label.
  */

@@ -76,7 +76,7 @@ export type CapsuleCosts = {
   /** Expected refunds and returns, as a fraction of the price. */
   returnsRate: number;
   supportUsd: number;
-  /** Caucasus Eye's running cost, spread over the capsules sold in the same period. */
+  /** Live Telescope V1's running cost, spread over the capsules sold in the same period. */
   telescopeOperatingUsd: number;
 };
 

@@ -8,9 +8,9 @@ import '../../observatory/observatory.css';
 import '../../../node/node.css';
 
 export const metadata: Metadata = {
-  title: 'Simulator — Caucasus Eye',
+  title: 'Simulator — Live Telescope V1',
   description:
-    'Drive a simulated Caucasus Eye: a 150 mm telescope with its real field of view, slew times and safety envelope. Computed, not captured.',
+    'Drive a simulated Live Telescope V1: a 150 mm telescope with its real field of view, slew times and safety envelope. Computed, not captured.',
 };
 
 export const revalidate = 300;
@@ -27,12 +27,12 @@ export default async function NodeSimulatorPage() {
             <span aria-hidden="true">/</span>
             <strong>Simulator</strong>
           </nav>
-          <span className="sd-label">Computed, not captured · Caucasus Eye is {node.status}</span>
+          <span className="sd-label">Computed, not captured · Live Telescope V1 is {node.status}</span>
         </div>
       </div>
 
       <div className="obs sd-sim">
-        <SessionConsole node={{ ...node, name: 'Caucasus Eye' }} cloudCover={node.readiness.cloudCover} />
+        <SessionConsole node={{ ...node, name: 'Live Telescope V1' }} cloudCover={node.readiness.cloudCover} />
       </div>
 
       <section className="sd-container sd-chapter-block sd-node-last">
@@ -45,7 +45,7 @@ export default async function NodeSimulatorPage() {
           </p>
           <p>
             As the stack builds, the turbulence averages out and the image walks toward the aperture’s diffraction limit, which it
-            never beats. This is what a 150 mm telescope shows, not a claim about what Caucasus Eye captured.
+            never beats. This is what a 150 mm telescope shows, not a claim about what Live Telescope V1 captured.
           </p>
         </div>
       </section>

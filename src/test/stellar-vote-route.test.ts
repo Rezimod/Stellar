@@ -51,7 +51,7 @@ it('refuses someone who holds no card', async () => {
   expect(mocks.cast).not.toHaveBeenCalled();
 });
 
-it('refuses a card Caucasus Eye cannot photograph that night', async () => {
+it('refuses a card Live Telescope V1 cannot photograph that night', async () => {
   mocks.weight.mockResolvedValue(3);
   const res = await vote('M31');
   expect(res.status).toBe(400);

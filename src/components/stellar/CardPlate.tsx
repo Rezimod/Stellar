@@ -7,7 +7,7 @@ export type CardPlateProps = {
   designation: string;
   /** The holder's edition number, stamped in the cartouche. */
   edition?: number | null;
-  /** A real capture from Caucasus Eye; the drawn plate stands in until one exists. */
+  /** A real capture from Live Telescope V1; the drawn plate stands in until one exists. */
   capture?: string | null;
   commitment?: string | null;
   /** The card page. Without it the card is not a link. */

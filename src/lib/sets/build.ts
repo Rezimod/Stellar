@@ -3,7 +3,7 @@
  *
  * The author states the facts — what the object is, where it is, how large and
  * how bright — and the rarity, which is a decision. Everything else follows:
- * the edition size from the rarity, the observation status from Caucasus Eye's
+ * the edition size from the rarity, the observation status from Live Telescope V1's
  * optics and sky. Nothing that can be derived is typed by hand.
  */
 
@@ -47,7 +47,7 @@ export type CardRecord = {
   story: [string, string] | null;
   /** The object's own light, for the glow its tile sits on. */
   glow: string | null;
-  /** The name as it runs on the back: "When Caucasus Eye photographs the Moon". */
+  /** The name as it runs on the back: "When Live Telescope V1 photographs the Moon". */
   noun: string | null;
 };
 
@@ -82,7 +82,7 @@ export const JUDGING_NODE_ID = 'tbilisi-01';
 export const PLACEHOLDER_ART = '/cards/placeholder.svg';
 
 /** Rendered from Explore's own planet maps by the phase-7 card renderer (since retired) —
- *  art, not a Caucasus Eye frame. Everything else is drawn from its record. */
+ *  art, not a Live Telescope V1 frame. Everything else is drawn from its record. */
 const RENDERED = new Set(['SATURN', 'JUPITER']);
 
 export function subjectOf(facts: Pick<CardSeed, 'targetId' | 'decDeg'>, optics: CardOptics): ObservabilitySubject {
@@ -131,7 +131,7 @@ const unpointable = (facts: NoSky, targetId: string, reason: string, rec: CardRe
 };
 
 /**
- * A card of something Caucasus Eye cannot point at — a specimen in a case, a
+ * A card of something Live Telescope V1 cannot point at — a specimen in a case, a
  * spacecraft beyond any telescope, the observatory's own first frame. The
  * author says why.
  */
@@ -154,13 +154,13 @@ export function authorFiction(facts: NoSky, extras: Extras): AuthoredCard {
 
 /**
  * An Almanac card: a dated event in the real sky. Sold until the event ends,
- * then sealed. No vote decides it; Caucasus Eye records it on the night.
+ * then sealed. No vote decides it; Live Telescope V1 records it on the night.
  */
 export function authorAlmanac(facts: NoSky, event: { start: string; end: string }, extras: Extras): AuthoredCard {
   return unpointable(
     facts,
     'event',
-    'A dated event. Caucasus Eye records it on the night, weather allowing; no vote decides it.',
+    'A dated event. Live Telescope V1 records it on the night, weather allowing; no vote decides it.',
     record(extras, { section: 'almanac', eventStartUtc: event.start, eventEndUtc: event.end }),
   );
 }

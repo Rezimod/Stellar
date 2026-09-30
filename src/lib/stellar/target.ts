@@ -2,7 +2,7 @@
  * Which card the observatory photographs tonight.
  *
  * One object per night, and the rule for now is the plainest defensible one:
- * of the cards Caucasus Eye can photograph, the one whose object stands highest in
+ * of the cards Live Telescope V1 can photograph, the one whose object stands highest in
  * the dark window, measured only where the safety envelope would let the
  * instrument point. Less atmosphere is a better photograph. Voting replaces
  * this rule later; the shape of the answer — a card, an instant, a reason in
@@ -89,7 +89,7 @@ function withinAvailability(node: ObservatoryNode, at: Date): boolean {
 export type Observable<C extends Candidate> = Omit<TonightsTarget<C>, 'decisionBasis'>
 
 /**
- * Every card Caucasus Eye could photograph on `night`, each at the instant its
+ * Every card Live Telescope V1 could photograph on `night`, each at the instant its
  * object stands highest inside the envelope, highest first. A card whose
  * object never clears the envelope that night is not in the list.
  */

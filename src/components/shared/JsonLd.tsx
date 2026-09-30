@@ -13,7 +13,7 @@ export default function JsonLd() {
         logo: 'https://stellarr.club/apple-touch-icon.png',
         sameAs: ['https://astroman.ge'],
         description:
-          'Stellar issues real astronomical objects as numbered card editions, sold in sealed capsules and photographed by Caucasus Eye in Tbilisi.',
+          'Stellar issues real astronomical objects as numbered card editions, sold in sealed capsules and photographed by Live Telescope V1 in Tbilisi.',
       },
       {
         '@type': 'WebSite',

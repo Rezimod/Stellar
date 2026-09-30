@@ -61,7 +61,7 @@ it('says plainly that a cloudy night was lost, and what takes the next', async (
   expect(html).toContain('19 September was lost to cloud.</strong> Cloud cover at Tbilisi, Georgia was 96% at 22:30 local time, over the 70% limit.');
   expect(html).toContain('carried from the night of 2026-09-19');
   expect(html).toContain('Lost to cloud');
-  expect(html).toContain('Caucasus Eye is commissioning. No photograph is taken yet.');
+  expect(html).toContain('Live Telescope V1 is commissioning. No photograph is taken yet.');
   expect(html).not.toMatch(/sorry|apolog|countdown|!/i);
 });
 

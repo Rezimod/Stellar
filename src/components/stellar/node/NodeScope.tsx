@@ -195,7 +195,7 @@ export default function NodeScope({
               <span className="sd-scope__dot" aria-hidden="true" />
               Simulated
             </span>
-            <span className="sd-scope__small">Caucasus Eye · {node.status}</span>
+            <span className="sd-scope__small">Live Telescope V1 · {node.status}</span>
           </div>
 
           <div className="sd-scope__hud sd-scope__hud--tr">
@@ -232,7 +232,7 @@ export default function NodeScope({
             aria-hidden="true"
           />
 
-          {!chosen && <p className="sd-scope__empty">Nothing in the set clears the horizon for Caucasus Eye tonight.</p>}
+          {!chosen && <p className="sd-scope__empty">Nothing in the set clears the horizon for Live Telescope V1 tonight.</p>}
         </div>
         <dl className="sd-scope__coords">
           <div>
@@ -271,7 +271,7 @@ export default function NodeScope({
       </div>
 
       {targets.length > 0 && (
-        <div className="sd-scope__rail" role="group" aria-label="Point Caucasus Eye at">
+        <div className="sd-scope__rail" role="group" aria-label="Point Live Telescope V1 at">
           {targets.map((t) => (
             <button
               key={t.designation}

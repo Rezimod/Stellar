@@ -6,9 +6,9 @@ type ObservationStatusMarkProps = {
 };
 
 const LABEL: Record<ObservationStatus, { short: string; long: string }> = {
-  dedicated: { short: 'Dedicated', long: 'a dedicated Caucasus Eye target' },
-  eligible: { short: 'Eligible', long: 'eligible for Caucasus Eye' },
-  not_available: { short: 'Not observable', long: 'not observable from Caucasus Eye' },
+  dedicated: { short: 'Dedicated', long: 'a dedicated Live Telescope V1 target' },
+  eligible: { short: 'Eligible', long: 'eligible for Live Telescope V1' },
+  not_available: { short: 'Not observable', long: 'not observable from Live Telescope V1' },
 };
 
 /** Circles: filled, open, open and struck through. Never a diamond — that family belongs to rarity. */
@@ -22,7 +22,7 @@ function Glyph({ status }: { status: ObservationStatus }) {
 }
 
 /**
- * Whether Caucasus Eye can photograph what a card shows. A quiet chip — teal only
+ * Whether Live Telescope V1 can photograph what a card shows. A quiet chip — teal only
  * when the node has committed to the target, dashed when the object is out of
  * its reach — so it never competes with the rarity chip beside it. Scarcity
  * and observability are unrelated: Europa is epic and not observable.

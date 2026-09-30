@@ -19,7 +19,7 @@ export default function TermsPage() {
           <Chapter n="01" title="What Stellar is" />
           <p>
             Stellar is a set of collectible cards, each a numbered edition of a real object or a dated event in the sky. It is run
-            by Astroman, Tbilisi. Caucasus Eye, the telescope that photographs the night&rsquo;s card, is commissioning: until it is
+            by Astroman, Tbilisi. Live Telescope V1, the telescope that photographs the night&rsquo;s card, is commissioning: until it is
             operational, no photograph is promised.
           </p>
         </section>

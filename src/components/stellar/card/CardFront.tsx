@@ -6,7 +6,7 @@ type Props = {
   plate: Plate;
   /** The holder's edition number. Absent, the cartouche prints a dash. */
   edition?: number | null;
-  /** A real capture from Caucasus Eye in place of the drawn plate. */
+  /** A real capture from Live Telescope V1 in place of the drawn plate. */
   capture?: string | null;
   /** Small cards draw from the pre-rendered WebP layers: the same picture, none of the filter work. */
   lite?: boolean;

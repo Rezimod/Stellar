@@ -20,7 +20,7 @@ const FOOT = [
     title: 'Observatory',
     links: [
       { href: '/tonight', label: 'Tonight' },
-      { href: '/node', label: 'Caucasus Eye' },
+      { href: '/node', label: 'Live Telescope V1' },
       { href: '/voyage', label: 'Voyage' },
     ],
   },
@@ -122,7 +122,7 @@ export default function StellarShell({
             </div>
             <div className="sd-foot__base sd-data">
               <span>
-                Caucasus Eye · {node.site.split(',')[0]} · {coords} · {node.status}
+                Live Telescope V1 · {node.site.split(',')[0]} · {coords} · {node.status}
               </span>
               <span>© {new Date().getFullYear()} Stellar</span>
             </div>

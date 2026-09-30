@@ -5,7 +5,7 @@
  * over the site was above the cloud limit at the hour the card was planned,
  * the night is recorded as lost, with the figure. Then tonight is decided,
  * once: a card carried from a night lost to cloud takes it if its object is
- * still up, for at most MAX_CARRIED_NIGHTS nights in a row; otherwise the holders' weighted votes among the cards Caucasus Eye can
+ * still up, for at most MAX_CARRIED_NIGHTS nights in a row; otherwise the holders' weighted votes among the cards Live Telescope V1 can
  * photograph tonight; with no votes, the object standing highest.
  */
 
@@ -142,7 +142,7 @@ export function chooseNight<C extends CardRow>(
 /**
  * Close a night that ended without a photograph. Lost when the recorded cloud
  * at the planned hour is over the limit; left open otherwise — a clear night
- * without a photograph is Caucasus Eye not working yet, not weather.
+ * without a photograph is Live Telescope V1 not working yet, not weather.
  */
 export async function closeNight(db: Db, node: ObservatoryNode, night: string, now: Date, cloudAt: CloudAt): Promise<NightRow | null> {
   const row = await nightRow(db, night)

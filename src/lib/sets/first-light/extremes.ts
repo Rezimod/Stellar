@@ -1,6 +1,6 @@
 /**
  * The Extremes: black holes, dead stars, collisions, and the oldest light.
- * Most of it is too far, too faint or too brief for Caucasus Eye, and the cards say
+ * Most of it is too far, too faint or too brief for Live Telescope V1, and the cards say
  * which.
  */
 
