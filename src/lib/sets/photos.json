@@ -1,0 +1,621 @@
+{
+ "55-CANCRI-E": {
+  "file": "File:Artist’s impression of 55 Cancri e.jpg",
+  "license": "CC BY 4.0",
+  "credit": "ESA/Hubble, M. Kornmesser",
+  "kind": "illustration",
+  "focus": "77% 50%"
+ },
+ "ALBIREO": {
+  "file": "File:Albireo Killarney Provincial Park Observatory.jpg",
+  "license": "CC BY 4.0",
+  "credit": "Brucewaters",
+  "kind": "photo",
+  "focus": "50% 52%",
+  "zoom": 2.6
+ },
+ "ALDEBARAN": {
+  "file": "File:Hyades cluster.jpg",
+  "license": "CC BY 4.0",
+  "credit": "NASA, ESA, and STScI",
+  "kind": "photo",
+  "focus": "0% 50%"
+ },
+ "ALPHA-CEN": {
+  "file": "File:The bright star Alpha Centauri and its surroundings.jpg",
+  "license": "CC BY 4.0",
+  "credit": "ESO/DSS 2",
+  "kind": "photo",
+  "focus": "50% 50%"
+ },
+ "ANTARES": {
+  "file": "File:Antares and Rho Ophiuchi clouds complex (Giuseppe Donatiello).jpg",
+  "license": "CC0",
+  "credit": "Giuseppe Donatiello",
+  "kind": "photo",
+  "focus": "50% 100%"
+ },
+ "ARCTURUS": {
+  "file": "File:Arcturus, Ursa Major (50155436703).jpg",
+  "license": "CC0",
+  "credit": "Free Photos (Flickr), CC0",
+  "kind": "photo",
+  "focus": "12% 35%"
+ },
+ "BETELGEUSE": {
+  "file": "File:Betelgeuse captured by ALMA.jpg",
+  "license": "CC BY 4.0",
+  "credit": "ALMA (ESO/NAOJ/NRAO)/E. O’Gorman/P. Kervella",
+  "kind": "photo",
+  "focus": "50% 50%"
+ },
+ "BUTTERFLY": {
+  "file": "File:NGC 6302 Hubble 2009.full.jpg",
+  "license": "Public domain",
+  "credit": "NASA, ESA and the Hubble SM4 ERO Team",
+  "kind": "photo",
+  "focus": "50% 50%"
+ },
+ "CARINA": {
+  "file": "File:NASA’s Webb Reveals Cosmic Cliffs, Glittering Landscape of Star Birth.jpg",
+  "license": "Public domain",
+  "credit": "NASA, ESA, CSA, STScI",
+  "kind": "photo",
+  "focus": "50% 50%"
+ },
+ "CARTWHEEL": {
+  "file": "File:Cartwheel Galaxy (NIRCam and MIRI Composite Image) (weic2211a).jpeg",
+  "license": "Public domain",
+  "credit": "NASA, ESA, CSA, STScI",
+  "kind": "photo",
+  "focus": "80% 50%"
+ },
+ "CATS-EYE": {
+  "file": "File:Looking at the Cat’s Eye Nebula with Hubble (potm2602b).jpg",
+  "license": "CC BY 4.0",
+  "credit": "ESA/Hubble & NASA, Z. Tsvetanov",
+  "kind": "photo",
+  "focus": "50% 50%"
+ },
+ "CEN-A": {
+  "file": "File:Centaurus A.jpg",
+  "license": "CC BY 4.0",
+  "credit": "ESO",
+  "kind": "photo",
+  "focus": "50% 50%"
+ },
+ "CHRISTMAS-SUPERMOON": {
+  "file": "File:Supermoon From Washington.jpg",
+  "license": "Public domain",
+  "credit": "NASA/Bill Ingalls",
+  "kind": "photo",
+  "focus": "50% 50%"
+ },
+ "CMB": {
+  "file": "File:WMAP 2010.png",
+  "license": "Public domain",
+  "credit": "NASA",
+  "kind": "photo",
+  "focus": "50% 50%"
+ },
+ "CYGNUS-X1": {
+  "file": "File:Black hole Cygnus X-1.jpg",
+  "license": "Public domain",
+  "credit": "NASA/CXC/M.Weiss",
+  "kind": "illustration",
+  "focus": "30% 50%"
+ },
+ "DOUBLE-CLUSTER": {
+  "file": "File:Double Cluster in Perseus - Flickr - astrophotography andy.jpg",
+  "license": "CC0",
+  "credit": "Andy Weeks",
+  "kind": "photo",
+  "focus": "50% 50%"
+ },
+ "ENCELADUS": {
+  "file": "File:Successful Flight Through Enceladus Plume.jpg",
+  "license": "Public domain",
+  "credit": "NASA/JPL/Space Science Institute",
+  "kind": "photo",
+  "focus": "50% 55%"
+ },
+ "ETA-CARINAE": {
+  "file": "File:EtaCarinae.jpg",
+  "license": "Public domain",
+  "credit": "Nathan Smith (University of California, Berkeley), and NASA",
+  "kind": "photo",
+  "focus": "50% 50%"
+ },
+ "EUROPA": {
+  "file": "File:Europa in natural color.png",
+  "license": "CC BY 3.0",
+  "credit": "NASA/JPL-Caltech/SwRI/MSSS/Kevin M. Gill",
+  "kind": "photo",
+  "focus": "60% 50%"
+ },
+ "FIRST-LIGHT": {
+  "file": "File:Inside the VST (potw1944a).jpg",
+  "license": "CC BY 4.0",
+  "credit": "ESO/B. Tafreshi (twanight.org)",
+  "kind": "photo",
+  "focus": "50% 45%"
+ },
+ "GANYMEDE": {
+  "file": "File:Ganymede - Perijove 34 Composite.png",
+  "license": "CC BY 2.0",
+  "credit": "NASA/JPL-Caltech/SwRI/MSSS/Kevin M. Gill",
+  "kind": "photo",
+  "focus": "50% 50%"
+ },
+ "GEMINIDS": {
+  "file": "File:Geminids Over Kitt Peak National Observatory (iotw2352a).jpg",
+  "license": "CC BY 4.0",
+  "credit": "KPNO/NOIRLab/NSF/AURA/R. Sparks (NSF’s NOIRLab)",
+  "kind": "photo",
+  "focus": "55% 50%"
+ },
+ "GREAT-ECLIPSE": {
+  "file": "File:2017 Total Solar Eclipse (NHQ201708210100) - square crop.jpg",
+  "license": "Public domain",
+  "credit": "NASA/Aubrey Gemignani",
+  "kind": "photo",
+  "focus": "50% 50%"
+ },
+ "GW170817": {
+  "file": "File:Eso1733s Artist's impression of merging neutron stars.jpg",
+  "license": "CC BY 4.0",
+  "credit": "University of Warwick/Mark Garlick",
+  "kind": "illustration",
+  "focus": "41% 50%"
+ },
+ "HALLEY": {
+  "file": "File:Lspn comet halley.jpg",
+  "license": "Public domain",
+  "credit": "NASA/W. Liller",
+  "kind": "photo",
+  "focus": "30% 50%"
+ },
+ "HD-189733B": {
+  "file": "File:Artist’s impression of the deep blue planet HD 189733b (cropped).jpg",
+  "license": "CC BY 4.0",
+  "credit": "NASA, ESA, M. Kornmesser",
+  "kind": "illustration",
+  "focus": "50% 50%"
+ },
+ "HELIX": {
+  "file": "File:NGC7293 (2004).jpg",
+  "license": "Public domain",
+  "credit": "NASA, NOAO, ESA, the Hubble Helix Nebula Team, M. Meixner (STScI), T.A. Rector (NRAO)",
+  "kind": "photo",
+  "focus": "50% 45%"
+ },
+ "HORSEHEAD": {
+  "file": "File:A reproduction of a composite colour image of the Horsehead Nebula and its immediate surroundings - Eso0202a.jpg",
+  "license": "CC BY 4.0",
+  "credit": "European Southern Observatory",
+  "kind": "photo",
+  "focus": "50% 40%"
+ },
+ "HUBBLE-DEEP-FIELD": {
+  "file": "File:Hubble ultra deep field.jpg",
+  "license": "Public domain",
+  "credit": "NASA and the European Space Agency.",
+  "kind": "photo",
+  "focus": "50% 50%"
+ },
+ "HUNTERS-MOON": {
+  "file": "File:Moon rise over the Green River and sage steppe at Seedskadee National Wildlife Refuge (26098912078).jpg",
+  "license": "Public domain",
+  "credit": "USFWS Mountain-Prairie",
+  "kind": "photo",
+  "focus": "48% 50%"
+ },
+ "IMILAC": {
+  "file": "File:Meteorite, stony-iron (pallasite), with olivine (peridot) crystals, found 1822, Atacama Desert, Chile - Natural History Museum, London - DSC05315.jpg",
+  "license": "CC0",
+  "credit": "Daderot",
+  "kind": "photo",
+  "focus": "50% 50%"
+ },
+ "IO": {
+  "file": "File:Io highest resolution true color.jpg",
+  "license": "Public domain",
+  "credit": "NASA / JPL / University of Arizona",
+  "kind": "photo",
+  "focus": "50% 50%"
+ },
+ "JEWEL-BOX": {
+  "file": "File:A Snapshot of the Jewel Box cluster with the ESO VLT.jpg",
+  "license": "CC BY 4.0",
+  "credit": "ESO/Y. Beletsky",
+  "kind": "photo",
+  "focus": "45% 55%"
+ },
+ "JUPITER": {
+  "file": "File:Jupiter OPAL 2.png",
+  "license": "Public domain",
+  "credit": "NASA, ESA, J. DePasquale (STScI), A. Simon (NASA-GSFC)",
+  "kind": "photo",
+  "focus": "50% 50%"
+ },
+ "KEPLER-16B": {
+  "file": "File:Kepler-16b.jpg",
+  "license": "Public domain",
+  "credit": "NASA/JPL-Caltech/T. Pyle",
+  "kind": "illustration",
+  "focus": "70% 50%"
+ },
+ "KRAKEN-MARE": {
+  "file": "File:Titan - Rev 293 (30701331397).png",
+  "license": "Public domain",
+  "credit": "Justin Cowart",
+  "kind": "photo",
+  "focus": "50% 22%"
+ },
+ "LMC": {
+  "file": "File:LMC snapped by the ESO 1-metre Schmidt telescope.jpg",
+  "license": "CC BY 4.0",
+  "credit": "ESO",
+  "kind": "photo",
+  "focus": "40% 50%"
+ },
+ "LUNAR-FRAGMENT": {
+  "file": "File:NWA 11273.jpg",
+  "license": "CC BY 2.0",
+  "credit": "Steve Jurvetson",
+  "kind": "photo",
+  "focus": "50% 50%"
+ },
+ "M1": {
+  "file": "File:Crab Nebula.jpg",
+  "license": "Public domain",
+  "credit": "NASA, ESA, J. Hester and A. Loll (Arizona State University)",
+  "kind": "photo",
+  "focus": "50% 50%"
+ },
+ "M101": {
+  "file": "File:M101 hires STScI-PRC2006-10a.jpg",
+  "license": "CC BY 4.0",
+  "credit": "ESA & NASA; Hubble data: K.D. Kuntz, F. Bresolin, J. Trauger, J. Mould, Y.-H. Chu; STScI",
+  "kind": "photo",
+  "focus": "48% 50%"
+ },
+ "M104": {
+  "file": "File:M104 ngc4594 sombrero galaxy hi-res.jpg",
+  "license": "Public domain",
+  "credit": "NASA/ESA and The Hubble Heritage Team (STScI/AURA)",
+  "kind": "photo",
+  "focus": "50% 50%"
+ },
+ "M13": {
+  "file": "File:M13, NGC 6205 (noao-m13kpno4m).jpg",
+  "license": "CC BY 4.0",
+  "credit": "T.A. Rector (University of Alaska Anchorage) and H. Schweiker (WIYN and NOIRLab/NSF/AURA)",
+  "kind": "photo",
+  "focus": "50% 45%"
+ },
+ "M16": {
+  "file": "File:Pillars of Creation (NIRCam Image).jpg",
+  "license": "Public domain",
+  "credit": "NASA, ESA, CSA, STScI; J. DePasquale, A. Koekemoer, A. Pagan (STScI)",
+  "kind": "photo",
+  "focus": "45% 55%"
+ },
+ "M20": {
+  "file": "File:ESO-Trifid Nebula.jpg",
+  "license": "CC BY 3.0",
+  "credit": "ESO",
+  "kind": "photo",
+  "focus": "50% 55%"
+ },
+ "M31": {
+  "file": "File:Messier 31 - The Andromeda Galaxy with a rarely seen feature.png",
+  "license": "CC BY 4.0",
+  "credit": "Stefan Muckenhuber",
+  "kind": "photo",
+  "focus": "55% 45%"
+ },
+ "M33": {
+  "file": "File:VST snaps a very detailed view of the Triangulum Galaxy.jpg",
+  "license": "CC BY 4.0",
+  "credit": "ESO",
+  "kind": "photo",
+  "focus": "50% 50%"
+ },
+ "M42": {
+  "file": "File:Orion Nebula - Hubble 2006 mosaic 18000.jpg",
+  "license": "Public domain",
+  "credit": "NASA, ESA, M. Robberto (STScI/ESA) and the Hubble Space Telescope Orion Treasury Project Team",
+  "kind": "photo",
+  "focus": "52% 45%"
+ },
+ "M44": {
+  "file": "File:Messier 44 2018.jpg",
+  "license": "CC0",
+  "credit": "Giuseppe Donatiello from Oria (Brindisi), Italy",
+  "kind": "photo",
+  "focus": "45% 45%"
+ },
+ "M45": {
+  "file": "File:Pleiades large.jpg",
+  "license": "Public domain",
+  "credit": "NASA, ESA, AURA/Caltech, Palomar Observatory",
+  "kind": "photo",
+  "focus": "52% 50%"
+ },
+ "M51": {
+  "file": "File:Messier51 sRGB.jpg",
+  "license": "Public domain",
+  "credit": "NASA and European Space Agency",
+  "kind": "photo",
+  "focus": "30% 50%"
+ },
+ "M57": {
+  "file": "File:Webb captures detailed beauty of Ring Nebula (NIRCam image) (weic2320b).jpg",
+  "license": "CC BY 4.0",
+  "credit": "ESA/Webb, NASA, CSA, M. Barlow, N. Cox, R. Wesson",
+  "kind": "photo",
+  "focus": "50% 50%"
+ },
+ "M8": {
+  "file": "File:VST images the Lagoon Nebula.jpg",
+  "license": "CC BY 4.0",
+  "credit": "ESO/VPHAS+ team",
+  "kind": "photo",
+  "focus": "58% 50%"
+ },
+ "M81": {
+  "file": "File:Hubble-GALEX-Spitzer Composite Image of M81 (heic0710b).jpg",
+  "license": "Public domain",
+  "credit": "NASA, ESA and A. Zezas (Harvard-Smithsonian CfA); GALEX: NASA/JPL-Caltech; Spitzer: NASA/JPL-Caltech",
+  "kind": "photo",
+  "focus": "50% 50%"
+ },
+ "M82": {
+  "file": "File:M82 HST ACS 2006-14-a-large web.jpg",
+  "license": "Public domain",
+  "credit": "NASA, ESA, and The Hubble Heritage Team (STScI/AURA)",
+  "kind": "photo",
+  "focus": "50% 50%"
+ },
+ "M87": {
+  "file": "File:M87 jet.jpg",
+  "license": "Public domain",
+  "credit": "NASA and The Hubble Heritage Team (STScI/AURA)",
+  "kind": "photo",
+  "focus": "50% 50%"
+ },
+ "MAGNETAR": {
+  "file": "File:SGR 1806-20 108536main NeutronStar-Print1.jpg",
+  "license": "Public domain",
+  "credit": "NASA/Goddard Space Flight Center Conceptual Image Lab",
+  "kind": "illustration",
+  "focus": "23% 50%"
+ },
+ "MARS": {
+  "file": "File:Mars 23 aug 2003 hubble (cropped).jpg",
+  "license": "Public domain",
+  "credit": "NASA, ESA, and The Hubble Heritage Team (STScI/AURA)",
+  "kind": "photo",
+  "focus": "50% 50%"
+ },
+ "MERCURY": {
+  "file": "File:Mercury in color - Prockter07-edit1.jpg",
+  "license": "Public domain",
+  "credit": "National Aeronautics and Space Administration/Johns Hopkins University Applied Physics Laboratory/Carnegie Institution o",
+  "kind": "photo",
+  "focus": "58% 50%"
+ },
+ "MILKY-WAY": {
+  "file": "File:Laser Towards Milky Ways Centre.jpg",
+  "license": "CC BY 4.0",
+  "credit": "ESO/Yuri Beletsky",
+  "kind": "photo",
+  "focus": "50% 45%"
+ },
+ "MIRA": {
+  "file": "File:Mira-uv-bow-shock-tail-vertical.jpg",
+  "license": "Public domain",
+  "credit": "NASA",
+  "kind": "photo",
+  "focus": "50% 3%"
+ },
+ "NEPTUNE": {
+  "file": "File:Neptune - Voyager 2 (29347980845) flatten crop.jpg",
+  "license": "Public domain",
+  "credit": "NASA / JPL / Voyager-ISS / Aster Cowart",
+  "kind": "photo",
+  "focus": "50% 50%"
+ },
+ "NORTH-AMERICA": {
+  "file": "File:NGC 7000- The North America Nebula and the Pelican Nebula (noao-n7000mosblock).jpg",
+  "license": "CC BY 4.0",
+  "credit": "KPNO/NOIRLab/NSF/AURA/Adam Block",
+  "kind": "photo",
+  "focus": "38% 50%"
+ },
+ "OLYMPUS-MONS": {
+  "file": "File:Olympus Mons alt.jpg",
+  "license": "Public domain",
+  "credit": "Image by NASA, modifications by Seddon",
+  "kind": "photo",
+  "focus": "50% 50%"
+ },
+ "OMEGA-CEN": {
+  "file": "File:Omega Centauri by ESO.jpg",
+  "license": "CC BY 4.0",
+  "credit": "ESO",
+  "kind": "photo",
+  "focus": "50% 50%"
+ },
+ "ORIONIDS": {
+  "file": "File:Meteors over the McMath-Pierce Solar Telescope (ann24020a).jpg",
+  "license": "CC BY 4.0",
+  "credit": "KPNO/NOIRLab/NSF/AURA/R. Sparks",
+  "kind": "photo",
+  "focus": "30% 40%"
+ },
+ "OUMUAMUA": {
+  "file": "File:ESO-M. Kornmesser.jpg",
+  "license": "CC BY 4.0",
+  "credit": "ESO/M. Kornmesser",
+  "kind": "illustration",
+  "focus": "50% 55%"
+ },
+ "PLUTO": {
+  "file": "File:Pluto in True Color - High-Res.jpg",
+  "license": "Public domain",
+  "credit": "NASA/Johns Hopkins University Applied Physics Laboratory/Southwest Research Institute/Alex Parker",
+  "kind": "photo",
+  "focus": "50% 50%"
+ },
+ "POLARIS": {
+  "file": "File:Artist's concept of Polaris system (opo0602e).jpg",
+  "license": "Public domain",
+  "credit": "NASA, ESA, G. Bacon (STScI)",
+  "kind": "illustration",
+  "focus": "49% 75%",
+  "zoom": 2.2
+ },
+ "RIGEL": {
+  "file": "File:Rigel and IC 2118 - The Witch Head Nebula - Flickr - gjdonatiello.jpg",
+  "license": "CC0",
+  "credit": "Giuseppe Donatiello from Oria (Brindisi), Italy",
+  "kind": "photo",
+  "focus": "10% 60%"
+ },
+ "ROSETTE": {
+  "file": "File:Rosette Nebula, NGC 2237 (noao-rosette).jpg",
+  "license": "CC BY 4.0",
+  "credit": "N.A.Sharp/NOIRLab/NSF/AURA",
+  "kind": "photo",
+  "focus": "50% 50%"
+ },
+ "SATURN": {
+  "file": "File:Saturn during Equinox.jpg",
+  "license": "Public domain",
+  "credit": "NASA / JPL / Space Science Institute",
+  "kind": "photo",
+  "focus": "50% 50%",
+  "zoom": 0.72
+ },
+ "SGR-A": {
+  "file": "File:Sag A*.jpg",
+  "license": "CC BY 4.0",
+  "credit": "EHT Collaboration",
+  "kind": "photo",
+  "focus": "50% 50%"
+ },
+ "SIRIUS": {
+  "file": "File:Sirius (ground-based image) (heic0516e).jpg",
+  "license": "Public domain",
+  "credit": "ESA/Hubble and Digitized Sky Survey 2. Acknowledgements: Davide De Martin (ESA/Hubble )",
+  "kind": "photo",
+  "focus": "50% 50%"
+ },
+ "SMC": {
+  "file": "File:SMC - Noirlab2030b.jpg",
+  "license": "CC BY 4.0",
+  "credit": "CTIO/NOIRLab/NSF/AURA/SMASH/D. Nidever; image processing: T.A. Rector, M. Zamani, D. de Martin",
+  "kind": "photo",
+  "focus": "45% 50%"
+ },
+ "SN-1987A": {
+  "file": "File:Supernova 1987A (NIRCam Image) (2023-136).png",
+  "license": "Public domain",
+  "credit": "Science NASA, ESA, CSA, Mikako Matsuura (Cardiff University), Richard Arendt (NASA-GSFC, UMBC), Claes Fransson (Stock...",
+  "kind": "photo",
+  "focus": "50% 50%"
+ },
+ "SNOW-MOON-ECLIPSE": {
+  "file": "File:Total Lunar Eclipse 2026 – New Orleans (MAF 20260303 LunarEclipse 01).jpg",
+  "license": "Public domain",
+  "credit": "NASA/Michael DeMocker",
+  "kind": "photo",
+  "focus": "48% 45%"
+ },
+ "STEPHANS-QUINTET": {
+  "file": "File:Stephan's Quintet taken by James Webb Space Telescope.jpg",
+  "license": "Public domain",
+  "credit": "NASA, ESA, CSA, STScI",
+  "kind": "photo",
+  "focus": "32% 45%"
+ },
+ "SUN": {
+  "file": "File:The Sun by the Atmospheric Imaging Assembly of NASA's Solar Dynamics Observatory - 20100819.jpg",
+  "license": "Public domain",
+  "credit": "NASA/SDO (AIA)",
+  "kind": "photo",
+  "focus": "50% 50%"
+ },
+ "TARANTULA": {
+  "file": "File:Tarantula Nebula by JWST.jpg",
+  "license": "Public domain",
+  "credit": "NASA, ESA, CSA, STScI, Webb ERO Production Team",
+  "kind": "photo",
+  "focus": "50% 50%"
+ },
+ "TON-618": {
+  "file": "File:Artist’s impression of the record-breaking quasar J0529-4351 (eso2402a).jpg",
+  "license": "CC BY 4.0",
+  "credit": "ESO/M. Kornmesser",
+  "kind": "illustration",
+  "focus": "45% 50%"
+ },
+ "TRAPPIST-1": {
+  "file": "File:PIA21421 - Abstract Concept of TRAPPIST-1 System.jpg",
+  "license": "Public domain",
+  "credit": "NASA/JPL-Caltech",
+  "kind": "illustration",
+  "focus": "50% 50%"
+ },
+ "TYCHO": {
+  "file": "File:Tycho crater 4119 h2.jpg",
+  "license": "CC0",
+  "credit": "James Stuby based on NASA image",
+  "kind": "photo",
+  "focus": "50% 50%"
+ },
+ "URANUS": {
+  "file": "File:Uranus as seen by NASA's Voyager 2 (remastered) - JPEG converted.jpg",
+  "license": "Public domain",
+  "credit": "NASA",
+  "kind": "photo",
+  "focus": "50% 50%"
+ },
+ "VALLES-MARINERIS": {
+  "file": "File:Mars Valles Marineris.jpeg",
+  "license": "Public domain",
+  "credit": "NASA / USGS (see PIA04304 catalog page)",
+  "kind": "photo",
+  "focus": "50% 55%"
+ },
+ "VEGA": {
+  "file": "File:Vega (55196444951).jpg",
+  "license": "CC0",
+  "credit": "gjdonatiello",
+  "kind": "photo",
+  "focus": "50% 50%"
+ },
+ "VEIL": {
+  "file": "File:Return to the Veil Nebula.jpg",
+  "license": "CC BY 4.0",
+  "credit": "ESA/Hubble & NASA, Z. Levay",
+  "kind": "photo",
+  "focus": "50% 50%"
+ },
+ "VENUS": {
+  "file": "File:Venus globe.jpg",
+  "license": "Public domain",
+  "credit": "NASA/JPL",
+  "kind": "photo",
+  "focus": "50% 50%"
+ },
+ "VOYAGER-1": {
+  "file": "File:Voyager spacecraft.jpg",
+  "license": "Public domain",
+  "credit": "NASA/JPL",
+  "kind": "illustration",
+  "focus": "45% 50%"
+ }
+}

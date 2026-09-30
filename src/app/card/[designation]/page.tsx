@@ -17,6 +17,7 @@ import { cardStatus } from '@/lib/stellar/almanac';
 import { DIRECT_CARD_PRICE_USD } from '@/lib/stellar/economics';
 import type { ObservationStatus } from '@/lib/stellar/observability';
 import { cardAvailability } from '@/lib/stellar/orders';
+import { PHOTOS } from '@/lib/sets/photos';
 
 export const dynamic = 'force-dynamic';
 
@@ -40,6 +41,7 @@ export default async function CardPage({ params }: { params: Promise<{ designati
   if (!card) notFound();
 
   const { seed, record } = card;
+  const photo = PHOTOS[seed.designation];
   const rarity = seed.rarity as Rarity;
   const priceUsd = DIRECT_CARD_PRICE_USD[rarity];
   const almanac = record.section === 'almanac';
@@ -154,6 +156,18 @@ export default async function CardPage({ params }: { params: Promise<{ designati
             ...record.stats.map(([label, value]) => ({ label, value })),
             { label: 'Editions issued', value: allocated === null ? `0 / ${seed.editionSize}` : `${allocated} / ${seed.editionSize}` },
             { label: 'Direct price', value: sealed ? 'Sealed' : `$${priceUsd}` },
+            ...(photo
+              ? [
+                  {
+                    label: photo.kind === 'illustration' ? 'Artist’s impression' : 'Image',
+                    value: (
+                      <a href={`https://commons.wikimedia.org/wiki/${encodeURIComponent(photo.file.replace(/ /g, '_'))}`} target="_blank" rel="noopener noreferrer">
+                        {photo.credit} · {photo.license}
+                      </a>
+                    ),
+                  },
+                ]
+              : []),
           ]}
         />
       </section>

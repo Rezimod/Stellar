@@ -59,3 +59,7 @@
   .sdc--hero .sdc-stage:not(.is-live) .sdc-tilt, .sdc--hero .sdc-stage:not(.is-live) .sdc-foil { animation: none; }
   .sdc-flip { transition: none; }
 }
+
+/* The archive face: the image runs the whole card; the hairline and type sit over it. */
+.sdc-window--full { left: 0; top: 0; width: 100%; height: 100%; border-radius: inherit; }
+.sdc-card--archive { background: #000; }

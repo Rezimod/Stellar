@@ -6,6 +6,8 @@ import StellarAccountGate from './StellarAccountGate';
 import StellarAuth from './StellarAuth';
 import { getNode } from '@/lib/observatory/nodes';
 import { LEGACY_HOST } from '@/lib/stellar/legacy';
+import { siteDarkWindow, siteNightDate } from '@/lib/stellar/target';
+import SiteClock from './SiteClock';
 
 const FOOT = [
   {
@@ -14,28 +16,22 @@ const FOOT = [
       { href: '/set/001', label: 'First Light' },
       { href: '/collection', label: 'Collection' },
       { href: '/capsules/log', label: 'Public log' },
+      { href: '/tonight', label: 'Tonight' },
     ],
   },
   {
-    title: 'Observatory',
+    title: 'Explore',
     links: [
-      { href: '/tonight', label: 'Tonight' },
       { href: '/node', label: 'Live Telescope V1' },
       { href: '/voyage', label: 'Voyage' },
+      { href: `${LEGACY_HOST}/sky`, label: 'Sky tonight' },
+      { href: `${LEGACY_HOST}/learn`, label: 'Learn' },
     ],
   },
   {
     title: 'Stellar',
     links: [
-      { href: `${LEGACY_HOST}/sky`, label: 'Sky tonight' },
       { href: `${LEGACY_HOST}/marketplace`, label: 'Shop' },
-      { href: `${LEGACY_HOST}/learn`, label: 'Learn' },
-      { href: `${LEGACY_HOST}/missions`, label: 'Missions' },
-    ],
-  },
-  {
-    title: 'Contact',
-    links: [
       { href: '/contact', label: 'Contact' },
       { href: '/terms', label: 'Terms' },
       { href: '/privacy', label: 'Privacy' },
@@ -45,6 +41,8 @@ const FOOT = [
 
 const node = getNode('tbilisi-01')!;
 const coords = `${node.lat.toFixed(2)}° N · ${node.lon.toFixed(2)}° E`;
+const hhmm = (d: Date | null) =>
+  d ? new Intl.DateTimeFormat('en-GB', { timeZone: node.timezone, hour: '2-digit', minute: '2-digit' }).format(d) : '—';
 
 /**
  * The frame every Stellar page wraps itself in:
@@ -98,37 +96,70 @@ export default function StellarShell({
         {title && <h1 className="sr-only">{title}</h1>}
         {children}
 
-        <footer className="sd-foot">
-          <div className="sd-container">
-            <div className="sd-foot__top">
-              <div className="sd-foot__brand">
-                <Wordmark href="/" />
-                <p>Real objects. Numbered editions.</p>
-              </div>
-              <nav aria-label="Footer" className="sd-foot__cols">
-                {FOOT.map((col) => (
-                  <div key={col.title}>
-                    <p className="sd-foot__head">{col.title}</p>
-                    <ul>
-                      {col.links.map((l) => (
-                        <li key={l.label}>
-                          {l.href.startsWith('/') ? <Link href={l.href}>{l.label}</Link> : <a href={l.href}>{l.label}</a>}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
-              </nav>
-            </div>
-            <div className="sd-foot__base sd-data">
-              <span>
-                Live Telescope V1 · {node.site.split(',')[0]} · {coords} · {node.status}
-              </span>
-              <span>© {new Date().getFullYear()} Stellar</span>
-            </div>
-          </div>
-        </footer>
+        <SiteFooter />
       </div>
     </StellarAuth>
+  );
+}
+
+/** Mission control: the telescope's panel beside the links, the wordmark as the floor. */
+function SiteFooter() {
+  const dark = siteDarkWindow(node, siteNightDate(node.timezone, new Date()));
+  return (
+    <footer className="sd-foot">
+      <div className="sd-container">
+        <div className="sd-foot__top">
+          <div className="sd-foot__brand">
+            <Wordmark href="/" />
+            <div className="sd-foot__panel">
+              <p className="sd-foot__ptitle">
+                Live Telescope V1 <span className="sd-foot__state">{node.status}</span>
+              </p>
+              <dl>
+                <div>
+                  <dt>Site time</dt>
+                  <dd>
+                    <SiteClock timezone={node.timezone} /> · {node.site.split(',')[0]}
+                  </dd>
+                </div>
+                <div>
+                  <dt>Night</dt>
+                  <dd>
+                    {hhmm(dark.duskStart)} → {hhmm(dark.dawnEnd)}
+                  </dd>
+                </div>
+                <div>
+                  <dt>Tonight</dt>
+                  <dd>
+                    <Link href="/tonight">The card →</Link>
+                  </dd>
+                </div>
+              </dl>
+            </div>
+          </div>
+          <nav aria-label="Footer" className="sd-foot__cols">
+            {FOOT.map((col) => (
+              <div key={col.title}>
+                <p className="sd-foot__head">{col.title}</p>
+                <ul>
+                  {col.links.map((l) => (
+                    <li key={l.label}>{l.href.startsWith('/') ? <Link href={l.href}>{l.label}</Link> : <a href={l.href}>{l.label}</a>}</li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </nav>
+        </div>
+        <p className="sd-foot__mark" aria-hidden="true">
+          STELLAR
+        </p>
+        <div className="sd-foot__base sd-data">
+          <span>{coords}</span>
+          <span>
+            © {new Date().getFullYear()} Stellar · {node.site.split(',')[0]}
+          </span>
+        </div>
+      </div>
+    </footer>
   );
 }

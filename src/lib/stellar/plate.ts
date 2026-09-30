@@ -6,6 +6,7 @@
 import { rarityInfo, type Rarity } from '@/lib/rarity';
 import type { Family, Section } from '@/lib/sets/build';
 import { SET_001_CARDS, SET_001_CARD_BY_DESIGNATION } from '@/lib/sets/set-001';
+import { PHOTOS } from '@/lib/sets/photos';
 
 const MOVES = 'RA/DEC · MOVES — COMPUTED FOR THE NIGHT';
 
@@ -78,8 +79,10 @@ export type Plate = {
   noun: string | null;
   section: Section;
   family: Family;
-  /** The directory holding sky.svg, object.svg and survey.svg. */
+  /** The directory holding sky.svg, object.svg and survey.svg — the drawn art, for cards with no photograph. */
   art: string;
+  /** The real image behind the card, cropped to it, and whom it is owed to. */
+  photo: { src: string; lite: string; credit: string; license: string; kind: 'photo' | 'illustration' } | null;
 };
 
 const pad3 = (n: number) => String(n).padStart(3, '0');
@@ -134,6 +137,15 @@ export function plateFor(designation: string): Plate | null {
     section: record.section,
     family: record.family,
     art: `/cards/plate/${designation}`,
+    photo: PHOTOS[designation]
+      ? {
+          src: `/cards/photo/${designation}.webp`,
+          lite: `/cards/photo/${designation}-s.webp`,
+          credit: PHOTOS[designation].credit,
+          license: PHOTOS[designation].license,
+          kind: PHOTOS[designation].kind,
+        }
+      : null,
   };
 }
 
