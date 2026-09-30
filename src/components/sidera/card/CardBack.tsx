@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { editionLabel, type Plate } from '@/lib/sidera/plate';
-import { DISPLAY, FOIL_OP, FrameBorder, FrameDefs, LOGO_D, MONO, SANS, rr } from './frame';
+import { DISPLAY, FOIL_OP, FrameBorder, FrameDefs, LOGO_D, MONO, SANS, TEXT, rr } from './frame';
 
 type Props = {
   plate: Plate;
@@ -83,7 +83,7 @@ function CardBack({ plate: c, edition, commitment, sealed = false, u }: Props) {
         <line x1="60" y1="124" x2="570" y2="124" stroke="rgba(245,241,232,.1)" />
         {!sealed && (
           <>
-            <text x="315" y="184" textAnchor="middle" fill="#f5f1e8" style={{ fontFamily: SANS, fontWeight: 600, fontSize: Math.min(40, c.nameSize * 0.7), letterSpacing: -1 }}>
+            <text x="315" y="184" textAnchor="middle" fill="#f5f1e8" style={{ fontFamily: SANS, fontWeight: 500, fontSize: Math.min(40, c.nameSize * 0.68), letterSpacing: -0.4 }}>
               {c.name}
             </text>
             <text x="315" y="208" textAnchor="middle" fill="rgba(245,241,232,.55)" style={{ fontFamily: MONO, fontSize: 10, letterSpacing: 2.2 }}>
@@ -101,14 +101,14 @@ function CardBack({ plate: c, edition, commitment, sealed = false, u }: Props) {
             ))}
           </>
         )}
-        <text x="315" y="640" textAnchor="middle" fill={`url(#${b}metalH)`} style={{ fontFamily: DISPLAY, fontWeight: 600, fontSize: 26, letterSpacing: 11 }}>
+        <text x="315" y="640" textAnchor="middle" fill={`url(#${b}metalH)`} style={{ fontFamily: DISPLAY, fontWeight: 600, fontSize: 28, letterSpacing: 12 }}>
           SIDERA
         </text>
         <text x="315" y="668" textAnchor="middle" fill="rgba(245,241,232,.6)" style={{ fontFamily: MONO, fontSize: 11, letterSpacing: 2.4 }}>
           {sealed ? 'FIRST LIGHT · SEALED' : `FIRST LIGHT · ${c.num} / ${c.total} · ${c.glyph} ${c.rname.toUpperCase()}`}
         </text>
         {lines.map((line, i) => (
-          <text key={i} x="315" y={706 + i * 24} textAnchor="middle" fill={i === 2 ? 'rgba(245,241,232,.55)' : 'rgba(245,241,232,.86)'} style={{ fontFamily: SANS, fontSize: i === 2 ? 13 : 16 }}>
+          <text key={i} x="315" y={706 + i * 24} textAnchor="middle" fill={i === 2 ? 'rgba(245,241,232,.55)' : 'rgba(245,241,232,.86)'} style={{ fontFamily: TEXT, fontSize: i === 2 ? 14 : 17.5, fontStyle: i === 2 ? 'italic' : 'normal' }}>
             {line}
           </text>
         ))}

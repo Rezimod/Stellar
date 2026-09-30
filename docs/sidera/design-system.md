@@ -2,6 +2,17 @@
 
 The brief for every Sidera page. Read `docs/sidera/RULES.md` (tone and vocabulary) first.
 
+**Vintage layer, 2026-09-30, by the owner.** Over the Stellar language sits
+`src/styles/sidera-vintage.css`, loaded last: the engraved-atlas palette (indigo
+ground, gilt rules and accent, cream paper labels, one red stamp), Fraunces for
+names and headlines, EB Garamond for the voice, JetBrains Mono kept for data;
+film grain, a vignette, a drifting light leak, dust and the turning atlas
+(`public/sidera/atlas.svg`, drawn by `scripts/sidera-atlas.tsx`) come from
+`ui/Atmosphere`, mounted by `SideraShell`. The card frame's metals are aged
+(`card/frame.tsx`) and its names are set in Fraunces; after any frame change
+re-run `scripts/sidera-plates/thumbs.tsx`. The owner asked for this serif
+direction explicitly, so the 2026-09-21 note below no longer forbids it.
+
 **Superseded 2026-09-21, by the owner.** Sidera now wears the Stellar design
 language — the same cosmic navy canvas, terracotta accent and Geist/JetBrains
 stack that stellarr.club runs on — with the Stellar comet mark beside the

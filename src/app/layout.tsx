@@ -1,11 +1,12 @@
 import type { Metadata } from 'next';
 import type { Viewport } from 'next';
-import { Orbitron, Geist, JetBrains_Mono } from 'next/font/google';
+import { Orbitron, Geist, JetBrains_Mono, Fraunces, EB_Garamond } from 'next/font/google';
 import './sidera-base.css';
 import '../styles/sidera-tokens.css';
 import '../styles/sidera-motion.css';
 import '../styles/sidera-pages.css';
 import '../styles/sidera-reveal.css';
+import '../styles/sidera-vintage.css';
 import { AnalyticsBoot } from '@/components/providers/AnalyticsBoot';
 import JsonLd from '@/components/shared/JsonLd';
 
@@ -21,6 +22,20 @@ const geist = Geist({
   subsets: ['latin'],
   variable: '--font-geist',
   weight: ['400', '500', '600', '700'],
+  display: 'swap',
+});
+// The vintage faces: Fraunces, a soft old-style display, and EB Garamond for the voice.
+const fraunces = Fraunces({
+  subsets: ['latin'],
+  variable: '--font-fraunces',
+  axes: ['opsz', 'SOFT', 'WONK'],
+  style: ['normal', 'italic'],
+  display: 'swap',
+});
+const garamond = EB_Garamond({
+  subsets: ['latin'],
+  variable: '--font-garamond',
+  style: ['normal', 'italic'],
   display: 'swap',
 });
 const jetbrainsMono = JetBrains_Mono({
@@ -69,7 +84,7 @@ export const metadata: Metadata = {
  */
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${orbitron.variable} ${geist.variable} ${jetbrainsMono.variable}`}>
+    <html lang="en" className={`${orbitron.variable} ${geist.variable} ${jetbrainsMono.variable} ${fraunces.variable} ${garamond.variable}`}>
       <head>
         <meta name="apple-mobile-web-app-title" content="Sidera" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
