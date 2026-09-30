@@ -103,7 +103,7 @@ export async function GET() {
   try {
     const res = await fetch(
       `https://api.nasa.gov/planetary/apod?api_key=${key}&start_date=${fmt(start)}&end_date=${fmt(end)}&thumbs=true`,
-      { next: { revalidate } },
+      { next: { revalidate }, signal: AbortSignal.timeout(10_000) },
     );
     if (!res.ok) throw new Error(`APOD ${res.status}`);
     const raw: Array<{
