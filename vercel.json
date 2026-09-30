@@ -22,11 +22,11 @@
       "schedule": "0 21 * * *"
     },
     {
-      "path": "/api/sidera/capsules/release",
+      "path": "/api/stellar/capsules/release",
       "schedule": "40 3 * * *"
     },
     {
-      "path": "/api/cron/sidera-night",
+      "path": "/api/cron/stellar-night",
       "schedule": "0 13 * * *"
     }
   ]

@@ -1,18 +1,18 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import CardPlate from '@/components/sidera/CardPlate';
-import ObjectArt from '@/components/sidera/ObjectArt';
-import SideraShell from '@/components/sidera/SideraShell';
-import SideraView from '@/components/sidera/SideraView';
-import SideraVote from '@/components/sidera/SideraVote';
-import TonightSkyChart from '@/components/sidera/TonightSkyChart';
-import Chapter from '@/components/sidera/ui/Chapter';
-import DataRow, { type Datum } from '@/components/sidera/ui/DataRow';
+import CardPlate from '@/components/stellar/CardPlate';
+import ObjectArt from '@/components/stellar/ObjectArt';
+import StellarShell from '@/components/stellar/StellarShell';
+import StellarView from '@/components/stellar/StellarView';
+import StellarVote from '@/components/stellar/StellarVote';
+import TonightSkyChart from '@/components/stellar/TonightSkyChart';
+import Chapter from '@/components/stellar/ui/Chapter';
+import DataRow, { type Datum } from '@/components/stellar/ui/DataRow';
 import { getDb } from '@/lib/db';
 import { CLOUD_LIMIT } from '@/lib/observatory/adapter';
 import { getNode } from '@/lib/observatory/nodes';
 import { isRarity, type Rarity } from '@/lib/rarity';
-import { addDays, tonightView, type TonightView } from '@/lib/sidera/night';
+import { addDays, tonightView, type TonightView } from '@/lib/stellar/night';
 
 export const dynamic = 'force-dynamic';
 
@@ -38,7 +38,7 @@ export default async function TonightPage() {
     try {
       view = await tonightView(db, node, now);
     } catch (err) {
-      console.error('[sidera] cannot read tonight', err);
+      console.error('[stellar] cannot read tonight', err);
     }
   }
 
@@ -75,8 +75,8 @@ export default async function TonightPage() {
       : [];
 
   return (
-    <SideraShell>
-      <SideraView step="tonight" />
+    <StellarShell>
+      <StellarView step="tonight" />
 
       <section className="sd-poster sd-top">
         <div className="sd-sky" aria-hidden="true" />
@@ -197,7 +197,7 @@ export default async function TonightPage() {
                         <small>{cast ? `${Math.round(share * 100)}%` : 'votes'}</small>
                       </span>
                       <div className="sd-ballot__act">
-                        <SideraVote designation={c.designation} name={c.name} />
+                        <StellarVote designation={c.designation} name={c.name} />
                       </div>
                     </li>
                   );
@@ -231,6 +231,6 @@ export default async function TonightPage() {
           <p className="sd-note">The night’s record cannot be read right now.</p>
         </section>
       )}
-    </SideraShell>
+    </StellarShell>
   );
 }

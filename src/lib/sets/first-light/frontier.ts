@@ -1,5 +1,5 @@
 /**
- * The Frontier: ten worlds of Sidera's own, in the tradition of the great
+ * The Frontier: ten worlds of Stellar's own, in the tradition of the great
  * space films — the ideas those films made famous, never their designs or
  * names. Fiction, and every card says so. Where a real object inspired one,
  * the two are paired.

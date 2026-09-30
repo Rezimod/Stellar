@@ -1,22 +1,22 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import AlmanacDate from '@/components/sidera/AlmanacDate';
-import CardPlate from '@/components/sidera/CardPlate';
-import SideraBuyCard from '@/components/sidera/SideraBuyCard';
-import SideraShell from '@/components/sidera/SideraShell';
-import SideraView from '@/components/sidera/SideraView';
-import DataRow, { type Datum } from '@/components/sidera/ui/DataRow';
-import ObservationStatusMark from '@/components/sidera/ui/ObservationStatusMark';
-import Chapter from '@/components/sidera/ui/Chapter';
+import AlmanacDate from '@/components/stellar/AlmanacDate';
+import CardPlate from '@/components/stellar/CardPlate';
+import StellarBuyCard from '@/components/stellar/StellarBuyCard';
+import StellarShell from '@/components/stellar/StellarShell';
+import StellarView from '@/components/stellar/StellarView';
+import DataRow, { type Datum } from '@/components/stellar/ui/DataRow';
+import ObservationStatusMark from '@/components/stellar/ui/ObservationStatusMark';
+import Chapter from '@/components/stellar/ui/Chapter';
 import { getDb } from '@/lib/db';
 import { formatDec, formatRa } from '@/lib/observatory/telescope-targets';
 import { rarityInfo, type Rarity } from '@/lib/rarity';
 import { SET_001_CARD_BY_DESIGNATION } from '@/lib/sets/set-001';
-import { cardStatus } from '@/lib/sidera/almanac';
-import { DIRECT_CARD_PRICE_USD } from '@/lib/sidera/economics';
-import type { ObservationStatus } from '@/lib/sidera/observability';
-import { cardAvailability } from '@/lib/sidera/orders';
+import { cardStatus } from '@/lib/stellar/almanac';
+import { DIRECT_CARD_PRICE_USD } from '@/lib/stellar/economics';
+import type { ObservationStatus } from '@/lib/stellar/observability';
+import { cardAvailability } from '@/lib/stellar/orders';
 
 export const dynamic = 'force-dynamic';
 
@@ -28,7 +28,7 @@ export async function generateMetadata({
   const { designation } = await params;
   const card = SET_001_CARD_BY_DESIGNATION.get(designation.toUpperCase());
   if (!card) return { title: 'Card not found' };
-  return { title: `${card.seed.name} — First Light · Sidera`, description: card.seed.blurb };
+  return { title: `${card.seed.name} — First Light · Stellar`, description: card.seed.blurb };
 }
 
 /** A selenographic degree, with a real minus sign rather than a hyphen. */
@@ -59,7 +59,7 @@ export default async function CardPage({ params }: { params: Promise<{ designati
         released = a.released;
       }
     } catch (err) {
-      console.error('[sidera] cannot read card availability', err);
+      console.error('[stellar] cannot read card availability', err);
     }
   }
 
@@ -80,8 +80,8 @@ export default async function CardPage({ params }: { params: Promise<{ designati
           : [{ label: 'Position', value: 'Moves — computed for the night' }];
 
   return (
-    <SideraShell title={seed.name}>
-      <SideraView step="card" />
+    <StellarShell title={seed.name}>
+      <StellarView step="card" />
       <section className="sd-container sd-top">
         <nav aria-label="Breadcrumb" className="sd-crumb sd-data">
           <Link href="/set/001">First Light</Link>
@@ -112,7 +112,7 @@ export default async function CardPage({ params }: { params: Promise<{ designati
               <p className="sd-note">Sealed. The event has passed; the editions that were held are the editions there are.</p>
             ) : (
               <div className="sd-buy">
-                <SideraBuyCard
+                <StellarBuyCard
                   designation={seed.designation}
                   name={seed.name}
                   rarity={rarity}
@@ -157,6 +157,6 @@ export default async function CardPage({ params }: { params: Promise<{ designati
           ]}
         />
       </section>
-    </SideraShell>
+    </StellarShell>
   );
 }

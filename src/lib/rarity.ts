@@ -29,7 +29,7 @@ export type RarityInfo = {
 // Cool to hot, so scarcity reads as heat: a cold grey, the app's seafoam, its
 // terracotta, then a warm white-gold. Glyphs are one family (diamonds, then
 // the star) so a rarity never reads as an observation status, which uses
-// circles. Mirrors --sd-rarity-* in src/styles/sidera-tokens.css.
+// circles. Mirrors --sd-rarity-* in src/styles/stellar-theme.css.
 const RARITY_MAP: Record<Rarity, Omit<RarityInfo, 'rarity' | 'rank'>> = {
   common: { color: '#9AA7C7', label: 'Common', glyph: '◇' },
   rare: { color: '#5EEAD4', label: 'Rare', glyph: '◈' },

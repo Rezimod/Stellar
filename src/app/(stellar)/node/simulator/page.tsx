@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import SessionConsole from '@/components/observatory/SessionConsole';
-import SideraShell from '@/components/sidera/SideraShell';
-import Chapter from '@/components/sidera/ui/Chapter';
+import StellarShell from '@/components/stellar/StellarShell';
+import Chapter from '@/components/stellar/ui/Chapter';
 import { getNodesWithReadiness } from '@/lib/observatory/nodes';
 import '../../observatory/observatory.css';
 import '../../../node/node.css';
@@ -19,7 +19,7 @@ export default async function NodeSimulatorPage() {
   const [node] = await getNodesWithReadiness();
 
   return (
-    <SideraShell>
+    <StellarShell>
       <div className="sd-sim-rail">
         <div className="sd-container sd-sim-rail__inner">
           <nav aria-label="Breadcrumb" className="sd-crumb">
@@ -49,6 +49,6 @@ export default async function NodeSimulatorPage() {
           </p>
         </div>
       </section>
-    </SideraShell>
+    </StellarShell>
   );
 }

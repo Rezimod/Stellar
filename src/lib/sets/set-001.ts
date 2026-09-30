@@ -5,7 +5,7 @@
  * System (from the observatory's own first frame and two fragments held in
  * the hand, out to a visitor from another star), the Stars, the Deep Sky, the
  * Galaxies and the Extremes are real things; the Frontier is ten worlds of
- * Sidera's own, fiction and labelled so; the Almanac is real dated events,
+ * Stellar's own, fiction and labelled so; the Almanac is real dated events,
  * each sold until its event ends, then sealed. The first twenty-four are
  * written here; the rest by family in ./first-light/.
  *
@@ -17,7 +17,7 @@
  * typical distance.
  */
 
-import { arcsecFromKm, arcsecFromKmAtAu, MOON_DISTANCE_KM } from '@/lib/sidera/observability';
+import { arcsecFromKm, arcsecFromKmAtAu, MOON_DISTANCE_KM } from '@/lib/stellar/observability';
 import { authorAlmanac, authorCard, authorKept, type AuthoredCard } from './build';
 import { DEEP_CARDS } from './first-light/deep';
 import { EXTREME_CARDS } from './first-light/extremes';

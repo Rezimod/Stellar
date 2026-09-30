@@ -10,8 +10,8 @@
 import type { card } from '@/lib/schema';
 import type { Rarity } from '@/lib/rarity';
 import { getNode } from '@/lib/observatory/nodes';
-import { EDITION_SIZE } from '@/lib/sidera/economics';
-import { observability, type Observability, type ObservabilitySubject } from '@/lib/sidera/observability';
+import { EDITION_SIZE } from '@/lib/stellar/economics';
+import { observability, type Observability, type ObservabilitySubject } from '@/lib/stellar/observability';
 
 /** A card row as a set declares it, before it is filed under a set. */
 export type CardSeed = Omit<typeof card.$inferInsert, 'id' | 'setId' | 'createdAt'>;
@@ -25,7 +25,7 @@ export type CardOptics = Pick<ObservabilitySubject, 'resolveArcsec' | 'magnitude
 
 export type Section = 'object' | 'almanac';
 
-/** Where a card sits on the shelf. The Frontier is fiction: Sidera's own worlds, never in any sky. */
+/** Where a card sits on the shelf. The Frontier is fiction: Stellar's own worlds, never in any sky. */
 export type Family = 'near' | 'stars' | 'deep' | 'galaxies' | 'extremes' | 'frontier' | 'almanac';
 
 /** What the card prints and how it is sold, beyond the row the database keeps. */
@@ -140,14 +140,14 @@ export function authorKept(facts: NoSky, reason: string, extras: Extras): Author
 }
 
 /**
- * A Frontier card: a world of Sidera's own making, in the tradition of the
+ * A Frontier card: a world of Stellar's own making, in the tradition of the
  * great space films. Fiction, and it says so: there is nothing to point at.
  */
 export function authorFiction(facts: NoSky, extras: Extras): AuthoredCard {
   return unpointable(
     facts,
     'fiction',
-    'An original Sidera world. It exists on the card and nowhere in the sky.',
+    'An original Stellar world. It exists on the card and nowhere in the sky.',
     record({ ...extras, family: 'frontier' }, OBJECT),
   );
 }

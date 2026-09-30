@@ -1,15 +1,15 @@
 import type { Metadata } from 'next';
 import type { Viewport } from 'next';
 import { Orbitron, Geist, JetBrains_Mono } from 'next/font/google';
-import './sidera-base.css';
-import '../styles/sidera-tokens.css';
-import '../styles/sidera-motion.css';
-import '../styles/sidera-pages.css';
-import '../styles/sidera-reveal.css';
+import './stellar-base.css';
+import '../styles/stellar-theme.css';
+import '../styles/stellar-motion.css';
+import '../styles/stellar-pages.css';
+import '../styles/stellar-reveal.css';
 import { AnalyticsBoot } from '@/components/providers/AnalyticsBoot';
 import JsonLd from '@/components/shared/JsonLd';
 
-// Sidera's three faces: Orbitron for the wordmark and display, Geist for
+// Stellar's three faces: Orbitron for the wordmark and display, Geist for
 // text, JetBrains Mono for figures. The legacy pages add their own in app/(stellar).
 const orbitron = Orbitron({
   subsets: ['latin'],
@@ -38,7 +38,7 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: {
-    default: 'Sidera — the night sky, issued in editions',
+    default: 'Stellar — the night sky, issued in editions',
     template: '%s',
   },
   metadataBase: new URL('https://sidera.stellarr.club'),
@@ -51,10 +51,10 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'Sidera',
+    title: 'Stellar',
   },
   openGraph: {
-    siteName: 'Sidera',
+    siteName: 'Stellar',
     type: 'website',
   },
   twitter: {
@@ -63,15 +63,15 @@ export const metadata: Metadata = {
 };
 
 /**
- * The root every page shares, kept to what a Sidera page needs: fonts, the
- * Sidera stylesheet, analytics. Wallets and sign-in load on demand
- * (SideraAuth); the legacy Stellar providers and chrome live in app/(stellar).
+ * The root every page shares, kept to what a Stellar page needs: fonts, the
+ * Stellar stylesheet, analytics. Wallets and sign-in load on demand
+ * (StellarAuth); the legacy Stellar providers and chrome live in app/(stellar).
  */
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${orbitron.variable} ${geist.variable} ${jetbrainsMono.variable}`}>
       <head>
-        <meta name="apple-mobile-web-app-title" content="Sidera" />
+        <meta name="apple-mobile-web-app-title" content="Stellar" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <JsonLd />
       </head>

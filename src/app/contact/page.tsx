@@ -1,19 +1,19 @@
 import type { Metadata } from 'next';
-import SideraShell from '@/components/sidera/SideraShell';
-import DataRow from '@/components/sidera/ui/DataRow';
+import StellarShell from '@/components/stellar/StellarShell';
+import DataRow from '@/components/stellar/ui/DataRow';
 
 export const metadata: Metadata = {
-  title: 'Contact — Sidera',
-  description: 'How to reach the people behind Sidera and Node 01.',
+  title: 'Contact — Stellar',
+  description: 'How to reach the people behind Stellar and Node 01.',
   alternates: { canonical: '/contact' },
 };
 
 export default function ContactPage() {
   return (
-    <SideraShell title="Contact">
+    <StellarShell title="Contact">
       <article className="sd-container sd-top sd-legal">
         <p className="sd-lede">
-          Sidera is run by Astroman in Tbilisi. Email is the fastest way to reach us; a reply can take a day or two. For a
+          Stellar is run by Astroman in Tbilisi. Email is the fastest way to reach us; a reply can take a day or two. For a
           payment, include the transaction signature.
         </p>
         <DataRow
@@ -26,6 +26,6 @@ export default function ContactPage() {
           ]}
         />
       </article>
-    </SideraShell>
+    </StellarShell>
   );
 }

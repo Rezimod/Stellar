@@ -1,22 +1,22 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { eq } from 'drizzle-orm';
-import ObjectArt from '@/components/sidera/ObjectArt';
-import SideraShell from '@/components/sidera/SideraShell';
-import NightBand from '@/components/sidera/node/NightBand';
-import NodeScope, { type ScopeTarget } from '@/components/sidera/node/NodeScope';
-import OpticalPath from '@/components/sidera/node/OpticalPath';
-import Chapter from '@/components/sidera/ui/Chapter';
-import DataRow from '@/components/sidera/ui/DataRow';
-import Rise from '@/components/sidera/ui/Rise';
+import ObjectArt from '@/components/stellar/ObjectArt';
+import StellarShell from '@/components/stellar/StellarShell';
+import NightBand from '@/components/stellar/node/NightBand';
+import NodeScope, { type ScopeTarget } from '@/components/stellar/node/NodeScope';
+import OpticalPath from '@/components/stellar/node/OpticalPath';
+import Chapter from '@/components/stellar/ui/Chapter';
+import DataRow from '@/components/stellar/ui/DataRow';
+import Rise from '@/components/stellar/ui/Rise';
 import { getDb } from '@/lib/db';
 import { getSunAltitude } from '@/lib/dark-window';
 import { getNodesWithReadiness, getNode } from '@/lib/observatory/nodes';
 import { fieldOfView, resolvingPowerArcsec } from '@/lib/observatory/optics';
 import { card } from '@/lib/schema';
 import { SET_001_CARDS } from '@/lib/sets/set-001';
-import { nightRow } from '@/lib/sidera/night';
-import { observableTonight, siteDarkWindow, siteNightDate } from '@/lib/sidera/target';
+import { nightRow } from '@/lib/stellar/night';
+import { observableTonight, siteDarkWindow, siteNightDate } from '@/lib/stellar/target';
 import '../node.css';
 
 export const dynamic = 'force-dynamic';
@@ -37,7 +37,7 @@ export default async function NodePage() {
   try {
     cloud = (await getNodesWithReadiness(now)).find((n) => n.id === base.id)?.readiness.cloudCover ?? null;
   } catch (err) {
-    console.error('[sidera] cannot read Node 01 readiness', err);
+    console.error('[stellar] cannot read Node 01 readiness', err);
   }
 
   let tonight: string | null = null;
@@ -50,7 +50,7 @@ export default async function NodePage() {
         tonight = c?.designation ?? null;
       }
     } catch (err) {
-      console.error('[sidera] cannot read tonight', err);
+      console.error('[stellar] cannot read tonight', err);
     }
   }
 
@@ -80,7 +80,7 @@ export default async function NodePage() {
   const sunNow = getSunAltitude(base.lat, base.lon, now);
 
   return (
-    <SideraShell title="Node 01">
+    <StellarShell title="Node 01">
       <section className="sd-poster sd-top sd-node-head">
         <div className="sd-sky" aria-hidden="true" />
         <div className="sd-node-orbit" aria-hidden="true">
@@ -242,6 +242,6 @@ export default async function NodePage() {
           </div>
         </Rise>
       </section>
-    </SideraShell>
+    </StellarShell>
   );
 }

@@ -180,7 +180,7 @@ export const orders = pgTable('orders', {
   shippingNotes: text('shipping_notes'),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
   paidAt: timestamp('paid_at', { withTimezone: true }),
-  /** Sidera orders only: when the quote lapses. A transfer landing later is owed back, not taken. */
+  /** Stellar orders only: when the quote lapses. A transfer landing later is owed back, not taken. */
   expiresAt: timestamp('expires_at', { withTimezone: true }),
 }, (table) => [
   uniqueIndex('orders_payment_reference_unique').on(table.paymentReference),
@@ -665,7 +665,7 @@ export const firstLightOrder = pgTable('first_light_order', {
   index('first_light_order_privy_idx').on(t.privyId, t.createdAt),
 ])
 
-// Sidera. A card is a real object; an edition is one holder's numbered copy of
+// Stellar. A card is a real object; an edition is one holder's numbered copy of
 // it. Every clear night the observatory photographs one card's object, and that
 // single capture is attached to every edition of the card at once — there is
 // no per-holder queue. The card's observation history is its nightly_target
@@ -707,7 +707,7 @@ export const firstLightOrder = pgTable('first_light_order', {
 //
 //   -- A card table created before sets existed (Phase 3) is brought up with
 //   -- ALTER TABLE card ADD COLUMN IF NOT EXISTS set_id uuid; then
-//   -- `npm run sidera:seed`, which files every card under its set; then
+//   -- `npm run stellar:seed`, which files every card under its set; then
 //   -- ALTER TABLE card ALTER COLUMN set_id SET NOT NULL.
 //
 //   CREATE TABLE IF NOT EXISTS edition (
@@ -812,7 +812,7 @@ export const nightlyTarget = pgTable('nightly_target', {
   index('nightly_target_card_idx').on(t.cardId, t.nightDate),
 ])
 
-// Sidera voting (Phase 8). Holders vote for the night's card among those Node
+// Stellar voting (Phase 8). Holders vote for the night's card among those Node
 // 01 can photograph that night. One vote per holder per night, changeable
 // until the night is decided; the weight is fixed when cast, from the
 // editions held then (VOTE_WEIGHT in economics.ts).
@@ -845,7 +845,7 @@ export const cardVote = pgTable('card_vote', {
   index('card_vote_night_idx').on(t.nightDate, t.cardId),
 ])
 
-// Sidera capsules (Phase 5). A capsule is committed to when it is listed: its
+// Stellar capsules (Phase 5). A capsule is committed to when it is listed: its
 // secret is drawn then, sealed with CAPSULE_SEAL_KEY, and only SHA-256 of it is
 // published. The buyer's nonce arrives at purchase; the draws come from both;
 // the secret is revealed when the capsule is opened, or voided. capsule_log is

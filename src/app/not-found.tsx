@@ -1,12 +1,12 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import SideraShell from '@/components/sidera/SideraShell';
+import StellarShell from '@/components/stellar/StellarShell';
 
-export const metadata: Metadata = { title: 'Not found — Sidera', robots: { index: false } };
+export const metadata: Metadata = { title: 'Not found — Stellar', robots: { index: false } };
 
 export default function NotFound() {
   return (
-    <SideraShell title="Not found">
+    <StellarShell title="Not found">
       <section className="sd-container sd-top">
         <div className="sd-gate">
           <p className="sd-label">Not found</p>
@@ -18,6 +18,6 @@ export default function NotFound() {
           </div>
         </div>
       </section>
-    </SideraShell>
+    </StellarShell>
   );
 }

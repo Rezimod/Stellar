@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import { CosmicLoader } from '@/components/solar-system/CosmicLoader';
-import { useSideraAuth } from '@/components/sidera/SideraAuth';
+import { useStellarSession } from '@/components/stellar/StellarAuth';
 
 const load = () => import('./GameShell');
 const loader = () => <div className="game-shell"><CosmicLoader label="Voyage" progress={0.02} /></div>;
@@ -15,7 +15,7 @@ const VoyageHoldings = dynamic(() => import('./VoyageHoldings'), { ssr: false })
 
 /** The game, and what the visitor holds once Privy is up. */
 export default function VoyageClient() {
-  const { ready } = useSideraAuth();
+  const { ready } = useStellarSession();
   return (
     <>
       {ready && <VoyageHoldings />}

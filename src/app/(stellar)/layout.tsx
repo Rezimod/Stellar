@@ -21,7 +21,7 @@ import BottomNav from '@/components/shared/BottomNav';
 import DeferredGlobals from '@/components/shared/DeferredGlobals';
 import PageTransition from '@/components/layout/PageTransition';
 import { Toaster } from '@/components/ui/Toast';
-import LegacyPrivy from '@/components/sidera/LegacyPrivy';
+import LegacyPrivy from '@/components/stellar/LegacyPrivy';
 
 // Homepage hero display face — Space Grotesk (hero-only; not a global token).
 const spaceGrotesk = Space_Grotesk({
@@ -35,7 +35,7 @@ const spaceGrotesk = Space_Grotesk({
  * The legacy Stellar pages still served on this deployment (/nfts,
  * /observatory/*, /m/*, /node/simulator; the rest redirect in middleware).
  * Everything they need — wallets, Privy, i18n, the Stellar chrome and its
- * stylesheets — lives here, so none of it loads on a Sidera page.
+ * stylesheets — lives here, so none of it loads on a Stellar page.
  */
 export default async function StellarLayout({ children }: { children: React.ReactNode }) {
   const locale = await getLocale();

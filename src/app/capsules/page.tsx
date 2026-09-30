@@ -1,17 +1,17 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import SideraBuyCapsule from '@/components/sidera/SideraBuyCapsule';
-import SideraShell from '@/components/sidera/SideraShell';
-import SideraView from '@/components/sidera/SideraView';
-import Chapter from '@/components/sidera/ui/Chapter';
-import DataRow from '@/components/sidera/ui/DataRow';
-import RarityMark from '@/components/sidera/ui/RarityMark';
+import StellarBuyCapsule from '@/components/stellar/StellarBuyCapsule';
+import StellarShell from '@/components/stellar/StellarShell';
+import StellarView from '@/components/stellar/StellarView';
+import Chapter from '@/components/stellar/ui/Chapter';
+import DataRow from '@/components/stellar/ui/DataRow';
+import RarityMark from '@/components/stellar/ui/RarityMark';
 import { getDb } from '@/lib/db';
 import { RARITIES } from '@/lib/rarity';
-import { CARDS_PER_CAPSULE, ORDER_WINDOW_MINUTES, RARITY_ODDS_BPS } from '@/lib/sidera/economics';
-import { TIERS, tierByKey } from '@/lib/sidera/tiers';
-import { capsulesOnSale } from '@/lib/sidera/capsule';
-import { simulatedPayments } from '@/lib/sidera/orders';
+import { CARDS_PER_CAPSULE, ORDER_WINDOW_MINUTES, RARITY_ODDS_BPS } from '@/lib/stellar/economics';
+import { TIERS, tierByKey } from '@/lib/stellar/tiers';
+import { capsulesOnSale } from '@/lib/stellar/capsule';
+import { simulatedPayments } from '@/lib/stellar/orders';
 
 export const dynamic = 'force-dynamic';
 
@@ -28,22 +28,22 @@ export default async function CapsulesPage() {
     try {
       onSale = await capsulesOnSale(db, { limit: 1000 });
     } catch (err) {
-      console.error('[sidera] cannot read capsules on sale', err);
+      console.error('[stellar] cannot read capsules on sale', err);
     }
   }
 
   const sealed = onSale?.[0];
 
   return (
-    <SideraShell title="Capsules">
-      <SideraView step="capsules" />
+    <StellarShell title="Capsules">
+      <StellarView step="capsules" />
       <section className="sd-container sd-top">
         <div className="sd-capsule-top">
           <div className="sd-sealed" aria-hidden="true">
             <span className="sd-sealed__card" />
             <span className="sd-sealed__card" />
             <span className="sd-sealed__card sd-sealed__card--front">
-              <span className="sd-sealed__mark">Sidera</span>
+              <span className="sd-sealed__mark">Stellar</span>
               <span className="sd-sealed__label">Sealed · {CARDS_PER_CAPSULE} cards</span>
               {sealed && <span className="sd-sealed__hash">{sealed.commitment.slice(0, 16)}…</span>}
             </span>
@@ -112,7 +112,7 @@ export default async function CapsulesPage() {
                   { label: 'Commitment', value: `${c.commitment.slice(0, 18)}…` },
                 ]}
               />
-              <SideraBuyCapsule
+              <StellarBuyCapsule
                 capsuleId={c.id}
                 sequence={c.sequence}
                 commitment={c.commitment}
@@ -134,6 +134,6 @@ export default async function CapsulesPage() {
           </Link>
         </div>
       </section>
-    </SideraShell>
+    </StellarShell>
   );
 }

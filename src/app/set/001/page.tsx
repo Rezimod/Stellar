@@ -1,21 +1,21 @@
 import type { Metadata } from 'next';
 import { eq } from 'drizzle-orm';
-import AlmanacDate from '@/components/sidera/AlmanacDate';
-import CapsuleCounter, { type TierCard } from '@/components/sidera/CapsuleCounter';
-import ShelfFilter from '@/components/sidera/ShelfFilter';
-import ShopCard from '@/components/sidera/ShopCard';
-import SideraShell from '@/components/sidera/SideraShell';
-import SideraView from '@/components/sidera/SideraView';
+import AlmanacDate from '@/components/stellar/AlmanacDate';
+import CapsuleCounter, { type TierCard } from '@/components/stellar/CapsuleCounter';
+import ShelfFilter from '@/components/stellar/ShelfFilter';
+import ShopCard from '@/components/stellar/ShopCard';
+import StellarShell from '@/components/stellar/StellarShell';
+import StellarView from '@/components/stellar/StellarView';
 import { getDb } from '@/lib/db';
 import { getNode } from '@/lib/observatory/nodes';
 import { RARITIES, type Rarity } from '@/lib/rarity';
 import { card } from '@/lib/schema';
 import { SET_001, SET_001_CARDS } from '@/lib/sets/set-001';
-import { cardStatus } from '@/lib/sidera/almanac';
-import { capsulesOnSale, readSetSupply } from '@/lib/sidera/capsule';
-import { DIRECT_CARD_PRICE_USD } from '@/lib/sidera/economics';
-import { nightRow } from '@/lib/sidera/night';
-import { siteNightDate } from '@/lib/sidera/target';
+import { cardStatus } from '@/lib/stellar/almanac';
+import { capsulesOnSale, readSetSupply } from '@/lib/stellar/capsule';
+import { DIRECT_CARD_PRICE_USD } from '@/lib/stellar/economics';
+import { nightRow } from '@/lib/stellar/night';
+import { siteNightDate } from '@/lib/stellar/target';
 
 export const revalidate = 60;
 
@@ -39,7 +39,7 @@ export default async function FirstLightPage() {
         readSetSupply(db, SET_001.code),
         nightRow(db, siteNightDate(node.timezone, new Date())),
         capsulesOnSale(db, { limit: 1000 }).catch((err) => {
-          console.error('[sidera] cannot read capsules on sale', err);
+          console.error('[stellar] cannot read capsules on sale', err);
           return null;
         }),
       ]);
@@ -56,7 +56,7 @@ export default async function FirstLightPage() {
         tonight = row?.designation ?? null;
       }
     } catch (err) {
-      console.error('[sidera] cannot read the set', err);
+      console.error('[stellar] cannot read the set', err);
     }
   }
 
@@ -72,8 +72,8 @@ export default async function FirstLightPage() {
   const editions = SET_001_CARDS.reduce((sum, c) => sum + c.seed.editionSize, 0);
 
   return (
-    <SideraShell>
-      <SideraView step="set" />
+    <StellarShell>
+      <StellarView step="set" />
       <div className="sd-fl">
         <CapsuleCounter cards={tierCards} onSale={onSale} />
 
@@ -117,6 +117,6 @@ export default async function FirstLightPage() {
           </ul>
         </section>
       </div>
-    </SideraShell>
+    </StellarShell>
   );
 }

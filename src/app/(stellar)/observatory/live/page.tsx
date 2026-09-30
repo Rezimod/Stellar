@@ -5,7 +5,7 @@ import { DEFAULT_OBSERVER } from '@/lib/observer-location';
 import LiveBroadcast from '@/components/observatory/LiveBroadcast';
 
 export const metadata: Metadata = {
-  title: 'Live — Node 01 · Sidera',
+  title: 'Live — Node 01 · Stellar',
   description:
     'Watch the sky live through Node 01 — a real telescope on a rooftop in Tbilisi, Georgia. No booking required.',
 };

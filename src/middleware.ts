@@ -2,8 +2,8 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { INVITE_COOKIE, inviteCodes } from '@/lib/invite';
 
 /**
- * Stellar pages this deployment still builds but Sidera does not offer. Each
- * goes to the Sidera page that does its job. Kept: /nfts (the legacy view of
+ * Legacy Stellar pages this deployment still builds but no longer offers. Each
+ * goes to the card-product page that does its job. Kept: /nfts (the legacy view of
  * minted observations), /observatory/* (the operator tools), and every
  * on-chain-referenced route (never matched here).
  */

@@ -15,7 +15,7 @@ body[data-solar-immersive] {
   user-select: none;
   -webkit-touch-callout: none;
 }
-/* The Sidera sky behind the page would only be painted under the game. */
+/* The Stellar sky behind the page would only be painted under the game. */
 body[data-solar-immersive] .sd-backdrop { display: none; }
 .game-shell {
   --canvas: #0A1735;

@@ -1,17 +1,17 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import SideraShell from '@/components/sidera/SideraShell';
-import Chapter from '@/components/sidera/ui/Chapter';
+import StellarShell from '@/components/stellar/StellarShell';
+import Chapter from '@/components/stellar/ui/Chapter';
 
 export const metadata: Metadata = {
-  title: 'Privacy — Sidera',
-  description: 'What Sidera keeps about a holder, why, and how to remove it.',
+  title: 'Privacy — Stellar',
+  description: 'What Stellar keeps about a holder, why, and how to remove it.',
   alternates: { canonical: '/privacy' },
 };
 
 export default function PrivacyPage() {
   return (
-    <SideraShell title="Privacy">
+    <StellarShell title="Privacy">
       <article className="sd-container sd-top sd-legal">
         <p className="sd-label">Last updated 23 September 2026</p>
 
@@ -51,6 +51,6 @@ export default function PrivacyPage() {
           </p>
         </section>
       </article>
-    </SideraShell>
+    </StellarShell>
   );
 }

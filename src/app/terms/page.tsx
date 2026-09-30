@@ -1,24 +1,24 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import SideraShell from '@/components/sidera/SideraShell';
-import Chapter from '@/components/sidera/ui/Chapter';
+import StellarShell from '@/components/stellar/StellarShell';
+import Chapter from '@/components/stellar/ui/Chapter';
 
 export const metadata: Metadata = {
-  title: 'Terms — Sidera',
-  description: 'The terms for holding Sidera cards and opening capsules.',
+  title: 'Terms — Stellar',
+  description: 'The terms for holding Stellar cards and opening capsules.',
   alternates: { canonical: '/terms' },
 };
 
 export default function TermsPage() {
   return (
-    <SideraShell title="Terms">
+    <StellarShell title="Terms">
       <article className="sd-container sd-top sd-legal">
         <p className="sd-label">Last updated 23 September 2026</p>
 
         <section className="sd-chapter-block">
-          <Chapter n="01" title="What Sidera is" />
+          <Chapter n="01" title="What Stellar is" />
           <p>
-            Sidera is a set of collectible cards, each a numbered edition of a real object or a dated event in the sky. It is run
+            Stellar is a set of collectible cards, each a numbered edition of a real object or a dated event in the sky. It is run
             by Astroman, Tbilisi. Node 01, the telescope that photographs the night&rsquo;s card, is commissioning: until it is
             operational, no photograph is promised.
           </p>
@@ -61,11 +61,11 @@ export default function TermsPage() {
         <section className="sd-chapter-block">
           <Chapter n="06" title="Changes" />
           <p>
-            These terms change as Sidera does. The date above moves when they do, and continuing to use Sidera after a change
+            These terms change as Stellar does. The date above moves when they do, and continuing to use Stellar after a change
             means accepting it. Questions go to <Link href="/contact">Contact</Link>.
           </p>
         </section>
       </article>
-    </SideraShell>
+    </StellarShell>
   );
 }

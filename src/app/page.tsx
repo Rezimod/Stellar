@@ -1,23 +1,23 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { eq } from 'drizzle-orm';
-import CardThumb from '@/components/sidera/CardThumb';
-import HomeFan from '@/components/sidera/HomeFan';
-import SideraShell from '@/components/sidera/SideraShell';
-import SideraView from '@/components/sidera/SideraView';
+import CardThumb from '@/components/stellar/CardThumb';
+import HomeFan from '@/components/stellar/HomeFan';
+import StellarShell from '@/components/stellar/StellarShell';
+import StellarView from '@/components/stellar/StellarView';
 import { getDb } from '@/lib/db';
 import { getNode } from '@/lib/observatory/nodes';
 import { card } from '@/lib/schema';
 import { SET_GROUPS, groupCards } from '@/lib/sets/groups';
 import { SET_001_CARDS, SET_001_CARD_BY_DESIGNATION } from '@/lib/sets/set-001';
-import { CARDS_PER_TIER, TIERS } from '@/lib/sidera/tiers';
-import { nightRow } from '@/lib/sidera/night';
-import { siteNightDate } from '@/lib/sidera/target';
+import { CARDS_PER_TIER, TIERS } from '@/lib/stellar/tiers';
+import { nightRow } from '@/lib/stellar/night';
+import { siteNightDate } from '@/lib/stellar/target';
 
 export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title: 'Sidera — the night sky, issued in editions',
+  title: 'Stellar — the night sky, issued in editions',
   description:
     'First Light: a hundred cards, each held as a numbered edition — planets, stars, nebulae, galaxies, the extremes of the universe, ten worlds of fiction and eight dated events. Opened from sealed capsules, from $5.',
 };
@@ -40,15 +40,15 @@ export default async function HomePage() {
         tonight = row?.designation ?? null;
       }
     } catch (err) {
-      console.error('[sidera] cannot read tonight', err);
+      console.error('[stellar] cannot read tonight', err);
     }
   }
   const tonightCard = tonight ? SET_001_CARD_BY_DESIGNATION.get(tonight) : undefined;
   const editions = SET_001_CARDS.reduce((sum, c) => sum + c.seed.editionSize, 0);
 
   return (
-    <SideraShell>
-      <SideraView step="landing" />
+    <StellarShell>
+      <StellarView step="landing" />
 
       <section className="sd-hero2">
         <div className="sd-container sd-hero2__grid">
@@ -206,6 +206,6 @@ export default async function HomePage() {
           </Link>
         </div>
       </section>
-    </SideraShell>
+    </StellarShell>
   );
 }

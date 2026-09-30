@@ -1,12 +1,12 @@
 import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
-import CollectionWallet from '@/components/sidera/CollectionWallet'
-import HolderCollection from '@/components/sidera/HolderCollection'
-import SideraShell from '@/components/sidera/SideraShell'
-import SideraView from '@/components/sidera/SideraView'
-import DataRow from '@/components/sidera/ui/DataRow'
+import CollectionWallet from '@/components/stellar/CollectionWallet'
+import HolderCollection from '@/components/stellar/HolderCollection'
+import StellarShell from '@/components/stellar/StellarShell'
+import StellarView from '@/components/stellar/StellarView'
+import DataRow from '@/components/stellar/ui/DataRow'
 import { getDb } from '@/lib/db'
-import { holderView, type HolderEdition } from '@/lib/sidera/repo'
+import { holderView, type HolderEdition } from '@/lib/stellar/repo'
 
 export const dynamic = 'force-dynamic'
 
@@ -39,7 +39,7 @@ export default async function CollectionPage({
       try {
         editions = await holderView(db, wallet)
       } catch (err) {
-        console.error('[sidera] cannot read collection', err)
+        console.error('[stellar] cannot read collection', err)
       }
     }
     if (editions) {
@@ -61,14 +61,14 @@ export default async function CollectionPage({
   }
 
   return (
-    <SideraShell title="Collection">
-      <SideraView step="collection" />
+    <StellarShell title="Collection">
+      <StellarView step="collection" />
       <section className="sd-container sd-top">
         {summary}
         <div className={summary ? 'sd-chapter-block' : undefined} style={summary ? { marginTop: 32 } : undefined}>
           {body}
         </div>
       </section>
-    </SideraShell>
+    </StellarShell>
   )
 }

@@ -142,7 +142,7 @@
   --radius-full: 9999px;
 
   /* Typography — values come from next/font on <html> in layout.tsx
-     (Orbitron / Geist / JetBrains Mono; Sidera: Baskervville / IBM Plex Mono).
+     (Orbitron / Geist / JetBrains Mono; Stellar: Baskervville / IBM Plex Mono).
      Fallbacks live in the @theme block below. */
 
   /* Motion */

@@ -1,11 +1,11 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import SideraShell from '@/components/sidera/SideraShell';
-import DataRow from '@/components/sidera/ui/DataRow';
-import Chapter from '@/components/sidera/ui/Chapter';
+import StellarShell from '@/components/stellar/StellarShell';
+import DataRow from '@/components/stellar/ui/DataRow';
+import Chapter from '@/components/stellar/ui/Chapter';
 import { getDb } from '@/lib/db';
-import { auditLog, type AuditFlag, type LogRow } from '@/lib/sidera/audit';
-import { readFullLog } from '@/lib/sidera/capsule';
+import { auditLog, type AuditFlag, type LogRow } from '@/lib/stellar/audit';
+import { readFullLog } from '@/lib/stellar/capsule';
 
 export const dynamic = 'force-dynamic';
 
@@ -71,14 +71,14 @@ export default async function LogPage() {
     try {
       entries = await readFullLog(db);
     } catch (err) {
-      console.error('[sidera] cannot read the log', err);
+      console.error('[stellar] cannot read the log', err);
     }
   }
   const audit = entries ? auditLog(entries) : null;
   const newestFirst = entries ? [...entries].sort((a, b) => b.seq - a.seq) : [];
 
   return (
-    <SideraShell title="Capsule log">
+    <StellarShell title="Capsule log">
       <section className="sd-container sd-top">
         {audit && (
           <DataRow
@@ -151,6 +151,6 @@ export default async function LogPage() {
           </div>
         )}
       </section>
-    </SideraShell>
+    </StellarShell>
   );
 }

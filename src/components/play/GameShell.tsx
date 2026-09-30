@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { game, STAGE_PROGRESS } from '@/game/state';
 import { isGameScene, type GameScene } from '@/game/save';
 import { attachConsoleGuards, enterFullscreen, exitFullscreen, unlockPointer } from '@/game/console';
-import { exitToSidera } from '@/game/platform';
+import { exitToStellar } from '@/game/platform';
 import { currentQuality, governedQuality, onQualityChange, setDetectedQuality, stepQualityDown } from '@/game/quality';
 import { CosmicLoader } from '@/components/solar-system/CosmicLoader';
 import { useLoadingTips } from '@/components/solar-system/useLoadingTips';
@@ -117,7 +117,7 @@ export default function GameShell() {
   }, []);
   useEffect(() => {
     if (state === 'paused') unlockPointer();
-    if (state === 'exiting') void exitFullscreen().finally(exitToSidera);
+    if (state === 'exiting') void exitFullscreen().finally(exitToStellar);
   }, [state]);
 
   const start = (to: GameScene) => {

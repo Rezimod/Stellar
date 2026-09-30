@@ -5,7 +5,7 @@ import './solar-system.css';
 import './voyage.css';
 
 export const metadata: Metadata = {
-  title: 'Voyage — Sidera',
+  title: 'Voyage — Stellar',
   description: 'Fly the solar system and land on its worlds.',
   alternates: { canonical: '/voyage' },
 };

@@ -47,7 +47,7 @@ vi.mock('@/lib/observatory/captures', () => ({
 vi.mock('@/lib/db', () => ({
   getDb: () => ({ update: () => ({ set: () => ({ where: async () => undefined }) }) }),
 }));
-vi.mock('@/lib/sidera/attach', () => ({ attachToTonightsCard: mocks.attachToTonightsCard }));
+vi.mock('@/lib/stellar/attach', () => ({ attachToTonightsCard: mocks.attachToTonightsCard }));
 
 // A clear sky over the node, so weather never decides these cases.
 vi.mock('@/lib/sky-data', () => ({

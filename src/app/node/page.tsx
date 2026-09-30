@@ -1,15 +1,15 @@
 import type { Metadata } from 'next';
-import SideraShell from '@/components/sidera/SideraShell';
-import ObservatoryConsole, { type TonightCard } from '@/components/sidera/observatory/ObservatoryConsole';
+import StellarShell from '@/components/stellar/StellarShell';
+import ObservatoryConsole, { type TonightCard } from '@/components/stellar/observatory/ObservatoryConsole';
 import { getDb } from '@/lib/db';
 import { getNode } from '@/lib/observatory/nodes';
 import { SET_001_CARD_BY_DESIGNATION } from '@/lib/sets/set-001';
-import { tonightView } from '@/lib/sidera/night';
+import { tonightView } from '@/lib/stellar/night';
 
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'Observatory — Sidera',
+  title: 'Observatory — Stellar',
   description:
     'Connect to a telescope under a dark sky, park, calibrate, choose a target, point and capture. Simulated frames of the real sky.',
 };
@@ -31,12 +31,12 @@ export default async function ObservatoryPage() {
       const card = lead ? SET_001_CARD_BY_DESIGNATION.get(lead) : undefined;
       if (card?.seed.targetId) tonight = { designation: card.seed.designation, name: card.seed.name, targetId: card.seed.targetId };
     } catch (err) {
-      console.error('[sidera] cannot read tonight for the observatory', err);
+      console.error('[stellar] cannot read tonight for the observatory', err);
     }
   }
   return (
-    <SideraShell bare>
+    <StellarShell bare>
       <ObservatoryConsole tonight={tonight} nodeCloud={nodeCloud} />
-    </SideraShell>
+    </StellarShell>
   );
 }

@@ -19,7 +19,7 @@
 import { eq } from 'drizzle-orm'
 import { getDb } from '@/lib/db'
 import { firstLightOrder } from '@/lib/schema'
-import { attachToTonightsCard } from '@/lib/sidera/attach'
+import { attachToTonightsCard } from '@/lib/stellar/attach'
 import { recordCapture } from './captures'
 import { adapterFor, getNode } from './nodes'
 import type { ObservatoryNode } from './types'
@@ -164,7 +164,7 @@ async function attachToPoster(requestId: string, captureId: string): Promise<voi
 }
 
 /**
- * Tonight's Sidera card, if this frame is of its object.
+ * Tonight's Stellar card, if this frame is of its object.
  *
  * One capture serves every edition of the card, so a request that happened to
  * photograph tonight's object is that night's observation. A failure here is

@@ -5,7 +5,7 @@
  * distance from Earth.
  */
 
-import { arcsecFromKmAtAu } from '@/lib/sidera/observability';
+import { arcsecFromKmAtAu } from '@/lib/stellar/observability';
 import { authorCard, authorKept, type AuthoredCard } from '../build';
 import { NO_POSITION, body } from './shared';
 
