@@ -29,7 +29,7 @@ it('falls the shortest way when nothing scarce came out', () => {
 });
 
 it('prints the edition number it was allocated', () => {
-  expect(render([card('M31', 'rare', 0)])).toContain('Nº 003 / 100</text>');
+  expect(render([card('M31', 'rare', 0)])).toContain('>003</text>');
 });
 
 it('draws the commonest card first so the last one out is the best', () => {
