@@ -47,7 +47,6 @@ function CardFront({ plate: c, edition, capture, lite = false, u }: Props) {
             </div>
           </>
         )}
-        <div className="sdc-patina" />
       </div>
 
       <svg className="sdc-frame" viewBox="0 0 630 880" aria-hidden="true">
@@ -88,7 +87,7 @@ function CardFront({ plate: c, edition, capture, lite = false, u }: Props) {
         <g transform="translate(46 50) scale(.78)">
           <path d={LOGO_D} fill="#F4EDE0" />
         </g>
-        <text x="68" y="64" fill="#f5f1e8" style={{ fontFamily: DISPLAY, fontWeight: 600, fontSize: 14, letterSpacing: 5 }}>
+        <text x="68" y="64" fill="#f5f1e8" style={{ fontFamily: DISPLAY, fontWeight: 600, fontSize: 13, letterSpacing: 4.5 }}>
           SIDERA
         </text>
         <text x="584" y="64" textAnchor="end" fill="rgba(245,241,232,.78)" style={{ fontFamily: MONO, fontSize: 11, letterSpacing: 2 }}>
@@ -108,7 +107,7 @@ function CardFront({ plate: c, edition, capture, lite = false, u }: Props) {
           </text>
         </g>
 
-        <text x="46" y="806" fill="#f5f1e8" style={{ fontFamily: SANS, fontWeight: 500, fontSize: c.nameSize * 0.94, letterSpacing: -0.8 }}>
+        <text x="46" y="806" fill="#f5f1e8" style={{ fontFamily: SANS, fontWeight: 600, fontSize: c.nameSize, letterSpacing: -1.6 }}>
           {c.name}
         </text>
         <text x="48" y="832" fill="rgba(245,241,232,.5)" style={{ fontFamily: MONO, fontSize: 10.5, letterSpacing: 2.2 }}>

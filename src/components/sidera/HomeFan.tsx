@@ -3,7 +3,6 @@ import type { CSSProperties } from 'react';
 import { SET_001_CARD_BY_DESIGNATION } from '@/lib/sets/set-001';
 import { glowFor } from '@/lib/sidera/plate';
 import CardThumb from './CardThumb';
-import Seal from './ui/Seal';
 
 /** Left, right, then the front card last so it paints on top. */
 const FAN = [
@@ -38,7 +37,6 @@ export default function HomeFan() {
           );
         })}
       </div>
-      <Seal className="sd-herofan__seal" />
     </div>
   );
 }

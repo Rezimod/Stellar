@@ -5,22 +5,19 @@ export function rr(x: number, y: number, w: number, h: number, r: number) {
   return `M${x + r} ${y}H${x + w - r}A${r} ${r} 0 0 1 ${x + w} ${y + r}V${y + h - r}A${r} ${r} 0 0 1 ${x + w - r} ${y + h}H${x + r}A${r} ${r} 0 0 1 ${x} ${y + h - r}V${y + r}A${r} ${r} 0 0 1 ${x + r} ${y}Z`;
 }
 
-// Four metals, aged: pewter, verdigris, antique brass, gilt with a rose bloom.
 const METAL: Record<Rarity, string[]> = {
-  common: ['#f1ede4', '#a39c8c', '#e0d9c9', '#6e6759', '#cdc5b3'],
-  rare: ['#e6f5ee', '#86c2ad', '#3f8c76', '#bfe6d6', '#5aa38c'],
-  epic: ['#f7e9c4', '#d9b46a', '#f1dca0', '#8f6a26', '#e4c47a'],
-  legendary: ['#fff7e6', '#f2dc9c', '#f0c7b0', '#e9d7a8', '#ffe6b8'],
+  common: ['#f4f6fa', '#9aa3b5', '#e3e8ef', '#6f788a', '#cfd5df'],
+  rare: ['#e2fff8', '#5eead4', '#2a9d8f', '#b8f7ea', '#3fb5a3'],
+  epic: ['#fff3cf', '#e0a84a', '#fde6a8', '#9c6a22', '#ffd98a'],
+  legendary: ['#fffaf0', '#ffe3a3', '#f4c9ff', '#bfe9ff', '#ffe9b8'],
 };
-export const METAL_INK: Record<Rarity, string> = { common: '#d8d1c2', rare: '#a9dcc9', epic: '#e9cc84', legendary: '#fbeccb' };
+export const METAL_INK: Record<Rarity, string> = { common: '#dfe4ec', rare: '#8ff0dc', epic: '#ffd98a', legendary: '#fff0cc' };
 export const FOIL_OP: Record<Rarity, number> = { common: 0, rare: 0.12, epic: 0.26, legendary: 0.46 };
 export const GLIT_OP: Record<Rarity, number> = { common: 0, rare: 0, epic: 0.16, legendary: 0.34 };
 
 export const MONO = 'var(--font-mono), ui-monospace, monospace';
-/** Names and the mark are set in Fraunces, the running lines in EB Garamond. */
-export const SANS = 'var(--font-fraunces), Georgia, serif';
-export const TEXT = 'var(--font-garamond), Georgia, serif';
-export const DISPLAY = 'var(--font-fraunces), Georgia, serif';
+export const SANS = 'var(--font-geist), system-ui, sans-serif';
+export const DISPLAY = 'var(--font-orbitron), sans-serif';
 
 export const LOGO_D =
   'M13.0922 3.36946V1.73961C13.0922 1.27436 12.5543 1.01542 12.1906 1.30569L2.8604 8.75177C-0.321404 11.5593 -0.474794 16.4692 2.52582 19.4698C5.5263 22.4704 10.4363 22.3171 13.2437 19.1351L20.6898 9.80489C20.9801 9.44124 20.7211 8.90346 20.256 8.90346H18.6262C18.211 8.90346 17.9428 8.4646 18.132 8.09517L21.7925 0.950365C22.0383 0.470724 21.5251 -0.0425023 21.0451 0.203175L13.9005 3.86349C13.531 4.05286 13.0922 3.78447 13.0922 3.36946ZM7.99167 18.4452C5.53886 18.4452 3.55044 16.4567 3.55044 14.004C3.55044 11.5512 5.53872 9.56274 7.99167 9.5626C10.4445 9.5626 12.4329 11.5512 12.4329 14.004C12.4329 16.4568 10.4445 18.4452 7.99167 18.4452Z';
@@ -53,18 +50,6 @@ export function FrameBorder({ u, rarity, micro, ground }: { u: string; rarity: R
       <path d={`${rr(6, 6, 618, 868, 27)} ${rr(19, 19, 592, 842, 21)}`} fill={`url(#${u}gui)`} fillRule="evenodd" />
       <path d={rr(2.5, 2.5, 625, 875, 28)} fill="none" stroke={`url(#${u}metal)`} strokeWidth="2.6" />
       <path d={rr(19.5, 19.5, 591, 841, 20.5)} fill="none" stroke={`url(#${u}metal)`} strokeWidth=".8" />
-      {[
-        [34, 34, 1, 1],
-        [596, 34, -1, 1],
-        [34, 846, 1, -1],
-        [596, 846, -1, -1],
-      ].map(([x, y, sx, sy]) => (
-        <g key={`${x}${y}`} transform={`translate(${x} ${y}) scale(${sx} ${sy})`} fill="none" stroke={`url(#${u}metal)`} strokeLinecap="round">
-          <path d="M0 26V0H26" strokeWidth="1.4" />
-          <path d="M5 26V5H26" strokeWidth=".6" opacity=".8" />
-          <path d="M0 0l7 7" strokeWidth=".8" opacity=".7" />
-        </g>
-      ))}
       <text fill={METAL_INK[rarity]} opacity=".7" style={{ fontFamily: MONO, fontSize: 5.4, letterSpacing: 0.9 }}>
         <textPath href={`#${u}mp`}>{micro.repeat(12)}</textPath>
       </text>
