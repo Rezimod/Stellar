@@ -229,7 +229,7 @@ export const STAR_CARDS: AuthoredCard[] = [
       catalogRef: '2MASS J23062928−0502285',
       blurb: 'Seven Earth-sized worlds around one small star.',
     },
-    `${EXOPLANET} Its star is magnitude 18.8, too faint for Node 01 under a city sky.`,
+    `${EXOPLANET} Its star is magnitude 18.8, too faint for Caucasus Eye under a city sky.`,
     {
       ...stars,
       stats: [['DISTANCE', '40 ly'], ['PLANETS', '7'], ['TEMPERATE', '3']],

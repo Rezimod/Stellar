@@ -23,7 +23,7 @@ function QuickStartBase({ name, designation, onStart }: { name: string | null; d
       <div className="sdo-quick__body">
         <p id="sdo-quick-t" className="sdo-quick__title">Observe tonight’s card</p>
         <p className="sdo-quick__text">
-          {name ? `Connect, calibrate and point Node 01 at ${name} in one go. About a minute.` : 'Tonight’s card is not above the horizon from Node 01 yet.'}
+          {name ? `Connect, calibrate and point Caucasus Eye at ${name} in one go. About a minute.` : 'Tonight’s card is not above the horizon from Caucasus Eye yet.'}
         </p>
         <button className="sdo-btn sdo-btn--primary" type="button" onClick={onStart} disabled={!name} style={{ width: '100%' }}>
           <Icon name="play" size={16} />Start{name ? ` · ${name}` : ''}<span className="sdo-kbd">S</span>

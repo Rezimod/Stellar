@@ -41,9 +41,9 @@ One capture serves all editions of a card — there is no per-customer queue.
 ## Tone, applied to every string you write
 Quiet, institutional, an observatory logbook. Never exclamation marks, never
 rocket emoji, never "wen"/"LFG"/"GM"/"floor". Never claim the observatory is
-operational — Node 01 is `commissioning`.
+operational — the Caucasus Eye is `commissioning`.
 Vocabulary: capsule (not pack/box), card (not NFT/token), set (not drop),
-observation (not shoot/session), Node 01 (not "our telescope"), Collection
+observation (not shoot/session), Caucasus Eye — the telescope in Tbilisi (not "Node 01", not "our telescope"), Founding set for First Light's set label (not "Set 001"; the code SET001 and the /set/001 URL stay), Collection
 (not portfolio/bag), holder (not user/degen), edition number (not mint number).
 Banned outright in new user-facing copy: NFT, mint, drop, payload, manifest,
 registry, airdrop.

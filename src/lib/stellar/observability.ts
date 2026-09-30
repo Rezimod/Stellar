@@ -1,5 +1,5 @@
 /**
- * Can Node 01 photograph what this card shows?
+ * Can Caucasus Eye photograph what this card shows?
  *
  * A card's observation_status is decided here, from the instrument and the
  * site, not typed by hand. The rule is checked in order and the first failure
@@ -110,7 +110,7 @@ export function observability(subject: ObservabilitySubject, node: ObservatoryNo
     if (highest < LIMITS.minAltitudeDeg) {
       return {
         status: 'not_available',
-        reason: `Never climbs high enough over ${node.site}: ${highest.toFixed(0)}° at best, and Node 01 needs ${LIMITS.minAltitudeDeg}°.`,
+        reason: `Never climbs high enough over ${node.site}: ${highest.toFixed(0)}° at best, and Caucasus Eye needs ${LIMITS.minAltitudeDeg}°.`,
       };
     }
   }
@@ -128,7 +128,7 @@ export function observability(subject: ObservabilitySubject, node: ObservatoryNo
     if (subject.magnitude > faintest) {
       return {
         status: 'not_available',
-        reason: `Too faint: magnitude ${subject.magnitude.toFixed(1)}, and Node 01 reaches ${faintest.toFixed(1)} under a city sky.`,
+        reason: `Too faint: magnitude ${subject.magnitude.toFixed(1)}, and Caucasus Eye reaches ${faintest.toFixed(1)} under a city sky.`,
       };
     }
   }
@@ -149,14 +149,14 @@ export function observability(subject: ObservabilitySubject, node: ObservatoryNo
     if (subject.sizeArcmin.major > MAX_FIELDS_ACROSS * widest) {
       return {
         status: 'not_available',
-        reason: `Too big to fit: ${subject.sizeArcmin.major}' across, more than ${MAX_FIELDS_ACROSS} times Node 01's widest view.`,
+        reason: `Too big to fit: ${subject.sizeArcmin.major}' across, more than ${MAX_FIELDS_ACROSS} times Caucasus Eye's widest view.`,
       };
     }
   }
 
   const target = SIM_TARGET_BY_ID.get(subject.targetId);
   if (!target) {
-    return { status: 'not_available', reason: `Not on Node 01's list of targets yet.` };
+    return { status: 'not_available', reason: `Not on Caucasus Eye's list of targets yet.` };
   }
 
   if (
@@ -165,10 +165,10 @@ export function observability(subject: ObservabilitySubject, node: ObservatoryNo
     subject.resolveArcsec !== null &&
     subject.resolveArcsec >= DEDICATED_ELEMENTS * limit
   ) {
-    return { status: 'dedicated', reason: `A showcase: bright and large, Node 01 photographs it often.` };
+    return { status: 'dedicated', reason: `A showcase: bright and large, Caucasus Eye photographs it often.` };
   }
 
-  return { status: 'eligible', reason: `Node 01 can photograph it from ${node.site}.` };
+  return { status: 'eligible', reason: `Caucasus Eye can photograph it from ${node.site}.` };
 }
 
 function formatArcsec(arcsec: number): string {

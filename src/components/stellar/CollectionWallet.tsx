@@ -25,7 +25,7 @@ export default function CollectionWallet() {
 
   return (
     <>
-      <p className="sd-lede">Your editions and every photograph Node 01 takes of them. Collections are public, like the log.</p>
+      <p className="sd-lede">Your editions and every photograph Caucasus Eye takes of them. Collections are public, like the log.</p>
       <div className="sd-pay__actions sd-section">
         <button type="button" className="sd-btn sd-btn--primary" onClick={() => login()} disabled={!ready}>
           {ready ? 'Sign in' : 'Reading the account'}

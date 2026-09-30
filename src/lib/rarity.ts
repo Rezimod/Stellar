@@ -2,7 +2,7 @@
  * Card rarity.
  *
  * Stored on the card when a set is authored, never computed from anything a
- * holder does. How scarce a card is has nothing to do with whether Node 01 can
+ * holder does. How scarce a card is has nothing to do with whether Caucasus Eye can
  * photograph it: Europa is epic and cannot be resolved; Saturn is legendary
  * and can.
  *

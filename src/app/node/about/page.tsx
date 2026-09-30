@@ -22,9 +22,9 @@ import '../node.css';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'Node 01 — the telescope the collection points',
+  title: 'Caucasus Eye — the telescope the collection points',
   description:
-    'A 150 mm telescope on a roof in Tbilisi. Each clear night it photographs one card, and every holder of that card receives the image. Node 01 is commissioning.',
+    'A 150 mm telescope on a roof in Tbilisi. Each clear night it photographs one card, and every holder of that card receives the image. Caucasus Eye is commissioning.',
 };
 
 export default async function NodePage() {
@@ -37,7 +37,7 @@ export default async function NodePage() {
   try {
     cloud = (await getNodesWithReadiness(now)).find((n) => n.id === base.id)?.readiness.cloudCover ?? null;
   } catch (err) {
-    console.error('[stellar] cannot read Node 01 readiness', err);
+    console.error('[stellar] cannot read Caucasus Eye readiness', err);
   }
 
   let tonight: string | null = null;
@@ -80,7 +80,7 @@ export default async function NodePage() {
   const sunNow = getSunAltitude(base.lat, base.lon, now);
 
   return (
-    <StellarShell title="Node 01">
+    <StellarShell title="Caucasus Eye">
       <section className="sd-poster sd-top sd-node-head">
         <div className="sd-sky" aria-hidden="true" />
         <div className="sd-node-orbit" aria-hidden="true">

@@ -75,7 +75,7 @@ describe('choosing tonight’s card', () => {
     { designation: 'RING', targetId: 'm57', observationStatus: 'dedicated' },
     // M31 stands higher than anything else that night, and must still lose.
     { designation: 'ANDROMEDA', targetId: 'm31', observationStatus: 'not_available' },
-    // Eligible on paper, but Node 01 carries no such target.
+    // Eligible on paper, but Caucasus Eye carries no such target.
     { designation: 'EUROPA', targetId: 'europa', observationStatus: 'eligible' },
   ];
 

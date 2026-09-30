@@ -14,7 +14,7 @@ export const metadata: Metadata = {
     'Connect to a telescope under a dark sky, park, calibrate, choose a target, point and capture. Simulated frames of the real sky.',
 };
 
-/** The observatory: the live console. Quick start points Node 01 at tonight's card. */
+/** The observatory: the live console. Quick start points Caucasus Eye at tonight's card. */
 export default async function ObservatoryPage() {
   const node = getNode('tbilisi-01')!;
   let tonight: TonightCard = null;

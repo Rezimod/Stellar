@@ -10,7 +10,7 @@
  * written here; the rest by family in ./first-light/.
  *
  * Rarity is a decision made here and stored; it has nothing to do with whether
- * Node 01 can photograph the object — that is judged from the instrument and
+ * Caucasus Eye can photograph the object — that is judged from the instrument and
  * the site (see build.ts). Fixed positions are J2000, from the node's own
  * catalogue (sky-field.ts) where it has the object. Lunar positions are the
  * IAU gazetteer's. Sizes for resolution are the object's real extent at a
@@ -39,17 +39,17 @@ const m42 = deepSky('m42');
 const m1 = deepSky('m1');
 const m31 = deepSky('m31');
 
-const SPECIMEN = 'A specimen. It sits in a case, not in the sky; Node 01 has nothing to point at.';
+const SPECIMEN = 'A specimen. It sits in a case, not in the sky; Caucasus Eye has nothing to point at.';
 
 const FIRST_24: AuthoredCard[] = [
   // The Objects, outward from Earth.
   authorKept(
     {
       designation: 'FIRST-LIGHT', name: 'First Light', objectType: 'first frame', rarity: 'legendary',
-      catalogRef: 'Node 01 · 000001',
+      catalogRef: 'Caucasus Eye · 000001',
       blurb: 'The first image the observatory ever takes.',
     },
-    'Whatever Node 01 points at first. Decided on the first clear night, not by vote.',
+    'Whatever Caucasus Eye points at first. Decided on the first clear night, not by vote.',
     { stats: [['OBSERVATION', '000001'], ['NODE', '01'], ['DATE', 'First clear night']], line: 'The first image the observatory ever takes.' },
   ),
   authorKept(

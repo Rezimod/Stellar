@@ -84,7 +84,7 @@ export default async function FirstLightPage() {
                 First Light
               </h1>
               <p className="sd-fl__meta">
-                Set 001 · {editions.toLocaleString('en-GB')} editions · {status === 'released' ? 'Released' : 'Pre-release'}
+                Founding set · {editions.toLocaleString('en-GB')} editions · {status === 'released' ? 'Released' : 'Pre-release'}
               </p>
             </div>
             <ShelfFilter total={SET_001_CARDS.length} />

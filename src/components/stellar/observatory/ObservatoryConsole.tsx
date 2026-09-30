@@ -42,7 +42,7 @@ const NODE_ID = 'tbilisi-01';
 /** Parking from the handover position, settling, then aligning. */
 const CAL_ESTIMATE_S = Math.round((slewMs(HANDOVER, { altitude: ALT_TRAVEL.max, azimuth: HANDOVER.azimuth }) + SETTLE_MS + CALIBRATE_MS) / 1000);
 /** The simulated stations, with the network's own node under its Stellar name. */
-const STATIONS: Station[] = SIM_STATIONS.map((s) => (s.id === NODE_ID ? { ...s, name: 'Node 01' } : s));
+const STATIONS: Station[] = SIM_STATIONS.map((s) => (s.id === NODE_ID ? { ...s, name: 'Caucasus Eye' } : s));
 
 const ARROWS: Record<string, { axis: Axis; dir: 1 | -1 }> = {
   ArrowLeft: { axis: 'az', dir: -1 },

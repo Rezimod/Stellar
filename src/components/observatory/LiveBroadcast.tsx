@@ -115,7 +115,7 @@ export default function LiveBroadcast({ node, sunAltInit }: Props) {
             color: 'var(--text-muted)',
           }}
         >
-          NODE 01
+          CAUCASUS EYE
         </span>
         <span style={{ color: 'var(--border)', fontSize: 14 }}>·</span>
         <span
@@ -179,7 +179,7 @@ export default function LiveBroadcast({ node, sunAltInit }: Props) {
               className="obs-label"
               style={{ textAlign: 'center', lineHeight: 1.8 }}
             >
-              Node 01 opens at dusk
+              Caucasus Eye opens at dusk
               <br />
               <span style={{ opacity: 0.6 }}>
                 {isDark ? 'Telescope offline' : `Sun at ${sunAlt.toFixed(1)}°`}

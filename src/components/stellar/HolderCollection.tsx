@@ -14,7 +14,7 @@ function captureParts(capture: CaptureSummary): string[] {
 
 /**
  * A holder's editions as plates, scarcest first. Each one carries its own
- * number and, where Node 01 has photographed the object, the capture data
+ * number and, where Caucasus Eye has photographed the object, the capture data
  * beneath it — the photograph is the card's, shared by every edition of it.
  */
 export default function HolderCollection({ editions }: { editions: HolderEdition[] }) {

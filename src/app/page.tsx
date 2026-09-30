@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { eq } from 'drizzle-orm';
 import CardThumb from '@/components/stellar/CardThumb';
+import FlightPlan, { type FlightStep } from '@/components/stellar/FlightPlan';
 import HomeFan from '@/components/stellar/HomeFan';
 import StellarShell from '@/components/stellar/StellarShell';
 import StellarView from '@/components/stellar/StellarView';
@@ -49,15 +50,17 @@ const RECOGNITION = [
 
 const FROM_USD = Math.min(...TIERS.map((t) => t.priceUsd));
 
-const PLAN = [
-  { title: 'Open', text: `${CARDS_PER_TIER} sealed cards per capsule, from $${FROM_USD}.`, status: 'On sale', href: '/set/001' },
-  { title: 'Vote', text: 'Holders choose what Node 01 observes each night.', status: 'Nightly', href: '/tonight' },
-  { title: 'Watch', text: 'Holders of the chosen card join the observation live.', status: 'Node 01 · commissioning', href: '/node' },
+const PLAN: FlightStep[] = [
+  { title: 'Open', text: `${CARDS_PER_TIER} sealed cards to a capsule, from $${FROM_USD}.`, status: 'On sale', live: true, href: '/set/001', icon: 'capsule' },
+  { title: 'Vote', text: 'Holders choose where the Caucasus Eye telescope points each night.', status: 'Nightly', live: true, href: '/tonight', icon: 'reticle' },
+  { title: 'Watch', text: 'Holders of the chosen card watch the observation live.', status: 'Commissioning', live: false, href: '/node', icon: 'telescope' },
   {
     title: 'Claim',
-    text: 'Marked cards carry a physical object — a meteorite, flown mission hardware, space debris, a print, a scale rocket.',
+    text: 'Marked cards carry a real object — meteorite, flown hardware, space debris, print, scale rocket.',
     status: 'In preparation',
+    live: false,
     href: '/set/001',
+    icon: 'meteorite',
   },
 ];
 
@@ -149,23 +152,12 @@ export default async function HomePage() {
         <h2 className="sd-home-sec__title" id="how-title">
           What a card opens
         </h2>
-        <ol className="sd-plan">
-          {PLAN.map((step, i) => (
-            <li key={step.title}>
-              <Link href={step.href} className="sd-plan__step">
-                <span className="sd-plan__n">{String(i + 1).padStart(2, '0')}</span>
-                <span className="sd-plan__title">{step.title}</span>
-                <span className="sd-plan__text">{i === 1 && tonightCard ? `${step.text} Tonight: ${tonightCard.seed.name}.` : step.text}</span>
-                <span className="sd-plan__status">{step.status}</span>
-              </Link>
-            </li>
-          ))}
-        </ol>
+        <FlightPlan steps={tonightCard ? PLAN.map((p) => (p.icon === 'reticle' ? { ...p, text: `${p.text} Tonight: ${tonightCard.seed.name}.` } : p)) : PLAN} />
       </section>
 
       <section className="sd-container sd-home-sec sd-showcase2" aria-labelledby="set-title">
         <div className="sd-showcase2__copy">
-          <p className="sd-kicker">Set 001</p>
+          <p className="sd-kicker">Founding set</p>
           <h2 className="sd-home-sec__title" id="set-title">
             First Light
           </h2>

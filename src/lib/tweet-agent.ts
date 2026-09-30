@@ -133,7 +133,7 @@ const PRODUCT_SPOTLIGHTS = [
     url: `${SITE}/star`,
   },
   {
-    name: 'Node 01 observatory',
+    name: 'Caucasus Eye observatory',
     pitch: 'a remote telescope being commissioned under dark skies. Follow its status and first captures as it comes online',
     url: `${SITE}/observatory`,
   },
@@ -165,7 +165,7 @@ const BUILD_UPDATES = [
     url: `${SITE}/sky`,
   },
   {
-    focus: 'Node 01 commissioning',
+    focus: 'Caucasus Eye commissioning',
     detail: 'the remote observatory is being brought online: mount, camera and weather station reporting status before the first scheduled captures',
     url: `${SITE}/observatory`,
   },
@@ -268,7 +268,7 @@ Open with what it is. One line on what scope you need and what you'll see. End w
 
 const SHORT_HOOKS = [
   { angle: 'app', prompt: 'Stellar (stellarr.club) bundles tonight\'s sky forecast, a live sky map, and a telescope shop — one app for people who actually observe.' },
-  { angle: 'observatory', prompt: 'Node 01, a remote observatory, is being commissioned under dark skies. Follow it at stellarr.club/observatory' },
+  { angle: 'observatory', prompt: 'Caucasus Eye, a remote observatory, is being commissioned under dark skies. Follow it at stellarr.club/observatory' },
   { angle: 'sky', prompt: 'Stop guessing if tonight is worth setting up the scope. Stellar scores cloud, seeing, and moon in one verdict. stellarr.club/sky' },
   { angle: 'fact', prompt: 'Light from Andromeda (M31) left 2.5 million years ago — you see it as it was before humans existed.' },
   { angle: 'fact', prompt: 'Saturn\'s rings are younger than the dinosaurs — probably formed 100 million years ago, not with the planet.' },

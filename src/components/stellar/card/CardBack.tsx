@@ -36,8 +36,8 @@ function CardBack({ plate: c, edition, commitment, sealed = false, u }: Props) {
   const b = `${u}b`;
   const ed = editionLabel(edition);
   const micro = sealed
-    ? 'STELLAR · FIRST LIGHT · SEALED · NODE 01 · TBILISI · '
-    : `STELLAR · FIRST LIGHT · ${c.des.split(' · ')[0]} · EDITION ${ed} OF ${c.of} · NODE 01 · TBILISI · `;
+    ? 'STELLAR · FIRST LIGHT · SEALED · CAUCASUS EYE · TBILISI · '
+    : `STELLAR · FIRST LIGHT · ${c.des.split(' · ')[0]} · EDITION ${ed} OF ${c.of} · CAUCASUS EYE · TBILISI · `;
   const lines = sealed
     ? ['One card of First Light.', 'Turn it over.']
     : [
@@ -47,7 +47,7 @@ function CardBack({ plate: c, edition, commitment, sealed = false, u }: Props) {
           : c.family === 'frontier'
             ? 'Fiction. A Stellar world, in no sky but this one.'
           : c.noun
-            ? `When Node 01 photographs ${c.noun}, every holder receives the image.`
+            ? `When Caucasus Eye photographs ${c.noun}, every holder receives the image.`
             : edition == null
               ? `One of ${c.of} editions.`
               : `Edition ${ed} of ${c.of}.`,
@@ -120,7 +120,7 @@ function CardBack({ plate: c, edition, commitment, sealed = false, u }: Props) {
           {commitment ? short(commitment) : '—'}
         </text>
         <text x="60" y="840" fill="rgba(245,241,232,.5)" style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: 1.6 }}>
-          NODE 01 · TBILISI · COMMISSIONING
+          CAUCASUS EYE · TBILISI · COMMISSIONING
         </text>
       </svg>
       <div className="sdc-foil" style={{ opacity: Math.max(0.1, FOIL_OP[r] * 0.7) }} />

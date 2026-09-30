@@ -12,7 +12,7 @@ export const runtime = 'nodejs';
 
 /**
  * A holder's vote for the night's card. It counts for tonight until tonight is
- * decided, then for tomorrow; casting again changes it. Only a card Node 01
+ * decided, then for tomorrow; casting again changes it. Only a card Caucasus Eye
  * can photograph that night can be voted for, and the weight is fixed now,
  * from the editions the holder holds.
  */

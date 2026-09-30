@@ -94,30 +94,67 @@
 .sd-home-sec__title { margin: 0; font: 700 clamp(28px, 3.4vw, 46px)/1.04 var(--sd-sans); letter-spacing: -0.03em; text-transform: uppercase; }
 .sd-home-sec__lede { margin: 18px 0 0; max-width: 52ch; color: var(--sd-ink-2); font-size: 17px; line-height: 1.6; }
 
-/* ── Home: the flight plan — four steps, one line each ─────────── */
-.sd-plan { list-style: none; margin: 36px 0 0; padding: 0; display: grid; border-top: 1px solid var(--sd-rule); }
-@media (min-width: 860px) { .sd-plan { grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 0; gap: 12px; } }
-.sd-plan__step {
-  position: relative; display: grid; grid-template-columns: 44px minmax(0, 1fr); column-gap: 12px; row-gap: 6px; height: 100%;
-  padding: 20px 4px; border-bottom: 1px solid var(--sd-rule); color: inherit; text-decoration: none;
-  transition: border-color var(--sd-dur-fast) var(--sd-ease);
+/* ── Home: the flight plan — capsule to object, one instrument each ── */
+.sd-flight { position: relative; list-style: none; margin: 40px 0 0; padding: 0; display: grid; gap: 12px; }
+@media (min-width: 860px) {
+  .sd-flight { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+  /* The trajectory through the four dials. */
+  .sd-flight::before {
+    content: ''; position: absolute; left: 12%; right: 12%; top: 64px; height: 1px; pointer-events: none;
+    background: repeating-linear-gradient(90deg, rgba(255, 179, 71, 0.45) 0 2px, transparent 2px 9px);
+  }
+}
+.sd-flight__step {
+  position: relative; display: grid; grid-template-columns: 72px minmax(0, 1fr); column-gap: 16px; row-gap: 6px; height: 100%;
+  padding: 18px; border: 1px solid var(--sd-rule); border-radius: 20px; color: inherit; text-decoration: none; overflow: hidden;
+  background: radial-gradient(120% 70% at 50% 0%, rgba(255, 179, 71, 0.06), transparent 60%), linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01));
+  transition: border-color var(--sd-dur-fast) var(--sd-ease), transform var(--sd-dur-base) var(--sd-ease);
 }
 @media (min-width: 860px) {
-  .sd-plan__step {
-    grid-template-columns: 1fr; align-content: start; row-gap: 10px; padding: 22px 22px 20px; min-height: 236px;
-    border: 1px solid var(--sd-rule); border-radius: 18px;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.012));
-  }
-  .sd-plan__step:hover { border-color: var(--sd-rule-strong); }
+  .sd-flight__step { grid-template-columns: 1fr; grid-template-rows: auto auto 1fr auto; justify-items: center; text-align: center; row-gap: 10px; padding: 24px 20px 22px; min-height: 300px; }
 }
-.sd-plan__n { grid-row: span 3; font: 500 13px/1.9 var(--sd-mono); letter-spacing: 0.1em; color: var(--sd-accent); }
-@media (min-width: 860px) { .sd-plan__n { grid-row: auto; } }
-.sd-plan__title { font: 700 22px/1.1 var(--sd-sans); letter-spacing: -0.015em; text-transform: uppercase; }
-@media (min-width: 860px) { .sd-plan__title { margin-top: 28px; } }
-.sd-plan__text { color: var(--sd-ink-2); font-size: 15px; line-height: 1.55; }
-.sd-plan__status { font: 600 12px var(--sd-mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--sd-ink-3); }
-@media (min-width: 860px) { .sd-plan__status { margin-top: auto; padding-top: 14px; border-top: 1px solid var(--sd-rule); } }
-.sd-plan__step:hover .sd-plan__status { color: var(--sd-accent); }
+.sd-flight__step:hover { border-color: var(--sd-rule-strong); }
+@media (hover: hover) { .sd-flight__step:hover { transform: translateY(-3px); } }
+
+.sd-flight__dial {
+  position: relative; grid-row: span 3; align-self: start; display: grid; place-items: center; width: 72px; height: 72px; border-radius: 50%;
+  color: var(--sd-ink); background: radial-gradient(circle at 50% 40%, #16203a, #0a0f1c 70%);
+  box-shadow: inset 0 0 0 1px var(--sd-rule-strong);
+}
+@media (min-width: 860px) { .sd-flight__dial { grid-row: auto; width: 84px; height: 84px; margin-bottom: 14px; } }
+/* Graduated ring, like the bezel of a setting circle. */
+.sd-flight__dial::before {
+  content: ''; position: absolute; inset: -7px; border-radius: 50%;
+  background: repeating-conic-gradient(from 0deg, rgba(255, 255, 255, 0.28) 0 1deg, transparent 1deg 15deg);
+  -webkit-mask: radial-gradient(closest-side, transparent calc(100% - 5px), #000 calc(100% - 4px));
+  mask: radial-gradient(closest-side, transparent calc(100% - 5px), #000 calc(100% - 4px));
+}
+.sd-flight__dial svg { position: relative; width: 60%; height: 60%; transition: color var(--sd-dur-fast) var(--sd-ease); }
+.sd-flight__step:hover .sd-flight__dial svg { color: var(--sd-accent); }
+.sd-flight__fill { fill: currentColor; stroke: none; }
+.sd-flight__spark { fill: var(--sd-accent); stroke: none; }
+
+.sd-flight__title { font: 700 22px/1.1 var(--sd-sans); letter-spacing: -0.015em; text-transform: uppercase; }
+.sd-flight__text { align-self: start; color: var(--sd-ink-2); font-size: 15px; line-height: 1.55; max-width: 30ch; }
+.sd-flight__status {
+  display: inline-flex; align-items: center; gap: 8px; justify-self: start;
+  font: 600 12px var(--sd-mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--sd-ink-3);
+}
+@media (min-width: 860px) { .sd-flight__status { justify-self: center; padding-top: 16px; } }
+.sd-flight__status::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--sd-ink-3); opacity: 0.6; }
+.sd-flight__status--live { color: var(--sd-ink-2); }
+.sd-flight__status--live::before { background: var(--sd-teal); opacity: 1; box-shadow: 0 0 0 0 rgba(94, 234, 212, 0.5); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .sd-flight__dial::before { animation: sd-flight-turn 60s linear infinite; }
+  .sd-flight__step:hover .sd-flight__dial::before { animation-duration: 12s; }
+  .sd-flight__status--live::before { animation: sd-flight-ping 2.4s var(--sd-ease) infinite; }
+}
+@keyframes sd-flight-turn { to { transform: rotate(360deg); } }
+@keyframes sd-flight-ping {
+  0% { box-shadow: 0 0 0 0 rgba(94, 234, 212, 0.5); }
+  70%, 100% { box-shadow: 0 0 0 7px rgba(94, 234, 212, 0); }
+}
 
 .sd-showcase2 { display: grid; gap: 40px; align-items: center; }
 @media (min-width: 960px) { .sd-showcase2 { grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr); gap: 72px; } }
@@ -310,7 +347,7 @@
   .sd-tile__price { font-size: 14px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .sd-tile .sd-thumb, .sd-thumb::after, .sd-herofan__card, .sd-showcase2__cards a, .sd-plan__step { transition: none; }
+  .sd-tile .sd-thumb, .sd-thumb::after, .sd-herofan__card, .sd-showcase2__cards a, .sd-flight__step { transition: none; }
 }
 
 /* ── Tonight: the object named like the home headline ─────────── */

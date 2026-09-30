@@ -9,7 +9,7 @@ import { SET_001_CARDS, SET_001_CARD_BY_DESIGNATION } from '@/lib/sets/set-001';
 
 const MOVES = 'RA/DEC · MOVES — COMPUTED FOR THE NIGHT';
 
-/** The name as it runs on the back: "When Node 01 photographs the Moon". Absent for what the node cannot point at. The later cards carry theirs in their record. */
+/** The name as it runs on the back: "When Caucasus Eye photographs the Moon". Absent for what the node cannot point at. The later cards carry theirs in their record. */
 const NOUN: Record<string, string> = {
   TYCHO: 'Tycho',
   'OLYMPUS-MONS': 'Olympus Mons',

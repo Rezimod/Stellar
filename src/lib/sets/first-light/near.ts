@@ -18,7 +18,7 @@ export const NEAR_CARDS: AuthoredCard[] = [
       catalogRef: 'G2V',
       blurb: 'The star we live beside.',
     },
-    'Node 01 never points at the Sun: without a solar filter it would burn the camera.',
+    'Caucasus Eye never points at the Sun: without a solar filter it would burn the camera.',
     {
       ...near,
       stats: [['DIAMETER', '1.39M km'], ['SURFACE', '5,500 °C'], ['LIGHT', '8 min 20 s']],

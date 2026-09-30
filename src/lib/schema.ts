@@ -755,7 +755,7 @@ export const card = pgTable('card', {
   objectType: text('object_type').notNull(),
   /** 'common' | 'rare' | 'epic' | 'legendary' */
   rarity: text('rarity').notNull(),
-  /** 'dedicated' | 'eligible' | 'not_available' — whether Node 01 can photograph it. */
+  /** 'dedicated' | 'eligible' | 'not_available' — whether Caucasus Eye can photograph it. */
   observationStatus: text('observation_status').notNull(),
   editionSize: integer('edition_size').notNull(),
   /** The observatory target the telescope is pointed at — 'moon' for a lunar crater. */
