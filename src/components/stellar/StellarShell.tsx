@@ -4,6 +4,47 @@ import Wordmark from './ui/Wordmark';
 import StellarNavLinks from './StellarNavLinks';
 import StellarAccountGate from './StellarAccountGate';
 import StellarAuth from './StellarAuth';
+import { getNode } from '@/lib/observatory/nodes';
+import { LEGACY_HOST } from '@/lib/stellar/legacy';
+
+const FOOT = [
+  {
+    title: 'Cards',
+    links: [
+      { href: '/set/001', label: 'First Light' },
+      { href: '/collection', label: 'Collection' },
+      { href: '/capsules/log', label: 'Public log' },
+    ],
+  },
+  {
+    title: 'Observatory',
+    links: [
+      { href: '/tonight', label: 'Tonight' },
+      { href: '/node', label: 'Node 01' },
+      { href: '/voyage', label: 'Voyage' },
+    ],
+  },
+  {
+    title: 'Stellar',
+    links: [
+      { href: `${LEGACY_HOST}/sky`, label: 'Sky tonight' },
+      { href: `${LEGACY_HOST}/marketplace`, label: 'Shop' },
+      { href: `${LEGACY_HOST}/learn`, label: 'Learn' },
+      { href: `${LEGACY_HOST}/missions`, label: 'Missions' },
+    ],
+  },
+  {
+    title: 'Contact',
+    links: [
+      { href: '/contact', label: 'Contact' },
+      { href: '/terms', label: 'Terms' },
+      { href: '/privacy', label: 'Privacy' },
+    ],
+  },
+];
+
+const node = getNode('tbilisi-01')!;
+const coords = `${node.lat.toFixed(2)}° N · ${node.lon.toFixed(2)}° E`;
 
 /**
  * The frame every Stellar page wraps itself in:
@@ -58,13 +99,33 @@ export default function StellarShell({
         {children}
 
         <footer className="sd-foot">
-          <div className="sd-container sd-foot__inner sd-data">
-            <span>Node 01 · commissioning</span>
-            <nav aria-label="Legal" className="sd-foot__links">
-              <Link href="/terms">Terms</Link>
-              <Link href="/privacy">Privacy</Link>
-              <Link href="/contact">Contact</Link>
-            </nav>
+          <div className="sd-container">
+            <div className="sd-foot__top">
+              <div className="sd-foot__brand">
+                <Wordmark href="/" />
+                <p>Real objects. Numbered editions.</p>
+              </div>
+              <nav aria-label="Footer" className="sd-foot__cols">
+                {FOOT.map((col) => (
+                  <div key={col.title}>
+                    <p className="sd-foot__head">{col.title}</p>
+                    <ul>
+                      {col.links.map((l) => (
+                        <li key={l.label}>
+                          {l.href.startsWith('/') ? <Link href={l.href}>{l.label}</Link> : <a href={l.href}>{l.label}</a>}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </nav>
+            </div>
+            <div className="sd-foot__base sd-data">
+              <span>
+                Node 01 · {node.site.split(',')[0]} · {coords} · {node.status}
+              </span>
+              <span>© {new Date().getFullYear()} Stellar</span>
+            </div>
           </div>
         </footer>
       </div>

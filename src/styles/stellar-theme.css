@@ -180,8 +180,15 @@
   .sd-bar__links .sd-navlink { font-size: 14px; }
 }
 .sd-foot { border-top: 1px solid var(--sd-rule); margin-top: 96px; padding-block: 32px 40px; }
-.sd-foot__inner { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 14px 24px; color: var(--sd-ink-3); }
-.sd-foot__links { display: flex; flex-wrap: wrap; gap: 24px; }
+.sd-foot__top { display: grid; gap: 32px; }
+@media (min-width: 860px) { .sd-foot__top { grid-template-columns: minmax(0, 1fr) minmax(0, 2.2fr); gap: 48px; } }
+.sd-foot__brand p { margin: 12px 0 0; color: var(--sd-ink-3); font-size: 14px; }
+.sd-foot__cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px 16px; }
+@media (min-width: 640px) { .sd-foot__cols { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.sd-foot__head { margin: 0 0 6px; font: 600 12px var(--sd-mono); letter-spacing: 0.16em; text-transform: uppercase; color: var(--sd-ink-2); }
+.sd-foot__cols ul { list-style: none; margin: 0; padding: 0; }
+.sd-foot__cols a { font-size: 14px; }
+.sd-foot__base { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 24px; margin-top: 36px; padding-top: 20px; border-top: 1px solid var(--sd-rule); color: var(--sd-ink-3); font-size: 12px; }
 .sd-foot a { color: var(--sd-ink-3); text-decoration: none; }
 .sd-foot a:hover { color: var(--sd-ink); }
 
@@ -390,7 +397,7 @@ html:has(.stellar) #stellar-main { padding-top: 0; padding-bottom: 0; }
 /* ── Tap targets ──────────────────────────────────────────────── */
 /* Anything tappable clears 40px, so a thumb on a phone never misses. */
 .sd-wordmark { min-height: 40px; }
-.sd-foot__links a, .sd-foot a { display: inline-flex; align-items: center; min-height: 40px; }
+.sd-foot__cols a { display: inline-flex; align-items: center; min-height: 40px; }
 .sd-log a { display: inline-flex; align-items: center; min-height: 40px; padding-right: 8px; border-bottom: 0; }
 .sd-log a:hover { text-decoration: underline; text-underline-offset: 4px; }
 .sd-log--mid td { vertical-align: middle; }

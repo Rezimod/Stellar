@@ -47,7 +47,19 @@ const RECOGNITION = [
   },
 ];
 
-const FROM_USD =Math.min(...TIERS.map((t) => t.priceUsd));
+const FROM_USD = Math.min(...TIERS.map((t) => t.priceUsd));
+
+const PLAN = [
+  { title: 'Open', text: `${CARDS_PER_TIER} sealed cards per capsule, from $${FROM_USD}.`, status: 'On sale', href: '/set/001' },
+  { title: 'Vote', text: 'Holders choose what Node 01 observes each night.', status: 'Nightly', href: '/tonight' },
+  { title: 'Watch', text: 'Holders of the chosen card join the observation live.', status: 'Node 01 · commissioning', href: '/node' },
+  {
+    title: 'Claim',
+    text: 'Marked cards carry a physical object — a meteorite, flown mission hardware, space debris, a print, a scale rocket.',
+    status: 'In preparation',
+    href: '/set/001',
+  },
+];
 
 export default async function HomePage() {
   const node = getNode('tbilisi-01')!;
@@ -76,16 +88,13 @@ export default async function HomePage() {
         <div className="sd-container sd-hero2__grid">
           <div className="sd-hero2__copy">
             <h1 className="sd-hero2__title">
-              <span>Open the capsule.</span>
               <span>Hold a piece of</span>
               <span>
                 <em>the night sky</em>.
               </span>
             </h1>
             <p className="sd-hero2__sub">
-              Real planets, stars, nebulae and galaxies, issued as numbered editions and sealed {CARDS_PER_TIER} to a capsule.
-              Keep what you draw in your Collection — and once Node 01 in Tbilisi is commissioned, each clear night the holders
-              of one card receive its photograph.
+              Real objects, numbered editions. A card is a seat at the telescope — and, for some, an object you can hold.
             </p>
             <div className="sd-hero2__cta">
               <Link href="/set/001" className="sd-btn sd-btn--light">
@@ -136,32 +145,21 @@ export default async function HomePage() {
       </section>
 
       <section className="sd-container sd-home-sec" id="how" aria-labelledby="how-title">
-        <p className="sd-kicker">How it works</p>
+        <p className="sd-kicker">Flight plan</p>
         <h2 className="sd-home-sec__title" id="how-title">
-          From ${FROM_USD} to the night sky
+          What a card opens
         </h2>
-        <ol className="sd-howto">
-          <li>
-            <span className="sd-howto__n">01</span>
-            <h3>Open a capsule</h3>
-            <p>
-              Four capsules, ${FROM_USD} to ${TIERS[TIERS.length - 1].priceUsd}. Each holds {CARDS_PER_TIER} cards, sealed before it goes on
-              sale; the rarer the capsule, the better its odds.
-            </p>
-          </li>
-          <li>
-            <span className="sd-howto__n">02</span>
-            <h3>Hold the edition</h3>
-            <p>Every card is numbered. The edition you draw is yours alone, kept in your Collection and checkable against the public log.</p>
-          </li>
-          <li>
-            <span className="sd-howto__n">03</span>
-            <h3>Receive the sky</h3>
-            <p>
-              Holders choose what Node 01 photographs. On a clear night, everyone holding that card receives the image. Node 01 is
-              commissioning.
-            </p>
-          </li>
+        <ol className="sd-plan">
+          {PLAN.map((step, i) => (
+            <li key={step.title}>
+              <Link href={step.href} className="sd-plan__step">
+                <span className="sd-plan__n">{String(i + 1).padStart(2, '0')}</span>
+                <span className="sd-plan__title">{step.title}</span>
+                <span className="sd-plan__text">{i === 1 && tonightCard ? `${step.text} Tonight: ${tonightCard.seed.name}.` : step.text}</span>
+                <span className="sd-plan__status">{step.status}</span>
+              </Link>
+            </li>
+          ))}
         </ol>
       </section>
 
@@ -171,7 +169,7 @@ export default async function HomePage() {
           <h2 className="sd-home-sec__title" id="set-title">
             First Light
           </h2>
-          <p className="sd-home-sec__lede">A hundred cards, numbered outward from Earth — from the Moon&rsquo;s surface to the edge of the observable universe.</p>
+          <p className="sd-home-sec__lede">{SET_001_CARDS.length} objects, numbered outward from Earth.</p>
           <ul className="sd-families">
             {SET_GROUPS.map((g) => (
               <li key={g.key}>
@@ -195,60 +193,17 @@ export default async function HomePage() {
         </ul>
       </section>
 
-      <section className="sd-container sd-home-sec" aria-labelledby="night-title">
-        <p className="sd-kicker">Every night</p>
-        <h2 className="sd-home-sec__title" id="night-title">
-          Your cards open the sky
-        </h2>
-        <ul className="sd-ways">
-          <li>
-            <Link href="/tonight" className="sd-way">
-              <span className="sd-way__label">Tonight</span>
-              <span className="sd-way__title">{tonightCard ? tonightCard.seed.name : 'One object a night'}</span>
-              <span className="sd-way__text">
-                {tonightCard
-                  ? 'Tonight’s card at Node 01. Holders vote on the next night’s object.'
-                  : 'Holders vote on the object Node 01 photographs each night.'}
-              </span>
-              <span className="sd-way__go" aria-hidden="true">
-                →
-              </span>
-            </Link>
-          </li>
-          <li>
-            <Link href="/node" className="sd-way">
-              <span className="sd-way__label">Observatory</span>
-              <span className="sd-way__title">Drive the telescope</span>
-              <span className="sd-way__text">Connect, calibrate, point and capture — five steps under a dark sky, drawn by the sky model.</span>
-              <span className="sd-way__go" aria-hidden="true">
-                →
-              </span>
-            </Link>
-          </li>
-          <li>
-            <Link href="/voyage" className="sd-way">
-              <span className="sd-way__label">Voyage</span>
-              <span className="sd-way__title">Fly to your objects</span>
-              <span className="sd-way__text">Cross the Solar System to the worlds on the cards you hold.</span>
-              <span className="sd-way__go" aria-hidden="true">
-                →
-              </span>
-            </Link>
-          </li>
-        </ul>
-      </section>
-
       <section className="sd-container sd-home-sec sd-closer2" aria-labelledby="close-title">
         <h2 className="sd-closer2__title" id="close-title">
           The night sky, <em>issued in editions</em>.
         </h2>
-        <p className="sd-home-sec__lede">Every capsule is sealed before the sale, and every opening is published after it.</p>
+        <p className="sd-home-sec__lede">Sealed before sale. Published after opening.</p>
         <div className="sd-hero2__cta">
           <Link href="/set/001" className="sd-btn sd-btn--light">
             Open a capsule
           </Link>
           <Link href="/capsules/log" className="sd-btn">
-            Read the public log
+            Public log
           </Link>
         </div>
       </section>
