@@ -95,3 +95,21 @@ describe('the retired card pages', () => {
     for (const live of ['/card/HALLEY', '/card/M87', '/card/WORMHOLE', '/card/BETELGEUSE']) expect(middleware(request(live)).status, live).toBe(200);
   });
 });
+
+describe('the legacy Stellar pages', () => {
+  it('go to the same path on the legacy domain', () => {
+    delete process.env.SIDERA_INVITE_CODES;
+    for (const path of ['/sky', '/marketplace/abc', '/profile', '/missions', '/observatory', '/nfts', '/first-light']) {
+      const res = middleware(request(`${path}?x=1`));
+      expect(res.status, path).toBe(307);
+      expect(res.headers.get('location')).toBe(`https://sidera.stellarr.club${path}?x=1`);
+    }
+  });
+
+  it('leave the card pages alone', () => {
+    delete process.env.SIDERA_INVITE_CODES;
+    for (const path of ['/', '/set/001', '/card/HALLEY', '/collection', '/capsules', '/capsules/log', '/capsule/x', '/tonight', '/node', '/node/simulator', '/voyage', '/terms', '/privacy', '/contact']) {
+      expect(middleware(request(path)).status, path).toBe(200);
+    }
+  });
+});

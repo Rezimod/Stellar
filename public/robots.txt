@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://sidera.stellarr.club/sitemap.xml
+Sitemap: https://stellarr.club/sitemap.xml

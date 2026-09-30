@@ -25,7 +25,29 @@ export const metadata: Metadata = {
 /** Six cards from across the set, one shelf of it. */
 const SHOWCASE = ['JUPITER', 'BETELGEUSE', 'M42', 'M31', 'SGR-A', 'VOYAGER-1'];
 
-const FROM_USD = Math.min(...TIERS.map((t) => t.priceUsd));
+const PARTNERS = [
+  { src: '/brand-partners/astroman.png', alt: 'Astroman', width: 640, height: 169, filter: 'invert(1) brightness(1.05)' },
+  { src: '/brand-partners/bresser.svg', alt: 'Bresser', width: 290, height: 60, filter: 'brightness(0) invert(0.85)' },
+  { src: '/brand-partners/celestron.png', alt: 'Celestron', width: 500, height: 76 },
+  { src: '/brand-partners/levenhuk.svg', alt: 'Levenhuk', width: 300, height: 60 },
+];
+
+const RECOGNITION = [
+  {
+    href: 'https://superteam.fun/earn/listing/tether-frontier-hackathon-track',
+    logo: '/brand-partners/qvac.svg', logoAlt: 'QVAC by Tether', logoWidth: 218, logoHeight: 24,
+    label: 'Tether Frontier', rank: '1st place', date: 'May 2026',
+    linkLabel: 'View Tether Frontier Hackathon track on Superteam Earn',
+  },
+  {
+    href: 'https://superteam.fun/earn/grants/solana-foundation-georgia-grants',
+    logo: '/brand-partners/superteam.webp', logoAlt: 'Superteam', logoWidth: 160, logoHeight: 48,
+    label: 'Superteam', rank: 'Grant', date: '2026',
+    linkLabel: 'View Solana Foundation Georgia Grants on Superteam Earn',
+  },
+];
+
+const FROM_USD =Math.min(...TIERS.map((t) => t.priceUsd));
 
 export default async function HomePage() {
   const node = getNode('tbilisi-01')!;
@@ -87,6 +109,30 @@ export default async function HomePage() {
           </div>
           <HomeFan />
         </div>
+      </section>
+
+      <section className="sd-container sd-home-sec sd-trust" aria-label="Partner brands and recognition">
+        <p className="sd-trust__label">Partner brands</p>
+        <ul className="sd-partners">
+          {PARTNERS.map((p) => (
+            <li key={p.alt}>
+              <img src={p.src} alt={p.alt} width={p.width} height={p.height} loading="lazy" style={p.filter ? { filter: p.filter } : undefined} />
+            </li>
+          ))}
+        </ul>
+        <p className="sd-trust__label">Recognition</p>
+        <ul className="sd-recog">
+          {RECOGNITION.map((r) => (
+            <li key={r.label}>
+              <a href={r.href} target="_blank" rel="noopener noreferrer" aria-label={r.linkLabel} className="sd-recog__item">
+                <img src={r.logo} alt={r.logoAlt} width={r.logoWidth} height={r.logoHeight} loading="lazy" />
+                <span className="sd-recog__label">{r.label}</span>
+                <span className="sd-recog__rank">{r.rank}</span>
+                <span className="sd-recog__date">{r.date}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
       </section>
 
       <section className="sd-container sd-home-sec" id="how" aria-labelledby="how-title">

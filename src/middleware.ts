@@ -1,20 +1,12 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { INVITE_COOKIE, inviteCodes } from '@/lib/invite';
 
-/**
- * Legacy Stellar pages this deployment still builds but no longer offers. Each
- * goes to the card-product page that does its job. Kept: /nfts (the legacy view of
- * minted observations), /observatory/* (the operator tools), and every
- * on-chain-referenced route (never matched here).
- */
-const RETIRED: Array<[RegExp, string]> = [
-  // Cards of the first Set 001, replaced by First Light before anything sold. Names First Light reuses are live again.
-  [/^\/card\/(MOON|TRANQUILITY-BASE|TWIN-SUN|TIDE-WORLD|RING-HABITAT|UNIT-7|SENTINEL|BLACK-SLAB)\/?$/i, '/set/001'],
-  [/^\/(sky|moon)(\/|$)/, '/tonight'],
-  [/^\/observatory\/?$/, '/node'],
-  [/^\/(profile|u)(\/|$)/, '/collection'],
-  [/^\/(shop|marketplace|first-light|star|faq|darksky|settings|returns|cookie-policy|security-policy|accessibility)(\/|$)/, '/'],
-];
+/** Cards of the first Set 001, replaced by First Light before anything sold. Names First Light reuses are live again. */
+const RETIRED_CARD = /^\/card\/(MOON|TRANQUILITY-BASE|TWIN-SUN|TIDE-WORLD|RING-HABITAT|UNIT-7|SENTINEL|BLACK-SLAB)\/?$/i;
+
+/** The pages the card product serves. Every other page is the legacy Stellar app, which now lives on its own domain. */
+const CARD_PAGES = /^\/($|(set|card|collection|capsules?|tonight|node|voyage|invite|terms|privacy|contact)(\/|$))/;
+const LEGACY_HOST = 'https://sidera.stellarr.club';
 
 /**
  * The closed beta. While SIDERA_INVITE_CODES names any code, a page opens only
@@ -24,8 +16,9 @@ const RETIRED: Array<[RegExp, string]> = [
  */
 
 export function middleware(req: NextRequest) {
-  const retired = RETIRED.find(([from]) => from.test(req.nextUrl.pathname));
-  if (retired) return NextResponse.redirect(new URL(retired[1], req.url), 307);
+  const { pathname, search } = req.nextUrl;
+  if (RETIRED_CARD.test(pathname)) return NextResponse.redirect(new URL('/set/001', req.url), 307);
+  if (!CARD_PAGES.test(pathname)) return NextResponse.redirect(`${LEGACY_HOST}${pathname}${search}`, 307);
 
   const codes = inviteCodes();
   if (codes.length === 0) return NextResponse.next();
@@ -36,6 +29,6 @@ export function middleware(req: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!api/|_next/|m/|invite|cards/|_og|opengraph-image|icon|apple-icon|robots\\.txt|sitemap\\.xml|.*\\.[^/]+$).*)',
+    '/((?!api/|_next/|m/|invite|\\.well-known/|cards/|_og|opengraph-image|icon|apple-icon|robots\\.txt|sitemap\\.xml|.*\\.[^/]+$).*)',
   ],
 };

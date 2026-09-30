@@ -41,7 +41,7 @@ export const metadata: Metadata = {
     default: 'Stellar — the night sky, issued in editions',
     template: '%s',
   },
-  metadataBase: new URL('https://sidera.stellarr.club'),
+  metadataBase: new URL('https://stellarr.club'),
   robots: {
     index: true,
     follow: true,

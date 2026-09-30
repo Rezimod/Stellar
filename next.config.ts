@@ -3,6 +3,9 @@ import createNextIntlPlugin from 'next-intl/plugin';
 
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 
+/** The legacy Stellar project's production alias — independent of which project holds the custom domains. */
+const LEGACY_ORIGIN = 'https://stellarsky.vercel.app';
+
 const nextConfig: NextConfig = {
   compress: true,
   experimental: {
@@ -49,6 +52,18 @@ const nextConfig: NextConfig = {
       config.cache = false;
     }
     return config;
+  },
+  // stellarr.club is the card product; the legacy app lives on its own project. Its APIs and
+  // /m/* stay reachable here because minted metadata, webhooks and old links point at this domain.
+  async rewrites() {
+    return {
+      beforeFiles: [
+        { source: '/api/:path((?!stellar/|cron/|track|sky/).*)', destination: `${LEGACY_ORIGIN}/api/:path` },
+        { source: '/m/:path*', destination: `${LEGACY_ORIGIN}/m/:path*` },
+      ],
+      afterFiles: [],
+      fallback: [],
+    };
   },
   async headers() {
     const csp = [
