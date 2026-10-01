@@ -59,7 +59,7 @@ export default function OddsBoard({ supply }: { supply: Supply }) {
 
       <div className="sd-pub__foot">
         <span>
-          A legendary in a {tier.name} capsule of {CARDS_PER_TIER}
+          A legendary in {/^[AEIOU]/.test(tier.name) ? 'an' : 'a'} {tier.name} capsule of {CARDS_PER_TIER}
         </span>
         <strong>1 in {Math.round(1 / atLeastOne).toLocaleString('en-GB')}</strong>
       </div>

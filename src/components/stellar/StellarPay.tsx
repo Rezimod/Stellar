@@ -217,7 +217,7 @@ export default function StellarPay({
         </div>
       ) : (
         <div className="sd-pay__code">
-          <QRCodeSVG value={order.url} size={168} bgColor="#0b0c0e" fgColor="#ece7da" level="M" />
+          <QRCodeSVG value={order.url} size={168} bgColor="#ffffff" fgColor="#050b1d" level="M" />
         </div>
       )}
       <div className="sd-pay__side">

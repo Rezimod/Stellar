@@ -6,7 +6,8 @@ import { useEffect, useRef, useState } from 'react';
 import { usePrivySafe as usePrivy } from './usePrivySafe';
 import { useStellarHolder } from './useStellarHolder';
 
-const RPC = process.env.NEXT_PUBLIC_SOLANA_RPC_URL ?? process.env.NEXT_PUBLIC_HELIUS_RPC_URL ?? 'https://api.mainnet-beta.solana.com';
+const DEVNET = process.env.NEXT_PUBLIC_SOLANA_CLUSTER === 'devnet';
+const RPC = process.env.NEXT_PUBLIC_SOLANA_RPC_URL ?? process.env.NEXT_PUBLIC_HELIUS_RPC_URL ?? (DEVNET ? 'https://api.devnet.solana.com' : 'https://api.mainnet-beta.solana.com');
 
 /** A small world drawn from the wallet address: the same holder, the same planet. */
 function Avatar({ seed }: { seed: string }) {
@@ -161,7 +162,7 @@ export default function StellarAccount() {
             Tonight’s vote <span aria-hidden="true">→</span>
           </Link>
           {address && (
-            <a role="menuitem" href={`https://solscan.io/account/${address}`} target="_blank" rel="noreferrer">
+            <a role="menuitem" href={`https://solscan.io/account/${address}${DEVNET ? '?cluster=devnet' : ''}`} target="_blank" rel="noreferrer">
               Your transactions <span aria-hidden="true">↗</span>
             </a>
           )}

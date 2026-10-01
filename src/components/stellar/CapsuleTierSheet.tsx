@@ -39,8 +39,8 @@ export default function CapsuleTierSheet({ tier, onPreview, onClose }: { tier: T
   useEffect(() => {
     panel.current?.focus();
     const onKey = (e: KeyboardEvent) => {
-      // The reveal, when it is up, takes Escape for itself.
-      if (e.key === 'Escape' && !document.querySelector('.sd-reveal--staged')) onClose();
+      // The reveal, and Privy's sign-in window, take Escape for themselves when they are up.
+      if (e.key === 'Escape' && !document.querySelector('.sd-reveal--staged, #privy-dialog')) onClose();
     };
     window.addEventListener('keydown', onKey);
     const overflow = document.body.style.overflow;

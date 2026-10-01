@@ -57,8 +57,8 @@
 .sd-reveal:not(.sd-reveal--staged) .sd-reveal__inhale,
 .sd-reveal:not(.sd-reveal--staged) .sd-reveal__burst { display: none; }
 .sd-reveal__nebula { position: absolute; border-radius: 50%; filter: blur(40px); opacity: 0; animation: sd-fade 2400ms ease-out both, sd-drift 38s ease-in-out infinite alternate; }
-.sd-reveal__nebula--a { left: -10%; top: -15%; width: 70vw; height: 60vh; background: radial-gradient(closest-side, rgba(88, 70, 190, 0.38), transparent); }
-.sd-reveal__nebula--b { right: -15%; top: 10%; width: 60vw; height: 70vh; background: radial-gradient(closest-side, rgba(30, 140, 190, 0.26), transparent); animation-duration: 2400ms, 46s; animation-direction: normal, alternate-reverse; }
+.sd-reveal__nebula--a { left: -10%; top: -15%; width: 70vw; height: 60vh; background: radial-gradient(closest-side, rgba(36, 69, 146, 0.42), transparent); }
+.sd-reveal__nebula--b { right: -15%; top: 10%; width: 60vw; height: 70vh; background: radial-gradient(closest-side, rgba(45, 101, 181, 0.26), transparent); animation-duration: 2400ms, 46s; animation-direction: normal, alternate-reverse; }
 .sd-reveal__nebula--c { left: 20%; bottom: -25%; width: 70vw; height: 55vh; background: radial-gradient(closest-side, color-mix(in srgb, var(--sd-heat) 24%, transparent), transparent); animation-duration: 2400ms, 30s; }
 .sd-reveal__stars { position: absolute; inset: -20%; opacity: 0; }
 .sd-reveal__stars--far { background: var(--sd-stars) 0 0 / 260px 230px; animation: sd-fade 1200ms ease-out both, sd-parallax 90s linear infinite; }
@@ -82,7 +82,7 @@
 .sd-reveal__limb {
   position: absolute; left: 50%; top: 78%; width: 240%; aspect-ratio: 1; transform: translateX(-50%);
   border-radius: 50%; border-top: 1px solid rgba(150, 195, 255, 0.36);
-  box-shadow: 0 -12px 70px rgba(90, 150, 255, 0.18), inset 0 24px 90px rgba(60, 120, 255, 0.12);
+  box-shadow: 0 -12px 70px rgba(45, 101, 181, 0.2), inset 0 24px 90px rgba(40, 85, 164, 0.14);
   opacity: 0; animation: sd-fade 1400ms var(--sd-ease) 150ms both;
 }
 /* The entry: the top of the sky lights where the stone comes in, white-hot, then in its colour. */
@@ -138,7 +138,7 @@
   animation: sd-ember 700ms ease-out calc(var(--k) * -60ms) infinite;
 }
 .sd-reveal__fragment {
-  position: absolute; left: 0; top: 0; width: 6px; height: 3px; border-radius: 40%; background: #ffd9a8; transform-origin: 0 50%;
+  position: absolute; left: 0; top: 0; width: 6px; height: 3px; border-radius: 40%; background: color-mix(in srgb, var(--sd-gold) 45%, #fff); transform-origin: 0 50%;
   box-shadow: 0 0 5px 1px var(--sd-heat);
   transform: rotate(calc(var(--sd-run) + (var(--k) - 2) * 9deg));
   opacity: 0; animation: sd-fragment 1100ms ease-out calc(var(--sd-fall) * 0.55 + var(--k) * 140ms) both;
@@ -171,8 +171,8 @@
   border: 1px solid var(--sd-ring, #fff); opacity: 0;
   animation: sd-shock 1700ms cubic-bezier(0.1, 0.7, 0.3, 1) calc(var(--sd-shock-at) + var(--sd-off)) both;
 }
-.sd-reveal__shock--r { --sd-ring: rgba(255, 110, 110, 0.9); }
-.sd-reveal__shock--b { --sd-ring: rgba(110, 200, 255, 0.9); --sd-off: 70ms; }
+.sd-reveal__shock--r { --sd-ring: rgba(244, 177, 19, 0.9); }
+.sd-reveal__shock--b { --sd-ring: rgba(45, 101, 181, 0.9); --sd-off: 70ms; }
 .sd-reveal__shock--w { --sd-ring: color-mix(in srgb, var(--sd-heat) 60%, #fff); --sd-off: 35ms; }
 .sd-reveal__shock--burst { --sd-shock-at: var(--sd-burst); animation-duration: 2100ms; }
 .sd-reveal__spark {
@@ -337,7 +337,7 @@
 /* The foil: one pass of light across the face as it comes round. */
 .sd-flip__front::after {
   content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 2; mix-blend-mode: screen;
-  background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, 0.55) 45%, color-mix(in srgb, var(--sd-tone) 60%, #fff) 50%, rgba(160, 120, 255, 0.35) 55%, transparent 70%);
+  background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, 0.55) 45%, color-mix(in srgb, var(--sd-tone) 60%, #fff) 50%, rgba(45, 101, 181, 0.35) 55%, transparent 70%);
   background-size: 260% 100%; background-position: 130% 0; opacity: 0;
   animation: sd-sheen calc(var(--sd-d) * 0.26) ease-in-out calc(var(--sd-at) + var(--sd-d) * var(--sd-sheen-at)) both;
 }
@@ -371,7 +371,7 @@
 .sd-reveal__halo { position: absolute; left: 50%; top: 45%; width: 0; height: 0; z-index: 3; pointer-events: none; }
 .sd-reveal__halo > span {
   position: absolute; left: -3px; top: -3px; width: 6px; height: 6px; border-radius: 50%;
-  background: #f4ecff; box-shadow: 0 0 10px 3px #a97cff;
+  background: #fff6d8; box-shadow: 0 0 10px 3px var(--sd-rarity-epic);
   transform: rotate(calc(var(--k) * 360deg / 14)) translateX(0); opacity: 0;
   animation: sd-halo 1700ms cubic-bezier(0.15, 0.8, 0.3, 1) calc(var(--sd-at) + var(--sd-d) * 0.5 + mod(var(--k) * 7, 4) * 60ms) both;
 }

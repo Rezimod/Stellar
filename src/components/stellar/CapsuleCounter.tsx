@@ -13,7 +13,8 @@ import TierCapsule from './TierCapsule';
 // intent (a pointer over the button, a touch) rather than with the page.
 const loadSheet = () => import('./CapsuleTierSheet');
 const CapsuleTierSheet = dynamic(loadSheet, { ssr: false });
-const StellarReveal = dynamic(() => import('./StellarReveal'), { ssr: false });
+const loadReveal = () => import('./StellarReveal');
+const StellarReveal = dynamic(loadReveal, { ssr: false });
 
 export type TierCard = { designation: string; name: string; rarity: Rarity; editionSize: number };
 
@@ -121,7 +122,14 @@ export default function CapsuleCounter({ cards, onSale }: { cards: TierCard[]; o
         >
           {stock === 0 ? 'None on sale' : `Buy & open — $${tier.priceUsd}`}
         </button>
-        <button type="button" className="sd-counter__preview" onClick={() => start(tier)}>
+        <button
+          type="button"
+          className="sd-counter__preview"
+          onPointerEnter={loadReveal}
+          onTouchStart={loadReveal}
+          onFocus={loadReveal}
+          onClick={() => start(tier)}
+        >
           <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true">
             <path d="M5 3.5v9l7-4.5z" fill="currentColor" />
           </svg>

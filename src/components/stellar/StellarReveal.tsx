@@ -162,7 +162,7 @@ export default function StellarReveal({
   useEffect(() => {
     if (!staged) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape') return;
+      if (e.key !== 'Escape' || document.getElementById('privy-dialog')) return;
       if (!done) setDone(true);
       else if (onClose) onClose();
       else setStaged(false);
