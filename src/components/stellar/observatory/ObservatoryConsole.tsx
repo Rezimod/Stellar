@@ -728,7 +728,7 @@ export default function ObservatoryConsole({ tonight, nodeCloud }: { tonight: To
 
       <div className="sdo-phone">
         <div className="sdo-phead">
-          <p className="sdo-phead__t">Observatory</p>
+          <p className="sdo-phead__t">Live telescope</p>
           <div>
             <span className="sdo-pill sdo-pill--sim"><span className="sdo-led is-go" />Simulated</span>
             <button className={`sdo-ib${night ? ' is-on' : ''}`} type="button" onClick={toggleNight} aria-pressed={night} aria-label="Night mode"><Icon name="moon" /></button>
@@ -747,7 +747,7 @@ export default function ObservatoryConsole({ tonight, nodeCloud }: { tonight: To
       </div>
 
       <main className="sdo-grid">
-        <h1 className="sdo-sr">Observatory</h1>
+        <h1 className="sdo-sr">Live telescope</h1>
         <div className="sdo-col sdo-desk">
           <QuickStart name={quickName} designation={tonight?.designation ?? null} onStart={quickStart} />
           <Telescopes rows={rows} selectedId={selectedId} onPick={pick} sky={skyRow} />

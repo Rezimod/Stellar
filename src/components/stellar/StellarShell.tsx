@@ -17,7 +17,7 @@ const FOOT = [
     ],
   },
   {
-    title: 'Observatory',
+    title: 'Live telescope',
     links: [
       { href: '/tonight', label: 'Tonight' },
       { href: '/node', label: 'Live Telescope V1' },

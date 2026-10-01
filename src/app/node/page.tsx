@@ -9,7 +9,7 @@ import { tonightView } from '@/lib/stellar/night';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'Observatory — Stellar',
+  title: 'Live telescope — Stellar',
   description:
     'Connect to a telescope under a dark sky, park, calibrate, choose a target, point and capture. Simulated frames of the real sky.',
 };

@@ -7,7 +7,7 @@
 .stellar .sd-node-orbit { position: absolute; right: -12%; top: -8%; width: min(78vw, 820px); aspect-ratio: 1; pointer-events: none; z-index: 0; opacity: 0.9; }
 .stellar .sd-node-orbit span { position: absolute; inset: 0; border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.06); animation: sd-orbit 140s linear infinite; }
 .stellar .sd-node-orbit span:nth-child(2) { inset: 14%; border-color: rgba(255, 255, 255, 0.075); animation-duration: 96s; animation-direction: reverse; }
-.stellar .sd-node-orbit span:nth-child(3) { inset: 30%; border-color: rgba(255, 179, 71, 0.12); border-style: dashed; animation-duration: 70s; }
+.stellar .sd-node-orbit span:nth-child(3) { inset: 30%; border-color: rgba(45, 101, 181, 0.12); border-style: dashed; animation-duration: 70s; }
 .stellar .sd-node-orbit span::after { content: ''; position: absolute; top: 50%; left: -3px; width: 5px; height: 5px; margin-top: -2.5px; border-radius: 50%; background: rgba(255, 255, 255, 0.7); }
 .stellar .sd-node-orbit span:nth-child(3)::after { background: var(--sd-accent); }
 @keyframes sd-orbit { to { transform: rotate(360deg); } }
@@ -46,7 +46,7 @@
   display: inline-flex; align-items: center; gap: 8px; padding: 5px 12px 5px 10px; border-radius: 999px;
   border: 1px solid color-mix(in srgb, var(--sd-accent) 45%, transparent);
   background: rgba(3, 6, 15, 0.55); backdrop-filter: blur(8px);
-  font-family: var(--sd-mono); font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sd-accent);
+  font-family: var(--sd-mono); font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sd-accent-ink);
 }
 .stellar .sd-scope__dot { width: 6px; height: 6px; border-radius: 50%; background: var(--sd-accent); animation: sd-blink 2.4s ease-in-out infinite; }
 @keyframes sd-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
@@ -91,7 +91,7 @@
   transition: border-color var(--sd-dur-fast) var(--sd-ease), background var(--sd-dur-fast) var(--sd-ease), transform var(--sd-dur-fast) var(--sd-ease);
 }
 .stellar .sd-scope__pick:hover { background: var(--sd-plate-hover); border-color: var(--sd-rule-strong); }
-.stellar .sd-scope__pick[aria-pressed='true'] { border-color: color-mix(in srgb, var(--sd-accent) 70%, transparent); background: linear-gradient(180deg, rgba(255, 179, 71, 0.1), rgba(255, 179, 71, 0.03)); }
+.stellar .sd-scope__pick[aria-pressed='true'] { border-color: color-mix(in srgb, var(--sd-accent) 70%, transparent); background: linear-gradient(180deg, rgba(45, 101, 181, 0.1), rgba(45, 101, 181, 0.03)); }
 .stellar .sd-scope__thumb { width: 44px; height: 44px; border-radius: 10px; overflow: hidden; flex: none; background: #03060f; }
 .stellar .sd-scope__thumb > * { width: 100%; height: 100%; }
 .stellar .sd-scope__thumb img, .stellar .sd-scope__thumb svg { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -107,7 +107,7 @@
 .stellar .sd-optic svg { display: block; width: 100%; min-width: 560px; height: auto; }
 .stellar .sd-optic__tube { stroke: var(--sd-rule-strong); stroke-width: 1; }
 .stellar .sd-optic__axis { stroke: var(--sd-ink-4); stroke-width: 1; stroke-dasharray: 3 7; }
-.stellar .sd-optic__ray { fill: none; stroke: rgba(255, 227, 163, 0.22); stroke-width: 1.2; }
+.stellar .sd-optic__ray { fill: none; stroke: rgba(244, 177, 19, 0.22); stroke-width: 1.2; }
 .stellar .sd-optic__photon { fill: none; stroke: var(--sd-accent); stroke-width: 2; stroke-linecap: round; stroke-dasharray: 3 97; animation: sd-photon 4.8s linear infinite; }
 .stellar .sd-optic g:nth-of-type(3) .sd-optic__photon { animation-delay: -1.2s; }
 .stellar .sd-optic g:nth-of-type(4) .sd-optic__photon { animation-delay: -2.4s; }
@@ -125,13 +125,13 @@
 .stellar .sd-nightband { margin: 0; border: 1px solid var(--sd-rule); border-radius: calc(var(--sd-radius) + 6px); padding: 16px 12px 10px; background: linear-gradient(180deg, rgba(10, 23, 53, 0.4), rgba(5, 11, 29, 0.85)); overflow-x: auto; }
 .stellar .sd-nightband svg { display: block; width: 100%; min-width: 680px; height: auto; font-family: var(--sd-mono); }
 .stellar .sd-nightband text { fill: var(--sd-ink-3); font-size: 12px; letter-spacing: 0.06em; }
-.stellar .sd-nightband__dark { fill: rgba(94, 234, 212, 0.035); }
+.stellar .sd-nightband__dark { fill: rgba(244, 177, 19, 0.035); }
 .stellar .sd-nightband__horizon { stroke: var(--sd-ink-4); stroke-dasharray: 2 6; }
 .stellar .sd-nightband__sun { fill: none; stroke: var(--sd-accent); stroke-width: 1.6; stroke-linecap: round; }
 .stellar .sd-nightband__edge line { stroke: var(--sd-rule-strong); }
 .stellar .sd-nightband__edge text { fill: var(--sd-ink-2); }
-.stellar .sd-nightband__hours rect { fill: rgba(94, 234, 212, 0.55); }
-.stellar .sd-nightband__pin line { stroke: rgba(94, 234, 212, 0.5); stroke-dasharray: 2 4; }
+.stellar .sd-nightband__hours rect { fill: rgba(244, 177, 19, 0.55); }
+.stellar .sd-nightband__pin line { stroke: rgba(244, 177, 19, 0.5); stroke-dasharray: 2 4; }
 .stellar .sd-nightband__pin path { fill: var(--sd-teal); }
 .stellar .sd-nightband__pin text { fill: var(--sd-teal); }
 .stellar .sd-nightband__now line { stroke: var(--sd-ink); stroke-width: 1; }
@@ -160,7 +160,7 @@
 .stellar .sd-node-cta__paddle { justify-self: center; width: min(100%, 260px); }
 .stellar .sd-node-cta__paddle svg { display: block; width: 100%; height: auto; overflow: visible; }
 .stellar .sd-paddle__ring { fill: none; stroke: var(--sd-rule-strong); }
-.stellar .sd-paddle__ring--dim { stroke: rgba(255, 179, 71, 0.3); stroke-dasharray: 2 5; transform-origin: 100px 100px; animation: sd-orbit 60s linear infinite; }
+.stellar .sd-paddle__ring--dim { stroke: rgba(45, 101, 181, 0.3); stroke-dasharray: 2 5; transform-origin: 100px 100px; animation: sd-orbit 60s linear infinite; }
 .stellar .sd-paddle__key { fill: var(--sd-ink-2); }
 .stellar .sd-paddle__trk { fill: rgba(255, 255, 255, 0.04); stroke: var(--sd-rule-strong); }
 .stellar .sd-node-cta__paddle text { fill: var(--sd-ink-3); font-family: var(--sd-mono); font-size: 12px; letter-spacing: 0.16em; }
@@ -181,8 +181,8 @@
   --surface-hover: rgba(255, 255, 255, 0.085);
   --accent: var(--sd-accent);
   --accent-text: var(--sd-accent);
-  --accent-dim: rgba(255, 179, 71, 0.1);
-  --accent-border: rgba(255, 179, 71, 0.3);
+  --accent-dim: rgba(45, 101, 181, 0.1);
+  --accent-border: rgba(45, 101, 181, 0.3);
   --seafoam: var(--sd-teal);
   --teal-text: var(--sd-teal);
   --obs-label: rgba(255, 255, 255, 0.54);

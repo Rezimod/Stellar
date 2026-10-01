@@ -24,25 +24,32 @@
   --sd-rule-strong: rgba(255, 255, 255, 0.18);
   --sd-hairline: 1px;
 
-  /* The accent. Terracotta, the same one the app uses, for the primary action
-     and for anything live. Sparingly: one hot thing per screen. */
-  --sd-accent: #ffb347;
-  --sd-accent-hi: #ffc46b;
-  --sd-accent-dim: rgba(255, 179, 71, 0.12);
-  --sd-teal: #5eead4;
+  /* The palette — three colours from the Georgian sun mark and nothing else:
+     its blue, its gold and white. The blue fills the primary action; text on
+     the dark ground takes --sd-accent-ink, the same blue lifted with white so it
+     reads. Gold is for anything live and for the scarcest cards. */
+  --sd-blue: #2855a4;
+  --sd-blue-hi: #2d65b5;
+  --sd-blue-deep: #244592;
+  --sd-gold: #f4b113;
+  --sd-accent: var(--sd-blue);
+  --sd-accent-hi: var(--sd-blue-hi);
+  --sd-accent-ink: color-mix(in srgb, var(--sd-blue-hi) 55%, #fff);
+  --sd-accent-dim: rgba(45, 101, 181, 0.12);
+  --sd-teal: var(--sd-gold);
 
-  /* Rarity — cool to hot, so scarcity reads as heat */
-  --sd-rarity-common: #9aa7c7;
-  --sd-rarity-rare: #5eead4;
-  --sd-rarity-epic: #ffb347;
-  --sd-rarity-legendary: #ffe3a3;
+  /* Rarity — white to blue to gold, so scarcity reads as the sun */
+  --sd-rarity-common: color-mix(in srgb, var(--sd-blue-hi) 30%, #fff);
+  --sd-rarity-rare: color-mix(in srgb, var(--sd-blue-hi) 70%, #fff);
+  --sd-rarity-epic: var(--sd-gold);
+  --sd-rarity-legendary: color-mix(in srgb, var(--sd-gold) 55%, #fff);
 
   /* Observation status — teal for what the node can reach, ink for the rest */
   --sd-status-dedicated: var(--sd-teal);
   --sd-status-eligible: var(--sd-ink-2);
   --sd-status-not-available: var(--sd-ink-3);
 
-  --sd-focus: var(--sd-accent);
+  --sd-focus: var(--sd-accent-ink);
 
   /* Type — Stellar's stack: Geist for voice, JetBrains for data, Orbitron for the mark */
   --sd-sans: var(--font-geist), system-ui, sans-serif;
@@ -84,7 +91,7 @@
 }
 
 .stellar :focus-visible { outline: 2px solid var(--sd-focus); outline-offset: 3px; }
-.stellar ::selection { background: rgba(255, 179, 71, 0.28); color: var(--sd-ink); }
+.stellar ::selection { background: rgba(45, 101, 181, 0.28); color: var(--sd-ink); }
 
 /* ── Type ─────────────────────────────────────────────────────── */
 .sd-display {
@@ -99,7 +106,7 @@
 .sd-mono { font-family: var(--sd-mono); font-variant-numeric: tabular-nums; }
 .sd-data { font-family: var(--sd-mono); font-size: 13px; line-height: 1.5; font-variant-numeric: tabular-nums; color: var(--sd-ink-2); }
 .sd-label { font-family: var(--sd-mono); font-size: 12px; line-height: 1.4; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sd-ink-3); }
-.sd-eyebrow { font-family: var(--sd-mono); font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sd-accent); margin: 0 0 14px; }
+.sd-eyebrow { font-family: var(--sd-mono); font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sd-accent-ink); margin: 0 0 14px; }
 
 /* ── Layout ───────────────────────────────────────────────────── */
 .sd-container { width: 100%; max-width: var(--sd-max); margin-inline: auto; padding-inline: var(--sd-gutter); }
@@ -201,8 +208,8 @@
 .sd-section { margin-top: 56px; }
 .sd-section__title { font-family: var(--sd-mono); font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sd-ink-3); margin: 0 0 18px; }
 .sd-back { font-family: var(--sd-mono); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sd-ink-3); text-decoration: none; display: inline-block; padding-block: 10px; }
-.sd-back:hover { color: var(--sd-accent); }
-.sd-link { color: var(--sd-accent); text-decoration: none; border-bottom: 1px solid color-mix(in srgb, var(--sd-accent) 40%, transparent); }
+.sd-back:hover { color: var(--sd-accent-ink); }
+.sd-link { color: var(--sd-accent-ink); text-decoration: none; border-bottom: 1px solid color-mix(in srgb, var(--sd-accent) 40%, transparent); }
 .sd-link:hover { border-bottom-color: var(--sd-accent); }
 /* Text links stay small on screen but take a finger-sized hit area. */
 @media (pointer: coarse) {
@@ -224,10 +231,10 @@
 .sd-btn:disabled { color: var(--sd-ink-4); border-color: var(--sd-rule); cursor: not-allowed; }
 .sd-btn--primary {
   background: linear-gradient(180deg, var(--sd-accent-hi), var(--sd-accent));
-  border-color: transparent; color: #1a1207;
-  box-shadow: 0 10px 30px rgba(255, 179, 71, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+  border-color: transparent; color: #ffffff;
+  box-shadow: 0 10px 30px rgba(45, 101, 181, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.45);
 }
-.sd-btn--primary:hover:not(:disabled) { background: linear-gradient(180deg, #ffd089, var(--sd-accent-hi)); border-color: transparent; box-shadow: 0 0 0 4px rgba(255, 179, 71, 0.16), 0 14px 36px rgba(255, 179, 71, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.45); }
+.sd-btn--primary:hover:not(:disabled) { background: linear-gradient(180deg, #2d65b5, var(--sd-accent-hi)); border-color: transparent; box-shadow: 0 0 0 4px rgba(45, 101, 181, 0.16), 0 14px 36px rgba(45, 101, 181, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.45); }
 .sd-btn--primary:disabled { background: var(--sd-plate); color: var(--sd-ink-4); box-shadow: none; }
 
 .sd-input {
@@ -366,8 +373,8 @@
 @media (prefers-reduced-motion: reduce) { .sd-showcase__slot, .sd-showcase__dot::before { transition: none; } }
 /* The cosmic ground: one deep radial, a faint horizon, no rainbow */
 .sd-sky { position: absolute; inset: 0; pointer-events: none; background:
-  radial-gradient(90% 60% at 72% 8%, rgba(255, 179, 71, 0.13) 0%, transparent 60%),
-  radial-gradient(70% 55% at 12% 22%, rgba(94, 234, 212, 0.08) 0%, transparent 62%); }
+  radial-gradient(90% 60% at 72% 8%, rgba(45, 101, 181, 0.13) 0%, transparent 60%),
+  radial-gradient(70% 55% at 12% 22%, rgba(244, 177, 19, 0.08) 0%, transparent 62%); }
 .sd-stats { display: flex; flex-wrap: wrap; gap: 32px 56px; padding-top: 36px; margin-top: 40px; border-top: 1px solid var(--sd-rule); }
 .sd-stat__n { font-family: var(--sd-sans); font-weight: 600; font-size: clamp(32px, 5vw, 56px); line-height: 1; letter-spacing: -0.04em; }
 .sd-stat__l { font-family: var(--sd-mono); font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sd-ink-3); margin-top: 10px; }
@@ -376,7 +383,7 @@
 .sd-steps li { position: relative; padding: 20px 0 0; border-top: 1px solid var(--sd-rule-strong); }
 .sd-steps h3 { font-family: var(--sd-sans); font-weight: 600; font-size: 22px; letter-spacing: -0.02em; margin: 18px 0 8px; }
 .sd-steps p { color: var(--sd-ink-2); margin: 0; font-size: 15px; }
-.sd-steps .sd-step__n { display: block; font-family: var(--sd-mono); font-weight: 500; font-size: 56px; line-height: 1; letter-spacing: -0.04em; color: transparent; -webkit-text-stroke: 1px color-mix(in srgb, var(--sd-accent) 70%, transparent); }
+.sd-steps .sd-step__n { display: block; font-family: var(--sd-mono); font-weight: 500; font-size: 56px; line-height: 1; letter-spacing: -0.04em; color: transparent; -webkit-text-stroke: 1px color-mix(in srgb, var(--sd-accent-ink) 70%, transparent); }
 
 /* ── Opting out of the legacy chrome ──────────────────────────── */
 html:has(.stellar) [data-stellar-chrome] { display: none !important; }
@@ -420,7 +427,7 @@ html:has(.stellar) #stellar-main { padding-top: 0; padding-bottom: 0; }
   color: var(--sd-ink); text-wrap: balance;
 }
 .sd-datestamp { display: flex; align-items: flex-end; gap: 14px; margin: 0 0 28px; }
-.sd-datestamp__day { font-family: var(--sd-mono); font-weight: 500; font-size: 64px; line-height: 0.8; letter-spacing: -0.04em; color: var(--sd-accent); font-variant-numeric: tabular-nums; }
+.sd-datestamp__day { font-family: var(--sd-mono); font-weight: 500; font-size: 64px; line-height: 0.8; letter-spacing: -0.04em; color: var(--sd-accent-ink); font-variant-numeric: tabular-nums; }
 .sd-datestamp__rest { font-family: var(--sd-mono); font-size: 12px; line-height: 1.35; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sd-ink-3); }
 .sd-facts { margin-top: 32px; padding: 16px 20px; column-gap: 32px; border: 1px solid var(--sd-rule); border-radius: var(--sd-radius); background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.025)); width: fit-content; max-width: 100%; }
 .sd-facts dd { font-size: 15px; }
@@ -440,7 +447,7 @@ html:has(.stellar) #stellar-main { padding-top: 0; padding-bottom: 0; }
 /* Chapters: a number, a title, a rule running to the edge. */
 .sd-chapter-block { margin-top: 72px; }
 .sd-chapter { display: flex; align-items: baseline; gap: 16px; margin-bottom: 28px; }
-.sd-chapter__n { font-family: var(--sd-mono); font-size: 13px; color: var(--sd-accent); letter-spacing: 0.1em; }
+.sd-chapter__n { font-family: var(--sd-mono); font-size: 13px; color: var(--sd-accent-ink); letter-spacing: 0.1em; }
 .sd-chapter__title { font-family: var(--sd-sans); font-weight: 600; font-size: clamp(26px, 4.4vw, 44px); letter-spacing: -0.035em; line-height: 1.05; margin: 0; }
 .sd-chapter__rule { flex: 1 1 auto; min-width: 24px; height: 1px; background: linear-gradient(90deg, var(--sd-rule-strong), transparent); align-self: center; }
 .sd-chapter__aside { font-family: var(--sd-mono); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sd-ink-3); white-space: nowrap; }
@@ -465,7 +472,7 @@ html:has(.stellar) #stellar-main { padding-top: 0; padding-bottom: 0; }
 .sd-skychart__peak--lead .sd-skychart__name { fill: var(--sd-ink); font-weight: 600; }
 .sd-skychart__alt { fill: var(--sd-ink-3); }
 .sd-skychart__now line { stroke: var(--sd-accent); stroke-dasharray: 3 4; opacity: 0.7; }
-.sd-skychart__now text { fill: var(--sd-accent); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; }
+.sd-skychart__now text { fill: var(--sd-accent-ink); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; }
 
 /* A card's art on its own, cropped to the object. */
 .sd-art { position: relative; display: block; overflow: hidden; background: #02040a; }
@@ -488,7 +495,7 @@ html:has(.stellar) #stellar-main { padding-top: 0; padding-bottom: 0; }
 .sd-ballot__art { grid-area: art; width: 100%; max-width: 52px; aspect-ratio: 63 / 88; border-radius: 6px; border: 1px solid var(--sd-rule); }
 .sd-ballot__main { grid-area: main; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .sd-ballot__name { font-weight: 600; font-size: 17px; letter-spacing: -0.015em; color: var(--sd-ink); text-decoration: none; }
-.sd-ballot__name:hover { color: var(--sd-accent-hi); }
+.sd-ballot__name:hover { color: #fff; }
 .sd-ballot__bar { display: block; height: 3px; border-radius: 3px; background: var(--sd-rule); overflow: hidden; margin-top: 4px; }
 .sd-ballot__bar > span { display: block; height: 100%; min-width: 3px; border-radius: 3px; background: var(--sd-accent); }
 .sd-ballot__votes { grid-area: votes; display: flex; flex-direction: column; align-items: flex-end; font-family: var(--sd-mono); font-size: 22px; line-height: 1; font-variant-numeric: tabular-nums; }
@@ -506,7 +513,7 @@ html:has(.stellar) #stellar-main { padding-top: 0; padding-bottom: 0; }
 .sd-nights__name { font-weight: 600; font-size: 15px; }
 .sd-nights__result { font-family: var(--sd-mono); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sd-ink-3); }
 .sd-nights__item[data-result='photographed'] .sd-nights__result { color: var(--sd-teal); }
-.sd-nights__item[data-result='lost'] .sd-nights__result { color: var(--sd-accent); }
+.sd-nights__item[data-result='lost'] .sd-nights__result { color: var(--sd-accent-ink); }
 .sd-nights__item[data-result='lost'] .sd-nights__art { opacity: 0.55; filter: grayscale(0.6); }
 
 @media (prefers-reduced-motion: reduce) { .sd-poster__copy { animation: none; } }
@@ -516,7 +523,7 @@ html:has(.stellar) #stellar-main { padding-top: 0; padding-bottom: 0; }
 @media (min-width: 900px) { .sd-split { grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr); gap: 72px; } }
 .sd-poster__copy .sd-buy { margin-top: 28px; }
 .sd-poster__object .sd-figure__note { margin-top: 18px; }
-.sd-accent-word { color: var(--sd-accent); }
+.sd-accent-word { color: var(--sd-accent-ink); }
 .sd-hero .sd-rail { margin-bottom: 48px; }
 .sd-hero .sd-mega { font-size: clamp(48px, 8.4vw, 112px); }
 .sd-hero .sd-stats { margin-top: 56px; }
@@ -539,12 +546,12 @@ html:has(.stellar) #stellar-main { padding-top: 0; padding-bottom: 0; }
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 20px; text-align: center;
   border-color: color-mix(in srgb, var(--sd-accent) 45%, transparent);
   background:
-    repeating-linear-gradient(135deg, rgba(255, 179, 71, 0.05) 0 1px, transparent 1px 9px),
+    repeating-linear-gradient(135deg, rgba(45, 101, 181, 0.05) 0 1px, transparent 1px 9px),
     radial-gradient(120% 90% at 50% 10%, #1d3264 0%, #070e22 75%);
   animation: sd-float 7s ease-in-out infinite;
 }
 .sd-sealed__mark { font-family: var(--sd-display); font-weight: 600; font-size: 22px; letter-spacing: 0.3em; text-transform: uppercase; }
-.sd-sealed__label { font-family: var(--sd-mono); font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sd-accent); white-space: nowrap; }
+.sd-sealed__label { font-family: var(--sd-mono); font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sd-accent-ink); white-space: nowrap; }
 .sd-sealed__hash { font-family: var(--sd-mono); font-size: 12px; letter-spacing: 0.04em; color: var(--sd-ink-3); word-break: break-all; }
 @keyframes sd-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 @media (prefers-reduced-motion: reduce) { .sd-sealed__card--front { animation: none; } }
@@ -558,7 +565,7 @@ html:has(.stellar) #stellar-main { padding-top: 0; padding-bottom: 0; }
 .sd-oddsboard li[data-rarity='epic'] .sd-oddsboard__n { color: var(--sd-rarity-epic); }
 .sd-oddsboard li[data-rarity='legendary'] .sd-oddsboard__n { color: var(--sd-rarity-legendary); }
 .sd-capsule__n { font-family: var(--sd-mono); font-size: 28px; font-weight: 500; letter-spacing: -0.02em; display: inline-flex; align-items: baseline; gap: 10px; }
-.sd-capsule__price { font-family: var(--sd-mono); font-size: 14px; color: var(--sd-accent); }
+.sd-capsule__price { font-family: var(--sd-mono); font-size: 14px; color: var(--sd-accent-ink); }
 .sd-capsule { background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.015)); border-style: solid; }
 .sd-capsule .sd-datarow--stacked { margin-bottom: 18px; }
 .sd-ledger--hash dd { word-break: break-all; max-width: 44ch; }
@@ -587,7 +594,7 @@ html:has(.stellar) #stellar-main { padding-top: 0; padding-bottom: 0; }
 .sd-chip strong { font: 700 16px/1 var(--sd-sans); }
 .sd-chip span { font: 600 12px/1 var(--sd-mono); letter-spacing: 0.16em; text-transform: uppercase; color: var(--sd-ink-3); }
 .sd-chip:hover { border-color: var(--sd-ink-3); background: rgba(255, 255, 255, 0.07); }
-.sd-chip--cta { font: 600 15px var(--sd-sans); background: var(--sd-accent); border-color: transparent; color: #1a1207; }
+.sd-chip--cta { font: 600 15px var(--sd-sans); background: var(--sd-accent); border-color: transparent; color: #ffffff; }
 .sd-chip--cta:hover { background: var(--sd-accent-hi); border-color: transparent; }
 .sd-chip--wallet { cursor: default; }
 .sd-chip--wallet i { width: 7px; height: 7px; border-radius: 50%; background: #ff5a4a; box-shadow: 0 0 8px #ff5a4a; }
@@ -615,7 +622,7 @@ html:has(.stellar) #stellar-main { padding-top: 0; padding-bottom: 0; }
 .sd-menu__big small { font: 600 12px var(--sd-mono); letter-spacing: 0.16em; text-transform: uppercase; color: var(--sd-ink-3); }
 .sd-menu__note { margin: 8px 12px 16px; font-size: 13px; color: var(--sd-ink-3); }
 .sd-menu__copy { background: none; border: 1px solid var(--sd-rule); border-radius: 6px; padding: 3px 8px; color: var(--sd-ink-2); font: 600 12px var(--sd-mono); letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; }
-.sd-menu__copy:hover { border-color: var(--sd-accent); color: var(--sd-accent); }
+.sd-menu__copy:hover { border-color: var(--sd-accent); color: var(--sd-accent-ink); }
 .sd-menu__addr { margin: 8px 12px 14px; font: 500 12px/1.5 var(--sd-mono); color: var(--sd-ink-2); word-break: break-all; }
 .sd-menu__rule { height: 1px; background: var(--sd-rule); margin: 0 4px 6px; }
 .sd-menu a, .sd-menu > button {
@@ -892,7 +899,7 @@ html:has(.stellar) #stellar-main { padding-top: 0; padding-bottom: 0; }
   border: 1px solid var(--sd-rule-strong); font-size: 11px; letter-spacing: 0; color: var(--sd-ink-3);
 }
 .sd-steps li.is-now { color: var(--sd-ink); }
-.sd-steps li.is-now .sd-steps__dot { border-color: var(--sd-accent); color: #1a1207; background: var(--sd-accent); box-shadow: 0 0 0 4px rgba(255, 179, 71, 0.16); }
+.sd-steps li.is-now .sd-steps__dot { border-color: var(--sd-accent); color: #ffffff; background: var(--sd-accent); box-shadow: 0 0 0 4px rgba(45, 101, 181, 0.16); }
 .sd-steps li.is-done { color: var(--sd-ink-2); }
 .sd-steps li.is-done .sd-steps__dot { border-color: var(--sd-rarity-rare); color: var(--sd-rarity-rare); }
 .sd-steps li.is-done::after { background: color-mix(in srgb, var(--sd-rarity-rare) 50%, transparent); }
@@ -917,6 +924,6 @@ html:has(.stellar) #stellar-main { padding-top: 0; padding-bottom: 0; }
 .sd-pay__sum span { font: 500 12px var(--sd-mono); color: var(--sd-ink-3); }
 .sd-pay__minor { display: flex; flex-wrap: wrap; gap: 4px 14px; }
 .sd-pay__minor a, .sd-pay__minor button { padding: 4px 0; border: 0; background: none; color: var(--sd-ink-2); font: 500 13px var(--sd-sans); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--sd-rule-strong); cursor: pointer; }
-.sd-pay__minor a:hover, .sd-pay__minor button:hover:not(:disabled) { color: var(--sd-accent); }
+.sd-pay__minor a:hover, .sd-pay__minor button:hover:not(:disabled) { color: var(--sd-accent-ink); }
 .sd-pay__minor button:disabled { color: var(--sd-ink-4); cursor: default; }
 .sd-pay__note { grid-column: 1 / -1; margin: 0; font: 500 12px var(--sd-mono); color: var(--sd-ink-2); overflow-wrap: anywhere; }

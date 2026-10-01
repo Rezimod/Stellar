@@ -222,7 +222,7 @@ export default async function NodePage() {
                   Open the simulator
                 </Link>
                 <Link href="/node" className="sd-btn sd-node-cta__btn">
-                  Open the observatory
+                  Open the live telescope
                 </Link>
               </div>
             </div>

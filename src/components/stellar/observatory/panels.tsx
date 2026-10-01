@@ -118,11 +118,11 @@ function PointingBase({ path, pointing, rows, rms, rmsHistory, seeing, seeingHis
       <div className="sdo-stats">
         <div className="sdo-stat">
           <div className="sdo-stat__row"><span className="sdo-lbl">Track RMS</span><span className="sdo-v sdo-v--sm">{rms}</span></div>
-          <Spark values={rmsHistory} color="#5eead4" lo={0} hi={1.4} />
+          <Spark values={rmsHistory} color="#f4b113" lo={0} hi={1.4} />
         </div>
         <div className="sdo-stat">
           <div className="sdo-stat__row"><span className="sdo-lbl">Seeing</span><span className="sdo-v sdo-v--sm">{seeing}</span></div>
-          <Spark values={seeingHistory} color="#b3a8ff" lo={1} hi={5} />
+          <Spark values={seeingHistory} color="#8baad6" lo={1} hi={5} />
         </div>
         <div className="sdo-stat">
           <span className="sdo-lbl">Battery</span>

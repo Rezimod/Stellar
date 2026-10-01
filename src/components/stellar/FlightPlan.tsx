@@ -50,10 +50,14 @@ const ICONS: Record<Step['icon'], React.ReactNode> = {
 export default function FlightPlan({ steps }: { steps: Step[] }) {
   return (
     <ol className="sd-flight">
-      {steps.map((s) => (
-        <li key={s.title}>
-          <Link href={s.href} className="sd-flight__step">
+      {steps.map((s, i) => (
+        <li key={s.title} style={{ '--i': i } as React.CSSProperties}>
+          <Link href={s.href} className={`sd-flight__step${s.live ? ' sd-flight__step--live' : ''}`}>
+            <span className="sd-flight__n" aria-hidden="true">
+              {String(i + 1).padStart(2, '0')}
+            </span>
             <span className="sd-flight__dial" aria-hidden="true">
+              <span className="sd-flight__orbit" />
               <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                 {ICONS[s.icon]}
               </svg>

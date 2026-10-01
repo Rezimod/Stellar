@@ -4,10 +4,13 @@ import { eq } from 'drizzle-orm';
 import CardThumb from '@/components/stellar/CardThumb';
 import FlightPlan, { type FlightStep } from '@/components/stellar/FlightPlan';
 import HomeFan from '@/components/stellar/HomeFan';
+import OddsBoard from '@/components/stellar/OddsBoard';
+import OrbitRing from '@/components/stellar/OrbitRing';
 import StellarShell from '@/components/stellar/StellarShell';
 import StellarView from '@/components/stellar/StellarView';
 import { getDb } from '@/lib/db';
 import { getNode } from '@/lib/observatory/nodes';
+import { RARITIES } from '@/lib/rarity';
 import { card } from '@/lib/schema';
 import { SET_GROUPS, groupCards } from '@/lib/sets/groups';
 import { SET_001_CARDS, SET_001_CARD_BY_DESIGNATION } from '@/lib/sets/set-001';
@@ -37,16 +40,26 @@ const RECOGNITION = [
   {
     href: 'https://superteam.fun/earn/listing/tether-frontier-hackathon-track',
     logo: '/brand-partners/qvac.svg', logoAlt: 'QVAC by Tether', logoWidth: 218, logoHeight: 24,
-    label: 'Tether Frontier', rank: '1st place', date: 'May 2026',
+    label: 'Tether Frontier', rank: '1st place',
     linkLabel: 'View Tether Frontier Hackathon track on Superteam Earn',
   },
   {
     href: 'https://superteam.fun/earn/grants/solana-foundation-georgia-grants',
     logo: '/brand-partners/superteam.webp', logoAlt: 'Superteam', logoWidth: 160, logoHeight: 48,
-    label: 'Superteam', rank: 'Grant', date: '2026',
+    label: 'Superteam', rank: 'Grant',
     linkLabel: 'View Solana Foundation Georgia Grants on Superteam Earn',
   },
 ];
+
+/** The cards turning round the sun in the orbit section. */
+const ORBIT = ['FIRST-LIGHT', 'SATURN', 'M42', 'M1', 'SGR-A', 'HALLEY', 'M45', 'TYCHO', 'EUROPA', 'KRAKEN-MARE', 'GREAT-ECLIPSE', 'IMILAC'];
+
+const SUPPLY = Object.fromEntries(
+  RARITIES.map((r) => {
+    const cards = SET_001_CARDS.filter((c) => c.seed.rarity === r);
+    return [r, { cards: cards.length, editions: cards.reduce((sum, c) => sum + c.seed.editionSize, 0) }];
+  }),
+) as Record<(typeof RARITIES)[number], { cards: number; editions: number }>;
 
 const FROM_USD = Math.min(...TIERS.map((t) => t.priceUsd));
 
@@ -61,6 +74,24 @@ const PLAN: FlightStep[] = [
     live: false,
     href: '/set/001',
     icon: 'meteorite',
+  },
+];
+
+const GUARANTEES = [
+  {
+    title: 'Sealed before sale',
+    text: 'Each draw is fixed and its hash published before listing.',
+    icon: <><rect x="5" y="10" width="14" height="10" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></>,
+  },
+  {
+    title: 'Numbered editions',
+    text: `${SET_001_CARDS.length} cards, each a fixed run. Gone is gone.`,
+    icon: <><path d="M5 9h14M5 15h14M10 4L8 20M16 4l-2 16" /></>,
+  },
+  {
+    title: 'A public log',
+    text: 'Every listing and opening, on record for anyone.',
+    icon: <><path d="M6 4h9l3 3v13H6z" /><path d="M9 11h6M9 15h6" /></>,
   },
 ];
 
@@ -138,9 +169,9 @@ export default async function HomePage() {
             <li key={r.label}>
               <a href={r.href} target="_blank" rel="noopener noreferrer" aria-label={r.linkLabel} className="sd-recog__item">
                 <img src={r.logo} alt={r.logoAlt} width={r.logoWidth} height={r.logoHeight} loading="lazy" />
-                <span className="sd-recog__label">{r.label}</span>
-                <span className="sd-recog__rank">{r.rank}</span>
-                <span className="sd-recog__date">{r.date}</span>
+                <span className="sd-recog__cap">
+                  {r.label} · <b>{r.rank}</b>
+                </span>
               </a>
             </li>
           ))}
@@ -153,6 +184,36 @@ export default async function HomePage() {
           What a card opens
         </h2>
         <FlightPlan steps={tonightCard ? PLAN.map((p) => (p.icon === 'reticle' ? { ...p, text: `${p.text} Tonight: ${tonightCard.seed.name}.` } : p)) : PLAN} />
+      </section>
+
+      <section className="sd-container sd-home-sec sd-pub" aria-labelledby="odds-title">
+        <p className="sd-kicker">Why it is fair</p>
+        <h2 className="sd-home-sec__title" id="odds-title">
+          The odds are published
+        </h2>
+        <div className="sd-pub__grid">
+          <ul className="sd-pub__list">
+            {GUARANTEES.map((g) => (
+              <li key={g.title}>
+                <span className="sd-pub__icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                    {g.icon}
+                  </svg>
+                </span>
+                <div>
+                  <p className="sd-pub__t">{g.title}</p>
+                  <p className="sd-pub__d">{g.text}</p>
+                </div>
+              </li>
+            ))}
+            <li className="sd-pub__logline">
+              <Link href="/capsules/log" className="sd-link">
+                Read the public log
+              </Link>
+            </li>
+          </ul>
+          <OddsBoard supply={SUPPLY} />
+        </div>
       </section>
 
       <section className="sd-container sd-home-sec sd-showcase2" aria-labelledby="set-title">
@@ -183,6 +244,19 @@ export default async function HomePage() {
             </li>
           ))}
         </ul>
+      </section>
+
+      <section className="sd-home-sec sd-orbit" aria-labelledby="orbit-title">
+        <div className="sd-container sd-orbit__copy">
+          <p className="sd-kicker">In orbit</p>
+          <h2 className="sd-home-sec__title" id="orbit-title">
+            Every card turns with the sky
+          </h2>
+          <p className="sd-home-sec__lede">
+            From the craters of the Moon to the black hole at the centre of the galaxy — each one a real object, issued once and numbered.
+          </p>
+        </div>
+        <OrbitRing designations={ORBIT} />
       </section>
 
       <section className="sd-container sd-home-sec sd-closer2" aria-labelledby="close-title">

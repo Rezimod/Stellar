@@ -25,7 +25,7 @@ export function Spark({ values, color, w = 124, h = 26, lo, hi }: { values: numb
 }
 
 /** Altitude from dusk to dawn, the horizon dashed, now as an amber line. */
-export function AltCurve({ path, span, now, color = '#b3a8ff', w = 150, h = 34 }: { path: PathPoint[]; span: Span; now: number; color?: string; w?: number; h?: number }) {
+export function AltCurve({ path, span, now, color = '#8baad6', w = 150, h = 34 }: { path: PathPoint[]; span: Span; now: number; color?: string; w?: number; h?: number }) {
   const x = (t: number) => ((t - span.start) / (span.end - span.start)) * w;
   const y = (alt: number) => h - 3 - (Math.max(-8, alt) / 90) * (h - 6);
   const nowX = Math.min(w, Math.max(0, x(now)));
@@ -33,7 +33,7 @@ export function AltCurve({ path, span, now, color = '#b3a8ff', w = 150, h = 34 }
     <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} aria-hidden="true">
       <line x1="0" y1={h - 3} x2={w} y2={h - 3} stroke="rgba(143,182,255,.25)" strokeDasharray="2 3" />
       <polyline points={path.map((p) => `${x(p.t).toFixed(1)},${y(p.altitude).toFixed(1)}`).join(' ')} fill="none" stroke={color} strokeWidth="1.5" />
-      <line x1={nowX} y1="0" x2={nowX} y2={h} stroke="#ffb347" strokeWidth="1" />
+      <line x1={nowX} y1="0" x2={nowX} y2={h} stroke="#2855a4" strokeWidth="1" />
     </svg>
   );
 }
@@ -70,19 +70,19 @@ function DialBase({ path, pointing }: { path: PathPoint[] | null; pointing: AltA
       {(['N', 'E', 'S', 'W'] as const).map((t, i) => {
         const a = (i * 90 * Math.PI) / 180;
         return (
-          <text key={t} x={70 + (R - 13) * Math.sin(a)} y={70 - (R - 13) * Math.cos(a)} textAnchor="middle" dominantBaseline="middle" fill={t === 'N' ? '#ffb347' : 'rgba(190,204,240,.6)'} style={{ font: '600 10px var(--o-cond)' }}>
+          <text key={t} x={70 + (R - 13) * Math.sin(a)} y={70 - (R - 13) * Math.cos(a)} textAnchor="middle" dominantBaseline="middle" fill={t === 'N' ? '#2855a4' : 'rgba(190,204,240,.6)'} style={{ font: '600 10px var(--o-cond)' }}>
             {t}
           </text>
         );
       })}
       {up.length > 1 && (
-        <polyline points={up.map((p) => polar(p.altitude, p.azimuth).map((v) => v.toFixed(1)).join(',')).join(' ')} fill="none" stroke="#b3a8ff" strokeWidth="1.3" strokeDasharray="3 3" />
+        <polyline points={up.map((p) => polar(p.altitude, p.azimuth).map((v) => v.toFixed(1)).join(',')).join(' ')} fill="none" stroke="#8baad6" strokeWidth="1.3" strokeDasharray="3 3" />
       )}
       {at && (
         <>
-          <line x1="70" y1="70" x2={at[0]} y2={at[1]} stroke="rgba(94,234,212,.55)" />
-          <circle cx={at[0]} cy={at[1]} r="5" fill="none" stroke="#5eead4" strokeWidth="1.5" />
-          <circle cx={at[0]} cy={at[1]} r="1.8" fill="#5eead4" />
+          <line x1="70" y1="70" x2={at[0]} y2={at[1]} stroke="rgba(244, 177, 19,.55)" />
+          <circle cx={at[0]} cy={at[1]} r="5" fill="none" stroke="#f4b113" strokeWidth="1.5" />
+          <circle cx={at[0]} cy={at[1]} r="1.8" fill="#f4b113" />
         </>
       )}
       <circle cx="70" cy="70" r="1.6" fill="rgba(238,241,250,.8)" />

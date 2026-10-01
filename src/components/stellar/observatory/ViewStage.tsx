@@ -27,12 +27,12 @@ function Reticle() {
       <g fill="none">
         <circle cx="450" cy="300" r="238" stroke="rgba(190,204,240,.22)" strokeDasharray="1 5" />
         <g className="sdo-spin">
-          <circle cx="450" cy="300" r="258" stroke="rgba(139,123,255,.35)" strokeDasharray="40 14 4 14" />
+          <circle cx="450" cy="300" r="258" stroke="rgba(45, 101, 181,.35)" strokeDasharray="40 14 4 14" />
         </g>
-        <circle cx="450" cy="300" r="112" stroke="rgba(94,234,212,.55)" />
+        <circle cx="450" cy="300" r="112" stroke="rgba(244, 177, 19,.55)" />
         <path d="M450 40v90M450 470v90M140 300h150M610 300h150" stroke="rgba(190,204,240,.3)" />
-        <path d="M338 188h-22v22M562 188h22v22M338 412h-22v-22M562 412h22v-22" stroke="#ffb347" strokeWidth="1.8" />
-        <path d="M444 300h12M450 294v12" stroke="#5eead4" strokeWidth="1.4" />
+        <path d="M338 188h-22v22M562 188h22v22M338 412h-22v-22M562 412h22v-22" stroke="#2855a4" strokeWidth="1.8" />
+        <path d="M444 300h12M450 294v12" stroke="#f4b113" strokeWidth="1.4" />
       </g>
     </svg>
   );
@@ -112,9 +112,9 @@ function ViewStage(p: ViewStageProps) {
           {p.status.text}
         </span>
       </div>
-      <div className="sdo-hud sdo-glass sdo-hud--tl"><span style={{ color: '#b3a8ff' }}>{p.hudLive[0]}</span> · {p.hudLive[1]}<br />{p.hudLive[2]}</div>
+      <div className="sdo-hud sdo-glass sdo-hud--tl"><span style={{ color: '#8baad6' }}>{p.hudLive[0]}</span> · {p.hudLive[1]}<br />{p.hudLive[2]}</div>
       {p.hudTarget && (
-        <div className="sdo-hud sdo-glass sdo-hud--bl"><span style={{ color: '#ffb347' }}>{p.hudTarget[0]}</span><br />{p.hudTarget[1]}</div>
+        <div className="sdo-hud sdo-glass sdo-hud--bl"><span style={{ color: '#2855a4' }}>{p.hudTarget[0]}</span><br />{p.hudTarget[1]}</div>
       )}
       <div className="sdo-hud sdo-glass sdo-hud--br">{p.hudField[0]}<br />{p.hudField[1]}</div>
 
