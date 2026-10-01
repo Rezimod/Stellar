@@ -1,6 +1,6 @@
 # Stellar inventory (Phase 1)
 
-Computed on branch `sidera` at `1b3213c` (cut from origin/main). The numbers come from an import graph over all 704 files in `src/` (`.ts .tsx .js .mjs .css .json`). The graph resolves `@/` to `src/`, and follows relative imports, `export … from`, `import()`, `require()` and CSS `@import`, plus the `i18n/request.ts` template import of `messages/*.json`. Edges were cross-checked against `ts.preProcessFile`, with 0 differences and 0 unresolved imports. API callers come from scanning `'/api/…'` string literals, template URLs included.
+Computed on branch `stellar-cards` at `1b3213c` (cut from origin/main). The numbers come from an import graph over all 704 files in `src/` (`.ts .tsx .js .mjs .css .json`). The graph resolves `@/` to `src/`, and follows relative imports, `export … from`, `import()`, `require()` and CSS `@import`, plus the `i18n/request.ts` template import of `messages/*.json`. Edges were cross-checked against `ts.preProcessFile`, with 0 differences and 0 unresolved imports. API callers come from scanning `'/api/…'` string literals, template URLs included.
 
 **Reachability roots:**
 - every KEEP page and API route file (`page`, `route`, `layout`, `loading`)

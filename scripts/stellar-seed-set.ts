@@ -1,9 +1,9 @@
 /**
- * Files First Light and its cards in the sidera database.
+ * Files First Light and its cards in the card database.
  *
- *   SIDERA_DATABASE_CONFIRM=sidera npm run stellar:seed
+ *   STELLAR_DATABASE_CONFIRM=stellar npm run stellar:seed
  *
- * Idempotent. Refuses to run unless DATABASE_URL is the sidera Neon branch —
+ * Idempotent. Refuses to run unless DATABASE_URL is the stellar-cards Neon branch —
  * see stellar-guard.ts.
  */
 

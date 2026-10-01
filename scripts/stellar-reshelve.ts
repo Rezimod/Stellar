@@ -1,8 +1,8 @@
 /**
  * Clears the shelf and lists it again at the current tier odds.
  *
- *   SIDERA_DATABASE_CONFIRM=sidera npx tsx scripts/stellar-reshelve.ts          # dry run
- *   SIDERA_DATABASE_CONFIRM=sidera npx tsx scripts/stellar-reshelve.ts --apply
+ *   STELLAR_DATABASE_CONFIRM=stellar npx tsx scripts/stellar-reshelve.ts          # dry run
+ *   STELLAR_DATABASE_CONFIRM=stellar npx tsx scripts/stellar-reshelve.ts --apply
  *
  * Every capsule still 'listed' (never bought) is voided with its reason in the
  * public log, its secret revealed; bought or opened capsules are left alone.

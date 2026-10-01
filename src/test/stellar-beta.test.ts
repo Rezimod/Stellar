@@ -5,10 +5,10 @@ import { unstable_doesMiddlewareMatch } from 'next/experimental/testing/server';
 import { config, middleware } from '@/middleware';
 import { GET as invite } from '@/app/invite/[code]/route';
 
-const CODES = process.env.SIDERA_INVITE_CODES;
+const CODES = process.env.STELLAR_INVITE_CODES;
 afterEach(() => {
-  if (CODES === undefined) delete process.env.SIDERA_INVITE_CODES;
-  else process.env.SIDERA_INVITE_CODES = CODES;
+  if (CODES === undefined) delete process.env.STELLAR_INVITE_CODES;
+  else process.env.STELLAR_INVITE_CODES = CODES;
 });
 
 function request(path: string, cookie?: string) {
@@ -23,18 +23,18 @@ function rewrittenTo(res: Response): string | null {
 
 describe('the invite gate', () => {
   it('is not there when no code is set', () => {
-    delete process.env.SIDERA_INVITE_CODES;
+    delete process.env.STELLAR_INVITE_CODES;
     expect(rewrittenTo(middleware(request('/set/001')))).toBeNull();
   });
 
   it('turns a visitor without a code to the closed door', () => {
-    process.env.SIDERA_INVITE_CODES = 'orion, lyra';
+    process.env.STELLAR_INVITE_CODES = 'orion, lyra';
     expect(rewrittenTo(middleware(request('/set/001')))).toBe('/invite');
     expect(rewrittenTo(middleware(request('/', 'stellar_invite=wrong')))).toBe('/invite');
   });
 
   it('lets a visitor holding a code through', () => {
-    process.env.SIDERA_INVITE_CODES = 'orion, lyra';
+    process.env.STELLAR_INVITE_CODES = 'orion, lyra';
     expect(rewrittenTo(middleware(request('/collection', 'stellar_invite=lyra')))).toBeNull();
   });
 
@@ -66,7 +66,7 @@ describe('an invitation link', () => {
   const params = (code: string) => ({ params: Promise.resolve({ code }) });
 
   it('keeps a valid code and goes home', async () => {
-    process.env.SIDERA_INVITE_CODES = 'orion';
+    process.env.STELLAR_INVITE_CODES = 'orion';
     const res = await invite(request('/invite/orion'), params('orion'));
     expect(new URL(res.headers.get('location')!).pathname).toBe('/');
     const cookie = res.headers.get('set-cookie')!;
@@ -77,7 +77,7 @@ describe('an invitation link', () => {
   });
 
   it('sends an unknown code to the closed door', async () => {
-    process.env.SIDERA_INVITE_CODES = 'orion';
+    process.env.STELLAR_INVITE_CODES = 'orion';
     const res = await invite(request('/invite/nope'), params('nope'));
     expect(new URL(res.headers.get('location')!).pathname).toBe('/invite');
     expect(res.headers.get('set-cookie')).toBeNull();
@@ -86,7 +86,7 @@ describe('an invitation link', () => {
 
 describe('the retired card pages', () => {
   it('sends a card of the first Set 001 to First Light', () => {
-    delete process.env.SIDERA_INVITE_CODES;
+    delete process.env.STELLAR_INVITE_CODES;
     for (const path of ['/card/MOON', '/card/UNIT-7', '/card/tranquility-base', '/card/TWIN-SUN/']) {
       const res = middleware(request(path));
       expect(res.status, path).toBe(307);
@@ -98,16 +98,16 @@ describe('the retired card pages', () => {
 
 describe('the legacy Stellar pages', () => {
   it('go to the same path on the legacy domain', () => {
-    delete process.env.SIDERA_INVITE_CODES;
+    delete process.env.STELLAR_INVITE_CODES;
     for (const path of ['/sky', '/marketplace/abc', '/profile', '/missions', '/observatory', '/nfts', '/first-light']) {
       const res = middleware(request(`${path}?x=1`));
       expect(res.status, path).toBe(307);
-      expect(res.headers.get('location')).toBe(`https://sidera.stellarr.club${path}?x=1`);
+      expect(res.headers.get('location')).toBe(`https://app.stellarr.club${path}?x=1`);
     }
   });
 
   it('leave the card pages alone', () => {
-    delete process.env.SIDERA_INVITE_CODES;
+    delete process.env.STELLAR_INVITE_CODES;
     for (const path of ['/', '/set/001', '/card/HALLEY', '/collection', '/capsules', '/capsules/log', '/capsule/x', '/tonight', '/node', '/node/simulator', '/voyage', '/terms', '/privacy', '/contact']) {
       expect(middleware(request(path)).status, path).toBe(200);
     }

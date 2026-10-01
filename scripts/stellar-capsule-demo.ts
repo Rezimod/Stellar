@@ -1,19 +1,19 @@
 /**
- * Capsules, end to end, on the sidera database.
+ * Capsules, end to end, on the card database.
  *
  *   Three demo capsules listed (each committed before sale) → two bought with
  *   test nonces → both opened → both verified from the public log → the third
  *   voided unsold, its secret revealed → any demo capsule an earlier run left
  *   on the list withdrawn → the log and the audit of all of it printed.
  *
- *   SIDERA_DATABASE_CONFIRM=sidera npm run stellar:capsules
+ *   STELLAR_DATABASE_CONFIRM=stellar npm run stellar:capsules
  *
  * DEMO ONLY: payment is skipped. The two orders are marked paid directly,
  * with the signature 'demo-no-payment', instead of going through Solana Pay.
  * Nothing in src does this; only this script. Every capsule it lists is marked
  * demo — in the capsule row, so it is never offered for sale, and in its
  * 'listed' log entry, so the audit labels it wherever the log is copied.
- * Refuses to run unless DATABASE_URL is the sidera Neon branch — see
+ * Refuses to run unless DATABASE_URL is the stellar-cards Neon branch — see
  * stellar-guard.ts.
  */
 

@@ -34,7 +34,7 @@ edition. Objects they do not hold stay visible but locked, with a way to the set
    outside the build (`tsconfig` excludes `tools/**`). That copy dates from
    2026-09-19; the game has had about 40 commits since, on
    `audit/stellar-explore-20260924` (5c7eac6, one ahead of `origin/main`).
-2. **Two sites.** Stellar is its own Vercel project (sidera.stellarr.club);
+2. **Two sites.** Stellar is its own Vercel project (app.stellarr.club);
    Explore's last live home is stellarr.club/play. Voyages belongs on Stellar,
    because the holder's session and wallet live there.
 3. **Weight.** Explore is heavy on phones, and Stellar's home is now fast (LCP
@@ -46,7 +46,7 @@ edition. Objects they do not hold stay visible but locked, with a way to the set
 
 ## Phases
 
-One phase per commit, `feat(stellar): voyages N — <summary>`, on `sidera`.
+One phase per commit, `feat(stellar): voyages N — <summary>`, on `stellar-cards`.
 tsc, test and build pass before each.
 
 ### V0 — Bring Explore back into the app
@@ -88,7 +88,7 @@ tsc, test and build pass before each.
   `POST /api/stellar/voyage` with the Privy token, and only when the wallet matches the
   session and holds that edition. One row per edition per day.
 - The card page and the Collection show "Visited 3 times, first on 27 September".
-- Schema change on the sidera Neon branch only; the owner runs it.
+- Schema change on the stellar-cards Neon branch only; the owner runs it.
 
 ### V4 — Deep sky, extremes, fiction (later, one scene type per commit)
 - Nebula scene (M42, M16, M1, Horsehead, Carina…), cluster scene (M45, M13,

@@ -36,8 +36,8 @@ vi.mock('@/lib/stellar/capsule', () => ({
   settleCapsulePayment: mocks.settleCapsulePayment,
 }));
 vi.mock('@/lib/stellar/orders', () => ({
-  CAPSULE_PRODUCT_ID: 'sidera-capsule',
-  CARD_PRODUCT_PREFIX: 'sidera-card:',
+  CAPSULE_PRODUCT_ID: 'stellar-capsule',
+  CARD_PRODUCT_PREFIX: 'stellar-card:',
   usdToSol: mocks.usdToSol,
   merchantWallet: () => ({ toBase58: () => 'merchant' }),
   newPaymentReference: () => 'reference',
@@ -227,7 +227,7 @@ describe('verifying a capsule', () => {
 
 describe('confirming a payment', () => {
   const ORDER = '00000000-0000-4000-8000-0000000000aa';
-  const order = (extra: Record<string, unknown>) => ({ id: ORDER, privyId: 'privy-holder', productId: 'sidera-capsule', status: 'pending', ...extra });
+  const order = (extra: Record<string, unknown>) => ({ id: ORDER, privyId: 'privy-holder', productId: 'stellar-capsule', status: 'pending', ...extra });
 
   it('records a transfer for a capsule order closed meanwhile as owed back, never a plain refusal', async () => {
     mocks.orderRows = [order({ status: 'cancelled' })];
@@ -241,9 +241,9 @@ describe('confirming a payment', () => {
   });
 
   it('owes back a card payment that landed after its window', async () => {
-    mocks.orderRows = [order({ productId: 'sidera-card:TYCHO' })];
+    mocks.orderRows = [order({ productId: 'stellar-card:TYCHO' })];
     mocks.findPayment.mockResolvedValue({ paid: true, signature: 'sig', paidAt: new Date(), late: true });
-    mocks.markRefundDue.mockResolvedValue(order({ productId: 'sidera-card:TYCHO', status: 'refund_due' }));
+    mocks.markRefundDue.mockResolvedValue(order({ productId: 'stellar-card:TYCHO', status: 'refund_due' }));
     const res = await confirm(post('/api/stellar/orders/confirm', { orderId: ORDER }));
     expect(mocks.markRefundDue).toHaveBeenCalledWith(expect.anything(), ORDER, 'sig', expect.any(Date));
     expect(mocks.markPaid).not.toHaveBeenCalled();

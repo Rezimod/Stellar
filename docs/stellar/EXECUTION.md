@@ -1,7 +1,7 @@
 # Stellar rebrand — execution plan
 
 ## Context
-`~/Desktop/Sidera/plans/sidera-rebrand-migration-plan.md` rebrands Stellar into a card universe backed by the observatory. It has 9 phases and 4 hard gates. The work happens on an isolated `sidera` branch, and production (stellarr.club) keeps running from `main`.
+`~/Desktop/Stellar/plans/stellar-rebrand-migration-plan.md` rebrands Stellar into a card universe backed by the observatory. It has 9 phases and 4 hard gates. The work happens on an isolated `stellar-cards` branch, and production (stellarr.club) keeps running from `main`.
 
 **Repo rule:** all work, branches and pushes go to **Rezimod/Stellar** (`origin`, local `/Users/nika/Desktop/Stellar-rezimod`). The Darkview repo (github.com/Bekatsertsvadzee/Online-Observatory) is consumed over its HTTP contract only; nothing is pushed there. See "Beka's repo" below.
 
@@ -11,7 +11,7 @@ Three read-only audits checked the plan against the real code. It holds up overa
 
 **Branch base**
 1. Cut `stellar` from **origin/main**, not the local `main`. Local main is 72 commits behind. origin/main already contains all of observatory/v2: `sim-stations.ts`, `telescope-targets.ts`, `first-light`, the simulator, plus 24 newer explore commits.
-2. The current checkout (`observatory/v2`) has 8 uncommitted explore files. I will use a **git worktree** (`../stellar-sidera-wt`) so that work-in-progress is never touched.
+2. The current checkout (`observatory/v2`) has 8 uncommitted explore files. I will use a **git worktree** (`../stellar-cards-wt`) so that work-in-progress is never touched.
 
 **Phase 2, deletion scope**
 3. The cut is about **26,600 LOC, not 8,300**:

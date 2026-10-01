@@ -32,7 +32,7 @@ function minutesLeft(expiresAt: string | null): number | null {
 }
 
 /** A deployment that rehearses instead of selling. Set at build, not by the page. */
-const REHEARSAL = process.env.NEXT_PUBLIC_SIDERA_SIMULATED_PAYMENT === '1';
+const REHEARSAL = process.env.NEXT_PUBLIC_STELLAR_SIMULATED_PAYMENT === '1';
 const DEVNET = process.env.NEXT_PUBLIC_SOLANA_CLUSTER === 'devnet';
 const RPC = process.env.NEXT_PUBLIC_SOLANA_RPC_URL ?? (DEVNET ? 'https://api.devnet.solana.com' : 'https://api.mainnet-beta.solana.com');
 const explorer = (sig: string) => `https://explorer.solana.com/tx/${sig}${DEVNET ? '?cluster=devnet' : ''}`;

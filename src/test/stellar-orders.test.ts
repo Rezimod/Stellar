@@ -58,10 +58,10 @@ describe('finding a payment', () => {
 });
 
 describe('a rehearsal deployment', () => {
-  afterEach(() => { delete process.env.NEXT_PUBLIC_SIDERA_SIMULATED_PAYMENT; });
+  afterEach(() => { delete process.env.NEXT_PUBLIC_STELLAR_SIMULATED_PAYMENT; });
 
   it('settles the order itself, asks no chain, and records a signature that says so', async () => {
-    process.env.NEXT_PUBLIC_SIDERA_SIMULATED_PAYMENT = '1';
+    process.env.NEXT_PUBLIC_STELLAR_SIMULATED_PAYMENT = '1';
     const found = await findPayment(order());
     expect(found).toMatchObject({ paid: true, late: false, signature: `simulated-no-payment:${REFERENCE}` });
     expect(pay.findReference).not.toHaveBeenCalled();
@@ -69,7 +69,7 @@ describe('a rehearsal deployment', () => {
   });
 
   it('is off unless the deployment says exactly 1', async () => {
-    process.env.NEXT_PUBLIC_SIDERA_SIMULATED_PAYMENT = 'true';
+    process.env.NEXT_PUBLIC_STELLAR_SIMULATED_PAYMENT = 'true';
     pay.findReference.mockRejectedValue(new FindReferenceError('not found'));
     expect(await findPayment(order())).toEqual({ paid: false });
   });
@@ -98,10 +98,10 @@ describe('quoting in SOL', () => {
   });
 
   it('quotes a rehearsal without a live feed', async () => {
-    process.env.NEXT_PUBLIC_SIDERA_SIMULATED_PAYMENT = '1';
+    process.env.NEXT_PUBLIC_STELLAR_SIMULATED_PAYMENT = '1';
     vi.stubGlobal('fetch', vi.fn(async () => ({ ok: false })));
     expect(await usdToSol(39)).toBeGreaterThan(0);
-    delete process.env.NEXT_PUBLIC_SIDERA_SIMULATED_PAYMENT;
+    delete process.env.NEXT_PUBLIC_STELLAR_SIMULATED_PAYMENT;
   });
 });
 
@@ -113,7 +113,7 @@ describe('a direct card sale', () => {
     let reads = 0;
     chain.limit = async () => (reads++ === 0 ? [{ id: 'card-1', editionSize: 300 }] : []);
     const db = { execute, select: () => chain, update: vi.fn() } as unknown as Db;
-    const o = order({ productId: 'sidera-card:TYCHO', walletAddress: 'holder-wallet', status: 'paid' });
+    const o = order({ productId: 'stellar-card:TYCHO', walletAddress: 'holder-wallet', status: 'paid' });
 
     expect(await fulfilCardOrder(db, o)).toEqual({ ok: true, editionNumber: 6, editionSize: 300, designation: 'TYCHO' });
     const { sql, params } = new PgDialect().sqlToQuery(execute.mock.calls[0][0]);
@@ -133,7 +133,7 @@ describe('a direct card sale', () => {
     const set = vi.fn(() => ({ where: async () => undefined }));
     const db = { execute, select: () => chain, update: () => ({ set }) } as unknown as Db;
 
-    expect(await fulfilCardOrder(db, order({ productId: 'sidera-card:TYCHO', walletAddress: 'w', status: 'paid' }))).toEqual({ ok: false, reason: 'sold_out' });
+    expect(await fulfilCardOrder(db, order({ productId: 'stellar-card:TYCHO', walletAddress: 'w', status: 'paid' }))).toEqual({ ok: false, reason: 'sold_out' });
     expect(set).toHaveBeenCalledWith({ status: 'refund_due' });
   });
 });

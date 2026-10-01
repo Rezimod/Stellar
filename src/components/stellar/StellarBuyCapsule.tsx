@@ -21,7 +21,7 @@ const StellarPay = dynamic(() => import('./StellarPay'), { ssr: false });
 const StellarReveal = dynamic(() => import('./StellarReveal'), { ssr: false });
 
 /** A deployment that rehearses instead of selling. Set at build, not by the page. */
-const REHEARSAL = process.env.NEXT_PUBLIC_SIDERA_SIMULATED_PAYMENT === '1';
+const REHEARSAL = process.env.NEXT_PUBLIC_STELLAR_SIMULATED_PAYMENT === '1';
 const STEPS = ['Buy', 'Pay', 'Open'] as const;
 
 /**

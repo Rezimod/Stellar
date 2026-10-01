@@ -8,10 +8,10 @@
  * Idempotent: the same night re-run appends nothing; a different night adds
  * one more entry to the card's history.
  *
- *   SIDERA_DATABASE_CONFIRM=sidera npm run stellar:lifecycle -- \
+ *   STELLAR_DATABASE_CONFIRM=stellar npm run stellar:lifecycle -- \
  *     [--wallet <address>] [--night YYYY-MM-DD] [--adapter sim|node]
  *
- * Refuses to run unless DATABASE_URL is the sidera Neon branch — see
+ * Refuses to run unless DATABASE_URL is the stellar-cards Neon branch — see
  * stellar-guard.ts. Only .env.local is read, never a bare .env.
  */
 

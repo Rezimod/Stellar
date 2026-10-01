@@ -102,7 +102,7 @@ most reversible option; each needs a yes/no from Rezi.
     readable and linkable by naming its holder.
 
 20. ~~**The merchant wallet.**~~ **Settled 2026-09-21.**
-    `NEXT_PUBLIC_MERCHANT_WALLET` is set on the sidera Vercel project for
+    `NEXT_PUBLIC_MERCHANT_WALLET` is set on the stellar-cards Vercel project for
     production, preview and development — the same mainnet address the Stellar
     project pays to. Until it was set, "Take this capsule" reached the pay step
     and got a 503: the buy route refuses to quote without a recipient. The
@@ -127,10 +127,10 @@ most reversible option; each needs a yes/no from Rezi.
 ## Phase 8
 
 22. **Where the invite gate closes.** The gate is live only while
-    `SIDERA_INVITE_CODES` is set on the Vercel project, and it covers pages
+    `STELLAR_INVITE_CODES` is set on the Vercel project, and it covers pages
     only: APIs, the on-chain metadata routes and static art stay open, so a
     capsule bought by an invited holder still reveals and verifies. Setting
-    it on production closes sidera.stellarr.club to search and to anyone
+    it on production closes app.stellarr.club to search and to anyone
     without a link, the Gate 3 stranger included — they need an
     `/invite/<code>` link. Took the reversible option: the code ships with
     the gate off until the variable is set. **For the owner:** the codes, and
@@ -152,7 +152,7 @@ most reversible option; each needs a yes/no from Rezi.
     page telling search engines and link previews that it was the Stellar
     home (canonical, og:title, og:image, sitemap, robots all pointed at
     stellarr.club), and Stellar's /sky, /shop, /profile and the rest live on
-    sidera.stellarr.club. The owner asked for the fix now. Took the
+    app.stellarr.club. The owner asked for the fix now. Took the
     reversible option: metadata, sitemap and robots name Stellar, and
     `src/middleware.ts` sends the retired pages to their Stellar counterpart
     with a temporary (307) redirect, one list to edit. Nothing is deleted.
@@ -172,7 +172,7 @@ most reversible option; each needs a yes/no from Rezi.
     `eventEndUtc` (`src/lib/stellar/almanac.ts`), not stored: a sealed card
     has 0 editions to draw, is not sold outright, and its tile says Sealed.
     Re-seeding deletes the 18 old card rows only while no edition of them
-    exists. **For the owner:** the old rows are still in the sidera DB
+    exists. **For the owner:** the old rows are still in the card database
     until `stellar:seed` is run; `RARITY_ODDS_BPS` (7570/1960/420/50) was
     tuned to the old 2,700/700/150/15 supply — First Light's is
     2,100/800/120/25 — and was left as published; the Almanac's promised

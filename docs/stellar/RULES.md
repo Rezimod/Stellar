@@ -5,17 +5,17 @@ stellarr.club at all times. Repository: Rezimod/Stellar only. The Darkview
 platform (Bekatsertsvadzee/Online-Observatory) is consumed over its HTTP
 contract; nothing is pushed there and no Darkview source is copied here.
 
-Source plan: `~/Desktop/Sidera/plans/sidera-rebrand-migration-plan.md`.
+Source plan: `~/Desktop/Stellar/plans/stellar-rebrand-migration-plan.md`.
 Execution plan with corrections: `docs/stellar/EXECUTION.md`.
 
 ## Never
 - Commit to `main`, or rebase/force-push it. Check `git branch --show-current`
-  before any commit; if it is not `sidera` or `sidera/*`, STOP and report.
+  before any commit; if it is not `stellar-cards` or `stellar-cards/*`, STOP and report.
 - Delete `docs/grant-evidence/` — grant evidence, not code.
 - Touch `anchor/` — the on-chain program is out of scope.
 - Translate into `src/messages/ka.json` — v1 is English-only; archive it instead.
 - Run migrations or `db:push` against the production database. Only the
-  `sidera` Neon branch.
+  `stellar-cards` Neon branch.
 - Delete on-chain-referenced routes: `src/app/m/o`, `api/observe/photo/[hash]`,
   `api/nft-image`, `api/passport`, `api/metadata/*`. Minted cNFTs point at them.
 - Rename group (d) identifiers (see `docs/stellar-inventory.md`): collection

@@ -8,7 +8,7 @@
  * one seen on two or more UTC days. Card and night pages are counted but sit
  * outside the chain.
  *
- *   SIDERA_DATABASE_CONFIRM=sidera npm run stellar:funnel -- [--days 30]
+ *   STELLAR_DATABASE_CONFIRM=stellar npm run stellar:funnel -- [--days 30]
  */
 
 import { sql } from 'drizzle-orm'
@@ -37,7 +37,7 @@ async function main() {
     SELECT DISTINCT anon_id, props->>'step' AS step, props->>'invite' AS invite,
       to_char(created_at AT TIME ZONE 'UTC', 'YYYY-MM-DD') AS day
     FROM analytics_event
-    WHERE event = 'sidera_view' AND anon_id IS NOT NULL
+    WHERE event = 'stellar_view' AND anon_id IS NOT NULL
       AND created_at > now() - make_interval(days => ${days})
   `)
   const views = rows as Row[]

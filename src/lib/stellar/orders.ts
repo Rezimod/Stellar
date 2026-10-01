@@ -25,8 +25,8 @@ import { ORDER_WINDOW_MINUTES } from './economics';
 
 export type OrderRow = typeof orders.$inferSelect;
 
-export const CAPSULE_PRODUCT_ID = 'sidera-capsule';
-export const CARD_PRODUCT_PREFIX = 'sidera-card:';
+export const CAPSULE_PRODUCT_ID = 'stellar-capsule';
+export const CARD_PRODUCT_PREFIX = 'stellar-card:';
 
 /**
  * Whether this deployment is rehearsing rather than selling.
@@ -38,7 +38,7 @@ export const CARD_PRODUCT_PREFIX = 'sidera-card:';
  * read back as a real one.
  */
 export function simulatedPayments(): boolean {
-  return process.env.NEXT_PUBLIC_SIDERA_SIMULATED_PAYMENT === '1';
+  return process.env.NEXT_PUBLIC_STELLAR_SIMULATED_PAYMENT === '1';
 }
 
 /** What a rehearsal records where a transaction signature would go. */
@@ -98,7 +98,7 @@ export async function createCardOrder(
       walletAddress: input.wallet,
       productId: `${CARD_PRODUCT_PREFIX}${input.designation}`,
       productName: input.name,
-      dealerId: 'sidera',
+      dealerId: 'stellar',
       paymentMethod: 'sol',
       amountSol: input.amountSol,
       amountStars: 0,

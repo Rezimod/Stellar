@@ -3,8 +3,8 @@
  * but the automatic opening never ran. The cards go to the buyer's wallet, as
  * the opening would have given them.
  *
- *   SIDERA_DATABASE_CONFIRM=sidera npx tsx scripts/stellar-open-stuck.ts          # dry run
- *   SIDERA_DATABASE_CONFIRM=sidera npx tsx scripts/stellar-open-stuck.ts --apply
+ *   STELLAR_DATABASE_CONFIRM=stellar npx tsx scripts/stellar-open-stuck.ts          # dry run
+ *   STELLAR_DATABASE_CONFIRM=stellar npx tsx scripts/stellar-open-stuck.ts --apply
  */
 
 import { sql } from 'drizzle-orm'

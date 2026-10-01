@@ -9,7 +9,7 @@ const RETIRED_CARD = /^\/card\/(MOON|TRANQUILITY-BASE|TWIN-SUN|TIDE-WORLD|RING-H
 const CARD_PAGES = /^\/($|(set|card|collection|capsules?|tonight|node|voyage|invite|terms|privacy|contact)(\/|$))/;
 
 /**
- * The closed beta. While SIDERA_INVITE_CODES names any code, a page opens only
+ * The closed beta. While STELLAR_INVITE_CODES names any code, a page opens only
  * to a visitor carrying one of them, set by /invite/<code>. Unset, the gate is
  * not there at all. APIs, assets and the on-chain metadata routes are never
  * behind it: minted cards and the reveal still have to reach them.

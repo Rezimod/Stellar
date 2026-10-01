@@ -333,7 +333,7 @@ export async function purchaseCapsule(
       INSERT INTO orders (id, privy_id, wallet_address, product_id, product_name, dealer_id, payment_method,
         amount_sol, amount_stars, amount_fiat, currency, payment_reference, status,
         shipping_name, shipping_phone, shipping_address, shipping_city, shipping_country, expires_at)
-      SELECT ${orderId}::uuid, ${input.privyId}, ${input.wallet}, 'sidera-capsule', ${`Capsule ${sequence}`}, 'sidera', 'sol',
+      SELECT ${orderId}::uuid, ${input.privyId}, ${input.wallet}, 'stellar-capsule', ${`Capsule ${sequence}`}, 'stellar', 'sol',
         ${input.amountSol}, 0, ${priceUsd}, 'USD', ${input.paymentReference}, 'pending', '', '', '', '', '', ${expiresAt}::timestamptz
       WHERE EXISTS (SELECT 1 FROM capsule WHERE id = ${capsuleId}::uuid AND order_id = ${orderId}::uuid)
       RETURNING id

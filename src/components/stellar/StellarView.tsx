@@ -8,7 +8,7 @@ export type StellarStep = 'landing' | 'set' | 'card' | 'capsules' | 'capsule' | 
 /** One funnel step, counted once per page view. */
 export default function StellarView({ step }: { step: StellarStep }) {
   useEffect(() => {
-    track('sidera_view', { step });
+    track('stellar_view', { step });
   }, [step]);
   return null;
 }

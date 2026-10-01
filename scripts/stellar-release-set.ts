@@ -1,7 +1,7 @@
 /**
  * Puts a set on sale, and optionally lists the first capsules of it.
  *
- *   SIDERA_DATABASE_CONFIRM=sidera npx tsx scripts/stellar-release-set.ts [capsules] [tier]
+ *   STELLAR_DATABASE_CONFIRM=stellar npx tsx scripts/stellar-release-set.ts [capsules] [tier]
  *
  * With a tier (chondrite, iron, pallasite, lunar) the capsules are listed as
  * that tier, at its price and odds; without one, at the set's old single price.
@@ -9,7 +9,7 @@
  * Releasing is the one switch: until a set's status is 'released', neither a
  * capsule nor a single card can be bought. Idempotent — a set already released
  * is left alone, and no capsule is listed unless a count is given. Refuses to
- * run unless DATABASE_URL is the sidera Neon branch (stellar-guard.ts), and
+ * run unless DATABASE_URL is the stellar-cards Neon branch (stellar-guard.ts), and
  * listing needs CAPSULE_SEAL_KEY: without it a capsule can never be opened.
  */
 
