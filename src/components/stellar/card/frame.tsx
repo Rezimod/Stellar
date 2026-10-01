@@ -7,11 +7,11 @@ export function rr(x: number, y: number, w: number, h: number, r: number) {
 
 const METAL: Record<Rarity, string[]> = {
   common: ['#f4f6fa', '#9aa3b5', '#e3e8ef', '#6f788a', '#cfd5df'],
-  rare: ['#e2fff8', '#5eead4', '#2a9d8f', '#b8f7ea', '#3fb5a3'],
+  rare: ['#e6eefa', '#6c93cb', '#2855a4', '#c0d1e9', '#2d65b5'],
   epic: ['#fff3cf', '#e0a84a', '#fde6a8', '#9c6a22', '#ffd98a'],
   legendary: ['#fffaf0', '#ffe3a3', '#f4c9ff', '#bfe9ff', '#ffe9b8'],
 };
-export const METAL_INK: Record<Rarity, string> = { common: '#dfe4ec', rare: '#8ff0dc', epic: '#ffd98a', legendary: '#fff0cc' };
+export const METAL_INK: Record<Rarity, string> = { common: '#dfe4ec', rare: '#a9c1e4', epic: '#ffd98a', legendary: '#fff0cc' };
 export const FOIL_OP: Record<Rarity, number> = { common: 0, rare: 0.12, epic: 0.26, legendary: 0.46 };
 export const GLIT_OP: Record<Rarity, number> = { common: 0, rare: 0, epic: 0.16, legendary: 0.34 };
 

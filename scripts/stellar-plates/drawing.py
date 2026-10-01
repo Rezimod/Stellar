@@ -33,11 +33,11 @@ def blob(cx, cy, rx, ry, rnd, n=14, j=0.22):
 # ----------------------------------------------------------------- metals
 METAL = {
     'common':    ['#f4f6fa', '#9aa3b5', '#e3e8ef', '#6f788a', '#cfd5df'],
-    'rare':      ['#e2fff8', '#5eead4', '#2a9d8f', '#b8f7ea', '#3fb5a3'],
+    'rare':      ['#e6eefa', '#6c93cb', '#2855a4', '#c0d1e9', '#2d65b5'],
     'epic':      ['#fff3cf', '#e0a84a', '#fde6a8', '#9c6a22', '#ffd98a'],
     'legendary': ['#fffaf0', '#ffe3a3', '#f4c9ff', '#bfe9ff', '#ffe9b8'],
 }
-METAL_INK = {'common': '#dfe4ec', 'rare': '#8ff0dc', 'epic': '#ffd98a', 'legendary': '#fff0cc'}
+METAL_INK = {'common': '#dfe4ec', 'rare': '#a9c1e4', 'epic': '#ffd98a', 'legendary': '#fff0cc'}
 
 def metal_defs(u, rarity):
     m = METAL[rarity]
