@@ -24,7 +24,7 @@ const minute = (m: number) => new Date(T0 + m * 60_000).toISOString();
  * the supply logged with it. Nothing here is the server's code; it is what
  * the published log would contain.
  */
-function honestLog(n: number): LogRow[] {
+function honestLog(n: number, draws = CARDS_PER_CAPSULE): LogRow[] {
   const rows: LogRow[] = [];
   let seq = 0;
   const row = (r: Omit<LogRow, 'seq' | 'at'>, at?: string) => rows.push({ ...r, seq: ++seq, at: at ?? minute(seq) });
@@ -43,7 +43,7 @@ function honestLog(n: number): LogRow[] {
     const supply: SupplyEntry[] = RARITIES.map((rarity) => ({
       designation: rarity.toUpperCase(), rarity, remaining: remaining.get(rarity.toUpperCase())!, editionSize: SIZE,
     }));
-    const pulls = planPulls({ secret: c.secret, nonce, capsuleId: c.id, supply }).map((p) => {
+    const pulls = planPulls({ secret: c.secret, nonce, capsuleId: c.id, supply, draws }).map((p) => {
       const left = remaining.get(p.designation)!;
       remaining.set(p.designation, left - 1);
       return { ...p, editionNumber: SIZE - left + 1 };
@@ -54,7 +54,7 @@ function honestLog(n: number): LogRow[] {
       event: 'opened',
       commitment,
       ...buyer,
-      outcome: { secret: c.secret, draws: CARDS_PER_CAPSULE, oddsBps: RARITY_ODDS_BPS, supply, pulls },
+      outcome: { secret: c.secret, draws, oddsBps: RARITY_ODDS_BPS, supply, pulls },
     });
   }
   return rows;
@@ -71,7 +71,8 @@ describe('auditing the capsule log', () => {
   });
 
   it('shows a suppressed outcome erased from the log as a gap in the listing sequence', () => {
-    const rows = honestLog(6).filter((r) => r.capsuleSequence !== 4);
+    // Two-card capsules, as listed before 2026-10-01: enough draws after it to show the hole.
+    const rows = honestLog(6, 2).filter((r) => r.capsuleSequence !== 4);
     const audit = auditLog(rows, NOW);
     expect(audit.flags).toEqual([expect.objectContaining({ kind: 'sequence_gap', capsuleSequence: 4 })]);
     // Its editions went somewhere: the numbers it took are missing from the log.

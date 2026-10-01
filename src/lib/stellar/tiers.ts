@@ -9,7 +9,8 @@
  *
  * Checked against First Light's supply (12,600 / 3,400 / 480 / 40 editions)
  * at a shelf of 40 / 25 / 10 / 5: the 40 legendaries last about 1,700
- * capsules, the epics about 3,000.
+ * capsules, the epics about 3,000. That was at two cards a capsule; at one,
+ * each lasts about twice as many capsules.
  */
 
 import type { Rarity } from '@/lib/rarity';
@@ -60,7 +61,8 @@ export const TIERS: readonly Tier[] = [
   },
 ];
 
-export const CARDS_PER_TIER = 2;
+/** One card to a capsule (2026-10-01): it is flown home alone. Was two. */
+export const CARDS_PER_TIER = 1;
 
 export function tierByKey(key: unknown): Tier | undefined {
   return TIERS.find((t) => t.key === key);

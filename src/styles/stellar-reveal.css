@@ -18,7 +18,8 @@
 
    Transform and opacity only, so it composites; a handful of blurs on single
    large soft shapes; no layout moves. Particle counts are fixed in
-   reveal/Meteorite.tsx. */
+   reveal/Meteorite.tsx (removed 2026-10-01; the reveal is now the flight in
+   stellar-flight.css). The typed provenance line below is still used. */
 
 .sd-reveal {
   --sd-cw: clamp(150px, min(23vw, calc((100dvh - 380px) / 1.66)), 300px);

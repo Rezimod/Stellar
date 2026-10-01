@@ -64,7 +64,7 @@ const SUPPLY = Object.fromEntries(
 const FROM_USD = Math.min(...TIERS.map((t) => t.priceUsd));
 
 const PLAN: FlightStep[] = [
-  { title: 'Open', text: `${CARDS_PER_TIER} sealed cards to a capsule, from $${FROM_USD}.`, status: 'On sale', live: true, href: '/set/001', icon: 'capsule' },
+  { title: 'Open', text: `${CARDS_PER_TIER === 1 ? 'One sealed card' : `${CARDS_PER_TIER} sealed cards`} to a capsule, from $${FROM_USD}.`, status: 'On sale', live: true, href: '/set/001', icon: 'capsule' },
   { title: 'Vote', text: 'Holders choose where Live Telescope V1 points each night.', status: 'Nightly', live: true, href: '/tonight', icon: 'reticle' },
   { title: 'Watch', text: 'Holders of the chosen card watch the observation live.', status: 'Commissioning', live: false, href: '/node', icon: 'telescope' },
   {

@@ -230,3 +230,19 @@ most reversible option; each needs a yes/no from Rezi.
 - V-1: drop the phase-7 card renderer with tools/explore. V-2: no rooms in
   the first version. V-3: a voyage is a record only. V-4: stellarr.club/play
   redirects to /voyage a week after /voyage goes live.
+
+## Fly it, one card to a capsule (2026-10-01)
+
+28. **One card to a capsule, at the same prices.** The owner asked for one
+    card per capsule and the new opening, "Fly it": the capsule is launched,
+    comes home and the card comes out of its hatch. `CARDS_PER_TIER` and
+    `CARDS_PER_CAPSULE` are now 1. Took the reversible option on money:
+    prices ($5 / $20 / $50 / $100) and per-card odds are unchanged, so each
+    capsule now carries half the expected card value it did. Payments are
+    still in rehearsal, so nothing has been charged at the new terms.
+    **For the owner:** lower the prices, raise the per-card odds, or keep
+    both. Capsules already listed hold two cards (`cards_per_capsule` is
+    stored per capsule); they still open correctly — the scarcer card flies,
+    the other waits beside it — but the unsold shelf should be voided and
+    relisted so every capsule on sale holds one.
+

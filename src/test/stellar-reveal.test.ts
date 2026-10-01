@@ -13,31 +13,41 @@ const card = (designation: string, rarity: string, drawIndex: number): RevealedC
   editionSize: 100,
 });
 
-const render = (cards: RevealedCard[]) =>
+const render = (cards: RevealedCard[], extra: Record<string, unknown> = {}) =>
   renderToStaticMarkup(
-    createElement(StellarReveal, { draw: { sequence: 1, secret: 'abcdef0123456789', nonce: 'fedcba9876543210', cards } }),
+    createElement(StellarReveal, { draw: { sequence: 1, secret: 'abcdef0123456789', nonce: 'fedcba9876543210', cards, ...extra } }),
   );
 
-it('pitches the descent to the scarcest card in the capsule', () => {
+it('waits on the pad for one press', () => {
+  const html = render([card('EUROPA', 'common', 0)]);
+  expect(html).toContain('class="sf-fly"');
+  expect(html).toContain('Fly it');
+});
+
+it('flies the scarcest card in the capsule', () => {
   const html = render([card('M31', 'rare', 0), card('SATURN', 'legendary', 1), card('EUROPA', 'common', 2)]);
-  expect(html).toContain('sd-reveal--legendary');
-  expect(html).not.toContain('sd-reveal--common');
+  expect(html).toContain('data-rarity="legendary"');
+  expect(html).not.toContain('data-rarity="common"');
 });
 
-it('falls the shortest way when nothing scarce came out', () => {
-  expect(render([card('EUROPA', 'common', 0)])).toContain('sd-reveal--common');
+it('keeps the other cards of an older two-card capsule beside it', () => {
+  const html = render([card('M31', 'rare', 0), card('SATURN', 'epic', 1)]);
+  expect(html).toContain('Also in this capsule');
+  expect(html).toContain('/card/M31');
+  expect(render([card('M31', 'rare', 0)])).not.toContain('Also in this capsule');
 });
 
-it('prints the edition number it was allocated', () => {
-  expect(render([card('M31', 'rare', 0)])).toContain('>003</text>');
+it('comes down face down, with the sealed back', () => {
+  const html = render([card('SATURN', 'epic', 0)]);
+  expect(html).toContain('sf-face--back');
+  expect(html).toContain('FIRST LIGHT · SEALED');
 });
 
-it('draws the commonest card first so the last one out is the best', () => {
-  const html = render([card('SATURN', 'legendary', 0), card('EUROPA', 'common', 1), card('M31', 'rare', 2)]);
-  const at = (d: string) => html.indexOf(`/card/${d}"`);
-  expect(at('EUROPA')).toBeLessThan(at('M31'));
-  expect(at('M31')).toBeLessThan(at('SATURN'));
-  expect(html).toContain('sd-reveal__card--best');
+it('shows a First Light card as the printed card, with its edition in plain text', () => {
+  const html = render([card('SATURN', 'epic', 0)]);
+  expect(html).toContain('sdc-card');
+  expect(html).toContain('edition 003 of 030');
+  expect(html).toContain('No. 003 / 100');
 });
 
 it('prints the draw’s own provenance so it can be checked', () => {
@@ -47,8 +57,8 @@ it('prints the draw’s own provenance so it can be checked', () => {
   expect(html).toContain('/capsules/log');
 });
 
-it('shows a Set 001 card as the printed card, with its edition in plain text', () => {
-  const html = render([card('SATURN', 'epic', 0)]);
-  expect(html).toContain('sdc-card');
-  expect(html).toContain('edition 003 of 030');
+it('says a preview is only a preview', () => {
+  const html = render([card('M31', 'rare', 0)], { preview: 'Iron', secret: undefined, nonce: undefined, sequence: undefined });
+  expect(html).toContain('Iron capsule · preview');
+  expect(html).toContain('nothing bought, nothing recorded');
 });

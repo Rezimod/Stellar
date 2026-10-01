@@ -23,7 +23,7 @@ const pct = (bps: number) => {
   return p === 0 ? '—' : p < 1 ? `${p.toFixed(1)}%` : `${Math.round(p)}%`;
 };
 
-/** Two cards at a tier's odds, drawn here in the browser. Preview only. */
+/** A capsule's cards at a tier's odds, drawn here in the browser. Preview only. */
 function drawFrom(tier: Tier, cards: TierCard[]): Draw {
   const picked = Array.from({ length: CARDS_PER_TIER }, (_, i) => {
     const rarity = rarityAt(tier, Math.random());
@@ -44,8 +44,8 @@ function drawFrom(tier: Tier, cards: TierCard[]): Draw {
 /**
  * The counter beside the set: the four capsules, cheapest first, one of them
  * on the counter with its price, its odds and how many are on sale. Buying
- * opens the sheet with the next capsule of that tier; the preview draws two
- * cards here in the browser — no account, no payment, nothing recorded.
+ * opens the sheet with the next capsule of that tier; the preview draws its
+ * card here in the browser — no account, no payment, nothing recorded.
  */
 export default function CapsuleCounter({ cards, onSale }: { cards: TierCard[]; onSale: Record<string, number> | null }) {
   const [tier, setTier] = useState<Tier>(TIERS[0]);
@@ -103,7 +103,7 @@ export default function CapsuleCounter({ cards, onSale }: { cards: TierCard[]; o
           </div>
           <div className="sd-counter__price">
             <strong>${tier.priceUsd}</strong>
-            <span>{CARDS_PER_TIER} cards</span>
+            <span>{CARDS_PER_TIER === 1 ? 'One card' : `${CARDS_PER_TIER} cards`}</span>
           </div>
         </div>
       </div>
@@ -120,7 +120,7 @@ export default function CapsuleCounter({ cards, onSale }: { cards: TierCard[]; o
           onFocus={loadSheet}
           onClick={() => setSheet(tier)}
         >
-          {stock === 0 ? 'None on sale' : `Buy & open — $${tier.priceUsd}`}
+          {stock === 0 ? 'None on sale' : `Buy & fly — $${tier.priceUsd}`}
         </button>
         <button
           type="button"
@@ -133,7 +133,7 @@ export default function CapsuleCounter({ cards, onSale }: { cards: TierCard[]; o
           <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true">
             <path d="M5 3.5v9l7-4.5z" fill="currentColor" />
           </svg>
-          Preview an opening — nothing is bought
+          Preview the flight — nothing is bought
         </button>
       </div>
 

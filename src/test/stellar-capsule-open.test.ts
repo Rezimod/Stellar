@@ -7,6 +7,7 @@ import type { Db } from '@/lib/stellar/attach';
 import { auditLog, type LogRow } from '@/lib/stellar/audit';
 import { SoldOutError, commitmentOf, purchaseHash } from '@/lib/stellar/randomness';
 import { TIERS } from '@/lib/stellar/tiers';
+import { CARDS_PER_CAPSULE } from '@/lib/stellar/economics';
 
 const payments = vi.hoisted(() => ({ findPayment: vi.fn(), markPaid: vi.fn() }));
 vi.mock('@/lib/stellar/orders', async (actual) => ({
@@ -399,10 +400,10 @@ describe('listing capsules at the same moment', () => {
   });
 
   it('refuses to list more capsules than the set has editions for', async () => {
-    // Seven editions: three are owed to the bought capsule, two more capsules would need four.
+    // Seven editions: three are owed to the bought capsule, so four are free; one capsule more than four fit.
     const state: State = { capsules: purchased(1), cards: [card('C1', 'common', 7)], editions: [], pulls: [], log: [] };
     const { db } = fakePostgres(state);
-    await expect(listCapsules(db, { setId: SET, count: 3 })).rejects.toThrow(/Not enough editions/);
+    await expect(listCapsules(db, { setId: SET, count: Math.floor(4 / CARDS_PER_CAPSULE) + 1 })).rejects.toThrow(/Not enough editions/);
     await expect(listCapsules(db, { setId: SET, count: 1 })).resolves.toHaveLength(1);
   });
 });
@@ -426,8 +427,8 @@ describe('capsules listed as a tier', () => {
     }
     for (const c of listed) await openCapsule(db, c.id);
 
-    // Lunar gives no common: 24 draws and not one.
-    expect(state.pulls).toHaveLength(24);
+    // Lunar gives no common: every draw of the twelve capsules, and not one.
+    expect(state.pulls).toHaveLength(12 * CARDS_PER_CAPSULE);
     expect(state.pulls.some((p) => p.rarity === 'common')).toBe(false);
     const opened = state.log.filter((r) => r.event === 'opened');
     expect(opened.every((r) => JSON.stringify((r.outcome as { oddsBps: unknown }).oddsBps) === JSON.stringify(lunar.oddsBps))).toBe(true);

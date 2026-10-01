@@ -149,8 +149,9 @@ describe('commit and reveal', () => {
   const commitment = commitmentOf(secret);
   const nonce = hex('the nonce');
   const capsuleId = capsuleIdOf(42);
-  const pulls = planPulls({ secret, nonce, capsuleId, supply: PLENTY });
-  const honest = { commitment, secret, nonce, capsuleId, pulls, supply: PLENTY };
+  // Two draws, as capsules listed before 2026-10-01 still hold, so a pull can be swapped or dropped.
+  const pulls = planPulls({ secret, nonce, capsuleId, supply: PLENTY, draws: 2 });
+  const honest = { commitment, secret, nonce, capsuleId, pulls, supply: PLENTY, draws: 2 };
 
   it('commits to SHA-256 of the secret’s bytes', () => {
     expect(commitment).toBe(createHash('sha256').update(Buffer.from(secret, 'hex')).digest('hex'));

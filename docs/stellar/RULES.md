@@ -33,8 +33,8 @@ Execution plan with corrections: `docs/stellar/EXECUTION.md`.
 
 ## Product, in one paragraph
 Stellar is a collectible card universe built on real astronomy. Cards represent
-real objects. Cards arrive in capsules; the reveal is a meteorite entering
-atmosphere. Every clear night the observatory photographs ONE object, the
+real objects. One card arrives in each capsule; the reveal is the capsule's
+flight ("Fly it": launch, orbit, re-entry, touchdown, the hatch opens). Every clear night the observatory photographs ONE object, the
 collection decides which, and every holder of that card receives the image.
 One capture serves all editions of a card — there is no per-customer queue.
 

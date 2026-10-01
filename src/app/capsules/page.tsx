@@ -16,9 +16,9 @@ import { simulatedPayments } from '@/lib/stellar/orders';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'Capsules — two cards, sealed before the sale',
+  title: 'Capsules — one card, sealed before the sale',
   description:
-    'A capsule holds two cards from First Light. The outcome is sealed before it goes on sale and can be checked by anyone after it opens.',
+    'A capsule holds one card from First Light. The outcome is sealed before it goes on sale and can be checked by anyone after it opens.',
 };
 
 export default async function CapsulesPage() {
@@ -44,7 +44,7 @@ export default async function CapsulesPage() {
             <span className="sd-sealed__card" />
             <span className="sd-sealed__card sd-sealed__card--front">
               <span className="sd-sealed__mark">Stellar</span>
-              <span className="sd-sealed__label">Sealed · {CARDS_PER_CAPSULE} cards</span>
+              <span className="sd-sealed__label">Sealed · {CARDS_PER_CAPSULE === 1 ? 'one card' : `${CARDS_PER_CAPSULE} cards`}</span>
               {sealed && <span className="sd-sealed__hash">{sealed.commitment.slice(0, 16)}…</span>}
             </span>
           </div>
@@ -59,8 +59,8 @@ export default async function CapsulesPage() {
               ]}
             />
             <p className="sd-capsule-top__line">
-              Two cards, committed by hash before the sale. Your nonce seals the draw; anyone can recompute it after
-              opening.
+              One card, committed by hash before the sale. Your nonce seals the draw; anyone can recompute it after
+              the flight.
             </p>
             {simulatedPayments() ? (
               <p className="sd-strip-note">Rehearsal · no payment is taken · every sale is marked in the log</p>

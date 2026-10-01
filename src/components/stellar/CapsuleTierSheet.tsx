@@ -73,7 +73,7 @@ export default function CapsuleTierSheet({ tier, onPreview, onClose }: { tier: T
         <div className="sd-sheet__art">
           <span className="sd-sheet__rays" aria-hidden="true" />
           <TierCapsule tier={tier} />
-          <span className="sd-sheet__count">{CARDS_PER_TIER} cards inside</span>
+          <span className="sd-sheet__count">{CARDS_PER_TIER === 1 ? 'One card inside' : `${CARDS_PER_TIER} cards inside`}</span>
         </div>
 
         <div className="sd-sheet__body">
@@ -126,7 +126,7 @@ export default function CapsuleTierSheet({ tier, onPreview, onClose }: { tier: T
             <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
               <path d="M5 3.5v9l7-4.5z" fill="currentColor" />
             </svg>
-            Preview the opening — nothing is bought
+            Preview the flight — nothing is bought
           </button>
         </div>
       </div>

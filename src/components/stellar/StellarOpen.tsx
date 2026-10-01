@@ -23,7 +23,7 @@ export default function StellarOpen({ capsuleId }: { capsuleId: string }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
-  if (draw) return <StellarReveal draw={draw} />;
+  if (draw) return <StellarReveal draw={draw} autoLaunch />;
 
   const open = async () => {
     setBusy(true);
@@ -58,11 +58,11 @@ export default function StellarOpen({ capsuleId }: { capsuleId: string }) {
       <div className="sd-pay__actions">
         {ready && authenticated ? (
           <button type="button" className="sd-btn sd-btn--primary sd-btn--block" onClick={open} disabled={busy}>
-            {busy ? 'Opening' : 'Crack it open'}
+            {busy ? 'Opening' : 'Fly it'}
           </button>
         ) : (
           <button type="button" className="sd-btn sd-btn--primary sd-btn--block" onClick={() => login()}>
-            Sign in to open it
+            Sign in to fly it
           </button>
         )}
       </div>

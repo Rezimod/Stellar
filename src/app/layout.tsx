@@ -6,6 +6,7 @@ import '../styles/stellar-theme.css';
 import '../styles/stellar-motion.css';
 import '../styles/stellar-pages.css';
 import '../styles/stellar-reveal.css';
+import '../styles/stellar-flight.css';
 import { AnalyticsBoot } from '@/components/providers/AnalyticsBoot';
 import JsonLd from '@/components/shared/JsonLd';
 

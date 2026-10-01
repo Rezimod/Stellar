@@ -55,6 +55,7 @@ export default function StellarBuyCapsule({
   const [receipt, setReceipt] = useState<Receipt | null>(null);
   const [paid, setPaid] = useState(false);
   const [cards, setCards] = useState<Draw | null>(null);
+  const [launchNow, setLaunchNow] = useState(false);
   const [busy, setBusy] = useState('');
   const [error, setError] = useState('');
 
@@ -136,7 +137,7 @@ export default function StellarBuyCapsule({
   if (cards) {
     return (
       <div className="sd-buyflow">
-        <StellarReveal draw={cards} onClose={onClose} />
+        <StellarReveal draw={cards} onClose={onClose} autoLaunch={launchNow} />
         {!onClose && (
           <p className="sd-pay__actions">
             <Link href={`/capsule/${capsuleId}`} className="sd-btn">
@@ -170,14 +171,22 @@ export default function StellarBuyCapsule({
       </ol>
 
       {paid ? (
-        <button type="button" className="sd-btn sd-btn--primary sd-btn--block" onClick={open} disabled={!!busy}>
-          {busy ? <Working label={busy} /> : 'Crack it open'}
+        <button
+          type="button"
+          className="sd-btn sd-btn--primary sd-btn--block"
+          onClick={() => {
+            setLaunchNow(true);
+            void open();
+          }}
+          disabled={!!busy}
+        >
+          {busy ? <Working label={busy} /> : 'Fly it'}
         </button>
       ) : order ? (
         <StellarPay order={order} onConfirmed={confirmed} compact />
       ) : ready && authenticated ? (
         <button type="button" className="sd-btn sd-btn--primary sd-btn--block" onClick={reserve} disabled={!!busy}>
-          {busy ? <Working label={busy} /> : `Buy & open — $${priceUsd}`}
+          {busy ? <Working label={busy} /> : `Buy & fly — $${priceUsd}`}
         </button>
       ) : (
         <button type="button" className="sd-btn sd-btn--primary sd-btn--block" onClick={() => login()}>
@@ -187,7 +196,7 @@ export default function StellarBuyCapsule({
 
       {!order && !paid && (
         <p className="sd-buyflow__note">
-          {cardsPerCapsule} cards · {REHEARSAL ? 'rehearsal — nothing is charged' : 'opens the moment it is paid'}
+          {cardsPerCapsule === 1 ? 'One card' : `${cardsPerCapsule} cards`} · {REHEARSAL ? 'rehearsal — nothing is charged' : 'ready to fly the moment it is paid'}
         </p>
       )}
       {error && (
