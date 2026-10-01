@@ -88,3 +88,4 @@ docs/tether-grant-*.md
 
 # Visual QA screenshots (e2e/visual.spec.ts)
 qa/
+__pycache__/
