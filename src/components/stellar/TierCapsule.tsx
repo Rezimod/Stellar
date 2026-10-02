@@ -1,15 +1,26 @@
 import type { Tier } from '@/lib/stellar/tiers';
 
-/** The sealed capsule: three cards fanned, the front one naming its class. */
+/** One energy blade on its hilt: the blade lights from the emitter up, in the tier's colour. */
+function Blade({ side }: { side: 'l' | 'r' }) {
+  return (
+    <span className={`sd-tier__saber sd-tier__saber--${side}`}>
+      <i className="sd-tier__blade" />
+      <i className="sd-tier__hilt" />
+    </span>
+  );
+}
+
+/**
+ * The sealed capsule: the card face down, two blades lit in an X behind it, in
+ * the colour of the class being opened. Keyed on the tier, so choosing another
+ * one lights the blades again.
+ */
 export default function TierCapsule({ tier }: { tier: Tier }) {
   return (
-    <span className="sd-tier__capsule" aria-hidden="true">
-      <span className="sd-tier__card" />
-      <span className="sd-tier__card" />
-      <span className="sd-tier__card sd-tier__card--front">
-        <span className="sd-tier__mark">Stellar</span>
-        <span className="sd-tier__kind">{tier.name}</span>
-      </span>
+    <span key={tier.key} className="sd-tier__capsule" aria-hidden="true">
+      <Blade side="l" />
+      <Blade side="r" />
+      <img className="sd-tier__sealed" src="/cards/sealed.webp" alt="" width={520} height={726} decoding="async" />
     </span>
   );
 }

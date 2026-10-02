@@ -71,7 +71,7 @@ export default function CapsuleTierSheet({ tier, onPreview, onClose }: { tier: T
         </button>
 
         <div className="sd-sheet__art">
-          <span className="sd-sheet__rays" aria-hidden="true" />
+          <span className="sd-hyper" aria-hidden="true" />
           <TierCapsule tier={tier} />
           <span className="sd-sheet__count">{CARDS_PER_TIER === 1 ? 'One card inside' : `${CARDS_PER_TIER} cards inside`}</span>
         </div>

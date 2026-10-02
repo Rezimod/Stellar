@@ -194,16 +194,10 @@
 .sd-counter__stage {
   position: relative; height: 270px; overflow: hidden; border-radius: 14px;
   border: 1px solid var(--sd-rule);
-  background: radial-gradient(70% 60% at 50% 42%, color-mix(in srgb, var(--tier) 18%, #1b1b1b), #090909 78%);
+  background: radial-gradient(70% 60% at 50% 42%, color-mix(in srgb, var(--tier) 12%, #0b0b0b), #000 78%);
 }
-.sd-counter__stage .sd-tier__capsule { --h: 160px; position: absolute; top: 20px; left: 50%; margin-left: -80px; width: 160px; }
-.sd-counter__rays {
-  position: absolute; inset: -40%;
-  background: repeating-conic-gradient(from 0deg at 50% 42%, color-mix(in srgb, var(--tier) 9%, transparent) 0deg 4deg, transparent 4deg 14deg);
-  mask-image: radial-gradient(circle at 50% 42%, #000 0%, transparent 50%);
-}
+.sd-counter__stage .sd-tier__capsule { --h: 150px; position: absolute; top: 22px; left: 50%; translate: -50% 0; }
 @media (prefers-reduced-motion: no-preference) {
-  .sd-counter__rays { animation: sd-spin 90s linear infinite; }
   .sd-counter__stage .sd-tier__capsule { animation: sd-float 6s ease-in-out infinite; }
 }
 .sd-counter__over {
@@ -249,7 +243,7 @@
 .sd-counter__fair:hover { border-color: var(--sd-accent); color: var(--sd-accent-ink); }
 @media (max-width: 1023px) {
   .sd-counter__stage { height: 230px; }
-  .sd-counter__stage .sd-tier__capsule { --h: 130px; top: 14px; margin-left: -65px; width: 130px; }
+  .sd-counter__stage .sd-tier__capsule { --h: 124px; top: 16px; }
 }
 @media (min-width: 560px) and (max-width: 1023px) {
   .sd-counter__tabs { grid-template-columns: repeat(4, minmax(0, 1fr)); }

@@ -91,7 +91,7 @@ export default function CapsuleCounter({ cards, onSale }: { cards: TierCard[]; o
       </div>
 
       <div className="sd-counter__stage">
-        <span className="sd-counter__rays" aria-hidden="true" />
+        <span className="sd-hyper" aria-hidden="true" />
         <TierCapsule tier={tier} />
         <div className="sd-counter__over">
           <div>
