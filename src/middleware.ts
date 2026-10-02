@@ -3,7 +3,7 @@ import { INVITE_COOKIE, inviteCodes } from '@/lib/invite';
 import { LEGACY_HOST } from '@/lib/stellar/legacy';
 
 /** Cards of the first Set 001, replaced by First Light before anything sold. Names First Light reuses are live again. */
-const RETIRED_CARD = /^\/card\/(MOON|TRANQUILITY-BASE|TWIN-SUN|TIDE-WORLD|RING-HABITAT|UNIT-7|SENTINEL|BLACK-SLAB)\/?$/i;
+const RETIRED_CARD = /^\/card\/(TRANQUILITY-BASE|TWIN-SUN|TIDE-WORLD|RING-HABITAT|UNIT-7|SENTINEL|BLACK-SLAB)\/?$/i;
 
 /** The pages the card product serves. Every other page is the legacy Stellar app, which now lives on its own domain. */
 const CARD_PAGES = /^\/($|(set|card|collection|capsules?|tonight|node|voyage|invite|terms|privacy|contact)(\/|$))/;

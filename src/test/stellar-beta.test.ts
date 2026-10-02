@@ -87,12 +87,12 @@ describe('an invitation link', () => {
 describe('the retired card pages', () => {
   it('sends a card of the first Set 001 to First Light', () => {
     delete process.env.STELLAR_INVITE_CODES;
-    for (const path of ['/card/MOON', '/card/UNIT-7', '/card/tranquility-base', '/card/TWIN-SUN/']) {
+    for (const path of ['/card/UNIT-7', '/card/tranquility-base', '/card/TWIN-SUN/']) {
       const res = middleware(request(path));
       expect(res.status, path).toBe(307);
       expect(new URL(res.headers.get('location')!).pathname).toBe('/set/001');
     }
-    for (const live of ['/card/HALLEY', '/card/M87', '/card/APOLLO-11', '/card/BETELGEUSE']) expect(middleware(request(live)).status, live).toBe(200);
+    for (const live of ['/card/HALLEY', '/card/M87', '/card/APOLLO-11', '/card/MOON', '/card/BETELGEUSE']) expect(middleware(request(live)).status, live).toBe(200);
   });
 });
 
