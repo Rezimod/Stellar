@@ -49,9 +49,9 @@ export function SolanaWalletProvider({ children }: { children: ReactNode }) {
         loginMethods: ['email', 'google', 'twitter', 'wallet'],
         appearance: {
           theme: 'dark',
-          accentColor: '#2D65B5',
+          accentColor: '#EE8C3A',
           logo: '/brand/logo-mark.svg',
-          loginMessage: 'Sign in to Stellar',
+          loginMessage: 'Log in to Stellar',
           showWalletLoginFirst: false,
           walletChainType: 'solana-only',
           walletList: ['phantom', 'solflare', 'backpack', 'detected_solana_wallets'],
