@@ -1,16 +1,14 @@
 /**
- * The flight: one capsule launched to orbit and brought home, with a card
- * inside. Everything on the stage is a function of one clock, so a frame can
+ * The flight: one capsule launched to orbit with a card inside, opened up
+ * there. Everything on the stage is a function of one clock, so a frame can
  * be drawn at any moment and Skip is only a jump of the clock.
  *
  *   0.0 s   ignition on the pad at dusk
- *   0.7 s   liftoff, through a cloud deck
- *   2.9 s   stage separation, the Earth comes up from below
- *   3.95 s  the fairing opens and the capsule leaves
- *   4.65 s  entry interface: plasma, then dawn
- *   6.7 s   main chutes over the Caucasus
- *   7.8 s   touchdown, the camera goes in close
- *   8.7 s   the hatch opens, the card comes out face down and turns over
+ *   0.6 s   liftoff, through a cloud deck
+ *   2.05 s  stage separation, the Earth comes up from below
+ *   2.9 s   the fairing opens and the capsule leaves
+ *   3.2 s   the capsule glides to the camera as the Sun rises over the limb
+ *   4.25 s  the hatch opens, the card comes out face down and turns over
  *
  * The scarcer the card, the longer it is held before it turns and the larger
  * the turn: a clean flip, a ring, a traced edge and a burst, a star.
@@ -20,7 +18,7 @@
  */
 
 import type { Rarity } from '@/lib/rarity';
-import { chuteArt, capsuleArt, doorArt, drogueArt, rocketArt } from './art';
+import { capsuleArt, doorArt, rocketArt } from './art';
 
 export type FlightOptions = {
   rarity: Rarity;
@@ -42,13 +40,13 @@ export type FlightHandle = {
 };
 
 /** The light out of the hatch, by rarity: the only tell before the card turns. */
-const RAY: Record<Rarity, string> = { common: '#fff1d8', rare: '#a9c6f2', epic: '#ffc443', legendary: '#ffe39a' };
+const RAY: Record<Rarity, string> = { common: '#fff1d8', rare: '#ffc98a', epic: '#ff9a4a', legendary: '#ffe39a' };
 
-const T = { lift: 700, maxq: 1700, meco: 2700, sep: 2900, ign2: 3100, zoom: 3300, zoomEnd: 3950, fair: 3950, capsep: 4350, cut: 4650, cutEnd: 4900, chute: 6700, touch: 7800, zoom2: 8000, zoom2End: 8650, hatch: 8700, card: 9050 };
-const EMERGE = 1400;
-const HOLD: Record<Rarity, number> = { common: 350, rare: 700, epic: 600, legendary: 700 };
+const T = { lift: 600, maxq: 1200, meco: 1900, sep: 2050, ign2: 2200, zoom: 2300, zoomEnd: 2900, fair: 2900, capsep: 3200, drift: 4200, hatch: 4250, card: 4550 };
+const EMERGE = 1100;
+const HOLD: Record<Rarity, number> = { common: 250, rare: 450, epic: 450, legendary: 550 };
 const FLIP: Record<Rarity, number> = { common: 750, rare: 900, epic: 2400, legendary: 3800 };
-const PHASES: [number, string][] = [[0, 'Ignition'], [T.lift, 'Liftoff'], [T.maxq, 'Max-Q'], [T.meco, 'Main engine cut-off'], [T.sep, 'Stage separation'], [T.fair, 'Fairing separation'], [T.capsep, 'Capsule separation'], [T.cut, 'Entry interface'], [6000, 'Plasma blackout ends'], [T.chute, 'Main chutes'], [T.touch, 'Touchdown'], [T.hatch, 'Hatch open']];
+const PHASES: [number, string][] = [[0, 'Ignition'], [T.lift, 'Liftoff'], [T.maxq, 'Max-Q'], [T.meco, 'Main engine cut-off'], [T.sep, 'Stage separation'], [T.fair, 'Fairing separation'], [T.capsep, 'Capsule separation'], [3700, 'In orbit'], [T.hatch, 'Hatch open']];
 
 export const flightEnd = (r: Rarity) => T.card + EMERGE + HOLD[r] + FLIP[r];
 
@@ -179,15 +177,13 @@ export function startFlight(root: HTMLElement, opts: FlightOptions): FlightHandl
 
   const stage = q('stage');
   const el = {
-    cam: q('cam'), rocket: q('rocket'), cap: q('cap'), capart: q('capart'), drogues: q('drogues'), chutes: q('chutes'),
+    cam: q('cam'), rocket: q('rocket'), cap: q('cap'), capart: q('capart'),
     door: q('door'), hlight: q('hlight'), rays: q('rays'), dim: q('dim'), mover: q('mover'), bob: q('bob'), tilt: q('tilt'),
     card: q('card'), rim: q('rim'), ring: q('ring'), tracer: q('tracer'), spikes: q('spikes'), sheen: q('sheen'),
     flash: q('flash'), lbT: q('lbT'), lbB: q('lbB'), tele: q('tele'), phase: q('phase'), clock: q('clock'), tdata: q('tdata'),
   };
   el.rocket.innerHTML = rocketArt(u);
   el.capart.innerHTML = `<svg viewBox="0 0 100 100" aria-hidden="true">${capsuleArt(`${u}d`, false)}</svg>`;
-  el.chutes.innerHTML = chuteArt(u);
-  el.drogues.innerHTML = drogueArt();
   el.door.innerHTML = doorArt(u);
   const part = (scope: Element, name: string) => scope.querySelector(`[data-part="${name}"]`) as SVGElement;
   const v = {
@@ -195,6 +191,9 @@ export function startFlight(root: HTMLElement, opts: FlightOptions): FlightHandl
     fairL: part(el.rocket, 'fairL'), fairR: part(el.rocket, 'fairR'), frost: part(el.rocket, 'frost'), burn: part(el.rocket, 'burn'),
     char: part(el.capart, 'char'), heat: part(el.capart, 'heat'),
   };
+  // Opened in orbit: the capsule never meets the air, so no scorch and no glow.
+  v.char.style.opacity = '0';
+  v.heat.style.opacity = '0';
   const rims = [...el.rocket.querySelectorAll<SVGElement>('[data-part="rim"]')];
   const tracerRect = el.tracer.querySelector('rect') as SVGRectElement;
   const spk = {
@@ -229,7 +228,6 @@ export function startFlight(root: HTMLElement, opts: FlightOptions): FlightHandl
     return c;
   };
   const SMOKE = sprite('rgba(222,222,228,.9)', 'rgba(190,190,198,.45)', 'rgba(170,170,180,0)');
-  const DUST = sprite('rgba(170,140,112,.85)', 'rgba(140,112,88,.4)', 'rgba(120,96,76,0)');
   const glowCache = new Map<string, HTMLCanvasElement>();
   const glow = (c: string) => {
     let s = glowCache.get(c);
@@ -256,14 +254,13 @@ export function startFlight(root: HTMLElement, opts: FlightOptions): FlightHandl
     return c;
   };
   const CLOUD_DUSK = [cloudSprite([255, 214, 196], [120, 118, 150], 21), cloudSprite([250, 200, 190], [110, 110, 145], 33)];
-  const CLOUD_DAWN = [cloudSprite([255, 226, 200], [150, 160, 190], 45), cloudSprite([255, 236, 214], [140, 150, 185], 57)];
   const EARTH = new Image();
   EARTH.src = '/stellar/flight/earth.jpg';
   const MW = new Image();
   MW.src = '/stellar/flight/milkyway.jpg';
 
   let W = 0, H = 0, dpr = 1, padY = 0, rh = 0, rw = 0, ZR = 1, cw = 0, ZH = 1, fw = 0, fh = 0, CX = 0, CY = 0;
-  let stars: Star[] = [], clouds: Cloud[] = [], ridgeFar: number[] = [], ridgeMid: number[] = [], ridgeLaunch: number[] = [];
+  let stars: Star[] = [], clouds: Cloud[] = [], ridgeLaunch: number[] = [];
 
   function layout() {
     const r = stage.getBoundingClientRect();
@@ -302,8 +299,6 @@ export function startFlight(root: HTMLElement, opts: FlightOptions): FlightHandl
     stars = Array.from({ length: Math.round((W * H) / 1900) }, () => ({ x: Math.random() * W, y: Math.random() * H, z: 0.2 + Math.random() * 0.8, a: 0.25 + Math.random() * 0.75, tw: Math.random() * 6 }));
     seed = 3;
     const ridge = (n: number, amp: number, jag: number) => Array.from({ length: n + 1 }, (_, i) => amp * (0.35 + 0.65 * Math.abs(Math.sin(i * 0.9 + srnd() * jag)) * (0.5 + srnd() * 0.5)));
-    ridgeFar = ridge(14, H * 0.11, 2.2);
-    ridgeMid = ridge(9, H * 0.045, 1);
     ridgeLaunch = ridge(10, H * 0.05, 1.4);
     seed = 91;
     clouds = Array.from({ length: 16 }, (_, i) => ({ x: srnd() * 1.4 - 0.2, y: (srnd() - 0.5) * 0.5, w: 0.7 + srnd() * 0.9, d: 0.75 + srnd() * 0.55, v: i % 2, front: srnd() < 0.35 }));
@@ -349,12 +344,10 @@ export function startFlight(root: HTMLElement, opts: FlightOptions): FlightHandl
     const s = (tt - T.lift) / 1000;
     return H * 0.16 * s * s * (1 + 0.25 * s);
   };
-  const plasma = (tt: number) => (tt < T.cut || tt > 6650 ? 0 : Math.pow(Math.sin(Math.PI * prog(tt, T.cut, 6650)), 1.1));
 
   let rocketBox = { left: 0, top: 0, k: 1 };
   let capPose = { hx: 0, hy: 0, k: 1, rot: 0 };
-  let camY = 0, gyLand = 0;
-  let landZoom: { k: number; hy: number; hy0: number } | null = null;
+  let camY = 0;
   const rp = (lx: number, ly: number): [number, number] => [rocketBox.left + (lx / 100) * rw * rocketBox.k, rocketBox.top + (ly / 1200) * rh * rocketBox.k];
   const cp = (lx: number, ly: number): [number, number] => {
     const { hx, hy, k, rot } = capPose;
@@ -362,7 +355,7 @@ export function startFlight(root: HTMLElement, opts: FlightOptions): FlightHandl
     return [hx + dx * Math.cos(a) - dy * Math.sin(a), hy + dx * Math.sin(a) + dy * Math.cos(a)];
   };
 
-  type Scene = { a: number; launchVis: number; P: number; thr: number; thr2: number };
+  type Scene = { a: number; launchVis: number; thr: number; thr2: number };
 
   function renderVehicles(tt: number, live: boolean): Scene {
     const a = live ? alt(tt) : 0;
@@ -380,7 +373,8 @@ export function startFlight(root: HTMLElement, opts: FlightOptions): FlightHandl
     }
     const left = W / 2 + jx - 0.5 * rw * k, top = sy + jy - ay * rh * k;
     rocketBox = { left, top, k };
-    const launchVis = live ? 1 - prog(tt, T.cut, T.cutEnd) : 1;
+    // The spent upper stage and the fairing fall away behind the capsule.
+    const launchVis = live ? 1 - prog(tt, T.capsep + 250, T.capsep + 950) : 1;
     el.rocket.style.transform = `translate(${left}px,${top}px) scale(${k})`;
     el.rocket.style.opacity = `${launchVis}`;
     el.rocket.style.visibility = launchVis > 0 ? 'visible' : 'hidden';
@@ -389,8 +383,9 @@ export function startFlight(root: HTMLElement, opts: FlightOptions): FlightHandl
     v.boost.style.opacity = `${1 - prog(tt, T.sep + 900, T.sep + 1700)}`;
     const s2 = live ? Math.max(0, (tt - T.capsep) / 1000) : 0;
     v.upper.setAttribute('transform', s2 ? `translate(0 ${90 * s2 * s2 + 25 * s2})` : '');
-    v.upper.style.opacity = `${1 - prog(tt, T.capsep + 100, T.cut - 40)}`;
+    v.upper.style.opacity = `${1 - prog(tt, T.capsep + 100, T.capsep + 900)}`;
     v.payload.setAttribute('transform', s2 ? `translate(0 ${-30 * s2})` : '');
+    v.payload.style.opacity = live && tt >= T.capsep ? '0' : '1';
     const s3 = live ? Math.max(0, (tt - T.fair) / 1000) : 0;
     const fr = Math.min(85, 150 * Math.pow(s3, 1.15));
     v.fairL.setAttribute('transform', s3 ? `translate(${-40 * s3} ${12 * s3}) rotate(${-fr} 15 250)` : '');
@@ -398,75 +393,29 @@ export function startFlight(root: HTMLElement, opts: FlightOptions): FlightHandl
     const fo = `${1 - prog(tt, T.fair + 450, T.fair + 1200)}`;
     v.fairL.style.opacity = fo;
     v.fairR.style.opacity = fo;
-    const rimO = live ? clamp(1 - camY / (H * 1.6)) * 0.9 + (tt > T.zoom && tt < T.cut ? 0.55 * prog(tt, T.zoom, T.zoomEnd) : 0) : 0.9;
+    const rimO = live ? clamp(1 - camY / (H * 1.6)) * 0.9 + (tt > T.zoom ? 0.55 * prog(tt, T.zoom, T.zoomEnd) : 0) : 0.9;
     for (const r of rims) r.style.opacity = `${rimO}`;
     v.frost.style.opacity = `${live ? 1 - prog(tt, T.lift - 100, T.lift + 1400) : 1}`;
     const thr = !live ? 0 : tt < T.lift ? 0.85 * eo(tt / T.lift) : tt < T.meco ? 1 : 1 - prog(tt, T.meco, T.meco + 80);
     const thr2 = !live ? 0 : prog(tt, T.ign2, T.ign2 + 120) * (1 - prog(tt, 3650, 3900));
     v.burn.style.opacity = `${thr * 0.8 * (1 - clamp(a / (H * 1.6)))}`;
 
-    /* the capsule coming home */
-    const descVis = live ? prog(tt, T.cut, T.cutEnd) : 0;
-    const P = live ? plasma(tt) : 0;
-    let hx = W / 2, hy = H * 0.36, ck = 1, rot = 0, gy = H * 2;
-    landZoom = null;
-    if (live && tt >= T.cut) {
-      if (tt < T.chute) {
-        const m = eio(prog(tt, T.cut, 5450));
-        if (m < 1) {
-          const [px, py] = rp(50, 214.3 - 30 * Math.max(0, (tt - T.capsep) / 1000));
-          hx = lerp(px, hx, m);
-          hy = lerp(py, hy, m);
-          ck = lerp((0.56 * rw * rocketBox.k) / cw, 1, m);
-        }
-        rot = m * 16 * (1 - sm(prog(tt, 6000, T.chute))) + 3 * Math.sin(tt / 380) * (0.35 + P) + (Math.random() - 0.5) * P * 2.2;
-        hx += (Math.random() - 0.5) * P * 3;
-        hy += (Math.random() - 0.5) * P * 3;
-      } else {
-        const u2 = prog(tt, T.chute, T.touch), w2 = 1 - Math.pow(1 - u2, 1.7);
-        hy = lerp(H * 0.36, padY - 0.39 * cw, w2);
-        gy = lerp(H * 1.9, padY, w2);
-        rot = 6 * Math.sin((tt - T.chute) / 520) * (1 - u2);
-        if (tt > T.touch) {
-          const b = prog(tt, T.touch, T.touch + 380);
-          hy -= cw * 0.035 * Math.sin(Math.PI * b);
-          rot = 0;
-          gy = padY;
-        }
-      }
-      const hy0 = padY - 0.39 * cw;
-      if (tt > T.zoom2) {
-        const z = eio(prog(tt, T.zoom2, T.zoom2End));
-        ck = lerp(1, ZH, z);
-        hy = lerp(hy0, H * 0.42, z);
-        landZoom = { k: ck, hy, hy0 };
-      }
+    /* the capsule, out of the fairing and gliding up to the camera in orbit */
+    const capVis = live ? prog(tt, T.capsep, T.capsep + 1) : 0;
+    let hx = W / 2, hy = H * 0.42, ck = ZH, rot = 0;
+    if (live && tt >= T.capsep) {
+      const m = eio(prog(tt, T.capsep, T.drift));
+      const [px, py] = rp(50, 214.3 - 30 * Math.max(0, (tt - T.capsep) / 1000));
+      hx = lerp(px, W / 2, m);
+      hy = lerp(py, H * 0.42, m) + Math.sin((tt - T.capsep) / 900) * cw * 0.012 * m;
+      ck = lerp((0.56 * rw * rocketBox.k) / cw, ZH, m);
+      // A slow quarter-roll as it comes in, square to the camera by the time the hatch opens.
+      rot = -22 * (1 - m) * (1 - m) + 1.2 * Math.sin((tt - T.capsep) / 1100) * m;
     }
-    gyLand = gy;
     capPose = { hx, hy, k: ck, rot };
     el.cap.style.transform = `translate(${hx - 0.5 * cw}px,${hy - 0.47 * cw}px) rotate(${rot}deg) scale(${ck})`;
-    el.cap.style.opacity = `${descVis * (1 - 0.86 * prog(tt, 9400, 10400))}`;
-    el.cap.style.visibility = descVis > 0 ? 'visible' : 'hidden';
-    v.heat.style.opacity = `${P}`;
-    v.char.style.opacity = `${live ? 0.85 * prog(tt, 4800, 6300) : 0}`;
-    let ds = 'scale(0)', dop = 1;
-    if (live && tt > 6350) {
-      const g = prog(tt, T.chute, T.chute + 700);
-      ds = `translate(0px,${-g * cw * 1.5}px) rotate(${2 * Math.sin(tt / 300)}deg) scale(${lerp(0.1, 1, back(prog(tt, 6350, 6550)))})`;
-      dop = 1 - g;
-    }
-    el.drogues.style.transform = ds;
-    el.drogues.style.opacity = `${dop}`;
-    let cs = 'scale(0)', co = 1;
-    if (live && tt > T.chute) {
-      const u1 = prog(tt, T.chute, T.chute + 450), u2 = prog(tt, T.chute + 650, T.chute + 1150);
-      const sx = lerp(0.1, 0.42, back(u1)) + 0.58 * back(u2), sy2 = lerp(0.05, 0.8, back(u1)) + 0.2 * back(u2);
-      const c = prog(tt, T.touch + 60, T.touch + 950);
-      cs = `translateX(${c * cw * 0.7}px) rotate(${3 * Math.sin(tt / 470) + 48 * c}deg) scale(${sx}, ${sy2 * (1 - 0.7 * c)})`;
-      co = 1 - c;
-    }
-    el.chutes.style.transform = cs;
-    el.chutes.style.opacity = `${co}`;
+    el.cap.style.opacity = `${capVis * (1 - prog(tt, T.card + 350, T.card + 1350))}`;
+    el.cap.style.visibility = capVis > 0 ? 'visible' : 'hidden';
     el.door.style.transform = `rotateY(${live && tt > T.hatch ? -112 * back(prog(tt, T.hatch, T.hatch + 650)) : 0}deg)`;
     el.hlight.style.opacity = `${live ? prog(tt, T.hatch, T.hatch + 320) : 0}`;
     const D = 0.26 * cw * ck;
@@ -475,7 +424,7 @@ export function startFlight(root: HTMLElement, opts: FlightOptions): FlightHandl
     el.rays.style.width = el.rays.style.height = `${size}px`;
     el.rays.style.transform = `translate(${hx - size / 2}px,${hy - size / 2}px) rotate(${tt / 45}deg)`;
     el.rays.style.opacity = `${ro * (rarity === 'legendary' ? 1 : rarity === 'epic' ? 0.9 : 0.7)}`;
-    return { a, launchVis, P, thr, thr2 };
+    return { a, launchVis, thr, thr2 };
   }
 
   /* the sky and the ground */
@@ -485,16 +434,7 @@ export function startFlight(root: HTMLElement, opts: FlightOptions): FlightHandl
   const mix = (a: number[], b: number[], k: number) => `rgb(${a.map((x, i) => Math.round(lerp(x, b[i], k))).join(',')})`;
 
   function drawClouds(c: CanvasRenderingContext2D, tt: number, front: boolean) {
-    let base: number, set: HTMLCanvasElement[], alpha: number;
-    if (tt < T.cut) {
-      base = padY - H * 0.85 + camY;
-      set = CLOUD_DUSK;
-      alpha = 1 - prog(tt, T.zoom, T.zoomEnd);
-    } else {
-      base = lerp(H * 1.6, -H * 1.1, eio(prog(tt, 6050, 7050)));
-      set = CLOUD_DAWN;
-      alpha = 1 - prog(tt, T.touch, T.touch + 400);
-    }
+    const base = padY - H * 0.85 + camY, set = CLOUD_DUSK, alpha = 1 - prog(tt, T.zoom, T.zoomEnd);
     if (alpha <= 0) return;
     for (const cl of clouds) {
       if (cl.front !== front) continue;
@@ -512,10 +452,8 @@ export function startFlight(root: HTMLElement, opts: FlightOptions): FlightHandl
     c.setTransform(dpr, 0, 0, dpr, 0, 0);
     let f: number;
     if (!live) f = 0;
-    else if (tt < T.cut) f = Math.max(sm(clamp(camY / (H * 2.4))), tt > T.zoom ? prog(tt, T.zoom, T.zoomEnd) : 0);
-    else f = 1 - sm(prog(tt, 5000, 7500));
-    const horizonL = padY + camY * 0.35;
-    const horizon = live && tt >= T.cut ? (landZoom ? landZoom.hy + (padY - landZoom.hy0) * landZoom.k : gyLand) - H * 0.03 : horizonL - H * 0.02;
+    else f = Math.max(sm(clamp(camY / (H * 2.4))), tt > T.zoom ? prog(tt, T.zoom, T.zoomEnd) : 0);
+    const horizon = padY + camY * 0.35 - H * 0.02;
     const g = c.createLinearGradient(0, 0, 0, Math.max(H * 0.55, horizon + H * 0.04));
     STOPS.forEach((st, i) => g.addColorStop(st, mix(LOW[i], SPACE[i], f)));
     c.fillStyle = g;
@@ -532,14 +470,14 @@ export function startFlight(root: HTMLElement, opts: FlightOptions): FlightHandl
     if (sa > 0.01 && MW.complete && MW.naturalWidth) {
       const sc = Math.max(W / MW.naturalWidth, (H * 0.75) / MW.naturalHeight) * 1.15;
       const iw = MW.naturalWidth * sc, ih = MW.naturalHeight * sc;
-      const oy = live ? -clamp(camY * 0.01, 0, H * 0.08) + (tt > T.cut ? H * 0.1 * prog(tt, T.cut, 7000) : 0) : 0;
+      const oy = live ? -clamp(camY * 0.01, 0, H * 0.08) : 0;
       c.globalAlpha = sa * 0.75;
       c.drawImage(MW, (W - iw) / 2, oy, iw, ih);
       c.globalAlpha = 1;
     }
     let sv = 0;
-    if (live && tt < T.cut) sv = Math.min((alt(tt) - alt(tt - 16)) * 0.35, 14) * (1 - 0.85 * prog(tt, T.zoom, T.zoomEnd));
-    else if (live) sv = -(2 + 16 * s.P) * clamp(f * 1.5);
+    if (live && tt < T.capsep) sv = Math.min((alt(tt) - alt(tt - 16)) * 0.35, 14) * (1 - 0.85 * prog(tt, T.zoom, T.zoomEnd));
+    else if (live) sv = 0.35;
     if (sa > 0.01) {
       c.lineCap = 'round';
       const now = performance.now();
@@ -565,11 +503,12 @@ export function startFlight(root: HTMLElement, opts: FlightOptions): FlightHandl
       c.globalAlpha = 1;
     }
     /* the Earth from orbit: NASA Blue Marble, the night side, the atmosphere and the sun on the limb */
-    const L = live ? prog(tt, T.zoom, 4200) * (1 - prog(tt, 5300, 6100)) : 0;
+    const L = live ? prog(tt, T.zoom, T.zoomEnd + 300) : 0;
     if (L > 0 && EARTH.complete && EARTH.naturalWidth) {
-      const grow = tt > T.cut ? eio(prog(tt, T.cut, 6100)) : 0;
-      const R = W * lerp(1.9, 3.4, grow) * (1 + 0.02 * prog(tt, T.zoom, T.cut));
-      const top = lerp(H * 1.05, H * 0.7, eo(prog(tt, T.zoom, 4400))) + grow * H * 0.45, cy = top + R, cx = W / 2 - W * 0.1;
+      // The Earth settles a little lower as the capsule comes in, so the limb frames the opening.
+      const grow = eio(prog(tt, T.capsep, T.card + EMERGE)) * 0.18;
+      const R = W * lerp(1.9, 3.4, grow) * (1 + 0.02 * prog(tt, T.zoom, T.capsep));
+      const top = lerp(H * 1.05, H * 0.7, eo(prog(tt, T.zoom, T.capsep))) + grow * H * 0.45, cy = top + R, cx = W / 2 - W * 0.1;
       c.globalAlpha = L;
       c.save();
       c.beginPath();
@@ -599,6 +538,8 @@ export function startFlight(root: HTMLElement, opts: FlightOptions): FlightHandl
       c.fill();
       const sx = W * 0.86, sy = top + ((sx - cx) * (sx - cx)) / (2 * R) - 2;
       c.globalCompositeOperation = 'lighter';
+      // Sunrise over the limb, timed to the hatch: the light comes up as the capsule opens.
+      c.globalAlpha = L * (0.7 + 0.7 * sm(prog(tt, T.drift - 500, T.card + 500)));
       const sun = c.createRadialGradient(sx, sy, 0, sx, sy, W * 0.55);
       sun.addColorStop(0, 'rgba(255,248,230,1)');
       sun.addColorStop(0.04, 'rgba(255,225,180,.75)');
@@ -618,7 +559,6 @@ export function startFlight(root: HTMLElement, opts: FlightOptions): FlightHandl
     }
     if (live) drawClouds(c, tt, false);
     if (s.launchVis > 0) drawPad(tt, live, s);
-    if (live && tt >= T.cut && gyLand < H * 1.6) drawSteppe(tt);
   }
 
   function drawPad(tt: number, live: boolean, s: Scene) {
@@ -701,47 +641,6 @@ export function startFlight(root: HTMLElement, opts: FlightOptions): FlightHandl
     c.globalAlpha = 1;
   }
 
-  function drawSteppe(tt: number) {
-    const c = bctx;
-    c.save();
-    if (landZoom) {
-      const { k, hy, hy0 } = landZoom;
-      c.setTransform(dpr * k, 0, 0, dpr * k, dpr * (W / 2 - (k * W) / 2), dpr * (hy - k * hy0));
-    }
-    const gy = landZoom ? padY : gyLand;
-    c.globalAlpha = 1 - 0.82 * prog(tt, 9400, 10400);
-    const fg = c.createLinearGradient(0, gy - H * 0.14, 0, gy);
-    fg.addColorStop(0, '#46557f');
-    fg.addColorStop(1, '#2a3354');
-    c.fillStyle = fg;
-    c.beginPath();
-    c.moveTo(-W, gy + 4);
-    ridgeFar.forEach((h, i) => c.lineTo(-W * 0.1 + (i / (ridgeFar.length - 1)) * W * 1.2, gy - H * 0.015 - h));
-    c.lineTo(W * 2, gy + 4);
-    c.closePath();
-    c.fill();
-    const hz = c.createLinearGradient(0, gy - H * 0.08, 0, gy);
-    hz.addColorStop(0, 'rgba(240,170,120,0)');
-    hz.addColorStop(1, 'rgba(240,170,120,.28)');
-    c.fillStyle = hz;
-    c.fillRect(-W, gy - H * 0.08, W * 3, H * 0.08);
-    c.fillStyle = '#1a1b28';
-    c.beginPath();
-    c.moveTo(-W, gy + 4);
-    ridgeMid.forEach((h, i) => c.lineTo(-W * 0.1 + (i / (ridgeMid.length - 1)) * W * 1.2, gy - h * 0.5));
-    c.lineTo(W * 2, gy + 4);
-    c.closePath();
-    c.fill();
-    const gg = c.createLinearGradient(0, gy, 0, gy + H * 0.4);
-    gg.addColorStop(0, '#3a2c25');
-    gg.addColorStop(1, '#0c0908');
-    c.fillStyle = gg;
-    c.fillRect(-W, gy, W * 3, H);
-    c.fillStyle = 'rgba(255,200,150,.07)';
-    for (let i = 1; i < 6; i++) c.fillRect(-W, gy + i * i * 3, W * 3, 1);
-    c.restore();
-  }
-
   function emit(tt: number, live: boolean, s: Scene, dt: number) {
     if (!live) {
       if (Math.random() < dt / 90) {
@@ -764,18 +663,6 @@ export function startFlight(root: HTMLElement, opts: FlightOptions): FlightHandl
       const e = eo4(prog(tt, T.card, T.card + EMERGE));
       const x = lerp(capPose.hx, CX, e), y = lerp(capPose.hy, CY, e) - Math.sin(Math.PI * e) * H * 0.05;
       for (let i = 0; i < dt / 10; i++) addGlow({ x: x + rnd(-1, 1) * fw * 0.3 * e, y: y + rnd(-1, 1) * fh * 0.3 * e, vx: rnd(-0.6, 0.6), vy: rnd(-0.6, 0.6), max: rnd(400, 800), s: rnd(1, 2.2), c: RAY[rarity], drag: 0.97 });
-    }
-    if (s.P > 0.05) {
-      for (let i = 0; i < (dt / 5) * s.P; i++) {
-        const side = Math.random() < 0.5 ? 0.1 : 0.9;
-        const [x, y] = cp(side, 0.8);
-        const col = ['rgba(255,240,210,.9)', 'rgba(255,170,100,.9)', 'rgba(255,110,70,.85)', 'rgba(255,95,140,.7)'][Math.floor(Math.random() * 4)];
-        addGlow({ x, y, vx: (side < 0.5 ? -1 : 1) * rnd(0.3, 1.8), vy: -rnd(9, 16), max: rnd(220, 480), s: cw * rnd(0.02, 0.05), c: col, drag: 0.985 });
-      }
-      if (Math.random() < (dt / 120) * s.P) {
-        const [x, y] = cp(rnd(0.2, 0.8), 0.84);
-        addGlow({ x, y, vx: rnd(-2, 2), vy: -rnd(4, 9), max: rnd(500, 900), s: cw * 0.025, c: 'rgba(255,200,140,.95)', drag: 0.99, shrink: false });
-      }
     }
     if (tt > T.hatch && tt < T.card + 600 && Math.random() < dt / 45) {
       const [x, y] = cp(0.5 + rnd(-0.1, 0.1), 0.47 + rnd(-0.1, 0.1));
@@ -834,46 +721,6 @@ export function startFlight(root: HTMLElement, opts: FlightOptions): FlightHandl
       g0.ellipse(0, 0.5, 0.5, 0.55, 0, 0, Math.PI * 2);
       g0.fill();
       g0.restore();
-    }
-    if (s.P > 0.01) {
-      const a = (capPose.rot * Math.PI) / 180;
-      g0.save();
-      const [wx, wy] = cp(0.5, -0.3);
-      g0.translate(wx, wy);
-      g0.rotate(a);
-      g0.scale(cw * 0.8 * capPose.k, cw * 2.2 * capPose.k);
-      let g = g0.createRadialGradient(0, 0.2, 0, 0, 0.2, 1);
-      g.addColorStop(0, `rgba(255,170,100,${0.55 * s.P})`);
-      g.addColorStop(0.5, `rgba(255,90,90,${0.2 * s.P})`);
-      g.addColorStop(1, 'rgba(255,80,120,0)');
-      g0.fillStyle = g;
-      g0.beginPath();
-      g0.arc(0, 0, 1, 0, Math.PI * 2);
-      g0.fill();
-      g0.restore();
-      g0.save();
-      const [bx, by] = cp(0.5, 0.86);
-      g0.translate(bx, by);
-      g0.rotate(a);
-      g0.scale(cw * capPose.k * 0.98 * (0.7 + 0.3 * s.P) * rnd(0.96, 1.04), cw * capPose.k * 0.36);
-      g = g0.createRadialGradient(0, 0.25, 0, 0, 0.25, 1);
-      g.addColorStop(0, `rgba(255,255,255,${s.P})`);
-      g.addColorStop(0.2, `rgba(255,232,190,${0.92 * s.P})`);
-      g.addColorStop(0.5, `rgba(255,135,75,${0.6 * s.P})`);
-      g.addColorStop(0.8, `rgba(255,80,140,${0.2 * s.P})`);
-      g.addColorStop(1, 'rgba(255,80,140,0)');
-      g0.fillStyle = g;
-      g0.beginPath();
-      g0.arc(0, 0, 1, 0, Math.PI * 2);
-      g0.fill();
-      g0.restore();
-    }
-    const retro = live ? Math.sin(Math.PI * prog(tt, T.touch - 160, T.touch + 60)) : 0;
-    if (retro > 0) {
-      const [rx, ry] = cp(0.5, 0.9), w = cw * capPose.k * 1.6;
-      g0.globalAlpha = retro;
-      g0.drawImage(glow('rgba(255,210,140,.95)'), rx - w / 2, ry - w * 0.25, w, w * 0.5);
-      g0.globalAlpha = 1;
     }
     for (let i = smoke.length - 1; i >= 0; i--) {
       const p = smoke[i];
@@ -964,9 +811,10 @@ export function startFlight(root: HTMLElement, opts: FlightOptions): FlightHandl
     if (tt < C0 + EMERGE) {
       const p = prog(tt, C0, C0 + EMERGE), e = eo4(p);
       dx = (capPose.hx - CX) * (1 - e);
-      dy = (capPose.hy - CY) * (1 - e) - Math.sin(Math.PI * e) * H * 0.05;
+      dy = (capPose.hy - CY) * (1 - e) - Math.sin(Math.PI * e) * H * 0.03;
       sc = lerp((D * 0.55) / fh, 1, e);
-      ang = 180 + 1080 * (1 - e);
+      // One slow turn out of the hatch, face down, settling square to the camera.
+      ang = 180 + 360 * (1 - e);
       op = Math.min(1, p * 7);
     }
     let dim = 0, flash = 0, tr = 0, trO = 0;
@@ -1074,17 +922,6 @@ export function startFlight(root: HTMLElement, opts: FlightOptions): FlightHandl
       const [x, y] = rp(50, 250);
       puff(x, y, 8, SMOKE, { r: rw * 0.5, speed: 1, life: 900, a: 0.3, grow: 0.3 });
     }],
-    [T.cut, () => buzz(25)],
-    [T.chute, () => buzz(35)],
-    [T.touch - 150, () => {
-      const [x, y] = cp(0.5, 0.9);
-      puff(x, y, 26, DUST, { angle: -Math.PI / 2, spread: 3, r: cw * 0.1, speed: 3.2, life: 1500, a: 0.55, grow: 0.8, buoy: 0.004 });
-    }],
-    [T.touch, () => {
-      buzz([60, 30, 30]);
-      const [x, y] = cp(0.5, 0.88);
-      puff(x, y, 34, DUST, { angle: -Math.PI / 2, spread: 3, r: cw * 0.12, speed: 2.6, life: 1800, a: 0.7, grow: 0.7, buoy: 0.006 });
-    }],
     [T.hatch, () => {
       buzz([25, 40, 70]);
       const [x, y] = cp(0.5, 0.47);
@@ -1113,21 +950,18 @@ export function startFlight(root: HTMLElement, opts: FlightOptions): FlightHandl
     if (RM || !sound.on) return;
     sound.fresh();
     const N = sound.noise, Tn = sound.tone, f0 = F / 1000;
+    const at = (ms: number) => ms / 1000;
     const list: [number, (o: number) => void][] = [
-      [0, (o) => { N(o, { f: 90, f2: 160, gain: 0.9, a: 0.5, hold: 2.3, r: 1.6 }); N(o, { type: 'bandpass', f: 700, q: 0.6, gain: 0.16, a: 0.4, hold: 2, r: 1.2 }); }],
-      [0.7, (o) => Tn(o, { f: 55, f2: 32, gain: 0.5, r: 1.1 })],
-      [2.9, (o) => { Tn(o, { f: 110, f2: 45, gain: 0.35, r: 0.45 }); N(o, { type: 'highpass', f: 2500, gain: 0.25, a: 0.005, hold: 0.04, r: 0.25 }); }],
-      [3.1, (o) => N(o, { type: 'bandpass', f: 420, q: 1, gain: 0.12, a: 0.1, hold: 0.45, r: 0.4 })],
-      [3.95, (o) => { N(o, { type: 'highpass', f: 1800, gain: 0.45, a: 0.003, hold: 0.02, r: 0.18 }); N(o + 0.06, { type: 'highpass', f: 1600, gain: 0.35, a: 0.003, hold: 0.02, r: 0.2 }); }],
-      [4.35, (o) => N(o, { type: 'bandpass', f: 1200, gain: 0.14, a: 0.01, hold: 0.05, r: 0.35 })],
-      [4.65, (o) => { N(o, { f: 260, f2: 900, gain: 0.55, a: 0.9, hold: 0.8, r: 1.1 }); N(o, { type: 'bandpass', f: 1400, q: 0.8, gain: 0.12, a: 0.8, hold: 0.8, r: 0.9 }); }],
-      [6.35, (o) => N(o, { f: 500, gain: 0.25, a: 0.01, hold: 0.05, r: 0.35 })],
-      [6.7, (o) => { N(o, { f: 420, gain: 0.5, a: 0.015, hold: 0.08, r: 0.55 }); N(o + 0.7, { f: 380, gain: 0.35, a: 0.02, hold: 0.08, r: 0.5 }); }],
-      [6.8, (o) => N(o, { type: 'bandpass', f: 600, q: 0.5, gain: 0.08, a: 0.3, hold: 0.6, r: 0.4 })],
-      [7.64, (o) => N(o, { f: 280, gain: 0.7, a: 0.01, hold: 0.14, r: 0.45 })],
-      [7.8, (o) => { Tn(o, { f: 70, f2: 36, gain: 0.55, r: 0.55 }); N(o, { f: 220, gain: 0.4, a: 0.005, hold: 0.05, r: 0.5 }); }],
-      [8.7, (o) => { Tn(o, { f: 140, f2: 90, type: 'triangle', gain: 0.2, r: 0.2 }); N(o + 0.05, { type: 'highpass', f: 3200, gain: 0.28, a: 0.02, hold: 0.45, r: 0.8 }); }],
-      [9.05, (o) => { Tn(o, { f: 1318, gain: 0.03, a: 0.3, r: 1.4 }); Tn(o, { f: 1975, gain: 0.02, a: 0.4, r: 1.4 }); }],
+      [0, (o) => { N(o, { f: 90, f2: 160, gain: 0.9, a: 0.5, hold: 1.6, r: 1.2 }); N(o, { type: 'bandpass', f: 700, q: 0.6, gain: 0.16, a: 0.4, hold: 1.4, r: 1 }); }],
+      [at(T.lift), (o) => Tn(o, { f: 55, f2: 32, gain: 0.5, r: 1.1 })],
+      [at(T.sep), (o) => { Tn(o, { f: 110, f2: 45, gain: 0.35, r: 0.45 }); N(o, { type: 'highpass', f: 2500, gain: 0.25, a: 0.005, hold: 0.04, r: 0.25 }); }],
+      [at(T.ign2), (o) => N(o, { type: 'bandpass', f: 420, q: 1, gain: 0.12, a: 0.1, hold: 0.45, r: 0.4 })],
+      [at(T.fair), (o) => { N(o, { type: 'highpass', f: 1800, gain: 0.45, a: 0.003, hold: 0.02, r: 0.18 }); N(o + 0.06, { type: 'highpass', f: 1600, gain: 0.35, a: 0.003, hold: 0.02, r: 0.2 }); }],
+      [at(T.capsep), (o) => N(o, { type: 'bandpass', f: 1200, gain: 0.14, a: 0.01, hold: 0.05, r: 0.35 })],
+      // In orbit: a low, slow swell under the glide, rising into the hatch.
+      [at(T.capsep + 150), (o) => { Tn(o, { f: 196, f2: 262, gain: 0.05, a: 0.7, hold: 0.3, r: 0.9 }); Tn(o, { f: 294, f2: 392, gain: 0.03, a: 0.8, hold: 0.2, r: 0.9 }); }],
+      [at(T.hatch), (o) => { Tn(o, { f: 140, f2: 90, type: 'triangle', gain: 0.2, r: 0.2 }); N(o + 0.05, { type: 'highpass', f: 3200, gain: 0.28, a: 0.02, hold: 0.45, r: 0.8 }); }],
+      [at(T.card), (o) => { Tn(o, { f: 1318, gain: 0.03, a: 0.3, r: 1.4 }); Tn(o, { f: 1975, gain: 0.02, a: 0.4, r: 1.4 }); }],
     ];
     if (rarity === 'common') list.push([f0 + 0.38, (o) => { Tn(o, { f: 784, gain: 0.1, r: 0.9 }); Tn(o, { f: 1175, gain: 0.05, r: 0.9 }); }]);
     if (rarity === 'rare') list.push([f0 + 0.48, (o) => [523, 659, 784, 1046].forEach((fq, i) => Tn(o + i * 0.07, { f: fq, gain: 0.08, r: 1.2 }))]);
@@ -1175,15 +1009,13 @@ export function startFlight(root: HTMLElement, opts: FlightOptions): FlightHandl
     emit(tt, live, s, dt);
     drawFX(tt, live, s, dt);
     const flashCard = renderCard(tt, live);
-    const flashCut = live ? 0.35 * Math.sin(Math.PI * prog(tt, T.cut - 40, T.cutEnd + 40)) : 0;
-    el.flash.style.opacity = `${Math.max(flashCard, flashCut)}`;
+    el.flash.style.opacity = `${flashCard}`;
     const lb = running ? H * 0.065 * (eo(prog(tt, 0, 600)) - eo(prog(tt, T.card + EMERGE, T.card + EMERGE + 700))) : 0;
     el.lbT.style.height = el.lbB.style.height = `${Math.max(0, lb)}px`;
     let sh = 0;
     if (running) {
       if (tt < T.meco) sh = tt < T.lift ? 3.2 * eo(tt / T.lift) : 3.2 * Math.exp(-(tt - T.lift) / 1100) + 0.7;
-      sh = Math.max(sh, s.P * 4.5);
-      for (const [at, a] of [[T.lift, 4], [T.sep, 3.5], [T.fair, 2.5], [T.chute, 2.5], [T.touch - 120, 3], [T.touch, 7], [T.hatch, 3]]) if (tt > at) sh += a * Math.exp(-(tt - at) / 230);
+      for (const [at, a] of [[T.lift, 4], [T.sep, 3.5], [T.fair, 2.5], [T.hatch, 2]]) if (tt > at) sh += a * Math.exp(-(tt - at) / 230);
     }
     el.cam.style.transform = `translate(${(Math.random() - 0.5) * sh + 2 * Math.sin(now / 2300)}px,${(Math.random() - 0.5) * sh + 1.5 * Math.cos(now / 2900)}px) rotate(${(Math.random() - 0.5) * sh * 0.06}deg)`;
     const teleOn = running && tt < T.card;
@@ -1193,18 +1025,8 @@ export function startFlight(root: HTMLElement, opts: FlightOptions): FlightHandl
       for (const [at, name] of PHASES) if (tt >= at) ph = name;
       el.phase.textContent = ph;
       el.clock.textContent = `T+ 00:${(tt / 1000).toFixed(1).padStart(4, '0')}`;
-      let km: number, kmh: number;
-      if (tt < T.cut) {
-        const p = prog(tt, T.lift, T.capsep);
-        km = 212 * Math.pow(sm(p), 1.5);
-        kmh = 27400 * Math.pow(p, 1.25);
-      } else if (tt < T.touch) {
-        km = 120 * Math.pow(1 - prog(tt, T.cut, T.touch), 2.2);
-        kmh = tt < 6650 ? lerp(27400, 1600, sm(prog(tt, T.cut, 6650))) : tt < T.chute ? lerp(1600, 340, prog(tt, 6650, T.chute)) : lerp(340, 24, sm(prog(tt, T.chute, T.chute + 900)));
-      } else {
-        km = 0;
-        kmh = 0;
-      }
+      const p = prog(tt, T.lift, T.capsep);
+      const km = 212 * Math.pow(sm(p), 1.5), kmh = 27400 * Math.pow(p, 1.25);
       el.tdata.innerHTML = `<span><b>ALT</b>${km.toFixed(1)} KM</span><span><b>VEL</b>${Math.round(kmh).toLocaleString('en-US')} KM/H</span>`;
     }
     report(running && tt < F - 200);

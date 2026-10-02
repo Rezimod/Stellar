@@ -56,7 +56,7 @@ function SealedBack({ designation, u }: { designation: string; u: string }) {
 }
 
 /**
- * Fly it: the capsule is launched to orbit and brought home, and the card
+ * Fly it: the capsule is launched to orbit and opened there, and the card
  * comes out of its hatch face down and turns over on its own. One press
  * starts it; Skip goes straight to the turn; Escape or Close leaves it.
  *
@@ -315,8 +315,6 @@ export default function StellarReveal({
           <div className="sf-camin">
             <div className="sf-vehicle sf-rocket" data-sf="rocket" />
             <div className="sf-vehicle sf-cap" data-sf="cap">
-              <div className="sf-drogues" data-sf="drogues" />
-              <div className="sf-chutes" data-sf="chutes" />
               <div className="sf-capart" data-sf="capart" />
               <div className="sf-hatch">
                 <div className="sf-hatch__hole" />
