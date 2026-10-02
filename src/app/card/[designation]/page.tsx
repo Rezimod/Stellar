@@ -17,6 +17,8 @@ import { cardStatus } from '@/lib/stellar/almanac';
 import { DIRECT_CARD_PRICE_USD } from '@/lib/stellar/economics';
 import type { ObservationStatus } from '@/lib/stellar/observability';
 import { cardAvailability } from '@/lib/stellar/orders';
+import { photoFor } from '@/lib/stellar/photos';
+import { posterFor } from '@/lib/stellar/poster';
 
 export const dynamic = 'force-dynamic';
 
@@ -45,6 +47,8 @@ export default async function CardPage({ params }: { params: Promise<{ designati
   const almanac = record.section === 'almanac';
   const sealed = cardStatus(card) === 'sealed';
   const pair = record.pairsWith ? SET_001_CARD_BY_DESIGNATION.get(record.pairsWith) : null;
+  const poster = posterFor(seed.designation, seed.name, record.line);
+  const photo = photoFor(seed.designation);
 
   const db = getDb();
   let allocated: number | null = null;
@@ -97,6 +101,14 @@ export default async function CardPage({ params }: { params: Promise<{ designati
             <p className="sd-eyebrow">
               {[seed.designation, ...seed.objectType.split(' · ').filter((t) => t.toUpperCase() !== seed.designation), rarityInfo(rarity).label].join(' · ')}
             </p>
+            <h2 className="sd-cardhero__title">
+              {(poster.title.replace('\n', ' ').length <= 14 ? [poster.title.replace('\n', ' ')] : poster.title.split('\n')).map((line) => (
+                <span key={line}>{line}</span>
+              ))}
+            </h2>
+            {poster.epithet && <p className="sd-cardhero__epithet">{poster.epithet}</p>}
+            <hr className="sd-rules sd-cardhero__rules" />
+            <p className="sd-cardhero__head">{poster.headline}</p>
             <p className="sd-cardhero__line">{record.line}</p>
             <DataRow
               className="sd-facts"
@@ -142,8 +154,20 @@ export default async function CardPage({ params }: { params: Promise<{ designati
         </div>
       </section>
 
+      {photo && (
+        <section className="sd-container sd-chapter-block">
+          <Chapter n="01" title="The real thing" aside={photo.kind === 'impression' ? 'Artist’s impression' : [photo.source, photo.year].filter(Boolean).join(' · ')} />
+          <figure className="sd-realphoto">
+            <img src={photo.file} alt={photo.kind === 'impression' ? `An artist’s impression of ${seed.name}` : `${seed.name}, photographed by ${photo.source}`} loading="lazy" decoding="async" />
+            <figcaption className="sd-caption">
+              {photo.credit} · <a href={photo.url} target="_blank" rel="noopener noreferrer" className="sd-link">{photo.license}</a>
+            </figcaption>
+          </figure>
+        </section>
+      )}
+
       <section className="sd-container sd-chapter-block">
-        <Chapter n="01" title="Record" aside={seed.catalogRef} />
+        <Chapter n={photo ? '02' : '01'} title="Record" aside={seed.catalogRef} />
         <DataRow
           layout="stacked"
           items={[

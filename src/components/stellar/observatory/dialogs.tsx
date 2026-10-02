@@ -25,7 +25,7 @@ export type Frame = {
   stationName: string;
 };
 
-function Modal({ width, head, tone = '#8baad6', night, onClose, labelledBy, children }: {
+function Modal({ width, head, tone = '#d6aa8b', night, onClose, labelledBy, children }: {
   width: number; head: ReactNode; tone?: string; night: boolean; onClose: () => void; labelledBy: string; children: ReactNode;
 }) {
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -105,12 +105,12 @@ const TABS: Array<{ id: string; label: string; kinds: TargetKind[] | null }> = [
 ];
 
 const SWATCH: Record<TargetKind, string> = {
-  planet: 'radial-gradient(circle at 42% 38%, #f3dcb5 0 14%, #c9a06a 30%, #7f5232 48%, #0b0e22 62%)',
-  moon: 'radial-gradient(circle at 62% 40%, #f1f0ea 0%, #a6a49e 50%, #1a2038 54%, #0a1022 100%)',
-  galaxy: 'radial-gradient(ellipse 60% 22% at 50% 50%, #fff4de 0%, #b9c6ea 40%, #1b1f3c 75%, #0b0e22 100%)',
-  nebula: 'radial-gradient(ellipse at 45% 55%, #f4a8c2 0 16%, #6d4a6a 40%, #0b0e22 70%)',
-  cluster: 'radial-gradient(circle at 50% 46%, #fff 0 3%, transparent 5%), radial-gradient(circle at 32% 60%, #dff0ff 0 3%, transparent 5%), radial-gradient(circle at 68% 34%, #dff0ff 0 3%, transparent 5%), radial-gradient(circle, #1d3a78 0, #08122a 70%)',
-  star: 'radial-gradient(circle at 50% 50%, #fff 0 8%, #bcd8ff 18%, #1a2a58 40%, #08122a 70%)',
+  planet: 'radial-gradient(circle at 42% 38%, #f3dcb5 0 14%, #c9a06a 30%, #7f5232 48%, #220e0b 62%)',
+  moon: 'radial-gradient(circle at 62% 40%, #f1f0ea 0%, #a6a49e 50%, #38201a 54%, #22100a 100%)',
+  galaxy: 'radial-gradient(ellipse 60% 22% at 50% 50%, #fff4de 0%, #eac6b9 40%, #3c1f1b 75%, #220e0b 100%)',
+  nebula: 'radial-gradient(ellipse at 45% 55%, #f4a8c2 0 16%, #6d4a6a 40%, #220e0b 70%)',
+  cluster: 'radial-gradient(circle at 50% 46%, #fff 0 3%, transparent 5%), radial-gradient(circle at 32% 60%, #fff0df 0 3%, transparent 5%), radial-gradient(circle at 68% 34%, #fff0df 0 3%, transparent 5%), radial-gradient(circle, #783a1d 0, #2a1208 70%)',
+  star: 'radial-gradient(circle at 50% 50%, #fff 0 8%, #ffd8bc 18%, #582a1a 40%, #2a1208 70%)',
 };
 
 export const displayName = (t: TelescopeTarget) => (t.catalog && t.catalog !== t.name ? `${t.name} · ${t.catalog}` : t.name);
@@ -179,7 +179,7 @@ export function TargetsDialog({ night, station, tonightId, onPoint, onClose }: {
                   </span>
                   <span className="sdo-tgt__col sdo-tgt__curve">
                     <span className="sdo-lbl">Tonight</span>
-                    <AltCurve path={paths.get(target.id) ?? []} span={span} now={at} color={low ? '#ff7a6b' : '#8baad6'} />
+                    <AltCurve path={paths.get(target.id) ?? []} span={span} now={at} color={low ? '#ff7a6b' : '#d6aa8b'} />
                   </span>
                   <span className="sdo-tgt__now">
                     <span className="sdo-lbl">Now</span>
@@ -287,7 +287,7 @@ export function CaptureDialog({ night, frame, timezone, onClose }: { night: bool
         </div>
         <div className="sdo-capture__info">
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <span className="sdo-lbl" style={{ color: '#8baad6' }}>{frame.stationName}</span>
+            <span className="sdo-lbl" style={{ color: '#d6aa8b' }}>{frame.stationName}</span>
             <h2 id="sdo-capture-t">{frame.targetName}</h2>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -300,7 +300,7 @@ export function CaptureDialog({ night, frame, timezone, onClose }: { night: bool
           <svg width="100%" height="54" viewBox="0 0 400 54" preserveAspectRatio="none" role="img" aria-label="Histogram of the frame">
             <defs>
               <linearGradient id="sdo-hg" x1="0" x2="1">
-                <stop offset="0" stopColor="#2d65b5" />
+                <stop offset="0" stopColor="#b5652d" />
                 <stop offset="1" stopColor="#f4b113" />
               </linearGradient>
             </defs>

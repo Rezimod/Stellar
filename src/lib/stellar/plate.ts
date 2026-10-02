@@ -6,6 +6,7 @@
 import { rarityInfo, type Rarity } from '@/lib/rarity';
 import type { Family, Section } from '@/lib/sets/build';
 import { SET_001_CARDS, SET_001_CARD_BY_DESIGNATION } from '@/lib/sets/set-001';
+import { posterFor, type Poster } from './poster';
 
 const MOVES = 'RA/DEC · MOVES — COMPUTED FOR THE NIGHT';
 
@@ -80,6 +81,10 @@ export type Plate = {
   family: Family;
   /** The directory holding sky.svg, object.svg and survey.svg. */
   art: string;
+  /** What the poster face says: title, the line under it, quote, headline. */
+  poster: Poster;
+  /** The panel's three figures, value first. */
+  figures: [string, string][];
 };
 
 const pad3 = (n: number) => String(n).padStart(3, '0');
@@ -105,6 +110,7 @@ export function plateFor(designation: string): Plate | null {
   const { seed, record } = card;
   const rarity = seed.rarity as Rarity;
   const info = rarityInfo(rarity);
+  const poster = posterFor(designation, seed.name, record.line);
   const back =
     record.section === 'almanac'
       ? `${record.eventStartUtc!.slice(0, 10)} · ${record.eventEndUtc!.slice(0, 10)} UTC`
@@ -134,6 +140,8 @@ export function plateFor(designation: string): Plate | null {
     section: record.section,
     family: record.family,
     art: `/cards/plate/${designation}`,
+    poster,
+    figures: poster.figures ?? record.stats.map(([label, value]) => [value.toUpperCase(), label]),
   };
 }
 
@@ -145,7 +153,12 @@ const GLOW: Record<string, string> = {
   ORIONIDS: '#9fcaff', 'HUNTERS-MOON': '#ffd79a', 'PLEIADES-OCCULTATION': '#c9d6ff', GEMINIDS: '#a9c4ff',
   'CHRISTMAS-SUPERMOON': '#fff1cf', 'DOUBLE-OPPOSITION': '#ffb070', 'SNOW-MOON-ECLIPSE': '#d6c2ff', 'GREAT-ECLIPSE': '#ffe9b8',
 };
+/** The glow, turned toward the poster's sunset: a blue light has its red and blue swapped, so it burns orange instead. */
+function warm(hex: string) {
+  const r = hex.slice(1, 3), g = hex.slice(3, 5), b = hex.slice(5, 7);
+  return parseInt(b, 16) > parseInt(r, 16) ? `#${b}${g}${r}` : hex;
+}
 export const glowFor = (designation: string) =>
-  GLOW[designation] ?? SET_001_CARD_BY_DESIGNATION.get(designation)?.record.glow ?? '#bcd8ff';
+  warm(GLOW[designation] ?? SET_001_CARD_BY_DESIGNATION.get(designation)?.record.glow ?? '#ffd8bc');
 
 export const editionLabel = (n: number | null | undefined) => (n == null ? '—' : pad3(n));

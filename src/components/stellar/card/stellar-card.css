@@ -1,4 +1,4 @@
-/* The Stellar card. Geometry, effects and motion as the card designs define them. */
+/* The Stellar card: a space-opera poster on cream stock. Geometry, effects and motion as the card designs define them. */
 
 .sdc { --px: .5; --py: .5; display: flex; flex-direction: column; align-items: center; gap: 20px; width: 100%; }
 .sdc-stage { --px: .5; --py: .5; width: 100%; perspective: 1700px; }
@@ -15,8 +15,33 @@
 .sdc-face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
 .sdc-face--back { transform: rotateY(180deg); }
 
-.sdc-card { position: relative; width: 100%; aspect-ratio: 630 / 880; border-radius: 4.76% / 3.41%; overflow: hidden; background: #080d1e; isolation: isolate; contain: layout paint; transform: translateZ(0); }
-.sdc-window { position: absolute; left: 3.81%; top: 2.73%; width: 92.38%; overflow: hidden; background: #02040a; }
+.sdc-card { position: relative; width: 100%; aspect-ratio: 630 / 880; border-radius: 4.76% / 3.41%; overflow: hidden; background: #e8dbbd; isolation: isolate; contain: layout paint; transform: translateZ(0); }
+.sdc-window { position: absolute; overflow: hidden; background: #0e0806; }
+
+/* The poster treatment over the drawing: warmed into the sunset, a burst of rays behind the object,
+   a colour fringe at its edges, a halftone screen and the dark the title stands on. */
+.sdc-grade img { filter: sepia(.28) saturate(1.3) contrast(1.08) brightness(1.02); }
+.sdc-fringe img { filter: sepia(.28) saturate(1.3) contrast(1.08) drop-shadow(1.6px 0 0 rgba(255, 40, 70, .38)) drop-shadow(-1.6px 0 0 rgba(40, 200, 255, .3)); }
+.sdc-rays {
+  position: absolute; inset: 0; pointer-events: none; mix-blend-mode: screen; opacity: .5;
+  background:
+    radial-gradient(circle at 50% 44%, rgba(255, 196, 120, .32), rgba(255, 140, 60, .1) 30%, transparent 62%),
+    repeating-conic-gradient(from 0deg at 50% 44%, rgba(255, 170, 90, .14) 0deg 2.2deg, transparent 2.2deg 9deg);
+  -webkit-mask-image: radial-gradient(circle at 50% 44%, #000 12%, transparent 72%);
+  mask-image: radial-gradient(circle at 50% 44%, #000 12%, transparent 72%);
+}
+.sdc-halftone {
+  position: absolute; inset: 0; pointer-events: none; mix-blend-mode: overlay; opacity: .32;
+  background-image: radial-gradient(circle, rgba(255, 230, 190, .55) .7px, transparent 1.1px);
+  background-size: 3.2px 3.2px;
+}
+.sdc-scrim {
+  position: absolute; inset: 0; pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(14, 8, 6, .55) 0%, rgba(14, 8, 6, 0) 26%),
+    linear-gradient(0deg, rgba(14, 8, 6, .97) 0%, rgba(14, 8, 6, .85) 18%, rgba(14, 8, 6, .35) 36%, rgba(14, 8, 6, 0) 50%),
+    radial-gradient(ellipse at 50% 46%, transparent 55%, rgba(14, 8, 6, .55) 100%);
+}
 .sdc-lay0, .sdc-lay1, .sdc-lay2 { position: absolute; inset: -3%; will-change: transform; transition: transform .28s cubic-bezier(.2,.7,.2,1); }
 .sdc-lay0 img, .sdc-lay1 img, .sdc-lay2 img { display: block; width: 100%; height: 100%; object-fit: cover; }
 .sdc-lay0 { transform: translate(calc((var(--px) - .5) * -14px), calc((var(--py) - .5) * -14px)); }
@@ -27,7 +52,7 @@
 
 .sdc-foil {
   position: absolute; inset: 0; pointer-events: none; mix-blend-mode: color-dodge;
-  background: linear-gradient(115deg, transparent 18%, #ff6ad5 28%, #ffd36e 36%, #6affc8 44%, #6ad2ff 52%, #b36aff 60%, #ff6ad5 68%, transparent 80%);
+  background: linear-gradient(115deg, transparent 18%, #ff8a5a 28%, #ffd36e 36%, #fff0b8 44%, #ffb36a 52%, #ff6a6a 60%, #ffd36e 68%, transparent 80%);
   background-size: 260% 260%;
   background-position: calc(var(--px) * 100%) calc(var(--py) * 100%);
 }
@@ -49,8 +74,8 @@
 
 .sdc-card--blank {
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
-  border: 1px dashed rgba(245,241,232,.2); background: #080d1e;
-  font-family: var(--font-mono), monospace; font-size: 13px; letter-spacing: .12em; color: rgba(245,241,232,.6);
+  border: 1px dashed rgba(42,26,16,.3); background: #e8dbbd;
+  font-family: var(--font-oswald), sans-serif; font-size: 13px; letter-spacing: .2em; color: #7a5a44;
 }
 
 @keyframes sdc-float { 0% { transform: rotateX(7deg) rotateY(-11deg); } 50% { transform: rotateX(-4deg) rotateY(11deg); } 100% { transform: rotateX(7deg) rotateY(-11deg); } }
@@ -59,3 +84,14 @@
   .sdc--hero .sdc-stage:not(.is-live) .sdc-tilt, .sdc--hero .sdc-stage:not(.is-live) .sdc-foil { animation: none; }
   .sdc-flip { transition: none; }
 }
+
+/* The back: the photograph full-bleed in its window, a scrim at its foot for the credit. */
+.sdc-photo { position: absolute; inset: 0; }
+.sdc-photo img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.sdc-scrim--photo {
+  background:
+    linear-gradient(180deg, rgba(14, 8, 6, .5) 0%, rgba(14, 8, 6, 0) 22%),
+    linear-gradient(0deg, rgba(14, 8, 6, .85) 0%, rgba(14, 8, 6, 0) 22%);
+}
+.sdc-window--sealed { background: radial-gradient(circle at 50% 44%, #3a1a0c, #160a05 55%, #0e0806); }
+.sdc-rays--seal { opacity: .8; }

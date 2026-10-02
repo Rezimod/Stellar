@@ -23,7 +23,7 @@ export default async function Image() {
           height: '100%',
           display: 'flex',
           position: 'relative',
-          background: '#070b22',
+          background: '#220b07',
           fontFamily: 'Geist',
           overflow: 'hidden',
         }}
@@ -31,7 +31,7 @@ export default async function Image() {
         <img src={saturnUrl} width={680} height={725} style={{ position: 'absolute', left: 560, top: -48 }} />
         <div style={{
           position: 'absolute', top: 0, left: 0, width: 1200, height: 630,
-          background: 'linear-gradient(90deg, #070b22 0%, #070b22 47%, rgba(7,11,34,0) 66%)',
+          background: 'linear-gradient(90deg, #220b07 0%, #220b07 47%, rgba(34, 11, 7, 0) 66%)',
         }} />
 
         <div style={{
@@ -52,7 +52,7 @@ export default async function Image() {
               issued in editions
             </div>
           </div>
-          <div style={{ fontSize: 24, fontWeight: 600, letterSpacing: 3, color: 'rgba(214,224,250,0.7)' }}>
+          <div style={{ fontSize: 24, fontWeight: 600, letterSpacing: 3, color: 'rgba(250, 224, 214, 0.7)' }}>
             FIRST LIGHT · 100 CARDS · LIVE TELESCOPE V1, TBILISI
           </div>
         </div>

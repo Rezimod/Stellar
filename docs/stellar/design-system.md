@@ -2,6 +2,20 @@
 
 The brief for every Stellar page. Read `docs/stellar/RULES.md` (tone and vocabulary) first.
 
+**Superseded again 2026-10-02, by the owner: the space-opera poster.** Every
+card copies the owner's Crab Nebula and Saturn references — cream stock, a dark
+window with the drawing (warmed, sun rays, halftone, colour fringe), a quote
+across the top, the name in Bowlby One sunset letters banded at the foot with a
+glint, an Oswald line spaced out under it, and a cream panel (three warm rules,
+Anton headline, red sub-line, three figures, FIRST LIGHT · FOUNDING SET ·
+edition). The back is the real thing: a photograph of the object (Hubble first,
+then other missions; artist's impressions labelled, fiction drawn) with its
+credit, then the story and the record. The site wears the same palette —
+espresso night, cream ink, sunset orange/brick, gold — and the same faces.
+Copy per card: `src/lib/stellar/poster.ts`; photos and credits:
+`src/lib/stellar/photos.json` + `public/cards/photo/`. Re-render shelf images
+with `npx tsx scripts/stellar-plates/thumbs.tsx` after any card change.
+
 **Superseded 2026-09-21, by the owner.** The card product wears the Stellar design
 language — the same cosmic navy canvas, terracotta accent and Geist/JetBrains
 stack that stellarr.club runs on — with the Stellar comet mark beside the

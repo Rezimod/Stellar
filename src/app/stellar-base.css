@@ -6,9 +6,9 @@
 @source "../components/observatory/LiveView.tsx";
 
 html, body { margin: 0; }
-html { background: #05070f; color-scheme: dark; }
+html { background: #0f0705; color-scheme: dark; }
 body {
-  min-height: 100dvh; background: #05070f; color: #f3f0ea;
+  min-height: 100dvh; background: #0f0705; color: #f3f0ea;
   font-family: var(--font-geist), system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
   padding-bottom: env(safe-area-inset-bottom);

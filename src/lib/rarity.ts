@@ -26,15 +26,15 @@ export type RarityInfo = {
   glyph: string;
 };
 
-// Cool to hot, so scarcity reads as heat: a pale blue, the brand blue, its
-// gold, then a white-gold. Glyphs are one family (diamonds, then
+// Cool to hot, so scarcity reads as heat, in the card poster's sunset: its
+// cream, its orange, its brick, then its gold. Glyphs are one family (diamonds, then
 // the star) so a rarity never reads as an observation status, which uses
 // circles. Mirrors --sd-rarity-* in src/styles/stellar-theme.css.
 const RARITY_MAP: Record<Rarity, Omit<RarityInfo, 'rarity' | 'rank'>> = {
-  common: { color: '#C0D1E9', label: 'Common', glyph: '◇' },
-  rare: { color: '#6C93CB', label: 'Rare', glyph: '◈' },
-  epic: { color: '#F4B113', label: 'Epic', glyph: '◆' },
-  legendary: { color: '#F9D47D', label: 'Legendary', glyph: '✦' },
+  common: { color: '#D9C9A5', label: 'Common', glyph: '◇' },
+  rare: { color: '#F6A63F', label: 'Rare', glyph: '◈' },
+  epic: { color: '#EF5F33', label: 'Epic', glyph: '◆' },
+  legendary: { color: '#FFD36E', label: 'Legendary', glyph: '✦' },
 };
 
 export function isRarity(value: string): value is Rarity {

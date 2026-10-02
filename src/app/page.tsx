@@ -124,7 +124,7 @@ export default async function HomePage() {
             <h1 className="sd-hero2__title">
               <span>Hold a piece of</span>
               <span>
-                <em>the night sky</em>.
+                <em>the night sky</em>
               </span>
             </h1>
             <p className="sd-hero2__sub">

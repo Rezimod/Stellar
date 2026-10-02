@@ -24,7 +24,7 @@ function Avatar({ seed }: { seed: string }) {
           <stop offset="100%" stopColor={`hsl(${(hue + 50) % 360} 55% 16%)`} />
         </radialGradient>
       </defs>
-      <rect width="40" height="40" fill="#070e22" />
+      <rect width="40" height="40" fill="#220e07" />
       <circle cx="20" cy="20" r="11" fill={`url(#av-${h})`} />
       {ringed && <ellipse cx="20" cy="20" rx="17" ry="4.5" fill="none" stroke={`hsl(${hue} 70% 80%)`} strokeOpacity="0.7" strokeWidth="1.2" transform="rotate(-20 20 20)" />}
       <circle cx="8" cy="9" r="0.8" fill="#fff" opacity="0.8" />

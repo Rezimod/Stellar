@@ -73,14 +73,14 @@ export default function TonightSkyChart({
       <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={summary}>
         <defs>
           <linearGradient id="sd-twilight" x1="0" x2="1" y1="0" y2="0">
-            <stop offset="0" stopColor="#1d3566" stopOpacity="0.55" />
-            <stop offset="0.18" stopColor="#0b1630" stopOpacity="0" />
-            <stop offset="0.82" stopColor="#0b1630" stopOpacity="0" />
-            <stop offset="1" stopColor="#1d3566" stopOpacity="0.55" />
+            <stop offset="0" stopColor="#66351d" stopOpacity="0.55" />
+            <stop offset="0.18" stopColor="#30160b" stopOpacity="0" />
+            <stop offset="0.82" stopColor="#30160b" stopOpacity="0" />
+            <stop offset="1" stopColor="#66351d" stopOpacity="0.55" />
           </linearGradient>
           <linearGradient id="sd-ground" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0" stopColor="#050a18" stopOpacity="0.2" />
-            <stop offset="1" stopColor="#050a18" stopOpacity="0.95" />
+            <stop offset="0" stopColor="#180a05" stopOpacity="0.2" />
+            <stop offset="1" stopColor="#180a05" stopOpacity="0.95" />
           </linearGradient>
           <clipPath id="sd-above">
             <rect x={X0} y={0} width={X1 - X0} height={HORIZON} />

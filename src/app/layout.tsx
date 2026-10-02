@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import type { Viewport } from 'next';
-import { Orbitron, Geist, JetBrains_Mono } from 'next/font/google';
+import { Anton, Bowlby_One, Orbitron, Geist, JetBrains_Mono, Oswald } from 'next/font/google';
 import './stellar-base.css';
 import '../styles/stellar-theme.css';
 import '../styles/stellar-motion.css';
@@ -24,6 +24,11 @@ const geist = Geist({
   weight: ['400', '500', '600', '700'],
   display: 'swap',
 });
+// The card poster's faces: Bowlby One for the striped title, Anton for the
+// condensed headlines and figures, Oswald for the spaced-out lines.
+const bowlby = Bowlby_One({ subsets: ['latin'], variable: '--font-bowlby', weight: '400', display: 'swap' });
+const anton = Anton({ subsets: ['latin'], variable: '--font-anton', weight: '400', display: 'swap' });
+const oswald = Oswald({ subsets: ['latin'], variable: '--font-oswald', weight: ['300', '400', '500'], display: 'swap' });
 const jetbrainsMono = JetBrains_Mono({
   subsets: ['latin'],
   variable: '--font-mono',
@@ -34,7 +39,7 @@ const jetbrainsMono = JetBrains_Mono({
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#05070f',
+  themeColor: '#0e0806',
 };
 
 export const metadata: Metadata = {
@@ -70,7 +75,7 @@ export const metadata: Metadata = {
  */
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${orbitron.variable} ${geist.variable} ${jetbrainsMono.variable}`}>
+    <html lang="en" className={`${orbitron.variable} ${geist.variable} ${jetbrainsMono.variable} ${bowlby.variable} ${anton.variable} ${oswald.variable}`}>
       <head>
         <meta name="apple-mobile-web-app-title" content="Stellar" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />

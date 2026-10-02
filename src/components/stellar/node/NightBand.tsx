@@ -67,7 +67,7 @@ export default function NightBand({
         <defs>
           <linearGradient id="sd-nightband-sky" x1="0" x2="1">
             {samples.map((s, i) => (
-              <stop key={s.t} offset={i / (samples.length - 1)} stopColor="rgb(120, 160, 240)" stopOpacity={skyShade(s.alt)} />
+              <stop key={s.t} offset={i / (samples.length - 1)} stopColor="rgb(240, 160, 120)" stopOpacity={skyShade(s.alt)} />
             ))}
           </linearGradient>
         </defs>

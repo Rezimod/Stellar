@@ -38,7 +38,7 @@
 .sd-reveal--staged {
   position: fixed; inset: 0; z-index: 80; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain;
   display: grid; place-items: start center; padding: 16px var(--sd-gutter) 32px;
-  background: #02050f;
+  background: #0f0502;
   animation: sd-stage-in 500ms var(--sd-ease) both;
 }
 .sd-reveal--staged .sd-reveal__stage { width: min(1040px, 100%); min-height: 100%; justify-content: center; padding-top: 56px; }
@@ -58,8 +58,8 @@
 .sd-reveal:not(.sd-reveal--staged) .sd-reveal__inhale,
 .sd-reveal:not(.sd-reveal--staged) .sd-reveal__burst { display: none; }
 .sd-reveal__nebula { position: absolute; border-radius: 50%; filter: blur(40px); opacity: 0; animation: sd-fade 2400ms ease-out both, sd-drift 38s ease-in-out infinite alternate; }
-.sd-reveal__nebula--a { left: -10%; top: -15%; width: 70vw; height: 60vh; background: radial-gradient(closest-side, rgba(36, 69, 146, 0.42), transparent); }
-.sd-reveal__nebula--b { right: -15%; top: 10%; width: 60vw; height: 70vh; background: radial-gradient(closest-side, rgba(45, 101, 181, 0.26), transparent); animation-duration: 2400ms, 46s; animation-direction: normal, alternate-reverse; }
+.sd-reveal__nebula--a { left: -10%; top: -15%; width: 70vw; height: 60vh; background: radial-gradient(closest-side, rgba(146, 69, 36, 0.42), transparent); }
+.sd-reveal__nebula--b { right: -15%; top: 10%; width: 60vw; height: 70vh; background: radial-gradient(closest-side, rgba(181, 101, 45, 0.26), transparent); animation-duration: 2400ms, 46s; animation-direction: normal, alternate-reverse; }
 .sd-reveal__nebula--c { left: 20%; bottom: -25%; width: 70vw; height: 55vh; background: radial-gradient(closest-side, color-mix(in srgb, var(--sd-heat) 24%, transparent), transparent); animation-duration: 2400ms, 30s; }
 .sd-reveal__stars { position: absolute; inset: -20%; opacity: 0; }
 .sd-reveal__stars--far { background: var(--sd-stars) 0 0 / 260px 230px; animation: sd-fade 1200ms ease-out both, sd-parallax 90s linear infinite; }
@@ -72,18 +72,18 @@
   mask-composite: intersect; -webkit-mask-composite: source-in;
 }
 .sd-reveal__streaks--far {
-  background: repeating-linear-gradient(90deg, transparent 0 52px, rgba(190, 210, 255, 0.28) 52px 53px, transparent 53px 137px);
+  background: repeating-linear-gradient(90deg, transparent 0 52px, rgba(255, 210, 190, 0.28) 52px 53px, transparent 53px 137px);
   animation: sd-streak-far var(--sd-fall) ease-in both;
 }
 .sd-reveal__streaks--near {
-  background: repeating-linear-gradient(90deg, transparent 0 87px, rgba(220, 235, 255, 0.5) 87px 88.5px, transparent 88.5px 219px);
+  background: repeating-linear-gradient(90deg, transparent 0 87px, rgba(255, 235, 220, 0.5) 87px 88.5px, transparent 88.5px 219px);
   mask-image: radial-gradient(ellipse 34% 40% at 50% 50%, #000, transparent), repeating-linear-gradient(180deg, #000 0 240px, transparent 240px 560px);
   animation: sd-streak-near var(--sd-fall) ease-in both;
 }
 .sd-reveal__limb {
   position: absolute; left: 50%; top: 78%; width: 240%; aspect-ratio: 1; transform: translateX(-50%);
-  border-radius: 50%; border-top: 1px solid rgba(150, 195, 255, 0.36);
-  box-shadow: 0 -12px 70px rgba(45, 101, 181, 0.2), inset 0 24px 90px rgba(40, 85, 164, 0.14);
+  border-radius: 50%; border-top: 1px solid rgba(255, 195, 150, 0.36);
+  box-shadow: 0 -12px 70px rgba(181, 101, 45, 0.2), inset 0 24px 90px rgba(164, 85, 40, 0.14);
   opacity: 0; animation: sd-fade 1400ms var(--sd-ease) 150ms both;
 }
 /* The entry: the top of the sky lights where the stone comes in, white-hot, then in its colour. */
@@ -173,7 +173,7 @@
   animation: sd-shock 1700ms cubic-bezier(0.1, 0.7, 0.3, 1) calc(var(--sd-shock-at) + var(--sd-off)) both;
 }
 .sd-reveal__shock--r { --sd-ring: rgba(244, 177, 19, 0.9); }
-.sd-reveal__shock--b { --sd-ring: rgba(45, 101, 181, 0.9); --sd-off: 70ms; }
+.sd-reveal__shock--b { --sd-ring: rgba(181, 101, 45, 0.9); --sd-off: 70ms; }
 .sd-reveal__shock--w { --sd-ring: color-mix(in srgb, var(--sd-heat) 60%, #fff); --sd-off: 35ms; }
 .sd-reveal__shock--burst { --sd-shock-at: var(--sd-burst); animation-duration: 2100ms; }
 .sd-reveal__spark {
@@ -338,7 +338,7 @@
 /* The foil: one pass of light across the face as it comes round. */
 .sd-flip__front::after {
   content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 2; mix-blend-mode: screen;
-  background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, 0.55) 45%, color-mix(in srgb, var(--sd-tone) 60%, #fff) 50%, rgba(45, 101, 181, 0.35) 55%, transparent 70%);
+  background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, 0.55) 45%, color-mix(in srgb, var(--sd-tone) 60%, #fff) 50%, rgba(181, 101, 45, 0.35) 55%, transparent 70%);
   background-size: 260% 100%; background-position: 130% 0; opacity: 0;
   animation: sd-sheen calc(var(--sd-d) * 0.26) ease-in-out calc(var(--sd-at) + var(--sd-d) * var(--sd-sheen-at)) both;
 }

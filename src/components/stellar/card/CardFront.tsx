@@ -1,10 +1,26 @@
 import { memo } from 'react';
 import { editionLabel, type Plate } from '@/lib/stellar/plate';
-import { DISPLAY, FOIL_OP, FrameBorder, FrameDefs, GLIT_OP, LOGO_D, MONO, SANS, rr } from './frame';
+import {
+  CONDENSED,
+  FOIL_OP,
+  Footer,
+  GLIT_OP,
+  Glint,
+  INK,
+  Paper,
+  PosterDefs,
+  RarityBadge,
+  Rules,
+  SPACED,
+  StripedTitle,
+  fit,
+  rr,
+  width,
+} from './frame';
 
 type Props = {
   plate: Plate;
-  /** The holder's edition number. Absent, the cartouche prints a dash. */
+  /** The holder's edition number. Absent, the footer prints a dash. */
   edition?: number | null;
   /** A real capture from Live Telescope V1 in place of the drawn plate. */
   capture?: string | null;
@@ -13,119 +29,132 @@ type Props = {
   u: string;
 };
 
-/** The window runs nearly the whole card; the name sits over the drawing's foot. */
-const WIN_H = 832;
+/** The window: the poster's night, from the top margin down to the panel. */
+export const WIN = { x: 22, y: 22, w: 586, h: 598, r: 16 };
 
-/** The face of a card: the drawing alone — sky and object, no survey — edge to edge under the metal frame; the name at its foot; foil, glitter and glare on top. */
+/** Where the lens glints sit in the sky, as fractions of the window; the same on every card, a little off the grid. */
+const GLINTS: [number, number, number][] = [
+  [0.1, 0.24, 9],
+  [0.86, 0.13, 7],
+  [0.93, 0.47, 10],
+  [0.06, 0.61, 6],
+  [0.78, 0.71, 5],
+];
+
+/**
+ * The face of a card, as a space-opera poster: the drawing in a dark window
+ * under a quote, the name in striped sunset letters across its foot, and below
+ * it a cream panel with the headline, three figures and the edition.
+ */
 function CardFront({ plate: c, edition, capture, lite = false, u }: Props) {
   const ext = lite ? 'webp' : 'svg';
   const r = c.rarity;
   const f = `${u}f`;
+  const p = c.poster;
   const ed = editionLabel(edition);
-  const win = rr(24, 24, 582, WIN_H, 18);
-  const chipW = 30 + c.rname.length * 9.2;
-  const micro = `STELLAR · FIRST LIGHT · ${c.des.split(' · ')[0]} · EDITION ${ed} OF ${c.of} · COMMITTED BEFORE SALE · `;
-  const ranked = r === 'epic' || r === 'legendary';
+  const win = rr(WIN.x, WIN.y, WIN.w, WIN.h, WIN.r);
+  const flat = p.title.replace('\n', ' ');
+  const lines = flat.length <= 14 ? [flat] : p.title.split('\n');
+
+  const epithet = p.epithet.toUpperCase();
+  const epSize = 15;
+  const epTrack = Math.min(9, Math.max(3, (430 - epithet.length * epSize * 0.45) / Math.max(1, epithet.length)));
+  const epW = width(epithet.length, epSize, 'spaced', epTrack);
+  const titleBase = 548;
+
+  const quote = p.quote ? `“${p.quote.toUpperCase()}”` : null;
+  const qSize = quote ? fit(quote.length, 520, 'condensed', 24) : 0;
+
+  const head = p.headline.toUpperCase();
+  const hSize = fit(head.length, 500, 'condensed', 38);
+  const sub = p.sub.toUpperCase();
+  const subSize = 11.5;
+  const subTrack = Math.min(3.8, Math.max(0.6, (540 - sub.length * subSize * 0.49) / Math.max(1, sub.length)));
 
   return (
-    <div
-      className="sdc-card"
-      style={{ boxShadow: ranked ? '0 0 0 1px rgba(255,226,160,.08), 0 40px 90px -30px rgba(0,0,0,.95)' : '0 40px 90px -30px rgba(0,0,0,.95)' }}
-    >
-      <div className="sdc-window" style={{ height: '94.55%', borderRadius: '3.09% / 2.16%' }}>
+    <div className="sdc-card">
+      <div className="sdc-window" style={{ left: `${(WIN.x / 630) * 100}%`, top: `${(WIN.y / 880) * 100}%`, width: `${(WIN.w / 630) * 100}%`, height: `${(WIN.h / 880) * 100}%`, borderRadius: `${(WIN.r / WIN.w) * 100}% / ${(WIN.r / WIN.h) * 100}%` }}>
         {capture ? (
           <div className="sdc-lay1">
             <img src={capture} alt="" loading="lazy" decoding="async" />
           </div>
         ) : (
           <>
-            <div className="sdc-lay0">
+            <div className="sdc-lay0 sdc-grade">
               <img src={`${c.art}/sky.${ext}`} alt="" loading="lazy" decoding="async" />
             </div>
-            <div className="sdc-lay1">
+            <div className="sdc-rays" />
+            <div className="sdc-lay1 sdc-grade sdc-fringe">
               <img src={`${c.art}/object.${ext}`} alt="" loading="lazy" decoding="async" />
             </div>
           </>
         )}
+        <div className="sdc-halftone" />
+        <div className="sdc-scrim" />
       </div>
 
       <svg className="sdc-frame" viewBox="0 0 630 880" aria-hidden="true">
         <defs>
-          <FrameDefs u={f} rarity={r} />
-          <linearGradient id={`${f}top`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#02030a" stopOpacity=".7" />
-            <stop offset="1" stopColor="#02030a" stopOpacity="0" />
-          </linearGradient>
-          <linearGradient id={`${f}bot`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#03040a" stopOpacity="0" />
-            <stop offset=".5" stopColor="#03040a" stopOpacity=".78" />
-            <stop offset="1" stopColor="#03040a" stopOpacity=".96" />
-          </linearGradient>
+          <PosterDefs u={f} rarity={r} />
         </defs>
-        <FrameBorder
-          u={f}
-          rarity={r}
-          micro={micro}
-          ground={<path d={`${rr(0, 0, 630, 880, 30)} ${win}`} fill="#080d1e" fillRule="evenodd" />}
-        />
-        <path d={win} fill="none" stroke="rgba(0,0,0,.6)" strokeWidth="2" />
-        <path d={win} fill="none" stroke={`url(#${f}metal)`} strokeWidth=".6" opacity=".8" />
-        <rect x="24" y="24" width="582" height="92" fill={`url(#${f}top)`} />
-        <rect x="24" y="600" width="582" height="256" fill={`url(#${f}bot)`} />
-        {[
-          [24, 24],
-          [606, 24],
-          [24, 24 + WIN_H],
-          [606, 24 + WIN_H],
-        ].map(([x, y]) => (
-          <g key={`${x}-${y}`} transform={`translate(${x} ${y})`} fill={`url(#${f}metal)`}>
-            <path d="M0 -7L1.6 0L0 7L-1.6 0Z" />
-            <path d="M-7 0L0 1.6L7 0L0 -1.6Z" />
-          </g>
+        <Paper u={f} hole={win} />
+        <path d={win} fill="none" stroke="#1a0d07" strokeWidth="2.5" />
+        <path d={rr(WIN.x + 1.5, WIN.y + 1.5, WIN.w - 3, WIN.h - 3, WIN.r - 1)} fill="none" stroke="#fff" strokeOpacity=".07" />
+
+        {GLINTS.map(([gx, gy, gr]) => (
+          <Glint key={`${gx}-${gy}`} x={WIN.x + gx * WIN.w} y={WIN.y + gy * WIN.h} r={gr} o={0.75} />
         ))}
 
-        <g transform="translate(46 50) scale(.78)">
-          <path d={LOGO_D} fill="#F4EDE0" />
-        </g>
-        <text x="68" y="64" fill="#f5f1e8" style={{ fontFamily: DISPLAY, fontWeight: 600, fontSize: 13, letterSpacing: 4.5 }}>
-          STELLAR
-        </text>
-        <text x="584" y="64" textAnchor="end" fill="rgba(245,241,232,.78)" style={{ fontFamily: MONO, fontSize: 11, letterSpacing: 2 }}>
-          FIRST LIGHT · {c.num} / {c.total}
+        <RarityBadge u={f} rarity={r} label={c.rname} />
+        <text x="586" y="62" textAnchor="end" fill="rgba(243,230,204,.62)" style={{ fontFamily: SPACED, fontWeight: 400, fontSize: 11, letterSpacing: 3 }}>
+          {c.num} / {c.total}
         </text>
 
-        <g transform="translate(44 724)">
-          <rect width={chipW} height="24" rx="12" fill="rgba(4,6,14,.72)" stroke={`url(#${f}metalH)`} strokeWidth=".9" />
-          <text
-            x={chipW / 2}
-            y="16.2"
-            textAnchor="middle"
-            fill={`url(#${f}metalH)`}
-            style={{ fontFamily: MONO, fontSize: 10.5, fontWeight: 500, letterSpacing: 2.2 }}
-          >
-            {c.glyph} {c.rname.toUpperCase()}
+        {quote && (
+          <text x="315" y="128" textAnchor="middle" fill={INK.quote} style={{ fontFamily: CONDENSED, fontSize: qSize, letterSpacing: 0.6 }}>
+            {quote}
           </text>
-        </g>
+        )}
 
-        <text x="46" y="806" fill="#f5f1e8" style={{ fontFamily: SANS, fontWeight: 600, fontSize: c.nameSize, letterSpacing: -1.6 }}>
-          {c.name}
+        <StripedTitle u={f} rarity={r} lines={lines} base={titleBase} />
+
+        {epithet && (
+          <g>
+            <rect x={315 - epW / 2 - 70} y={titleBase + 37} width="50" height="1.4" fill={INK.orange} opacity=".85" />
+            <rect x={315 + epW / 2 + 20} y={titleBase + 37} width="50" height="1.4" fill={INK.orange} opacity=".85" />
+            <text x="315" y={titleBase + 43} textAnchor="middle" fill={INK.cream} style={{ fontFamily: SPACED, fontWeight: 300, fontSize: epSize, letterSpacing: epTrack }}>
+              {epithet}
+            </text>
+          </g>
+        )}
+
+        <Rules u={f} y={WIN.y + WIN.h + 14} />
+
+        <text x="315" y="706" textAnchor="middle" fill={INK.text} style={{ fontFamily: CONDENSED, fontSize: hSize, letterSpacing: 0.4 }}>
+          {head}
         </text>
-        <text x="48" y="832" fill="rgba(245,241,232,.5)" style={{ fontFamily: MONO, fontSize: 10.5, letterSpacing: 2.2 }}>
-          {c.kicker}
+        <text x="315" y="730" textAnchor="middle" fill={INK.red} style={{ fontFamily: SPACED, fontWeight: 500, fontSize: subSize, letterSpacing: subTrack }}>
+          {sub}
         </text>
 
-        <g transform="translate(470 736)">
-          <rect width="110" height="56" rx="9" fill="rgba(4,6,14,.55)" stroke={`url(#${f}metal)`} strokeWidth=".9" />
-          <text x="12" y="17" fill="rgba(245,241,232,.55)" style={{ fontFamily: MONO, fontSize: 8.5, letterSpacing: 2 }}>
-            EDITION
-          </text>
-          <text x="12" y="44" fill={`url(#${f}metalH)`} style={{ fontFamily: MONO, fontSize: 24, fontWeight: 500 }}>
-            {ed}
-          </text>
-          <text x="98" y="44" textAnchor="end" fill="rgba(245,241,232,.55)" style={{ fontFamily: MONO, fontSize: 10 }}>
-            / {c.of}
-          </text>
-        </g>
+        <line x1="50" y1="746" x2="580" y2="746" stroke={INK.text} strokeOpacity=".22" />
+        {c.figures.map(([value, label], i) => {
+          const cx = 138 + i * 177;
+          const v = value.toUpperCase();
+          return (
+            <g key={label}>
+              {i > 0 && <line x1={cx - 88.5} y1="756" x2={cx - 88.5} y2="814" stroke={INK.text} strokeOpacity=".2" />}
+              <text x={cx} y="792" textAnchor="middle" fill={INK.text} style={{ fontFamily: CONDENSED, fontSize: fit(v.length, 160, 'condensed', 30) }}>
+                {v}
+              </text>
+              <text x={cx} y="810" textAnchor="middle" fill={INK.muted} style={{ fontFamily: SPACED, fontWeight: 500, fontSize: 9.5, letterSpacing: label.length > 14 ? 1.6 : 3 }}>
+                {label.toUpperCase()}
+              </text>
+            </g>
+          );
+        })}
+        <line x1="50" y1="824" x2="580" y2="824" stroke={INK.text} strokeOpacity=".22" />
+        <Footer y={850} right={`${ed} / ${c.of}`} />
       </svg>
 
       {FOIL_OP[r] > 0 && <div className="sdc-foil" style={{ opacity: FOIL_OP[r], ['--sdc-foil' as string]: FOIL_OP[r] }} />}
@@ -134,7 +163,7 @@ function CardFront({ plate: c, edition, capture, lite = false, u }: Props) {
           <defs>
             <filter id={`${u}gl`} x="0" y="0" width="100%" height="100%">
               <feTurbulence type="fractalNoise" baseFrequency="1.6" numOctaves={1} seed={5} />
-              <feColorMatrix type="matrix" values="0 0 0 0 1  0 0 0 0 .95  0 0 0 0 .85  0 0 0 9 -6.2" />
+              <feColorMatrix type="matrix" values="0 0 0 0 1  0 0 0 0 .9  0 0 0 0 .7  0 0 0 9 -6.2" />
             </filter>
           </defs>
           <rect width="630" height="880" filter={`url(#${u}gl)`} />

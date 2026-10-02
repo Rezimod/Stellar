@@ -81,7 +81,7 @@ it('shows the draws and the verdict once a capsule is opened', async () => {
   );
   expect(html).toContain('Draw recomputes');
   expect(html).toContain('M31');
-  expect(html).toContain('>012</text>');
+  expect(html).toContain('>012 / 100</text>');
 });
 
 it('reports a capsule that does not check out, with the reason', async () => {
