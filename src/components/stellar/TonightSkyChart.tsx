@@ -74,13 +74,13 @@ export default function TonightSkyChart({
         <defs>
           <linearGradient id="sd-twilight" x1="0" x2="1" y1="0" y2="0">
             <stop offset="0" stopColor="#66351d" stopOpacity="0.55" />
-            <stop offset="0.18" stopColor="#30160b" stopOpacity="0" />
-            <stop offset="0.82" stopColor="#30160b" stopOpacity="0" />
+            <stop offset="0.18" stopColor="#1b1b1b" stopOpacity="0" />
+            <stop offset="0.82" stopColor="#1b1b1b" stopOpacity="0" />
             <stop offset="1" stopColor="#66351d" stopOpacity="0.55" />
           </linearGradient>
           <linearGradient id="sd-ground" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0" stopColor="#180a05" stopOpacity="0.2" />
-            <stop offset="1" stopColor="#180a05" stopOpacity="0.95" />
+            <stop offset="0" stopColor="#0d0d0d" stopOpacity="0.2" />
+            <stop offset="1" stopColor="#0d0d0d" stopOpacity="0.95" />
           </linearGradient>
           <clipPath id="sd-above">
             <rect x={X0} y={0} width={X1 - X0} height={HORIZON} />

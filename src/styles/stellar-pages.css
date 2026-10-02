@@ -16,7 +16,7 @@
 /* ── A card as a picture ──────────────────────────────────────── */
 .sd-thumb {
   position: relative; display: block; overflow: hidden; aspect-ratio: 520 / 726;
-  border-radius: 4.76% / 3.41%; background: #1e0d08;
+  border-radius: 4.76% / 3.41%; background: #111111;
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--tile-glow, #ffd8bc) 24%, rgba(255, 255, 255, 0.06)), 0 22px 36px -18px rgba(0, 0, 0, 0.95);
 }
 .sd-thumb img { display: block; width: 100%; height: 100%; border-radius: inherit; }
@@ -173,7 +173,7 @@
   --tier: var(--sd-rarity-common);
   display: flex; flex-direction: column; gap: 14px; padding: 14px; min-width: 0;
   border: 1px solid color-mix(in srgb, var(--tier) 30%, var(--sd-rule)); border-radius: 20px;
-  background: linear-gradient(180deg, rgba(38, 19, 14, 0.96), rgba(20, 9, 7, 0.98));
+  background: linear-gradient(180deg, rgba(24, 24, 24, 0.96), rgba(12, 12, 12, 0.98));
   transition: border-color var(--sd-dur-base) var(--sd-ease);
 }
 @media (min-width: 1024px) {
@@ -194,7 +194,7 @@
 .sd-counter__stage {
   position: relative; height: 270px; overflow: hidden; border-radius: 14px;
   border: 1px solid var(--sd-rule);
-  background: radial-gradient(70% 60% at 50% 42%, color-mix(in srgb, var(--tier) 18%, #30140c), #0f0705 78%);
+  background: radial-gradient(70% 60% at 50% 42%, color-mix(in srgb, var(--tier) 18%, #1b1b1b), #090909 78%);
 }
 .sd-counter__stage .sd-tier__capsule { --h: 160px; position: absolute; top: 20px; left: 50%; margin-left: -80px; width: 160px; }
 .sd-counter__rays {
@@ -208,7 +208,7 @@
 }
 .sd-counter__over {
   position: absolute; left: 0; right: 0; bottom: 0; display: flex; align-items: flex-end; justify-content: space-between; gap: 12px;
-  padding: 44px 16px 14px; background: linear-gradient(180deg, transparent, rgba(15, 7, 5, 0.92) 60%);
+  padding: 44px 16px 14px; background: linear-gradient(180deg, transparent, rgba(9, 9, 9, 0.92) 60%);
 }
 .sd-counter__label { font: 500 12px var(--sd-spaced); letter-spacing: 0.28em; text-transform: uppercase; color: var(--sd-ink-3); }
 .sd-counter__name { margin: 5px 0 0; font: 700 22px/1.05 var(--sd-sans); letter-spacing: 0.005em; text-transform: uppercase; }
@@ -269,7 +269,7 @@
   transition: color var(--sd-dur-fast) var(--sd-ease), border-color var(--sd-dur-fast) var(--sd-ease), background-color var(--sd-dur-fast) var(--sd-ease);
 }
 .sd-filter__chip:hover { color: var(--sd-ink); border-color: var(--sd-rule-strong); }
-.sd-filter__chip[aria-pressed='true'] { background: #f4f1ea; border-color: transparent; color: #1a0907; }
+.sd-filter__chip[aria-pressed='true'] { background: #f4f1ea; border-color: transparent; color: #0e0e0e; }
 .sd-filter__search {
   order: 2; flex: 0 1 260px; display: flex; align-items: center; gap: 12px; height: 44px; padding: 0 16px;
   border-radius: 999px; border: 1px solid var(--sd-rule-strong); background: rgba(255, 255, 255, 0.03); color: var(--sd-ink-3);
@@ -301,7 +301,7 @@
 .sd-tile__tag {
   position: absolute; top: -2px; left: 50%; z-index: 1; translate: -50% 0; display: inline-flex; align-items: center; gap: 6px;
   padding: 4px 9px; border-radius: 7px; border: 1px solid color-mix(in srgb, var(--sd-accent) 40%, transparent);
-  background: rgba(28, 12, 8, 0.9); color: var(--sd-accent-ink); font: 700 12px/1 var(--sd-mono); letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap;
+  background: rgba(16, 16, 16, 0.9); color: var(--sd-accent-ink); font: 700 12px/1 var(--sd-mono); letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap;
 }
 .sd-tile__tag::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
 .sd-tile__foot { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; gap: 5px 12px; margin-top: auto; padding-inline: 2px; }
@@ -335,7 +335,7 @@
 .sd-pub__panel {
   position: relative; min-width: 0; padding: 22px 18px; border: 1px solid transparent; border-radius: 20px;
   background:
-    linear-gradient(180deg, color-mix(in srgb, var(--sd-blue-deep) 14%, #0f0705), #0f0705) padding-box,
+    linear-gradient(180deg, color-mix(in srgb, var(--sd-blue-deep) 14%, #090909), #090909) padding-box,
     linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.03)) border-box;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }

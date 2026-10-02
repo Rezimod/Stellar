@@ -38,7 +38,7 @@
 .sd-reveal--staged {
   position: fixed; inset: 0; z-index: 80; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain;
   display: grid; place-items: start center; padding: 16px var(--sd-gutter) 32px;
-  background: #0f0502;
+  background: #070707;
   animation: sd-stage-in 500ms var(--sd-ease) both;
 }
 .sd-reveal--staged .sd-reveal__stage { width: min(1040px, 100%); min-height: 100%; justify-content: center; padding-top: 56px; }
@@ -264,7 +264,7 @@
 }
 .sd-reveal__shard {
   width: 14px; height: 6px; margin: -3px 0 0 0; border-radius: 40% 60%; transform-origin: 0 50%;
-  background: linear-gradient(90deg, #2b2622, #a89c8c 60%, color-mix(in srgb, var(--sd-heat) 70%, #fff));
+  background: linear-gradient(90deg, #262626, #a89c8c 60%, color-mix(in srgb, var(--sd-heat) 70%, #fff));
   box-shadow: 0 0 6px 1px color-mix(in srgb, var(--sd-heat) 60%, transparent);
   transform: rotate(calc(var(--k) / var(--n) * 360deg + mod(var(--k) * 29, 24) * 1deg));
   opacity: 0; animation: sd-shard calc(900ms + mod(var(--k) * 53, 300) * 1ms) cubic-bezier(0.1, 0.8, 0.3, 1) calc(var(--sd-burst) - 100ms) both;

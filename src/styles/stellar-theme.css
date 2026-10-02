@@ -7,9 +7,9 @@
 .stellar {
   color-scheme: dark;
 
-  /* Ground — the poster's night: espresso black, a deeper band for alternating sections */
-  --sd-canvas: #170e09;
-  --sd-deep: #0e0806;
+  /* Ground — pitch black, so the cards are the only colour on the page */
+  --sd-canvas: #000000;
+  --sd-deep: #050505;
   --sd-plate: rgba(243, 230, 204, 0.045);
   --sd-plate-hover: rgba(243, 230, 204, 0.085);
 
@@ -96,7 +96,7 @@
     radial-gradient(1px 1px at 167px 17px, rgba(255, 255, 255, 0.6), transparent 60%),
     radial-gradient(1.5px 1.5px at 311px 263px, rgba(255, 215, 190, 0.6), transparent 60%);
   /* The sky itself is .sd-backdrop, fixed behind the page; this is only the ground under it. */
-  background: #0e0806;
+  background: #000;
   color: var(--sd-ink);
   font-family: var(--sd-sans);
   font-weight: 500;
@@ -199,7 +199,7 @@
 /* ── Shell ────────────────────────────────────────────────────── */
 .sd-bar {
   position: sticky; top: 0; z-index: 40;
-  background: rgba(15, 7, 5, 0.94);
+  background: rgba(9, 9, 9, 0.94);
   border-bottom: 1px solid var(--sd-rule);
 }
 .sd-bar__inner { display: grid; grid-template-columns: auto 1fr auto; grid-template-areas: "mark links account"; align-items: center; column-gap: 32px; min-height: var(--sd-bar-h); }
@@ -319,7 +319,7 @@
 
 .sd-figure { margin: 0; }
 .sd-figure__note { text-align: center; margin: 14px 0 0; }
-.sd-figure__frame { background: radial-gradient(120% 90% at 50% 15%, #4a2516 0%, #1d0c06 70%); border: 1px solid var(--sd-rule); border-radius: var(--sd-radius); aspect-ratio: 5 / 7; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.sd-figure__frame { background: radial-gradient(120% 90% at 50% 15%, #2c2c2c 0%, #101010 70%); border: 1px solid var(--sd-rule); border-radius: var(--sd-radius); aspect-ratio: 5 / 7; display: flex; align-items: center; justify-content: center; overflow: hidden; }
 .sd-figure__frame img, .sd-figure__frame svg { width: 100%; height: 100%; object-fit: cover; display: block; }
 .sd-blurb { color: var(--sd-ink-2); margin: 18px 0 0; max-width: 58ch; font-size: 16px; }
 
@@ -422,7 +422,7 @@
 /* ── Opting out of the legacy chrome ──────────────────────────── */
 html:has(.stellar) [data-stellar-chrome] { display: none !important; }
 html:has(.stellar):not([data-field="on"]),
-html:has(.stellar):not([data-field="on"]) body { background: #0e0806; }
+html:has(.stellar):not([data-field="on"]) body { background: #000; }
 html:has(.stellar) body::before,
 html:has(.stellar) body::after { display: none; }
 html:has(.stellar) #stellar-main { padding-top: 0; padding-bottom: 0; }
@@ -488,7 +488,7 @@ html:has(.stellar) #stellar-main { padding-top: 0; padding-bottom: 0; }
 @media (max-width: 639px) { .sd-chapter { flex-wrap: wrap; row-gap: 6px; } .sd-chapter__rule { display: none; } .sd-chapter__aside { flex-basis: 100%; } }
 
 /* The sky tonight, drawn. */
-.sd-skychart { margin: 0; border: 1px solid var(--sd-rule); border-radius: calc(var(--sd-radius) + 6px); padding: 12px 8px 4px; background: linear-gradient(180deg, rgba(53, 23, 10, 0.4), rgba(29, 11, 5, 0.8)); overflow-x: auto; }
+.sd-skychart { margin: 0; border: 1px solid var(--sd-rule); border-radius: calc(var(--sd-radius) + 6px); padding: 12px 8px 4px; background: linear-gradient(180deg, rgba(29, 29, 29, 0.4), rgba(15, 15, 15, 0.8)); overflow-x: auto; }
 .sd-skychart svg { display: block; width: 100%; min-width: 640px; height: auto; font-family: var(--sd-mono); }
 .sd-skychart__grid line { stroke: var(--sd-rule); stroke-dasharray: 2 6; }
 .sd-skychart__grid text, .sd-skychart__tick { fill: var(--sd-ink-3); font-size: 12px; letter-spacing: 0.06em; }
@@ -497,11 +497,11 @@ html:has(.stellar) #stellar-main { padding-top: 0; padding-bottom: 0; }
 .sd-skychart__path:hover { stroke: rgba(255, 232, 220, 0.8); }
 .sd-skychart__path--lead { stroke: var(--sd-accent); stroke-width: 2.5; }
 .sd-skychart__path--lead:hover { stroke: var(--sd-accent-hi); }
-.sd-skychart__dot { fill: #ffdccf; stroke: #1d0b05; stroke-width: 2; }
+.sd-skychart__dot { fill: #ffdccf; stroke: #0f0f0f; stroke-width: 2; }
 .sd-skychart__peak--lead .sd-skychart__dot { fill: var(--sd-accent); }
 .sd-skychart__halo { fill: var(--sd-accent); opacity: 0.8; }
 .sd-skychart__leader { stroke: var(--sd-ink-4); stroke-width: 1; }
-.sd-skychart__peak text { font-size: 13px; paint-order: stroke; stroke: #301208; stroke-width: 8px; stroke-linejoin: round; }
+.sd-skychart__peak text { font-size: 13px; paint-order: stroke; stroke: #191919; stroke-width: 8px; stroke-linejoin: round; }
 .sd-skychart__name { fill: var(--sd-ink-2); font-family: var(--sd-sans); font-weight: 500; }
 .sd-skychart__peak--lead .sd-skychart__name { fill: var(--sd-ink); font-weight: 600; }
 .sd-skychart__alt { fill: var(--sd-ink-3); }
@@ -509,7 +509,7 @@ html:has(.stellar) #stellar-main { padding-top: 0; padding-bottom: 0; }
 .sd-skychart__now text { fill: var(--sd-accent-ink); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; }
 
 /* A card's art on its own, cropped to the object. */
-.sd-art { position: relative; display: block; overflow: hidden; background: #0e0806; }
+.sd-art { position: relative; display: block; overflow: hidden; background: #090909; }
 .sd-art img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; }
 
 /* The ballot: a ranked list, each object with its share of the night. */
@@ -571,7 +571,7 @@ html:has(.stellar) #stellar-main { padding-top: 0; padding-bottom: 0; }
 .sd-sealed__card {
   position: absolute; width: 220px; aspect-ratio: 63 / 88; border-radius: var(--sd-radius);
   border: 1px solid var(--sd-rule-strong);
-  background: radial-gradient(120% 90% at 50% 10%, #582c1a 0%, #220e07 75%);
+  background: radial-gradient(120% 90% at 50% 10%, #582c1a 0%, #121212 75%);
   box-shadow: 0 30px 70px rgba(0, 0, 0, 0.5);
 }
 .sd-sealed__card:nth-child(1) { transform: rotate(-12deg) translateX(-56px); opacity: 0.6; }
@@ -581,7 +581,7 @@ html:has(.stellar) #stellar-main { padding-top: 0; padding-bottom: 0; }
   border-color: color-mix(in srgb, var(--sd-accent) 45%, transparent);
   background:
     repeating-linear-gradient(135deg, rgba(181, 101, 45, 0.05) 0 1px, transparent 1px 9px),
-    radial-gradient(120% 90% at 50% 10%, #64321d 0%, #220e07 75%);
+    radial-gradient(120% 90% at 50% 10%, #64321d 0%, #121212 75%);
   animation: sd-float 7s ease-in-out infinite;
 }
 .sd-sealed__mark { font-family: var(--sd-display); font-weight: 600; font-size: 22px; letter-spacing: 0.3em; text-transform: uppercase; }
@@ -647,7 +647,7 @@ html:has(.stellar) #stellar-main { padding-top: 0; padding-bottom: 0; }
 .sd-menu {
   position: absolute; right: 0; top: calc(100% + 12px); z-index: 60; width: min(340px, calc(100vw - 32px));
   padding: 18px 8px 8px; border-radius: 18px; border: 1px solid var(--sd-rule-strong);
-  background: linear-gradient(180deg, #3d1c11, #29120a); box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+  background: linear-gradient(180deg, #232323, #171717); box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
   animation: sd-menu-in 180ms var(--sd-ease) both;
 }
 @keyframes sd-menu-in { from { opacity: 0; transform: translateY(-6px) scale(0.98); } to { opacity: 1; transform: none; } }
@@ -707,7 +707,7 @@ html:has(.stellar) #stellar-main { padding-top: 0; padding-bottom: 0; }
 .sd-cardhero__rules { max-width: 460px; margin: 22px 0 18px; }
 .sd-cardhero__head { margin: 0 0 8px; font-family: var(--sd-display); font-size: clamp(22px, 2.4vw, 30px); line-height: 1.1; text-transform: uppercase; color: var(--sd-ink); }
 .sd-realphoto { margin: 0; }
-.sd-realphoto img { display: block; width: 100%; max-height: 78vh; object-fit: contain; border-radius: var(--sd-radius); background: #0e0806; box-shadow: 0 0 0 1px var(--sd-rule), 0 30px 60px -30px rgba(0, 0, 0, 0.9); }
+.sd-realphoto img { display: block; width: 100%; max-height: 78vh; object-fit: contain; border-radius: var(--sd-radius); background: #090909; box-shadow: 0 0 0 1px var(--sd-rule), 0 30px 60px -30px rgba(0, 0, 0, 0.9); }
 .sd-lead { font: 500 17px/1.5 var(--sd-sans); color: var(--sd-ink); margin: 0; }
 .sd-cardhero__pair { display: flex; align-items: center; gap: 16px; margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--sd-rule); }
 .sd-cardhero__pair .sd-cardplate { --sd-card-cap: 84px; margin: 0; flex: 0 0 auto; }
@@ -758,9 +758,7 @@ html:has(.stellar) #stellar-main { padding-top: 0; padding-bottom: 0; }
   background:
     var(--sd-stars) 0 0 / 340px 300px,
     var(--sd-stars) 170px 120px / 520px 460px,
-    radial-gradient(70% 50% at 50% -12%, rgba(238, 140, 58, 0.16), transparent 70%),
-    radial-gradient(40% 30% at 100% 30%, rgba(184, 55, 42, 0.1), transparent 70%),
-    linear-gradient(180deg, #170d08 0%, #0e0806 100%);
+    #000;
 }
 
 /* ── Phones ───────────────────────────────────────────────────── */
@@ -792,7 +790,7 @@ html:has(.stellar) #stellar-main { padding-top: 0; padding-bottom: 0; }
 .sd-tier__card {
   position: absolute; width: calc(var(--h) * 0.56); aspect-ratio: 63 / 88; border-radius: 7px;
   border: 1px solid color-mix(in srgb, var(--tier) 35%, var(--sd-rule-strong));
-  background: radial-gradient(120% 90% at 50% 10%, #582c1a 0%, #220e07 75%);
+  background: radial-gradient(120% 90% at 50% 10%, #582c1a 0%, #121212 75%);
   box-shadow: 0 14px 30px rgba(0, 0, 0, 0.45);
   transition: transform var(--sd-dur-base) var(--sd-ease);
 }
@@ -804,7 +802,7 @@ html:has(.stellar) #stellar-main { padding-top: 0; padding-bottom: 0; }
   border-color: color-mix(in srgb, var(--tier) 75%, transparent);
   background:
     repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.035) 0 2px, transparent 2px 7px),
-    radial-gradient(120% 90% at 50% 10%, color-mix(in srgb, var(--tier) 24%, #4a2113) 0%, #220e07 80%);
+    radial-gradient(120% 90% at 50% 10%, color-mix(in srgb, var(--tier) 24%, #2a2a2a) 0%, #121212 80%);
   box-shadow: 0 16px 34px rgba(0, 0, 0, 0.5), 0 0 26px -6px color-mix(in srgb, var(--tier) 60%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 /* A slow pass of light across the sealed front. */
@@ -825,7 +823,7 @@ html:has(.stellar) #stellar-main { padding-top: 0; padding-bottom: 0; }
 /* ── A tier's sheet: the capsule, its odds, buy and open ───────── */
 .sd-sheet {
   position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 16px;
-  background: rgba(20, 7, 3, 0.74); backdrop-filter: blur(8px);
+  background: rgba(10, 10, 10, 0.74); backdrop-filter: blur(8px);
   animation: sd-sheet-in var(--sd-dur-base) var(--sd-ease);
 }
 .sd-sheet__panel {
@@ -835,7 +833,7 @@ html:has(.stellar) #stellar-main { padding-top: 0; padding-bottom: 0; }
   border: 1px solid color-mix(in srgb, var(--tier) 40%, var(--sd-rule));
   background:
     radial-gradient(70% 60% at 20% 0%, color-mix(in srgb, var(--tier) 12%, transparent), transparent 70%),
-    linear-gradient(180deg, rgba(48, 22, 14, 0.985), rgba(29, 11, 6, 0.99));
+    linear-gradient(180deg, rgba(28, 28, 28, 0.985), rgba(15, 15, 15, 0.99));
   box-shadow: 0 40px 120px -30px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.03) inset;
   color: var(--sd-ink);
   animation: sd-sheet-up 420ms cubic-bezier(0.2, 0.9, 0.25, 1.05) both;
@@ -843,7 +841,7 @@ html:has(.stellar) #stellar-main { padding-top: 0; padding-bottom: 0; }
 .sd-sheet__panel:focus, .sd-sheet__panel:focus-visible { outline: none; }
 .sd-sheet__close {
   position: absolute; top: 12px; right: 12px; z-index: 2; display: grid; place-items: center; width: 36px; height: 36px;
-  border: 1px solid var(--sd-rule); border-radius: 50%; background: rgba(29, 11, 6, 0.6); color: var(--sd-ink-3); cursor: pointer;
+  border: 1px solid var(--sd-rule); border-radius: 50%; background: rgba(15, 15, 15, 0.6); color: var(--sd-ink-3); cursor: pointer;
   transition: color var(--sd-dur-fast) var(--sd-ease), border-color var(--sd-dur-fast) var(--sd-ease), transform var(--sd-dur-fast) var(--sd-ease);
 }
 .sd-sheet__close:hover, .sd-sheet__close:focus-visible { color: var(--sd-ink); border-color: var(--sd-rule-strong); transform: rotate(90deg); }
@@ -853,7 +851,7 @@ html:has(.stellar) #stellar-main { padding-top: 0; padding-bottom: 0; }
   border-right: 1px solid var(--sd-rule);
   background:
     radial-gradient(60% 45% at 50% 48%, color-mix(in srgb, var(--tier) 26%, transparent), transparent 72%),
-    radial-gradient(120% 80% at 50% 100%, rgba(15, 5, 2, 0.9), transparent 70%);
+    radial-gradient(120% 80% at 50% 100%, rgba(7, 7, 7, 0.9), transparent 70%);
 }
 .sd-sheet__art .sd-tier__capsule { --h: 230px; }
 .sd-sheet__art .sd-tier__card:nth-child(1) { transform: rotate(-13deg) translateX(-36%); }
@@ -866,7 +864,7 @@ html:has(.stellar) #stellar-main { padding-top: 0; padding-bottom: 0; }
 .sd-sheet__count {
   position: absolute; left: 50%; bottom: 16px; translate: -50% 0; white-space: nowrap;
   padding: 4px 10px; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--tier) 35%, var(--sd-rule));
-  background: rgba(29, 11, 6, 0.7); font: 500 11px var(--sd-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--sd-ink-2);
+  background: rgba(15, 15, 15, 0.7); font: 500 11px var(--sd-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--sd-ink-2);
 }
 @media (prefers-reduced-motion: no-preference) {
   .sd-sheet__rays { animation: sd-spin 80s linear infinite; }
@@ -880,7 +878,7 @@ html:has(.stellar) #stellar-main { padding-top: 0; padding-bottom: 0; }
 .sd-sheet__body > .sd-label { padding-right: 44px; }
 .sd-sheet__line { margin: -4px 0 0; font-size: 14px; color: var(--sd-ink-3); }
 
-.sd-sheet__odds { list-style: none; margin: 2px 0 0; padding: 10px 12px; display: grid; gap: 7px; border: 1px solid var(--sd-rule); border-radius: var(--sd-radius); background: rgba(15, 5, 2, 0.35); }
+.sd-sheet__odds { list-style: none; margin: 2px 0 0; padding: 10px 12px; display: grid; gap: 7px; border: 1px solid var(--sd-rule); border-radius: var(--sd-radius); background: rgba(7, 7, 7, 0.35); }
 .sd-sheet__odds li { display: grid; grid-template-columns: 78px minmax(0, 1fr) 44px; align-items: center; gap: 10px; font-family: var(--sd-mono); font-size: 12px; }
 .sd-sheet__rarity { color: var(--r); letter-spacing: 0.04em; }
 .sd-sheet__bar { height: 5px; border-radius: 3px; background: var(--sd-rule); overflow: hidden; position: relative; }

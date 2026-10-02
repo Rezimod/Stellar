@@ -26,7 +26,7 @@
 .sf-chutes { position: absolute; left: -80%; width: 260%; height: 260%; bottom: 88%; transform-origin: 50% 100%; transform: scale(0); }
 .sf-drogues svg, .sf-chutes svg { width: 100%; height: 100%; display: block; overflow: visible; }
 .sf-hatch { position: absolute; left: 37%; top: 34%; width: 26%; height: 26%; perspective: 160px; }
-.sf-hatch__hole { position: absolute; inset: 0; border-radius: 50%; background: #0c0705; }
+.sf-hatch__hole { position: absolute; inset: 0; border-radius: 50%; background: #080808; }
 .sf-hatch__light { position: absolute; inset: 0; border-radius: 50%; opacity: 0; background: radial-gradient(circle, #fff 0, var(--sf-ray) 38%, color-mix(in srgb, var(--sf-ray) 40%, #000) 100%); }
 .sf-hatch__ring { position: absolute; inset: -9%; border-radius: 50%; border: 2px solid #9aa2ae; box-shadow: inset 0 0 0 1.5px #3a404b, 0 0 0 1px #3a404b; }
 .sf-hatch__door { position: absolute; inset: 0; transform-origin: 0% 50%; }

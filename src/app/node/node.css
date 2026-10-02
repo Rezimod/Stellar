@@ -20,12 +20,12 @@
   position: relative; aspect-ratio: 16 / 9; overflow: hidden; isolation: isolate;
   border-radius: calc(var(--sd-radius) + 8px);
   border: 1px solid var(--sd-rule-strong);
-  background: #0f0603;
+  background: #080808;
   box-shadow: 0 60px 120px -48px rgba(0, 0, 0, 0.85);
 }
 .stellar .sd-scope__sky { position: absolute; inset: 0; }
 .stellar .sd-scope__sky canvas { width: 100% !important; height: 100% !important; border-radius: 0 !important; }
-.stellar .sd-scope__vignette { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(75% 95% at 50% 50%, transparent 58%, rgba(12, 4, 2, 0.72) 100%); }
+.stellar .sd-scope__vignette { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(75% 95% at 50% 50%, transparent 58%, rgba(6, 6, 6, 0.72) 100%); }
 
 .stellar .sd-scope__reticle { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; fill: none; }
 .stellar .sd-scope__reticle line, .stellar .sd-scope__reticle circle, .stellar .sd-scope__reticle path { vector-effect: non-scaling-stroke; stroke-width: 1px; }
@@ -45,7 +45,7 @@
 .stellar .sd-scope__tag {
   display: inline-flex; align-items: center; gap: 8px; padding: 5px 12px 5px 10px; border-radius: 999px;
   border: 1px solid color-mix(in srgb, var(--sd-accent) 45%, transparent);
-  background: rgba(15, 6, 3, 0.55); backdrop-filter: blur(8px);
+  background: rgba(8, 8, 8, 0.55); backdrop-filter: blur(8px);
   font-family: var(--sd-mono); font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sd-accent-ink);
 }
 .stellar .sd-scope__dot { width: 6px; height: 6px; border-radius: 50%; background: var(--sd-accent); animation: sd-blink 2.4s ease-in-out infinite; }
@@ -92,18 +92,18 @@
 }
 .stellar .sd-scope__pick:hover { background: var(--sd-plate-hover); border-color: var(--sd-rule-strong); }
 .stellar .sd-scope__pick[aria-pressed='true'] { border-color: color-mix(in srgb, var(--sd-accent) 70%, transparent); background: linear-gradient(180deg, rgba(181, 101, 45, 0.1), rgba(181, 101, 45, 0.03)); }
-.stellar .sd-scope__thumb { width: 44px; height: 44px; border-radius: 10px; overflow: hidden; flex: none; background: #0f0603; }
+.stellar .sd-scope__thumb { width: 44px; height: 44px; border-radius: 10px; overflow: hidden; flex: none; background: #080808; }
 .stellar .sd-scope__thumb > * { width: 100%; height: 100%; }
 .stellar .sd-scope__thumb img, .stellar .sd-scope__thumb svg { width: 100%; height: 100%; object-fit: cover; display: block; }
 .stellar .sd-scope__pick-text { display: flex; flex-direction: column; gap: 2px; }
 .stellar .sd-scope__pick-name { font-weight: 600; font-size: 15px; letter-spacing: -0.01em; white-space: nowrap; }
 .stellar .sd-scope__pick-data { font-family: var(--sd-mono); font-size: 12px; color: var(--sd-ink-3); white-space: nowrap; }
-.stellar .sd-scope__pick-flag { position: absolute; top: -8px; right: 10px; padding: 1px 8px; border-radius: 999px; background: var(--sd-accent); color: #1a1206; font-family: var(--sd-mono); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; }
+.stellar .sd-scope__pick-flag { position: absolute; top: -8px; right: 10px; padding: 1px 8px; border-radius: 999px; background: var(--sd-accent); color: #111111; font-family: var(--sd-mono); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; }
 
 /* ── The instrument ───────────────────────────────────────────── */
 .stellar .sd-node-instrument { display: grid; gap: 36px; }
 @media (min-width: 960px) { .stellar .sd-node-instrument { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 56px; align-items: start; } }
-.stellar .sd-optic { margin: 0; border: 1px solid var(--sd-rule); border-radius: calc(var(--sd-radius) + 6px); padding: 20px 12px; background: linear-gradient(180deg, rgba(53, 23, 10, 0.45), rgba(29, 11, 5, 0.85)); overflow-x: auto; }
+.stellar .sd-optic { margin: 0; border: 1px solid var(--sd-rule); border-radius: calc(var(--sd-radius) + 6px); padding: 20px 12px; background: linear-gradient(180deg, rgba(29, 29, 29, 0.45), rgba(15, 15, 15, 0.85)); overflow-x: auto; }
 .stellar .sd-optic svg { display: block; width: 100%; min-width: 560px; height: auto; }
 .stellar .sd-optic__tube { stroke: var(--sd-rule-strong); stroke-width: 1; }
 .stellar .sd-optic__axis { stroke: var(--sd-ink-4); stroke-width: 1; stroke-dasharray: 3 7; }
@@ -116,13 +116,13 @@
 .stellar .sd-optic__glass { stroke: var(--sd-teal); stroke-width: 2.5; opacity: 0.7; }
 .stellar .sd-optic__secondary { fill: var(--sd-ink-2); }
 .stellar .sd-optic__mirror { fill: none; stroke: var(--sd-ink); stroke-width: 3; stroke-linecap: round; }
-.stellar .sd-optic__hole { stroke: #0f0603; stroke-width: 5; }
+.stellar .sd-optic__hole { stroke: #080808; stroke-width: 5; }
 .stellar .sd-optic__camera { fill: rgba(255, 255, 255, 0.06); stroke: var(--sd-rule-strong); }
 .stellar .sd-optic__focus { fill: var(--sd-accent); }
 .stellar .sd-optic__labels text { fill: var(--sd-ink-3); font-family: var(--sd-mono); font-size: 15px; letter-spacing: 0.08em; text-transform: uppercase; }
 
 /* ── The night ────────────────────────────────────────────────── */
-.stellar .sd-nightband { margin: 0; border: 1px solid var(--sd-rule); border-radius: calc(var(--sd-radius) + 6px); padding: 16px 12px 10px; background: linear-gradient(180deg, rgba(53, 23, 10, 0.4), rgba(29, 11, 5, 0.85)); overflow-x: auto; }
+.stellar .sd-nightband { margin: 0; border: 1px solid var(--sd-rule); border-radius: calc(var(--sd-radius) + 6px); padding: 16px 12px 10px; background: linear-gradient(180deg, rgba(29, 29, 29, 0.4), rgba(15, 15, 15, 0.85)); overflow-x: auto; }
 .stellar .sd-nightband svg { display: block; width: 100%; min-width: 680px; height: auto; font-family: var(--sd-mono); }
 .stellar .sd-nightband text { fill: var(--sd-ink-3); font-size: 12px; letter-spacing: 0.06em; }
 .stellar .sd-nightband__dark { fill: rgba(244, 177, 19, 0.035); }
@@ -168,7 +168,7 @@
 .stellar .sd-node-last { margin-bottom: 96px; }
 
 /* ── The simulator, in Stellar's colours ───────────────────────── */
-.stellar .sd-sim-rail { border-bottom: 1px solid var(--sd-rule); background: rgba(29, 11, 5, 0.6); }
+.stellar .sd-sim-rail { border-bottom: 1px solid var(--sd-rule); background: rgba(15, 15, 15, 0.6); }
 .stellar .sd-sim-rail__inner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 24px; min-height: 48px; }
 .stellar .sd-sim-rail .sd-crumb { margin: 0; }
 
@@ -188,7 +188,7 @@
   --obs-label: rgba(255, 255, 255, 0.54);
   --obs-rule: rgba(255, 255, 255, 0.1);
   --obs-rule-strong: rgba(255, 255, 255, 0.2);
-  --obs-float: rgba(36, 15, 7, 0.74);
+  --obs-float: rgba(19, 19, 19, 0.74);
   --obs-float-border: rgba(255, 255, 255, 0.1);
   --obs-float-inner: rgba(255, 255, 255, 0.045);
   --obs-radius: calc(var(--sd-radius) + 4px);
@@ -196,7 +196,7 @@
   color: var(--sd-ink);
 }
 .stellar .sd-sim .obs-live { min-height: calc(100dvh - var(--sd-bar-h) - 49px); }
-.stellar .sd-sim .obs-live__sky::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(80% 90% at 50% 50%, transparent 60%, rgba(12, 4, 2, 0.6) 100%); }
+.stellar .sd-sim .obs-live__sky::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(80% 90% at 50% 50%, transparent 60%, rgba(6, 6, 6, 0.6) 100%); }
 
 .stellar .sd-sim-how { display: grid; gap: 20px; max-width: 72ch; }
 @media (min-width: 960px) { .stellar .sd-sim-how { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: none; gap: 48px; } }
