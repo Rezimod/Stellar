@@ -96,30 +96,12 @@ export const DEEP_CARDS: AuthoredCard[] = [
     },
   ),
   deep(
-    { designation: 'NORTH-AMERICA', name: 'The North America Nebula', objectType: 'emission nebula', rarity: 'common', catalogRef: 'NGC 7000', blurb: 'A continent drawn in glowing hydrogen.' },
-    fixed(20.98, 44.33, 4.0, [120, 100]),
-    {
-      stats: [['DISTANCE', '~2,200 ly'], ['SPAN', '2°'], ['MAGNITUDE', '4.0']],
-      story: ['Its dark "gulf" is dust in front of the glow.', 'Its bright wall is a line of new stars forming.'],
-      glow: '#ff6a7a',
-    },
-  ),
-  deep(
     { designation: 'ROSETTE', name: 'The Rosette', objectType: 'emission nebula', rarity: 'common', catalogRef: 'NGC 2237', blurb: 'A red rose with a star cluster at its heart.' },
     fixed(6.5333, 4.95, 9.0, [80, 60]),
     {
       stats: [['DISTANCE', '~5,200 ly'], ['SIZE', '~130 ly'], ['CLUSTER', 'NGC 2244']],
       story: ['Young stars at its centre blew the hollow.', 'Dark knots in its petals are stars still forming.'],
       glow: '#ff5a6a',
-    },
-  ),
-  deep(
-    { designation: 'BUTTERFLY', name: 'The Butterfly', objectType: 'planetary nebula', rarity: 'rare', catalogRef: 'NGC 6302', blurb: 'Wings of gas from one of the hottest stars known.' },
-    fixed(17.2294, -37.1025, 9.6, [3, 1.5]),
-    {
-      stats: [['DISTANCE', '~3,400 ly'], ['CORE', '~200,000 °C'], ['WINGS', '~2 ly']],
-      story: ['A dark belt of dust pinches it at the waist.', 'Its gas flies outward at 900,000 km an hour.'],
-      glow: '#ffb07a',
     },
   ),
   deep(
@@ -163,30 +145,12 @@ export const DEEP_CARDS: AuthoredCard[] = [
     },
   ),
   deep(
-    { designation: 'DOUBLE-CLUSTER', name: 'The Double Cluster', objectType: 'open clusters', rarity: 'common', catalogRef: 'NGC 869 · 884', blurb: 'Two star clusters, side by side.' },
-    deepSky('ngc869'),
-    {
-      stats: [['DISTANCE', '~7,500 ly'], ['AGE', '~14 Myr'], ['MAGNITUDE', '3.7']],
-      story: ['Two young clusters born near each other.', 'A few red supergiants glow among the blue.'],
-      glow: '#bcd4ff',
-    },
-  ),
-  deep(
     { designation: 'M44', name: 'The Beehive', objectType: 'open cluster', rarity: 'common', catalogRef: 'M44 (Praesepe)', blurb: 'A swarm of stars, seen since antiquity.' },
     deepSky('m44'),
     {
       stats: [['DISTANCE', '~577 ly'], ['STARS', '~1,000'], ['MAGNITUDE', '3.7']],
       story: ['To the eye, a small cloud in Cancer.', 'Galileo was the first to see it was stars.'],
       glow: '#fff0c8',
-    },
-  ),
-  deep(
-    { designation: 'JEWEL-BOX', name: 'The Jewel Box', objectType: 'open cluster', rarity: 'common', catalogRef: 'NGC 4755', blurb: 'Blue-white gems around one ruby.' },
-    fixed(12.8944, -60.3333, 4.2, [10, 10]),
-    {
-      stats: [['DISTANCE', '~6,400 ly'], ['STARS', '~100'], ['MAGNITUDE', '4.2']],
-      story: ['A letter A of bright young stars.', 'One red supergiant sits among them like a ruby.'],
-      glow: '#a8c8ff',
     },
   ),
 ];

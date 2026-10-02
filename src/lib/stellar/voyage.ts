@@ -25,11 +25,13 @@ export const VOYAGE_DESTINATIONS: Readonly<Record<string, Destination>> = {
   IO: { kind: 'body', gameId: 'io' },
   EUROPA: { kind: 'body', gameId: 'europa' },
   GANYMEDE: { kind: 'body', gameId: 'ganymede' },
-  // Titan has no surface in the game yet: the sea's holder flies to the moon.
-  'KRAKEN-MARE': { kind: 'body', gameId: 'titan' },
+  // Titan has no surface in the game yet: its holder flies to the moon.
+  TITAN: { kind: 'body', gameId: 'titan' },
   'VOYAGER-1': { kind: 'body', gameId: 'voyager1' },
 
   // The Moon and Mars can be landed on; neither has named spots yet.
+  MOON: { kind: 'surface', gameId: 'moon' },
+  'APOLLO-11': { kind: 'surface', gameId: 'moon' },
   'LUNAR-FRAGMENT': { kind: 'surface', gameId: 'moon' },
   TYCHO: { kind: 'surface', gameId: 'moon' },
   'OLYMPUS-MONS': { kind: 'surface', gameId: 'mars' },

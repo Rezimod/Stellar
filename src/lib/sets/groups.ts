@@ -7,7 +7,7 @@ export const SET_GROUPS: Array<{ key: Family; title: string; short: string }> = 
   { key: 'deep', title: 'The Deep Sky', short: 'Deep Sky' },
   { key: 'galaxies', title: 'The Galaxies', short: 'Galaxies' },
   { key: 'extremes', title: 'The Extremes', short: 'Extremes' },
-  { key: 'frontier', title: 'The Frontier', short: 'Frontier' },
+  { key: 'sights', title: 'Rare Sights', short: 'Rare Sights' },
   { key: 'almanac', title: 'The Almanac', short: 'Almanac' },
 ];
 

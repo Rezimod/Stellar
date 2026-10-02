@@ -104,34 +104,13 @@ export const GALAXY_CARDS: AuthoredCard[] = [
     },
   ),
   galaxy(
-    { designation: 'M81', name: 'Bode’s Galaxy', objectType: 'spiral galaxy', rarity: 'common', catalogRef: 'M81 (NGC 3031)', blurb: 'A grand spiral near the Plough.' },
-    deepSky('m81'),
-    {
-      stats: [['DISTANCE', '~12 Mly'], ['SIZE', '~90,000 ly'], ['MAGNITUDE', '6.9']],
-      story: ['Found by Bode in 1774, a smudge in a small telescope.', 'It shares its patch of sky with the Cigar.'],
-      glow: '#ffe4b8',
-      pairsWith: 'M82',
-      noun: 'Bode’s Galaxy',
-    },
-  ),
-  galaxy(
     { designation: 'M82', name: 'The Cigar', objectType: 'starburst galaxy', rarity: 'common', catalogRef: 'M82 (NGC 3034)', blurb: 'A galaxy making stars ten times faster than ours.' },
     deepSky('m82'),
     {
       stats: [['DISTANCE', '~12 Mly'], ['STAR BIRTH', '10 × Milky Way'], ['NEIGHBOUR', 'M81']],
       story: ['A close pass by M81 set it ablaze with new stars.', 'Winds of red gas pour out above and below.'],
       glow: '#ff9a8a',
-      pairsWith: 'M81',
       noun: 'the Cigar',
-    },
-  ),
-  galaxy(
-    { designation: 'STEPHANS-QUINTET', name: 'Stephan’s Quintet', objectType: 'galaxy group', rarity: 'rare', catalogRef: 'Hickson 92', blurb: 'Five galaxies, four of them in a slow collision.' },
-    fixed(22.5997, 33.96, 13.0, [3.5, 3.5]),
-    {
-      stats: [['DISTANCE', '~290 Mly'], ['GALAXIES', '5'], ['FOUND', '1877']],
-      story: ['One of the five is far nearer: a stranger in the photo.', 'A shock wave larger than our galaxy runs between them.'],
-      glow: '#ffd0a0',
     },
   ),
   galaxy(

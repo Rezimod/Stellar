@@ -295,74 +295,6 @@ def europa(u):
     return bg, obj, svg(W, H, ''.join(ann))
 
 
-# ================================================================= KRAKEN MARE
-def kraken(u):
-    """Titan at the shore: an orange haze sky, a low pale sun, a black methane sea to the horizon, and a coast of water-ice rock under drifting mist."""
-    rnd = random.Random(179)
-    hz = 350
-    defs = SPIKE_DEFS.format(u=u) + noise(u, 'gn', '.03', 4, 5) + noise(u, 'rn', '.05 .09', 4, 9) + noise(u, 'wn', '.005 .16', 3, 8) + blur(u, 'b2', 2, 0) + blur(u, 'b6', 6, 20) + blur(u, 'b18', 18, 40) + (
-            '<linearGradient id="%ssky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2e1409"/><stop offset=".4" stop-color="#7d3f18"/><stop offset=".8" stop-color="#c77a35"/><stop offset="1" stop-color="#e3a05a"/></linearGradient>'
-            '<radialGradient id="%ssun" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#fff3d8" stop-opacity=".95"/><stop offset=".2" stop-color="#ffd9a0" stop-opacity=".55"/><stop offset=".6" stop-color="#f0a860" stop-opacity=".16"/><stop offset="1" stop-color="#f0a860" stop-opacity="0"/></radialGradient>'
-            '<linearGradient id="%ssea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a2c18"/><stop offset=".15" stop-color="#1c120a"/><stop offset="1" stop-color="#060402"/></linearGradient>'
-            '<linearGradient id="%srock" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a2812"/><stop offset=".25" stop-color="#22120a"/><stop offset="1" stop-color="#0a0503"/></linearGradient>'
-            '<linearGradient id="%srockD" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#1a0d05"/><stop offset="1" stop-color="#1a0d05" stop-opacity="0"/></linearGradient>'
-            '<linearGradient id="%smist" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e9a862" stop-opacity="0"/><stop offset="1" stop-color="#e9a862" stop-opacity=".5"/></linearGradient>') % (u, u, u, u, u, u)
-    bg = svg(W, H, ('<rect width="%d" height="%d" fill="url(#%ssky)"/>' % (W, H, u) +
-                    '<rect width="%d" height="%d" filter="url(#%sgn)" opacity=".2" style="mix-blend-mode: overlay"/>' % (W, H, u) +
-                    '<circle cx="372" cy="256" r="180" fill="url(#%ssun)"/><circle cx="372" cy="256" r="15" fill="#fff6e6" opacity=".9" filter="url(#%sb6)"/>' % (u, u)), defs)
-    o = ['<rect y="%d" width="%d" height="%d" fill="url(#%ssea)"/>' % (hz, W, H - hz, u),
-         '<rect y="%d" width="%d" height="%d" filter="url(#%swn)" opacity=".14" style="mix-blend-mode: screen"/>' % (hz, W, H - hz, u)]
-    # the sun's path on the sea: broken glints, wider nearer the eye
-    gl = ''.join('<rect x="%s" y="%s" width="%s" height="%s" fill="#ffd7a2" opacity="%s"/>' % (
-        f(372 - rnd.uniform(4, 70) * (1 + (y - hz) / 110)), f(y), f(rnd.uniform(8, 130) * (1 + (y - hz) / 110)), f(rnd.uniform(.6, 2.2)), f(rnd.uniform(.08, .35) * max(0, 1 - (y - hz) / 320)))
-        for y in [hz + 2 + i * rnd.uniform(3, 7) for i in range(74)])
-    o.append('<g filter="url(#%sb2)">%s</g>' % (u, gl))
-    # far coast on the horizon
-    far = ''.join('<path d="%s" fill="#c3843f" opacity=".5"/>' % blob(rnd.uniform(-20, 330), hz + 1, rnd.uniform(40, 120), rnd.uniform(3, 10), rnd, 12, .3) for _ in range(10))
-    o.append('<g filter="url(#%sb2)">%s</g>' % (u, far))
-
-    def headland(pts, seed, dark=False):
-        """A mass of water-ice rock: layered strata, a lit top, a dark sea-facing face."""
-        r = random.Random(seed)
-        mids = [((a[0] + b[0]) / 2, (a[1] + b[1]) / 2) for a, b in zip(pts, pts[1:] + pts[:1])]
-        d = 'M%s %s' % (f(mids[-1][0]), f(mids[-1][1])) + ''.join('Q%s %s %s %s' % (f(p[0]), f(p[1]), f(m[0]), f(m[1])) for p, m in zip(pts, mids)) + 'Z'
-        out = ['<path d="%s" fill="url(#%srock)"/>' % (d, u)]
-        xs = [p[0] for p in pts]; ys = [p[1] for p in pts]
-        x0, x1, y0, y1 = min(xs), max(xs), min(ys), max(ys)
-        strata = ''.join('<path d="M%s %sq%s %s %s %s" fill="none" stroke="%s" stroke-opacity="%s" stroke-width="%s"/>' % (
-            f(r.uniform(x0, x1)), f(r.uniform(y0, y1)), f(r.uniform(-30, 30)), f(r.uniform(-4, 4)), f(r.uniform(-90, 90)), f(r.uniform(-6, 6)), r.choice(['#8a4a22', '#000']), f(r.uniform(.12, .3)), f(r.uniform(.6, 2))) for _ in range(30))
-        rocks = ''.join('<path d="%s" fill="#000" opacity="%s"/>' % (blob(r.uniform(x0, x1), r.uniform(y0, y1), r.uniform(10, 40), r.uniform(3, 8), r, 9, .3), f(r.uniform(.15, .4))) for _ in range(16))
-        out.append('<g clip-path="url(#%sh%d)">%s%s</g>' % (u, seed, strata, rocks))
-        # rim light from the low sun on every edge that faces it
-        out.append('<path d="%s" fill="none" stroke="#f0a860" stroke-opacity=".7" stroke-width="1.6" filter="url(#%sb2)"/>' % (d, u))
-        out.append('<path d="%s" fill="none" stroke="#ffd9a8" stroke-opacity=".5" stroke-width=".8"/>' % d)
-        return '<clipPath id="%sh%d"><path d="%s"/></clipPath>' % (u, seed, d), ''.join(out)
-    # the near headland on the left, stepping down into the sea
-    left = [(-30, hz + 30), (30, hz + 8), (90, hz + 26), (130, hz + 20), (156, hz + 60), (160, hz + 110), (140, hz + 150), (188, hz + 190), (176, hz + 236), (110, hz + 250), (70, hz + 292), (-30, hz + 310)]
-    c1, h1 = headland(left, 1)
-    # a low, wave-cut shelf on the right and a stack out in the water
-    right = [(420, hz + 200), (480, hz + 176), (560, hz + 168), (610, hz + 180), (610, hz + 330), (520, hz + 320), (450, hz + 300), (410, hz + 250)]
-    c2, h2 = headland(right, 2)
-    stack = [(454, hz + 100), (468, hz + 88), (486, hz + 92), (492, hz + 108), (482, hz + 118), (458, hz + 116)]
-    c3, h3 = headland(stack, 3)
-    defs += c1 + c2 + c3
-    o.append(h3 + h1 + h2)
-    # wet rock and the reflection line where the land meets the sea
-    for pts in (left, right):
-        for (x0, y0), (x1, y1) in zip(pts, pts[1:]):
-            if y0 > hz + 100 and y1 > hz + 100:
-                o.append('<path d="M%s %sL%s %s" stroke="#1a0d05" stroke-opacity=".8" stroke-width="3" transform="translate(0 3)"/>' % (f(x0), f(y0), f(x1), f(y1)))
-    # mist lying on the water, and rain far off to the right
-    mist = ''.join('<ellipse cx="%s" cy="%s" rx="%s" ry="%s" fill="#e9a862" opacity="%s"/>' % (f(rnd.uniform(0, W)), f(rnd.uniform(hz - 10, hz + 220)), f(rnd.uniform(60, 200)), f(rnd.uniform(4, 16)), f(rnd.uniform(.08, .24))) for _ in range(24))
-    o.append('<g filter="url(#%sb18)">%s</g>' % (u, mist))
-    rain = ''.join('<line x1="%s" y1="%s" x2="%s" y2="%s" stroke="#f3c48c" stroke-opacity="%s" stroke-width=".7"/>' % (f(x), f(rnd.uniform(120, 300)), f(x - 6), f(rnd.uniform(hz - 30, hz + 20)), f(rnd.uniform(.05, .14))) for x in [rnd.uniform(440, 600) for _ in range(40)])
-    o.append('<g filter="url(#%sb2)">%s</g>' % (u, rain))
-    o.append('<rect y="%d" width="%d" height="%d" fill="url(#%smist)"/>' % (hz - 40, W, 60, u))
-    obj = svg(W, H, ''.join(o) + grain(u + 'o', W, H, .12), defs)
-    ann = [label((372, 256), (560, 150), ['THE SUN', '9.5 AU · 1% OF NOON'], 'end')]
-    return bg, obj, svg(W, H, ''.join(ann))
-
-
 # ================================================================= HUNTER'S MOON
 def hunters(u):
     """A huge harvest-orange full moon just up, flattened by the air, over a black treeline; the halo of a warm October night."""
@@ -470,6 +402,6 @@ def snowmoon(u):
 
 
 PLATES = {
-    'TYCHO': tycho, 'OLYMPUS-MONS': olympus, 'EUROPA': europa, 'KRAKEN-MARE': kraken,
+    'TYCHO': tycho, 'OLYMPUS-MONS': olympus, 'EUROPA': europa,
     'HUNTERS-MOON': hunters, 'CHRISTMAS-SUPERMOON': supermoon, 'SNOW-MOON-ECLIPSE': snowmoon,
 }

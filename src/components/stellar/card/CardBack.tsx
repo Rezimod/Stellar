@@ -105,15 +105,12 @@ function CardBack({ plate: c, edition, commitment, sealed = false, u }: Props) {
   const ed = editionLabel(edition);
   const photo = photoFor(c.designation);
   const win = rr(PW.x, PW.y, PW.w, PW.h, PW.r);
-  const fiction = c.family === 'frontier';
 
   const chip = photo
     ? photo.kind === 'impression'
       ? 'ARTIST’S IMPRESSION'
       : [photo.source, photo.year].filter(Boolean).join(' · ').toUpperCase()
-    : fiction
-      ? 'FICTION · A STELLAR WORLD'
-      : c.designation === 'FIRST-LIGHT'
+    : c.designation === 'FIRST-LIGHT'
         ? 'AWAITING THE FIRST FRAME'
         : 'DRAWN PLATE';
   const chipSize = 10;
@@ -128,8 +125,8 @@ function CardBack({ plate: c, edition, commitment, sealed = false, u }: Props) {
   const promise =
     c.section === 'almanac'
       ? 'On the night, every holder receives the capture.'
-      : fiction
-        ? 'Fiction. A Stellar world, in no sky but this one.'
+      : c.family === 'sights'
+        ? 'When it comes, Live Telescope V1 records it for every holder.'
         : c.noun
           ? `When Live Telescope V1 photographs ${c.noun}, every holder receives the image.`
           : `One of ${c.of} editions.`;

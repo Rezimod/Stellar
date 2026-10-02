@@ -142,16 +142,6 @@
   "url": "https://esahubble.org/images/heic1917a/",
   "focus": "50% 50%"
  },
- "KRAKEN-MARE": {
-  "file": "/cards/photo/KRAKEN-MARE.webp",
-  "kind": "photo",
-  "credit": "NASA/JPL-Caltech/ASI/USGS",
-  "source": "Cassini (RADAR mosaic)",
-  "year": "2013",
-  "license": "Public domain",
-  "url": "https://photojournal.jpl.nasa.gov/catalog/PIA17655",
-  "focus": "50% 50%"
- },
  "ENCELADUS": {
   "file": "/cards/photo/ENCELADUS.webp",
   "kind": "photo",
@@ -292,16 +282,6 @@
   "url": "https://commons.wikimedia.org/wiki/File:GALEX_Image_of_Mira.jpg",
   "focus": "80% 50%"
  },
- "ALBIREO": {
-  "file": "/cards/photo/ALBIREO.webp",
-  "kind": "photo",
-  "credit": "Topoignaz (Wikimedia Commons)",
-  "source": "Ground telescope",
-  "year": "2020",
-  "license": "CC BY-SA 4.0",
-  "url": "https://commons.wikimedia.org/wiki/File:Albireo_through_Celestron_C8.jpg",
-  "focus": "50% 50%"
- },
  "BETELGEUSE": {
   "file": "/cards/photo/BETELGEUSE.webp",
   "kind": "photo",
@@ -351,36 +331,6 @@
   "license": "CC BY 4.0",
   "url": "https://esahubble.org/images/ann1703a/",
   "focus": "39% 42%"
- },
- "55-CANCRI-E": {
-  "file": "/cards/photo/55-CANCRI-E.webp",
-  "kind": "impression",
-  "credit": "ESA/Hubble, M. Kornmesser",
-  "source": "Artist's impression",
-  "year": "2016",
-  "license": "CC BY 4.0",
-  "url": "https://esahubble.org/images/heic1603a/",
-  "focus": "70% 60%"
- },
- "HD-189733B": {
-  "file": "/cards/photo/HD-189733B.webp",
-  "kind": "impression",
-  "credit": "NASA, ESA, M. Kornmesser",
-  "source": "Artist's impression",
-  "year": "2013",
-  "license": "CC BY 4.0",
-  "url": "https://esahubble.org/images/heic1312a/",
-  "focus": "50% 50%"
- },
- "KEPLER-16B": {
-  "file": "/cards/photo/KEPLER-16B.webp",
-  "kind": "impression",
-  "credit": "NASA/JPL-Caltech/T. Pyle",
-  "source": "Artist's impression",
-  "year": "2011",
-  "license": "Public domain",
-  "url": "https://commons.wikimedia.org/wiki/File:Kepler-16b.jpg",
-  "focus": "50% 50%"
  },
  "M45": {
   "file": "/cards/photo/M45.webp",
@@ -462,16 +412,6 @@
   "url": "https://commons.wikimedia.org/wiki/File:Rosette_Nebula%2C_NGC_2237_(noao-rosette).jpg",
   "focus": "50% 50%"
  },
- "NORTH-AMERICA": {
-  "file": "/cards/photo/NORTH-AMERICA.webp",
-  "kind": "photo",
-  "credit": "Davide De Martin (ESA/Hubble), the ESA/ESO/NASA Photoshop FITS Liberator & Digitized Sky Survey 2",
-  "source": "Digitized Sky Survey",
-  "year": "2005",
-  "license": "CC BY 4.0",
-  "url": "https://esahubble.org/images/heic0510a/",
-  "focus": "50% 50%"
- },
  "VEIL": {
   "file": "/cards/photo/VEIL.webp",
   "kind": "photo",
@@ -522,16 +462,6 @@
   "url": "https://esahubble.org/images/heic0515a/",
   "focus": "50% 50%"
  },
- "BUTTERFLY": {
-  "file": "/cards/photo/BUTTERFLY.webp",
-  "kind": "photo",
-  "credit": "NASA, ESA and the Hubble SM4 ERO Team",
-  "source": "Hubble Space Telescope",
-  "year": "2009",
-  "license": "CC BY 4.0",
-  "url": "https://esahubble.org/images/heic0910h/",
-  "focus": "50% 50%"
- },
  "CARINA": {
   "file": "/cards/photo/CARINA.webp",
   "kind": "photo",
@@ -540,26 +470,6 @@
   "year": "2010",
   "license": "CC BY 4.0",
   "url": "https://esahubble.org/images/heic1007a/",
-  "focus": "50% 50%"
- },
- "JEWEL-BOX": {
-  "file": "/cards/photo/JEWEL-BOX.webp",
-  "kind": "photo",
-  "credit": "ESO/Y. Beletsky",
-  "source": "ESO Very Large Telescope",
-  "year": "2009",
-  "license": "CC BY 4.0",
-  "url": "https://www.eso.org/public/images/eso0940a/",
-  "focus": "50% 50%"
- },
- "DOUBLE-CLUSTER": {
-  "file": "/cards/photo/DOUBLE-CLUSTER.webp",
-  "kind": "photo",
-  "credit": "N.A. Sharp/NOIRLab/NSF/AURA",
-  "source": "Kitt Peak",
-  "year": "2020",
-  "license": "CC BY 4.0",
-  "url": "https://noirlab.edu/public/images/noao-hcper/",
   "focus": "50% 50%"
  },
  "OMEGA-CEN": {
@@ -642,16 +552,6 @@
   "url": "https://esahubble.org/images/heic1901a/",
   "focus": "50% 50%"
  },
- "M81": {
-  "file": "/cards/photo/M81.webp",
-  "kind": "photo",
-  "credit": "NASA, ESA and the Hubble Heritage Team (STScI/AURA). Acknowledgment: A. Zezas and J. Huchra (Harvard-Smithsonian Center for Astrophysics)",
-  "source": "Hubble Space Telescope",
-  "year": "2007",
-  "license": "CC BY 4.0",
-  "url": "https://esahubble.org/images/heic0710a/",
-  "focus": "50% 50%"
- },
  "M82": {
   "file": "/cards/photo/M82.webp",
   "kind": "photo",
@@ -712,16 +612,6 @@
   "url": "https://esahubble.org/images/opo0020a/",
   "focus": "50% 50%"
  },
- "STEPHANS-QUINTET": {
-  "file": "/cards/photo/STEPHANS-QUINTET.webp",
-  "kind": "photo",
-  "credit": "NASA, ESA and the Hubble SM4 ERO Team",
-  "source": "Hubble Space Telescope",
-  "year": "2009",
-  "license": "CC BY 4.0",
-  "url": "https://esahubble.org/images/heic0910i/",
-  "focus": "50% 50%"
- },
  "CARTWHEEL": {
   "file": "/cards/photo/CARTWHEEL.webp",
   "kind": "photo",
@@ -742,26 +632,6 @@
   "url": "https://www.eso.org/public/images/eso2208-eht-mwa/",
   "focus": "50% 50%"
  },
- "CYGNUS-X1": {
-  "file": "/cards/photo/CYGNUS-X1.webp",
-  "kind": "impression",
-  "credit": "NASA, ESA, Martin Kornmesser (ESA/Hubble)",
-  "source": "Artist's impression",
-  "year": "2002",
-  "license": "CC BY 4.0",
-  "url": "https://esahubble.org/images/cygx1_illust_orig/",
-  "focus": "50% 50%"
- },
- "MAGNETAR": {
-  "file": "/cards/photo/MAGNETAR.webp",
-  "kind": "impression",
-  "credit": "ESA",
-  "source": "Artist's impression",
-  "year": "2025",
-  "license": "CC BY 4.0",
-  "url": "https://esahubble.org/images/heic2504a/",
-  "focus": "50% 50%"
- },
  "SN-1987A": {
   "file": "/cards/photo/SN-1987A.webp",
   "kind": "photo",
@@ -770,16 +640,6 @@
   "year": "2011",
   "license": "CC BY 4.0",
   "url": "https://esahubble.org/images/ann1111a/",
-  "focus": "50% 50%"
- },
- "GW170817": {
-  "file": "/cards/photo/GW170817.webp",
-  "kind": "photo",
-  "credit": "NASA and ESA",
-  "source": "Hubble Space Telescope",
-  "year": "2017",
-  "license": "CC BY 4.0",
-  "url": "https://esahubble.org/images/heic1717c/",
   "focus": "50% 50%"
  },
  "TON-618": {
@@ -811,36 +671,6 @@
   "license": "CC BY-SA 3.0 IGO",
   "url": "https://images.nasa.gov/details/PIA16873",
   "focus": "50% 50%"
- },
- "WORMHOLE": {
-  "kind": "none"
- },
- "TWIN-SUNS": {
-  "kind": "none"
- },
- "HOUR-SEA": {
-  "kind": "none"
- },
- "ORBITAL-RING": {
-  "kind": "none"
- },
- "DYSON-SWARM": {
-  "kind": "none"
- },
- "ECUMENOPOLIS": {
-  "kind": "none"
- },
- "FROZEN-CLOUDS": {
-  "kind": "none"
- },
- "GREEN-MOON": {
-  "kind": "none"
- },
- "DERELICT": {
-  "kind": "none"
- },
- "GENERATION-SHIP": {
-  "kind": "none"
  },
  "ORIONIDS": {
   "file": "/cards/photo/ORIONIDS.webp",
@@ -921,5 +751,245 @@
   "license": "Public domain",
   "url": "https://images.nasa.gov/details/NHQ201708210100",
   "focus": "50% 50%"
+ },
+ "EARTH": {
+  "file": "/cards/photo/EARTH.webp",
+  "kind": "photo",
+  "credit": "NASA / Apollo 17 crew (AS17-148-22727, \"The Blue Marble\")",
+  "source": "Apollo 17",
+  "year": "1972",
+  "license": "Public domain",
+  "url": "https://commons.wikimedia.org/wiki/File:The_Earth_seen_from_Apollo_17.jpg",
+  "focus": "50% 50%"
+ },
+ "EARTHRISE": {
+  "file": "/cards/photo/EARTHRISE.webp",
+  "kind": "photo",
+  "credit": "NASA / Bill Anders (AS08-14-2383)",
+  "source": "Apollo 8",
+  "year": "1968",
+  "license": "Public domain",
+  "url": "https://commons.wikimedia.org/wiki/File:NASA-Apollo8-Dec24-Earthrise.jpg",
+  "focus": "55% 40%"
+ },
+ "CHICXULUB": {
+  "file": "/cards/photo/CHICXULUB.webp",
+  "kind": "photo",
+  "credit": "NASA/JPL-Caltech (Shuttle Radar Topography Mission, PIA03379)",
+  "source": "SRTM / Space Shuttle",
+  "year": "2003",
+  "license": "Public domain",
+  "url": "https://images.nasa.gov/details/PIA03379",
+  "focus": "50% 50%"
+ },
+ "TUNGUSKA": {
+  "file": "/cards/photo/TUNGUSKA.webp",
+  "kind": "photo",
+  "credit": "Leonid Kulik expedition, 1929",
+  "source": "Kulik expedition",
+  "year": "1929",
+  "license": "Public domain",
+  "url": "https://commons.wikimedia.org/wiki/File:Tunguska_Ereignis-1.jpg",
+  "focus": "50% 50%"
+ },
+ "SPUTNIK-1": {
+  "file": "/cards/photo/SPUTNIK-1.webp",
+  "kind": "photo",
+  "credit": "NASA / NSSDCA (replica of Sputnik 1)",
+  "source": "NSSDCA",
+  "year": "",
+  "license": "Public domain",
+  "url": "https://commons.wikimedia.org/wiki/File:Sputnik_asm.jpg",
+  "focus": "78% 40%"
+ },
+ "ISS": {
+  "file": "/cards/photo/ISS.webp",
+  "kind": "photo",
+  "credit": "NASA / STS-132 crew",
+  "source": "STS-132 / Atlantis",
+  "year": "2010",
+  "license": "Public domain",
+  "url": "https://commons.wikimedia.org/wiki/File:International_Space_Station_after_undocking_of_STS-132.jpg",
+  "focus": "50% 50%"
+ },
+ "HUBBLE": {
+  "file": "/cards/photo/HUBBLE.webp",
+  "kind": "photo",
+  "credit": "NASA / STS-125 crew",
+  "source": "STS-125 / Atlantis",
+  "year": "2009",
+  "license": "Public domain",
+  "url": "https://commons.wikimedia.org/wiki/File:HST-SM4.jpeg",
+  "focus": "50% 50%"
+ },
+ "JWST": {
+  "file": "/cards/photo/JWST.webp",
+  "kind": "photo",
+  "credit": "NASA / Chris Gunn",
+  "source": "NASA Goddard",
+  "year": "2016",
+  "license": "Public domain",
+  "url": "https://images.nasa.gov/details/GSFC_20171208_Archive_e000162",
+  "focus": "50% 50%"
+ },
+ "MOON": {
+  "file": "/cards/photo/MOON.webp",
+  "kind": "photo",
+  "credit": "Gregory H. Revera",
+  "source": "Ground telescope",
+  "year": "2010",
+  "license": "CC BY-SA 3.0",
+  "url": "https://commons.wikimedia.org/wiki/File:FullMoon2010.jpg",
+  "focus": "50% 50%"
+ },
+ "APOLLO-11": {
+  "file": "/cards/photo/APOLLO-11.webp",
+  "kind": "photo",
+  "credit": "NASA / Neil Armstrong (AS11-40-5903)",
+  "source": "Apollo 11",
+  "year": "1969",
+  "license": "Public domain",
+  "url": "https://commons.wikimedia.org/wiki/File:Aldrin_Apollo_11_original.jpg",
+  "focus": "45% 35%"
+ },
+ "SL9": {
+  "file": "/cards/photo/SL9.webp",
+  "kind": "photo",
+  "credit": "NASA, ESA and the Hubble Space Telescope Comet Team",
+  "source": "Hubble Space Telescope",
+  "year": "1994",
+  "license": "Public domain",
+  "url": "https://commons.wikimedia.org/wiki/File:Multiple_Impacts_From_Comet_P-Shoemaker-Levy_9_on_Jupiter_(2004-15-1529).jpg",
+  "focus": "75% 45%"
+ },
+ "TITAN": {
+  "file": "/cards/photo/TITAN.webp",
+  "kind": "photo",
+  "credit": "NASA/JPL-Caltech/Space Science Institute",
+  "source": "Cassini",
+  "year": "2012",
+  "license": "Public domain",
+  "url": "https://commons.wikimedia.org/wiki/File:PIA14602.jpg",
+  "focus": "50% 50%"
+ },
+ "BIG-DIPPER": {
+  "file": "/cards/photo/BIG-DIPPER.webp",
+  "kind": "photo",
+  "credit": "E. Slawik/NOIRLab/NSF/AURA/M. Zamani",
+  "source": "NOIRLab",
+  "year": "",
+  "license": "CC BY 4.0",
+  "url": "https://commons.wikimedia.org/wiki/File:Photo_of_the_constellation_Ursa_Major_produced_by_NOIRLab_in_collaboration_with_Eckhard_Slawik,_a_German_astrophotographer_(ursa-major).jpg",
+  "focus": "50% 50%"
+ },
+ "ORION": {
+  "file": "/cards/photo/ORION.webp",
+  "kind": "photo",
+  "credit": "Rogelio Bernal Andreo",
+  "source": "Astrophotograph",
+  "year": "2010",
+  "license": "CC BY-SA 3.0",
+  "url": "https://commons.wikimedia.org/wiki/File:Orion_Head_to_Toe.jpg",
+  "focus": "50% 50%"
+ },
+ "SOUTHERN-CROSS": {
+  "file": "/cards/photo/SOUTHERN-CROSS.webp",
+  "kind": "photo",
+  "credit": "ESO/S. Brunier",
+  "source": "ESO",
+  "year": "",
+  "license": "CC BY 4.0",
+  "url": "https://commons.wikimedia.org/wiki/File:Constellation_Crux_(crux_pano_1_2).jpg",
+  "focus": "50% 50%"
+ },
+ "SUMMER-TRIANGLE": {
+  "file": "/cards/photo/SUMMER-TRIANGLE.webp",
+  "kind": "photo",
+  "credit": "A. Fujii / ESA/Hubble (heic0720c)",
+  "source": "ESA/Hubble",
+  "year": "2007",
+  "license": "CC BY 4.0",
+  "url": "https://commons.wikimedia.org/wiki/File:Wide-field_view_of_the_Summer_Triangle.jpg",
+  "focus": "50% 50%"
+ },
+ "TOTAL-ECLIPSE": {
+  "file": "/cards/photo/TOTAL-ECLIPSE.webp",
+  "kind": "photo",
+  "credit": "NASA / Aubrey Gemignani",
+  "source": "NASA",
+  "year": "2017",
+  "license": "Public domain",
+  "url": "https://images.nasa.gov/details/NHQ201708210100",
+  "focus": "50% 50%"
+ },
+ "RING-OF-FIRE": {
+  "file": "/cards/photo/RING-OF-FIRE.webp",
+  "kind": "photo",
+  "credit": "NASA / Jim Spann",
+  "source": "NASA",
+  "year": "2023",
+  "license": "Public domain",
+  "url": "https://commons.wikimedia.org/wiki/File:NASA_Annular_Eclipse_Imagery_(SVS14450_-_14450_001_20231015-012931-jfs).jpg",
+  "focus": "50% 50%"
+ },
+ "BLOOD-MOON": {
+  "file": "/cards/photo/BLOOD-MOON.webp",
+  "kind": "photo",
+  "credit": "U.S. Navy / PH2 Scott Taylor",
+  "source": "U.S. Navy",
+  "year": "2004",
+  "license": "Public domain",
+  "url": "https://commons.wikimedia.org/wiki/File:US_Navy_041027-N-9500T-001_The_moon_turns_red_and_orange_during_a_total_lunar_eclipse.jpg",
+  "focus": "50% 50%"
+ },
+ "AURORA": {
+  "file": "/cards/photo/AURORA.webp",
+  "kind": "photo",
+  "credit": "U.S. Air Force / Senior Airman Joshua Strang",
+  "source": "U.S. Air Force",
+  "year": "2005",
+  "license": "Public domain",
+  "url": "https://commons.wikimedia.org/wiki/File:Aurora_borealis_over_Eielson_Air_Force_Base,_Alaska.jpg",
+  "focus": "50% 40%"
+ },
+ "VENUS-TRANSIT": {
+  "file": "/cards/photo/VENUS-TRANSIT.webp",
+  "kind": "photo",
+  "credit": "NASA/SDO, HMI",
+  "source": "Solar Dynamics Observatory",
+  "year": "2012",
+  "license": "CC BY 2.0",
+  "url": "https://commons.wikimedia.org/wiki/File:NASA%27s_SDO_Satellite_Captures_First_Image_of_2012_Venus_Transit_(Close-Up).jpg",
+  "focus": "30% 32%"
+ },
+ "HALE-BOPP": {
+  "file": "/cards/photo/HALE-BOPP.webp",
+  "kind": "photo",
+  "credit": "ESO/E. Slawik",
+  "source": "ESO",
+  "year": "1997",
+  "license": "CC BY 4.0",
+  "url": "https://commons.wikimedia.org/wiki/File:Comet_Hale-Bopp_Phot-mar14-hbs-2.jpg",
+  "focus": "40% 62%"
+ },
+ "LEONIDS": {
+  "file": "/cards/photo/LEONIDS.webp",
+  "kind": "photo",
+  "credit": "Navicore",
+  "source": "Astrophotograph",
+  "year": "2009",
+  "license": "CC BY 3.0",
+  "url": "https://commons.wikimedia.org/wiki/File:Leonid_Meteor.jpg",
+  "focus": "65% 42%"
+ },
+ "PERSEIDS": {
+  "file": "/cards/photo/PERSEIDS.webp",
+  "kind": "photo",
+  "credit": "NASA / Bill Ingalls",
+  "source": "NASA",
+  "year": "2015",
+  "license": "Public domain",
+  "url": "https://commons.wikimedia.org/wiki/File:Perseid_Meteor_Shower_(201508130001HQ).jpg",
+  "focus": "50% 30%"
  }
 }

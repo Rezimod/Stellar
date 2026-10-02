@@ -748,56 +748,6 @@ def veil(u):
     return bg, obj, svg(W, H, ann)
 
 
-# ================================================================= NGC 7000, THE NORTH AMERICA NEBULA
-def north_america(u):
-    rnd = random.Random(7000)
-    bg = sky(u, H, ('#1a1020', '#0c0812', '#030205'), 800, 7000, 5)
-    k = Kit(u)
-    o = []
-    # the coast, north to south: the Atlantic seaboard, Florida, the Gulf, and the Mexican shore where the Cygnus Wall glows
-    east = [(420, 50), (446, 100), (430, 146), (418, 190), (432, 230), (408, 270), (398, 314), (388, 362), (382, 408), (392, 446)]
-    florida = [(402, 486), (412, 520), (408, 556), (394, 566), (382, 540), (372, 506), (354, 484)]
-    gulf = [(320, 470), (290, 474), (266, 486), (252, 508)]
-    mexico = [(258, 538), (276, 574), (298, 608), (320, 642), (344, 684)]
-    west = [(330, 760), (300, 720), (250, 640), (200, 560), (150, 500), (100, 440), (60, 360), (34, 270), (30, 180), (50, 100), (120, 60), (250, 44), (360, 40)]
-    land = smooth(east + florida + gulf + mexico + west)
-    ocean = smooth(east + florida + gulf + mexico + [(372, 760), (400, 900), (560, 900), (540, 700), (520, 470), (504, 330), (522, 190), (512, 40), (500, -60), (410, -60)])
-    # the glow of the whole complex, dim outside the continent, bright within it
-    fade = k.mask(P('M-60 -60H642V900H-60Z', k.rg([(0, '#fff'), (.55, '#fff', .8), (.85, '#fff', .3), (1, '#fff', 0)], .45, .42, .62)))
-    em = [P('M-60 -60H642V900H-60Z', '#4a0e1c', .8)]
-    for _ in range(40):
-        em.append(P(lump(rnd, rnd.uniform(-40, 620), rnd.uniform(40, 740), rnd.uniform(40, 110), rnd.uniform(30, 80), 12, .4), rnd.choice(['#8a1a2c', '#a82034', '#6a1424', '#c8303e']), rnd.uniform(.3, .55)))
-    o.append(g(g(em, k.tex(.01, 40, 4, disp=90, sd=8)), extra=' mask="%s"' % fade))
-    cont = k.mask(g(P(land, '#fff'), k.tex(.012, 51, 3, disp=50, sd=24)))
-    body = [P(land, '#b8283a', .9)]
-    for _ in range(60):
-        body.append(P(lump(rnd, rnd.uniform(0, 440), rnd.uniform(50, 700), rnd.uniform(30, 90), rnd.uniform(24, 60), 12, .4), rnd.choice(['#e84a50', '#ff6a5a', '#d84048', '#f07a60', '#c8303e', '#ff8a70']), rnd.uniform(.3, .6)))
-    o.append(g(g(body, k.tex(.012, 41, 4, disp=60, sd=5)), extra=' mask="%s"' % cont))
-    lit = [P(lump(rnd, rnd.uniform(40, 420), rnd.uniform(80, 640), rnd.uniform(20, 60), rnd.uniform(14, 40), 12, .45), rnd.choice(['#ff9a80', '#ffb098', '#ff7a6a', '#ffc8a8']), rnd.uniform(.3, .6)) for _ in range(50)]
-    o.append(g(g(lit, k.tex(.022, 42, 5, disp=50, sd=1.6, a=3.2, b=-1.35), op=.55, blend='screen'), extra=' mask="%s"' % cont))
-    o.append(g(P('M-60 -60H642V900H-60Z', '#3a0612', .9), k.tex(.016, 43, 5, a=3.6, b=-2.1), op=.5))
-    # brighter toward the east and south, where the young stars light the cloud's face
-    o.append(g([glow(k, 330, 520, 180, '#ff8a70', .4), glow(k, 380, 300, 140, '#ff7a64', .3)], None, blend='screen', extra=' mask="%s"' % cont))
-    # the Pelican's glow beyond the dark lane
-    o.append(g([P(lump(rnd, 566 + rnd.gauss(0, 26), 330 + rnd.gauss(0, 100), rnd.uniform(30, 70), rnd.uniform(30, 60), 12, .4), rnd.choice(['#e84a50', '#ff6a5a', '#c8303e']), rnd.uniform(.3, .5)) for _ in range(14)],
-               k.tex(.014, 44, 4, disp=70, sd=6, a=2.4, b=-.5, mfreq=.03, mseed=52)))
-    # the dark cloud: the Atlantic and the Gulf
-    o.append(g(P(ocean, '#070306', .92), k.tex(.03, 45, 4, disp=12, sd=3.5)))
-    o.append(g(P(ocean, '#4a1a1e', .5, ' filter="%s"' % k.tex(.018, 46, 4, a=3.2, b=-1.6)), k.tex(.03, 45, 4, disp=12, sd=2)))
-    o.append(g([P(lump(rnd, rnd.uniform(400, 540), rnd.uniform(40, 700), rnd.uniform(20, 50), rnd.uniform(14, 40), 10, .4), '#070306', rnd.uniform(.3, .6)) for _ in range(12)], k.tex(.04, 47, 3, disp=30, sd=5)))
-    # the bright coastlines: the Cygnus Wall along Mexico, softer rims elsewhere
-    wall = smooth([gulf[-1]] + mexico, False)
-    rims = [S(wall, '#ff7a64', 30, .35), S(wall, '#ffb49a', 10, .6), S(smooth(east + florida[:4], False), '#ff7060', 8, .35), S(smooth(florida[3:] + gulf, False), '#ff9a80', 7, .45)]
-    o.append(g(g(rims, k.blur(4)), k.tex(.03, 48, 4, disp=12, sd=1, a=2.2, b=-.3), blend='screen'))
-    o.append(g([S(wall, '#ffe8d8', 3, .7)], k.tex(.045, 49, 4, disp=10, sd=1.2, a=2.8, b=-.9), blend='screen'))
-    o.append(dust_stars(rnd, (0, 90, 582, 620), 120, ('#fff4ec', '#ffe8dc', '#dfe8ff'), 1, .8, test=lambda x, y: x < 390 or x > 520 or rnd.random() < .15))
-    for x, y, r in [(150, 190, 1.6), (90, 470, 1.3), (556, 250, 1.3), (230, 330, 1.1)]:
-        o.append(spike_star(x, y, r, '#fff4e4', 10 + 6 * r, .9, .7))
-    obj = finish(k, u, o, .12)
-    ann = top('RA 20H 59M 17S · DEC +44° 31′ · CYGNUS') + scalebar(22, 800, 60, '10 LY')
-    return bg, obj, svg(W, H, ann)
-
-
 # ================================================================= THE ROSETTE
 def rosette(u):
     rnd = random.Random(2244)
@@ -874,69 +824,6 @@ def wing(rnd, cx, cy, ang, L, w0, w1, n=22, rag=.16):
         bot.append(along(cx, cy, ang, L * t, w * (1 + rnd.uniform(-rag, rag))))
     tip = along(cx, cy, ang, L * 1.03, rnd.uniform(-10, 10))
     return smooth(top + [tip] + list(reversed(bot)))
-
-
-def butterfly(u):
-    rnd = random.Random(6302)
-    cx, cy, AX = 291, 338, -24
-    bg = sky(u, H, ('#121628', '#080b18', '#020308'), 420, 6302, 4)
-    k = Kit(u)
-    o = []
-    wings = []
-    for sgn, L, w1 in [(1, 262, 118), (-1, 252, 128)]:
-        ang = AX if sgn > 0 else AX + 180
-        wings.append((ang, L, w1, wing(rnd, cx, cy, ang, L, 14, w1, 30, .2), wing(rnd, cx, cy, ang, L * .86, 8, w1 * .66, rag=.22), wing(rnd, cx, cy, ang, L * .6, 5, w1 * .34, rag=.3)))
-    # the outer skin of the lobes: blue-violet, hot and thin
-    o.append(g([P(d, '#6a6ae8', .6) for _, _, _, d, _, _ in wings], k.tex(.02, 70, 4, disp=40, sd=9)))
-    o.append(g([P(d, '#a0a8ff', .45) for _, _, _, d, _, _ in wings], k.tex(.03, 71, 4, disp=30, sd=3, a=2.6, b=-.9), blend='screen'))
-    # the lobes: rust and orange, white-hot along the axis
-    body = []
-    for ang, L, w1, d, d2, d3 in wings:
-        x1, y1 = along(cx, cy, ang, L, 0)
-        grad = k.lg([(0, '#fff4e0'), (.14, '#ffc880'), (.4, '#e0783a'), (.7, '#a8482a'), (.9, '#7a3a5a'), (1, '#5a4aa0')], cx, cy, x1, y1, True)
-        body.append(P(d, grad, .8))
-        body.append(P(d2, k.lg([(0, '#ffffff'), (.2, '#ffe0b0'), (.6, '#f09050', .8), (1, '#c8603a', 0)], cx, cy, x1, y1, True), .75))
-        body.append(P(d3, k.lg([(0, '#ffffff'), (.5, '#fff0d8', .8), (1, '#ffd0a0', 0)], cx, cy, x1, y1, True), .8))
-    o.append(g(body, k.tex(.02, 72, 5, disp=46, sd=3.2)))
-    # turbulence: ripples across the lobes and knotted streamers along them
-    rip = []
-    for ang, L, w1, d, _, _ in wings:
-        for _ in range(26):
-            t = rnd.uniform(.2, .95); x, y = along(cx, cy, ang, L * t, rnd.uniform(-w1 * .6, w1 * .6))
-            rip.append(E(x, y, rnd.uniform(4, 10), rnd.uniform(18, 46), rnd.choice(['#fff0d8', '#ffb070', '#6a2a1a', '#b0b8ff']), rnd.uniform(.15, .35), ang + rnd.uniform(-20, 20)))
-        for _ in range(30):
-            s0 = rnd.uniform(.1, .6); s1 = s0 + rnd.uniform(.2, .4); t0 = rnd.uniform(-.5, .5)
-            p0 = along(cx, cy, ang, L * s0, w1 * t0 * s0); p1 = along(cx, cy, ang, L * s1, w1 * t0 * s1 * 1.2)
-            rip.append(S('M%s %sL%s %s' % (f(p0[0]), f(p0[1]), f(p1[0]), f(p1[1])), rnd.choice(['#fff4e0', '#ffc080', '#ffe0c0', '#4a2014']), rnd.uniform(.8, 2.4), rnd.uniform(.2, .45)))
-    clip = k.clip(''.join(d for _, _, _, d, _, _ in wings))
-    o.append('<g clip-path="%s">%s</g>' % (clip, g(rip, k.tex(.03, 73, 4, disp=24, sd=2.2))))
-    o.append(g([P(d, '#000', .5) for _, _, _, d, _, _ in wings], k.tex(.028, 74, 5, disp=10, sd=1, a=3.2, b=-1.75, mfreq=.03, mseed=75), op=.55))
-    o.append(g([P(d, 'none', 1, ' stroke="#b8c0ff" stroke-width="3" stroke-opacity=".35"') for _, _, _, d, _, _ in wings], k.tex(.02, 76, 4, disp=30, sd=3, a=2.4, b=-.6), blend='screen'))
-    plumes = []
-    for ang, L, w1, _, _, _ in wings:
-        for _ in range(12):
-            t0 = rnd.uniform(-.5, .5)
-            p0 = along(cx, cy, ang, L * .8, w1 * t0 * .8); p1 = along(cx, cy, ang, L * rnd.uniform(1.05, 1.25), w1 * t0 * 1.3)
-            plumes.append(S('M%s %sL%s %s' % (f(p0[0]), f(p0[1]), f(p1[0]), f(p1[1])), rnd.choice(['#8a88f0', '#b0a8ff', '#e0906a']), rnd.uniform(3, 8), rnd.uniform(.12, .25)))
-    o.append(g(plumes, k.tex(.025, 79, 4, disp=30, sd=4), blend='screen'))
-    # the waist: a dark torus of dust, the hidden star glowing through
-    o.append(C(cx, cy, 110, k.rg([(0, '#ffffff', .95), (.15, '#fff0d0', .7), (.5, '#ffb070', .2), (1, '#ff9050', 0)]), 1, ' style="mix-blend-mode: screen"'))
-    waist = [E(cx, cy, 16, 70, '#1a0a06', .85, AX), E(cx + 3, cy - 2, 9, 92, '#1a0a06', .6, AX + 8)]
-    for _ in range(30):
-        x, y = along(cx, cy, AX, rnd.gauss(0, 12), rnd.uniform(-80, 80))
-        waist.append(E(x, y, rnd.uniform(6, 16), rnd.uniform(4, 10), rnd.choice(['#1a0a06', '#2a1208', '#3a1a0c']), rnd.uniform(.35, .7), rnd.uniform(0, 180)))
-    for _ in range(18):
-        sgn = rnd.choice([-1, 1])
-        x, y = along(cx, cy, AX, sgn * rnd.uniform(14, 70), rnd.uniform(-50, 50))
-        waist.append(E(x, y, rnd.uniform(10, 28), rnd.uniform(2, 5), '#1a0a06', rnd.uniform(.3, .55), AX + rnd.uniform(-25, 25)))
-    o.append(g(waist, k.tex(.035, 77, 4, disp=20, sd=2.6, a=2.4, b=-.3)))
-    o.append(g(E(cx, cy, 22, 78, 'none', 1, AX, ' stroke="#ffc890" stroke-width="2" stroke-opacity=".35"'), k.tex(.05, 78, 3, disp=10, sd=1.5, a=2.6, b=-.9), blend='screen'))
-    o.append(dust_stars(rnd, (0, 90, 582, 620), 70, rmax=1, opmax=.75))
-    for x, y, r in [(90, 180, 1.4), (500, 520, 1.3), (470, 130, 1.2), (130, 560, 1.1)]:
-        o.append(spike_star(x, y, r, '#fff4e4', 9 + 5 * r, .85, .6))
-    obj = finish(k, u, o, .12)
-    ann = top('RA 17H 13M 44S · DEC −37° 06′ · SCORPIUS') + scalebar(22, 800, 60, '1 LY')
-    return bg, obj, svg(W, H, ann)
 
 
 # ================================================================= CARINA, THE COSMIC CLIFFS
@@ -1075,5 +962,5 @@ def tarantula(u):
 
 
 PLATES = {
-    'M16': m16, 'HORSEHEAD': horsehead, 'M57': m57, 'HELIX': helix, 'CATS-EYE': cats_eye, 'M8': m8, 'M20': m20, 'VEIL': veil, 'NORTH-AMERICA': north_america, 'ROSETTE': rosette, 'BUTTERFLY': butterfly, 'CARINA': carina, 'TARANTULA': tarantula,
+    'M16': m16, 'HORSEHEAD': horsehead, 'M57': m57, 'HELIX': helix, 'CATS-EYE': cats_eye, 'M8': m8, 'M20': m20, 'VEIL': veil, 'ROSETTE': rosette, 'CARINA': carina, 'TARANTULA': tarantula,
 }

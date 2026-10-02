@@ -5,7 +5,8 @@
  * so a re-run brings rows up to date and adds nothing. A set already released
  * stays released. Editions and nights are never touched. A card the set no
  * longer lists is removed only while no edition of it exists; otherwise it is
- * left, and named, for the operator to decide.
+ * kept for its holders but closed at the editions it has, so no capsule draws
+ * it again, and named.
  */
 
 import { sql } from 'drizzle-orm';
@@ -45,8 +46,10 @@ export async function seedSet(
     RETURNING c.designation
   `)) as { rows: Array<{ designation: string }> };
   const { rows: stuck } = (await db.execute(sql`
-    SELECT c.designation FROM card c
+    UPDATE card c
+    SET edition_size = (SELECT MAX(e.edition_number) FROM edition e WHERE e.card_id = c.id)
     WHERE c.set_id = ${set.id}::uuid AND c.designation <> ALL(${listed})
+    RETURNING c.designation
   `)) as { rows: Array<{ designation: string }> };
 
   return { setId: set.id, cards: rows, removed: gone.map((r) => r.designation), kept: stuck.map((r) => r.designation) };

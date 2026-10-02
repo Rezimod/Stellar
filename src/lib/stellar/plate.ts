@@ -17,7 +17,6 @@ const NOUN: Record<string, string> = {
   JUPITER: 'Jupiter',
   EUROPA: 'Europa',
   SATURN: 'Saturn',
-  'KRAKEN-MARE': 'Kraken Mare',
   HALLEY: 'Halley',
   M45: 'the Pleiades',
   M42: 'the Orion Nebula',
@@ -39,7 +38,6 @@ const STORY: Record<string, [string, string]> = {
   JUPITER: ['A thousand Earths would fit inside.', 'Its storm has raged longer than any nation.'],
   EUROPA: ['Under the ice, twice the water of Earth.', 'The best place to look for life we have not met.'],
   SATURN: ['Ice as small as sand, as big as houses.', 'From here, the thinnest thing we have ever seen.'],
-  'KRAKEN-MARE': ['A sea where the rain is methane.', 'The only shore beyond Earth where waves may break.'],
   HALLEY: ['It came in 1986. It comes again in 2061.', 'Hold the card, and wait with it.'],
   'VOYAGER-1': ['Launched in 1977, still calling home.', 'Every year, farther from everyone who ever lived.'],
   M45: ['Seven sisters, a hundred million years young.', 'Named by every people who ever looked up.'],
@@ -148,7 +146,7 @@ export function plateFor(designation: string): Plate | null {
 /** Each object's own light, for the glow a tile sits on. Where an object has none — a crater, a stone — the family's stands in. */
 const GLOW: Record<string, string> = {
   'FIRST-LIGHT': '#e8e2d4', IMILAC: '#d9b26f', 'LUNAR-FRAGMENT': '#c9d6ff', TYCHO: '#bacbff', 'OLYMPUS-MONS': '#ff9a63',
-  JUPITER: '#ffbd8a', EUROPA: '#d8ecff', SATURN: '#ffe3a3', 'KRAKEN-MARE': '#ffd28a', HALLEY: '#7fc8ff', 'VOYAGER-1': '#bfc8d8',
+  JUPITER: '#ffbd8a', EUROPA: '#d8ecff', SATURN: '#ffe3a3', HALLEY: '#7fc8ff', 'VOYAGER-1': '#bfc8d8',
   M45: '#6fb6ff', M42: '#ff9ec7', M1: '#9fd0ff', 'SGR-A': '#ff8a2a', M31: '#b8c6ff',
   ORIONIDS: '#9fcaff', 'HUNTERS-MOON': '#ffd79a', 'PLEIADES-OCCULTATION': '#c9d6ff', GEMINIDS: '#a9c4ff',
   'CHRISTMAS-SUPERMOON': '#fff1cf', 'DOUBLE-OPPOSITION': '#ffb070', 'SNOW-MOON-ECLIPSE': '#d6c2ff', 'GREAT-ECLIPSE': '#ffe9b8',

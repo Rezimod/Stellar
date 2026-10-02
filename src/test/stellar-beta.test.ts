@@ -92,7 +92,7 @@ describe('the retired card pages', () => {
       expect(res.status, path).toBe(307);
       expect(new URL(res.headers.get('location')!).pathname).toBe('/set/001');
     }
-    for (const live of ['/card/HALLEY', '/card/M87', '/card/WORMHOLE', '/card/BETELGEUSE']) expect(middleware(request(live)).status, live).toBe(200);
+    for (const live of ['/card/HALLEY', '/card/M87', '/card/APOLLO-11', '/card/BETELGEUSE']) expect(middleware(request(live)).status, live).toBe(200);
   });
 });
 

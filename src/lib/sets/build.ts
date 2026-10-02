@@ -25,8 +25,8 @@ export type CardOptics = Pick<ObservabilitySubject, 'resolveArcsec' | 'magnitude
 
 export type Section = 'object' | 'almanac';
 
-/** Where a card sits on the shelf. The Frontier is fiction: Stellar's own worlds, never in any sky. */
-export type Family = 'near' | 'stars' | 'deep' | 'galaxies' | 'extremes' | 'frontier' | 'almanac';
+/** Where a card sits on the shelf. The Rare Sights are what the sky does now and then — eclipses, aurorae, great comets — not things in it. */
+export type Family = 'near' | 'stars' | 'deep' | 'galaxies' | 'extremes' | 'sights' | 'almanac';
 
 /** What the card prints and how it is sold, beyond the row the database keeps. */
 export type CardRecord = {
@@ -140,16 +140,12 @@ export function authorKept(facts: NoSky, reason: string, extras: Extras): Author
 }
 
 /**
- * A Frontier card: a world of Stellar's own making, in the tradition of the
- * great space films. Fiction, and it says so: there is nothing to point at.
+ * A Rare Sight: something the sky does, now and then, that people travel to
+ * see — an eclipse, an aurora, a great comet. Not a thing to point at; a
+ * moment to be under.
  */
-export function authorFiction(facts: NoSky, extras: Extras): AuthoredCard {
-  return unpointable(
-    facts,
-    'fiction',
-    'An original Stellar world. It exists on the card and nowhere in the sky.',
-    record({ ...extras, family: 'frontier' }, OBJECT),
-  );
+export function authorSight(facts: NoSky, reason: string, extras: Extras): AuthoredCard {
+  return unpointable(facts, 'sight', reason, record({ ...extras, family: 'sights' }, OBJECT));
 }
 
 /**

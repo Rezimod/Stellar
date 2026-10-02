@@ -1,6 +1,6 @@
 /**
- * The Stars: the nearest, the brightest, the ones that give the sky its
- * shape, the giants near their end — and four planets of other stars. A
+ * The Stars: the nearest, the brightest, the patterns that give the sky its
+ * shape, the giants near their end — and one system of other worlds. A
  * star is a point to any telescope on Earth, so it is judged by position and
  * brightness alone; a double by its separation.
  */
@@ -18,7 +18,6 @@ const arcturus = fixed(14.261, 19.1824, -0.05);
 const aldebaran = fixed(4.5987, 16.5093, 0.86);
 const polaris = fixed(2.5303, 89.2641, 1.98);
 const mira = fixed(2.3224, -2.9776, null);
-const albireo = fixed(19.512, 27.9597, 3.1);
 const betelgeuse = fixed(5.9195, 7.4071, 0.5);
 const antares = fixed(16.4901, -26.432, 1.06);
 const rigel = fixed(5.2423, -8.2016, 0.13);
@@ -39,7 +38,6 @@ export const STAR_CARDS: AuthoredCard[] = [
       line: 'The nearest stars to the Sun.',
       story: ['Two suns and a small red third, next door.', 'Their light left home four years ago.'],
       glow: '#ffe6a8',
-      pairsWith: 'GENERATION-SHIP',
     },
   ),
   authorCard(
@@ -142,23 +140,6 @@ export const STAR_CARDS: AuthoredCard[] = [
   ),
   authorCard(
     {
-      designation: 'ALBIREO', name: 'Albireo', objectType: 'double star', rarity: 'rare',
-      targetId: 'albireo', catalogRef: 'β Cygni',
-      raHours: albireo.raHours, decDeg: albireo.decDeg, ...OFF_MOON,
-      blurb: 'Gold and sapphire, side by side.',
-    },
-    { ...albireo.optics, resolveArcsec: 34.4 },
-    {
-      ...stars,
-      stats: [['DISTANCE', '~430 ly'], ['SEPARATION', '34″'], ['COLOURS', 'Gold · blue']],
-      line: 'Gold and sapphire, side by side.',
-      story: ['One star to the eye, two in any telescope.', 'The finest colours in the summer sky.'],
-      glow: '#ffcf7a',
-      noun: 'Albireo',
-    },
-  ),
-  authorCard(
-    {
       designation: 'BETELGEUSE', name: 'Betelgeuse', objectType: 'red supergiant', rarity: 'epic',
       targetId: 'betelgeuse', catalogRef: 'α Orionis',
       raHours: betelgeuse.raHours, decDeg: betelgeuse.decDeg, ...OFF_MOON,
@@ -236,52 +217,6 @@ export const STAR_CARDS: AuthoredCard[] = [
       line: 'Seven Earth-sized worlds around one small star.',
       story: ['From any one of them, the others hang like moons.', 'Three sit where water could stay liquid.'],
       glow: '#ff8a6a',
-    },
-  ),
-  authorKept(
-    {
-      designation: '55-CANCRI-E', name: '55 Cancri e', objectType: 'super-Earth', rarity: 'common',
-      catalogRef: '55 Cnc e',
-      blurb: 'A world so close to its star its surface may be molten.',
-    },
-    EXOPLANET,
-    {
-      ...stars,
-      stats: [['DISTANCE', '41 ly'], ['YEAR', '17.7 hours'], ['MASS', '8 × Earth']],
-      line: 'A world so close to its star its surface may be molten.',
-      story: ['Its year is shorter than one of our days.', 'Its dayside may be an ocean of lava.'],
-      glow: '#ff7a3a',
-    },
-  ),
-  authorKept(
-    {
-      designation: 'HD-189733B', name: 'HD 189733 b', objectType: 'hot Jupiter', rarity: 'common',
-      catalogRef: 'HD 189733 b',
-      blurb: 'A deep blue world where it may rain glass.',
-    },
-    EXOPLANET,
-    {
-      ...stars,
-      stats: [['DISTANCE', '64 ly'], ['COLOUR', 'Deep blue'], ['WINDS', '~8,700 km/h']],
-      line: 'A deep blue world where it may rain glass.',
-      story: ['The first planet of another star whose colour we know.', 'Its blue may be glass, raining sideways in the wind.'],
-      glow: '#4a7aff',
-    },
-  ),
-  authorKept(
-    {
-      designation: 'KEPLER-16B', name: 'Kepler-16b', objectType: 'circumbinary planet', rarity: 'rare',
-      catalogRef: 'Kepler-16 (AB) b',
-      blurb: 'A real world with two suns.',
-    },
-    EXOPLANET,
-    {
-      ...stars,
-      stats: [['DISTANCE', '245 ly'], ['SUNS', '2'], ['YEAR', '229 days']],
-      line: 'A real world with two suns.',
-      story: ['Found in 2011, it circles both stars at once.', 'Every sunset there comes twice.'],
-      glow: '#ffb07a',
-      pairsWith: 'TWIN-SUNS',
     },
   ),
 ];

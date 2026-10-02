@@ -50,7 +50,7 @@ it('renders an edition that has not been observed yet', async () => {
 it('keeps an edition whose card has left the set, by its number', async () => {
   mocks.holderView.mockResolvedValue([
     {
-      editionId: 'e2', designation: 'MOON', name: 'The Moon', editionNumber: 4, editionSize: 300, rarity: 'common',
+      editionId: 'e2', designation: 'KRAKEN-MARE', name: 'Kraken Mare', editionNumber: 4, editionSize: 300, rarity: 'common',
       observationStatus: 'eligible', latest: null, history: [],
     },
   ]);

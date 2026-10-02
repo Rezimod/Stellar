@@ -52,7 +52,7 @@ const RECOGNITION = [
 ];
 
 /** The cards turning round the sun in the orbit section. */
-const ORBIT = ['FIRST-LIGHT', 'SATURN', 'M42', 'M1', 'SGR-A', 'HALLEY', 'M45', 'TYCHO', 'EUROPA', 'KRAKEN-MARE', 'GREAT-ECLIPSE', 'IMILAC'];
+const ORBIT = ['FIRST-LIGHT', 'SATURN', 'M42', 'M1', 'SGR-A', 'HALLEY', 'M45', 'TYCHO', 'EUROPA', 'APOLLO-11', 'GREAT-ECLIPSE', 'IMILAC'];
 
 const SUPPLY = Object.fromEntries(
   RARITIES.map((r) => {

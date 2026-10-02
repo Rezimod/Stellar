@@ -4,10 +4,11 @@
  * A hundred cards in seven families, numbered outward from Earth: the Solar
  * System (from the observatory's own first frame and two fragments held in
  * the hand, out to a visitor from another star), the Stars, the Deep Sky, the
- * Galaxies and the Extremes are real things; the Frontier is ten worlds of
- * Stellar's own, fiction and labelled so; the Almanac is real dated events,
- * each sold until its event ends, then sealed. The first twenty-four are
- * written here; the rest by family in ./first-light/.
+ * Galaxies and the Extremes are real things, every one of them well known;
+ * the Rare Sights are what the sky does now and then — eclipses, aurorae,
+ * great comets; the Almanac is real dated events, each sold until its event
+ * ends, then sealed. The first twenty-four are written here; the rest by
+ * family in ./first-light/.
  *
  * Rarity is a decision made here and stored; it has nothing to do with whether
  * Live Telescope V1 can photograph the object — that is judged from the instrument and
@@ -21,7 +22,7 @@ import { arcsecFromKm, arcsecFromKmAtAu, MOON_DISTANCE_KM } from '@/lib/stellar/
 import { authorAlmanac, authorCard, authorKept, type AuthoredCard } from './build';
 import { DEEP_CARDS } from './first-light/deep';
 import { EXTREME_CARDS } from './first-light/extremes';
-import { FRONTIER_CARDS } from './first-light/frontier';
+import { FAMOUS_CARDS } from './first-light/famous';
 import { GALAXY_CARDS } from './first-light/galaxies';
 import { NEAR_CARDS } from './first-light/near';
 import { NO_POSITION, OFF_MOON, body, deepSky } from './first-light/shared';
@@ -115,15 +116,6 @@ const FIRST_24: AuthoredCard[] = [
     },
     body(arcsecFromKmAtAu(282_000, 8.5)),
     { stats: [['OPPOSITION', '4 Oct 2026'], ['RINGS', '~282,000 km'], ['THICKNESS', '~10 m']], line: 'Wide as worlds, thin as a building.' },
-  ),
-  authorCard(
-    {
-      designation: 'KRAKEN-MARE', name: 'Kraken Mare', objectType: 'sea on Titan', rarity: 'common',
-      targetId: 'saturn', catalogRef: 'IAU gazetteer', ...NO_POSITION,
-      blurb: 'A sea on Titan, where it rains.',
-    },
-    body(arcsecFromKmAtAu(1_170, 8.5)),
-    { stats: [['AREA', '~400,000 km²'], ['LIQUID', 'Methane'], ['TEMP', '−179 °C']], line: 'A sea on Titan, where it rains.' },
   ),
   authorCard(
     {
@@ -271,32 +263,33 @@ const FIRST_24: AuthoredCard[] = [
   ),
 ];
 
-/** The set's order: each family outward from Earth, then the Frontier, then the Almanac by date. */
+/** The set's order: each family outward from Earth, then the Rare Sights, then the Almanac by date. */
 const ORDER = [
   // The Solar System
-  'FIRST-LIGHT', 'IMILAC', 'LUNAR-FRAGMENT', 'TYCHO', 'SUN', 'MERCURY', 'VENUS', 'MARS', 'OLYMPUS-MONS', 'VALLES-MARINERIS',
-  'JUPITER', 'IO', 'EUROPA', 'GANYMEDE', 'SATURN', 'KRAKEN-MARE', 'ENCELADUS', 'URANUS', 'NEPTUNE', 'PLUTO', 'HALLEY',
+  'FIRST-LIGHT', 'IMILAC', 'LUNAR-FRAGMENT', 'EARTH', 'EARTHRISE', 'CHICXULUB', 'TUNGUSKA', 'SPUTNIK-1', 'ISS', 'HUBBLE', 'JWST',
+  'MOON', 'APOLLO-11', 'TYCHO', 'SUN', 'MERCURY', 'VENUS', 'MARS', 'OLYMPUS-MONS', 'VALLES-MARINERIS',
+  'JUPITER', 'IO', 'EUROPA', 'GANYMEDE', 'SL9', 'SATURN', 'TITAN', 'ENCELADUS', 'URANUS', 'NEPTUNE', 'PLUTO', 'HALLEY',
   'OUMUAMUA', 'VOYAGER-1',
   // The Stars
-  'ALPHA-CEN', 'SIRIUS', 'VEGA', 'ARCTURUS', 'ALDEBARAN', 'POLARIS', 'MIRA', 'ALBIREO', 'BETELGEUSE', 'ANTARES', 'RIGEL',
-  'ETA-CARINAE', 'TRAPPIST-1', '55-CANCRI-E', 'HD-189733B', 'KEPLER-16B',
+  'BIG-DIPPER', 'ORION', 'SOUTHERN-CROSS', 'SUMMER-TRIANGLE',
+  'ALPHA-CEN', 'SIRIUS', 'VEGA', 'ARCTURUS', 'ALDEBARAN', 'POLARIS', 'MIRA', 'BETELGEUSE', 'ANTARES', 'RIGEL',
+  'ETA-CARINAE', 'TRAPPIST-1',
   // The Deep Sky
-  'M45', 'M44', 'HELIX', 'M57', 'CATS-EYE', 'M42', 'HORSEHEAD', 'ROSETTE', 'NORTH-AMERICA', 'VEIL', 'M8', 'M20', 'M16', 'M1',
-  'BUTTERFLY', 'CARINA', 'JEWEL-BOX', 'DOUBLE-CLUSTER', 'OMEGA-CEN', 'M13', 'TARANTULA',
+  'M45', 'M44', 'HELIX', 'M57', 'CATS-EYE', 'M42', 'HORSEHEAD', 'ROSETTE', 'VEIL', 'M8', 'M20', 'M16', 'M1',
+  'CARINA', 'OMEGA-CEN', 'M13', 'TARANTULA',
   // The Galaxies
-  'MILKY-WAY', 'LMC', 'SMC', 'M31', 'M33', 'M81', 'M82', 'CEN-A', 'M101', 'M51', 'M104', 'M87', 'STEPHANS-QUINTET', 'CARTWHEEL',
+  'MILKY-WAY', 'LMC', 'SMC', 'M31', 'M33', 'M82', 'CEN-A', 'M101', 'M51', 'M104', 'M87', 'CARTWHEEL',
   // The Extremes
-  'SGR-A', 'CYGNUS-X1', 'MAGNETAR', 'SN-1987A', 'GW170817', 'TON-618', 'HUBBLE-DEEP-FIELD', 'CMB',
-  // The Frontier
-  'WORMHOLE', 'TWIN-SUNS', 'HOUR-SEA', 'ORBITAL-RING', 'DYSON-SWARM', 'ECUMENOPOLIS', 'FROZEN-CLOUDS', 'GREEN-MOON',
-  'DERELICT', 'GENERATION-SHIP',
+  'SGR-A', 'SN-1987A', 'TON-618', 'HUBBLE-DEEP-FIELD', 'CMB',
+  // The Rare Sights
+  'TOTAL-ECLIPSE', 'RING-OF-FIRE', 'BLOOD-MOON', 'AURORA', 'VENUS-TRANSIT', 'HALE-BOPP', 'LEONIDS', 'PERSEIDS',
   // The Almanac
   'ORIONIDS', 'HUNTERS-MOON', 'PLEIADES-OCCULTATION', 'GEMINIDS', 'CHRISTMAS-SUPERMOON', 'DOUBLE-OPPOSITION',
   'SNOW-MOON-ECLIPSE', 'GREAT-ECLIPSE',
 ];
 
 const AUTHORED = new Map(
-  [...FIRST_24, ...NEAR_CARDS, ...STAR_CARDS, ...DEEP_CARDS, ...GALAXY_CARDS, ...EXTREME_CARDS, ...FRONTIER_CARDS].map((c) => [c.seed.designation, c]),
+  [...FIRST_24, ...NEAR_CARDS, ...STAR_CARDS, ...DEEP_CARDS, ...GALAXY_CARDS, ...EXTREME_CARDS, ...FAMOUS_CARDS].map((c) => [c.seed.designation, c]),
 );
 if (AUTHORED.size !== ORDER.length || ORDER.some((d) => !AUTHORED.has(d))) {
   throw new Error('First Light: ORDER and the authored cards disagree');

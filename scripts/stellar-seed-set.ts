@@ -23,7 +23,7 @@ async function main() {
     console.log(`  ${c.designation.padEnd(20)} ${c.rarity.padEnd(10)} ${c.observationStatus.padEnd(14)} ${c.editionSize}`)
   }
   if (removed.length) console.log(`Removed, no editions existed: ${removed.join(', ')}`)
-  if (kept.length) console.log(`Still filed, editions exist — decide by hand: ${kept.join(', ')}`)
+  if (kept.length) console.log(`Retired, kept for their holders and closed at the editions they have: ${kept.join(', ')}`)
 }
 
 main().catch((error) => {

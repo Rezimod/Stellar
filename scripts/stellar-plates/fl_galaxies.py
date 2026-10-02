@@ -326,32 +326,6 @@ def m101(u):
     return bg, obj, svg(W, H, top('RA 14H 03M 13S · DEC +54° 20′ · URSA MAJOR'))
 
 
-# ================================================================= M81, BODE'S GALAXY
-def m81(u):
-    rnd = random.Random(81)
-    cx, cy, R = 291, 356, 262
-    D = Disk(cx, cy, -30, .52)
-    bg = sky(u, H, ('#141a34', '#080b1c', '#02030a'), 250, 8181, 5, extra=bg_galaxies(random.Random(81), 14, avoid=(cx, cy, 260)))
-    arms = [(0.4, 55, 255, 14, 1.0), (0.4 + math.pi, 55, 245, 14, .95), (1.9, 120, 250, 17, .35), (5.0, 130, 240, 16, .3)]
-    body, cls = spiral(u, rnd, D, arms, R, core=38, arm_w=.075, n_star=2200, n_hii=110, dust=.75, clump=.7, taper=.8, seed=81, ext=.85, patch=.25,
-                       arm_cols=('#cdd9ff', '#b8c9f4', '#e4eaff', '#ffffff'), young='#a4bcf4', disk_col='#98a2c8',
-                       bulge=('#fff4da', '#ffdca0', '#d8a868'), inner=('#f0d6a8', 3.6, .55), spurs=10, disp=14, lane_off=.06)
-    # the dust that winds in through the bulge: thin, tight, faint
-    lanes = []
-    for k in range(2):
-        pts = []
-        for i in range(60):
-            t = i / 59
-            r = 20 * (70 / 20) ** t
-            th = .4 + k * math.pi - .5 + math.log(r / 20) / math.tan(math.radians(13))
-            pts.append(D.pol(r, th))
-        lanes.append('<path d="%s" stroke-width="1.4" stroke-opacity=".28" stroke-dasharray="%d %d %d %d"/>' % (smooth(pts, f), rnd.randint(20, 40), rnd.randint(8, 20), rnd.randint(10, 30), rnd.randint(10, 24)))
-    defs = blur(u, 'l1', 1.3)
-    o = [body, '<defs>%s</defs><g filter="url(#%sl1)" fill="none" stroke="#3a2210">%s</g>' % (defs, u, ''.join(lanes))]
-    obj = svg(W, H, ''.join(o) + grain(u + 'o', W, H, .1), '')
-    return bg, obj, svg(W, H, top('RA 09H 55M 33S · DEC +69° 03′ · URSA MAJOR'))
-
-
 # ================================================================= M33, THE TRIANGULUM
 def m33(u):
     rnd = random.Random(33)
@@ -949,56 +923,6 @@ def elliptical(u, rnd, x, y, rx, ry, rot, name, cols=('#fff6e4', '#ffe4b8', '#d8
                   d.svg() + '<circle cx="%s" cy="%s" r="1.4" fill="#fff"/>' % (f(x), f(y)))
 
 
-# ================================================================= STEPHAN'S QUINTET
-def stephans(u):
-    rnd = random.Random(7317)
-    bg = sky(u, H, ('#121630', '#070a1c', '#02030a'), 230, 7317, 4, extra=bg_galaxies(random.Random(73), 30))
-    defs = blur(u, 'b3', 3) + blur(u, 'b10', 10) + blur(u, 'b20', 20, 60) + (
-        '<filter id="%stid" x="-30%%" y="-30%%" width="160%%" height="160%%"><feTurbulence type="fractalNoise" baseFrequency=".03" numOctaves="3" seed="5"/>'
-        '<feDisplacementMap in="SourceGraphic" scale="30"/><feGaussianBlur stdDeviation="6"/></filter>') % u
-    defs += soft_defs(u, {'td': '#b8c4e8', 'sh': '#8ab8ff', 'shp': '#ff7aa8', 'wm': '#f0dcc0'})
-    o = []
-    # tidal debris: the old tail from NGC 7319 sweeping south-east, and a haze of stripped stars
-    tail, td = Soft(u), Dots()
-    for i in range(90):
-        t = rnd.random()
-        x = 470 - 330 * t + 40 * math.sin(t * 3); y = 205 + 70 * t + 90 * t * t
-        tail.add(x + rnd.gauss(0, 10), y + rnd.gauss(0, 10), rnd.uniform(10, 22), rnd.choice(['td', 'wm']), rnd.uniform(.08, .22) * (1 - .5 * t))
-        td.add(x + rnd.gauss(0, 12), y + rnd.gauss(0, 12), .5 + .6 * rnd.random() ** 2, rnd.choice(('#dfe6ff', '#fff4e4')), .45)
-    for _ in range(40):
-        tail.add(rnd.gauss(360, 70), rnd.gauss(300, 60), rnd.uniform(20, 45), 'wm', rnd.uniform(.05, .12))
-    o.append('<g filter="url(#%stid)">%s</g>' % (u, tail.svg()) + td.svg())
-    # the shock front: a ribbon of gas slammed by NGC 7318B, glowing between the galaxies
-    sh, sd = Soft(u), Dots()
-    for i in range(60):
-        t = i / 59
-        x = 404 + 22 * math.sin(t * 3.1) - 12 * t; y = 176 + 230 * t
-        sh.add(x + rnd.gauss(0, 3), y + rnd.gauss(0, 4), rnd.uniform(5, 12), 'sh', rnd.uniform(.15, .35) * math.sin(t * 3.14) ** .5)
-        if rnd.random() < .3:
-            sh.add(x + rnd.gauss(0, 5), y, rnd.uniform(3, 6), 'shp', .6)
-            sd.add(x + rnd.gauss(0, 5), y + rnd.gauss(0, 3), 1.2, '#ffc0d8', .9)
-    o.append('<g filter="url(#%sb3)">%s</g>' % (u, sh.svg()) + sd.svg())
-    # NGC 7319: a barred spiral with a stripped disc, upper right
-    D1 = Disk(468, 196, 30, .7)
-    b1, _ = spiral(u + 'a', rnd, D1, [(0, 22, 92, 22, .9), (math.pi, 22, 80, 22, .7)], 90, core=16, arm_w=.12, n_star=380, n_hii=16, dust=.8, clump=.45,
-                   arm_cols=('#e8e2d8', '#d8d8e8', '#f4ece0', '#ffffff'), young='#c8d0ec', disk_col='#a09aa8', bulge=('#fff4dc', '#ffdca0', '#d8a868'), inner=('#f0d8b0', 3, .5), taper=.75, seed=19)
-    # NGC 7318 A and B: a pair in collision at the centre
-    D2 = Disk(318, 312, -10, .86)
-    b2, _ = spiral(u + 'b', rnd, D2, [(.8, 18, 110, 26, 1), (.8 + math.pi, 18, 95, 28, .8), (2.4, 50, 120, 36, .5)], 110, core=15, arm_w=.1, n_star=500, n_hii=45,
-                   dust=.6, clump=.5, patch=.4, floc=.6, arm_cols=('#cfdcff', '#b8ccff', '#e6ecff', '#ffffff'), young='#a0bcff', taper=.7, seed=18, lop=(.25, 1))
-    d3, b3 = elliptical(u, rnd, 352, 330, 34, 30, 0, 'a7318')
-    # NGC 7317: a small quiet elliptical, lower right
-    d4, b4 = elliptical(u, rnd, 474, 452, 30, 26, 20, 'e7317')
-    # NGC 7320: nearer by eight times, bluer, looser, its stars resolved
-    D5 = Disk(168, 452, -32, .52)
-    b5, _ = spiral(u + 'c', rnd, D5, [(0, 16, 125, 34, .8), (math.pi, 16, 115, 34, .75), (1.4, 40, 130, 40, .45), (4.4, 45, 120, 42, .45)], 125, core=11, arm_w=.12,
-                   n_star=650, n_hii=55, dust=.35, clump=.55, patch=.8, floc=.8, arm_cols=('#b8ccff', '#a0b8ff', '#dfe8ff', '#ffffff'), young='#88a8ff',
-                   bulge=('#fff4e4', '#f0e0c8', '#c8b8a8'), inner=('#c8cce4', 5, .3), taper=.65, seed=20, disp=24)
-    o += [b4, b2, b3, b1, b5]
-    obj = svg(W, H, ''.join(o) + grain(u + 'o', W, H, .1), defs + d3 + d4)
-    return bg, obj, svg(W, H, top('RA 22H 35M 57S · DEC +33° 57′ · PEGASUS'))
-
-
 def noise_layer(u, name, freq, seed, col, cut, gain, op=1, octaves=4, box=(0, 0, W, H), transform='', mask='', soft=0):
     """Thresholded fractal noise as a layer of colour: dust, or star clouds, for no bytes."""
     r, g, b = col
@@ -1174,4 +1098,4 @@ def milky_way(u):
     return bg, obj, svg(W, H, top('SAGITTARIUS · SCORPIUS · THE GALACTIC CENTRE 26,000 LY'))
 
 
-PLATES = {'MILKY-WAY': milky_way, 'M51': m51, 'M101': m101, 'M81': m81, 'M33': m33, 'M104': m104, 'M82': m82, 'CEN-A': cen_a, 'M87': m87, 'LMC': lmc, 'SMC': smc, 'CARTWHEEL': cartwheel, 'STEPHANS-QUINTET': stephans}
+PLATES = {'MILKY-WAY': milky_way, 'M51': m51, 'M101': m101, 'M33': m33, 'M104': m104, 'M82': m82, 'CEN-A': cen_a, 'M87': m87, 'LMC': lmc, 'SMC': smc, 'CARTWHEEL': cartwheel}

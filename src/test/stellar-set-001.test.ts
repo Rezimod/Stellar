@@ -17,7 +17,7 @@ const seeds = SET_001_CARDS.map((c) => c.seed);
 const byDesignation = (d: string) => SET_001_CARD_BY_DESIGNATION.get(d)!.seed;
 const objects = SET_001_CARDS.filter((c) => c.record.section === 'object');
 const almanac = SET_001_CARDS.filter((c) => c.record.section === 'almanac');
-const pointable = objects.filter((c) => c.seed.targetId !== 'kept' && c.seed.targetId !== 'fiction');
+const pointable = objects.filter((c) => c.seed.targetId !== 'kept' && c.seed.targetId !== 'sight');
 const MOVING = new Set(['moon', 'mercury', 'venus', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto', 'halley']);
 
 describe('First Light', () => {
@@ -28,7 +28,7 @@ describe('First Light', () => {
     expect(almanac).toHaveLength(8);
     expect(SET_001_CARDS.slice(0, 92)).toEqual(objects);
     const families = SET_GROUPS.map((g) => groupCards(SET_001_CARDS, g.key).length);
-    expect(families).toEqual([23, 16, 21, 14, 8, 10, 8]);
+    expect(families).toEqual([34, 16, 17, 12, 5, 8, 8]);
     expect(SET_GROUPS.flatMap((g) => groupCards(SET_001_CARDS, g.key))).toHaveLength(100);
     expect(new Set(seeds.map((c) => c.designation)).size).toBe(seeds.length);
     for (const c of seeds) expect(c.designation).toMatch(/^[A-Z0-9-]+$/);
@@ -53,7 +53,6 @@ describe('First Light', () => {
       JUPITER: 'rare eligible',
       EUROPA: 'common not_available',
       SATURN: 'epic eligible',
-      'KRAKEN-MARE': 'common not_available',
       HALLEY: 'legendary not_available',
       'VOYAGER-1': 'common not_available',
       M45: 'rare eligible',
@@ -112,7 +111,7 @@ describe('First Light', () => {
         expect(Math.abs(c.decDeg!), c.designation).toBeLessThanOrEqual(90);
       }
       const onMoon = c.surfaceLat !== null && c.surfaceLat !== undefined;
-      expect(onMoon, c.designation).toBe(c.designation === 'TYCHO');
+      expect(onMoon, c.designation).toBe(c.designation === 'TYCHO' || c.designation === 'APOLLO-11');
     }
   });
 
