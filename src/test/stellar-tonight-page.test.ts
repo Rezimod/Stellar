@@ -39,7 +39,7 @@ it('opens the vote before the night is decided', async () => {
   expect(html).toContain('<p class="sd-lead">Saturn</p>');
   expect(html).toContain('Vote · 20 September');
   expect(html).toContain('41° at 23:15');
-  expect(html).toContain('lock tonight’s card at 17:00 Tbilisi time');
+  expect(html).toContain('lock tonight’s card at 13:00 UTC');
 });
 
 it('says plainly that a cloudy night was lost, and what takes the next', async () => {
@@ -50,15 +50,15 @@ it('says plainly that a cloudy night was lost, and what takes the next', async (
       name: 'Tycho',
       rarity: 'rare',
       artUrl: null,
-      basis: 'TYCHO: carried from the night of 2026-09-19, which was lost to cloud. Moon reaches 38.0° at 22:30 local time at Tbilisi, Georgia.',
+      basis: 'TYCHO: carried from the night of 2026-09-19, which was lost to cloud. Moon reaches 38.0° at 22:30 local time.',
       plannedAt: '2026-09-20T18:30:00Z',
       cloudForecast: 20,
       capture: null,
     },
     voting: { night: '2026-09-21', carried: null, window: null, candidates: [] },
-    recent: [{ night: '2026-09-19', designation: 'TYCHO', name: 'Tycho', result: 'lost', lostReason: 'Cloud cover at Tbilisi, Georgia was 96% at 22:30 local time, over the 70% limit.' }],
+    recent: [{ night: '2026-09-19', designation: 'TYCHO', name: 'Tycho', result: 'lost', lostReason: 'Cloud cover was 96% at 22:30 local time, over the 70% limit.' }],
   });
-  expect(html).toContain('19 September was lost to cloud.</strong> Cloud cover at Tbilisi, Georgia was 96% at 22:30 local time, over the 70% limit.');
+  expect(html).toContain('19 September was lost to cloud.</strong> Cloud cover was 96% at 22:30 local time, over the 70% limit.');
   expect(html).toContain('carried from the night of 2026-09-19');
   expect(html).toContain('Lost to cloud');
   expect(html).toContain('Live Telescope V1 is commissioning. No photograph is taken yet.');

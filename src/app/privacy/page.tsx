@@ -18,7 +18,7 @@ export default function PrivacyPage() {
         <section className="sd-chapter-block">
           <Chapter n="01" title="What we keep" />
           <ul>
-            <li>The email or wallet you sign in with, through Privy.</li>
+            <li>The email or wallet you log in with, through Privy.</li>
             <li>The Solana wallet address your cards are held against.</li>
             <li>Your orders, the capsules you opened, the cards you hold and the votes you cast.</li>
             <li>Which pages were viewed, without your name, to see where people stop.</li>
@@ -30,7 +30,7 @@ export default function PrivacyPage() {
           <ul>
             <li>Private keys or recovery phrases. They stay with Privy or your wallet.</li>
             <li>Card details. Payment is made in SOL from your wallet.</li>
-            <li>Your location. The sky is computed for Live Telescope V1 in Tbilisi, not for you.</li>
+            <li>Your location. The sky is computed for Live Telescope V1, not for you.</li>
           </ul>
         </section>
 

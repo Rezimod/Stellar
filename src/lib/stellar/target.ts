@@ -121,7 +121,7 @@ function candidatesOf<C extends Candidate>(cards: C[]): C[] {
     .sort((a, b) => a.designation.localeCompare(b.designation))
 }
 
-/** How an object stands on the night, in words: "Saturn reaches 41.2° at 23:15 local time at Tbilisi". */
+/** How an object stands on the night, in words: "Saturn reaches 41.2° at 23:15 local time". */
 export function standing(o: Observable<Candidate>, node: ObservatoryNode): string {
   const localTime = new Intl.DateTimeFormat('en-GB', {
     timeZone: node.timezone,
@@ -129,7 +129,7 @@ export function standing(o: Observable<Candidate>, node: ObservatoryNode): strin
     minute: '2-digit',
     hourCycle: 'h23',
   }).format(o.at)
-  return `${SIM_TARGET_BY_ID.get(o.card.targetId)!.name} reaches ${o.altitudeDeg.toFixed(1)}° at ${localTime} local time at ${node.site}`
+  return `${SIM_TARGET_BY_ID.get(o.card.targetId)!.name} reaches ${o.altitudeDeg.toFixed(1)}° at ${localTime} local time`
 }
 
 export function pickTonightsTarget<C extends Candidate>(

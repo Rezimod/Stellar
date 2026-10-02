@@ -44,7 +44,6 @@ const FOOT = [
 ];
 
 const node = getNode('tbilisi-01')!;
-const coords = `${node.lat.toFixed(2)}° N · ${node.lon.toFixed(2)}° E`;
 
 /**
  * The frame every Stellar page wraps itself in:
@@ -122,7 +121,7 @@ export default function StellarShell({
             </div>
             <div className="sd-foot__base sd-data">
               <span>
-                Live Telescope V1 · {node.site.split(',')[0]} · {coords} · {node.status}
+                Live Telescope V1 · The night sky · {node.status}
               </span>
               <span>© {new Date().getFullYear()} Stellar</span>
             </div>

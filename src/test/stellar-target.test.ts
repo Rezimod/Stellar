@@ -86,7 +86,7 @@ describe('choosing tonight’s card', () => {
     expect(pick!.altitudeDeg).toBeGreaterThan(80);
     expect(pick!.altitudeDeg).toBeLessThanOrEqual(85);
     expect(siteDateStamp(node.timezone, pick!.at)).toBe(NIGHT);
-    expect(pick!.decisionBasis).toMatch(/^RING: Ring Nebula reaches 80\.\d° at \d\d:\d\d local time at Tbilisi/);
+    expect(pick!.decisionBasis).toMatch(/^RING: Ring Nebula reaches 80\.\d° at \d\d:\d\d local time/);
     expect(pick!.decisionBasis).toContain('among 2 observable cards');
   });
 

@@ -190,7 +190,7 @@ export default function StellarBuyCapsule({
         </button>
       ) : (
         <button type="button" className="sd-btn sd-btn--primary sd-btn--block" onClick={() => login()}>
-          Sign in to buy — ${priceUsd}
+          Log in to buy — ${priceUsd}
         </button>
       )}
 

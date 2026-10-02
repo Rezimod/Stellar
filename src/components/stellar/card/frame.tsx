@@ -41,9 +41,9 @@ export const width = (len: number, size: number, adv: keyof typeof ADV, track = 
 
 /** The sunset the striped letters are cut from, cream at the top to brick at the foot. */
 export const SUNSET: Record<Rarity, string[]> = {
-  common: ['#fff4d6', '#ffd27a', '#f6a63f', '#e0612e', '#b8301f'],
-  rare: ['#fff4d6', '#ffd27a', '#f6a63f', '#e0612e', '#b8301f'],
-  epic: ['#fff6dc', '#ffd98a', '#f8a23c', '#e5552b', '#b02a1c'],
+  common: ['#fff3d2', '#ffd36b', '#f7931f', '#e0481f', '#a81c14'],
+  rare: ['#fff3d2', '#ffd36b', '#f7931f', '#e0481f', '#a81c14'],
+  epic: ['#fff5d8', '#ffd66e', '#f8901c', '#e2431c', '#a51912'],
   legendary: ['#fffbea', '#ffe9a3', '#ffc34d', '#f3913a', '#d0602a'],
 };
 
@@ -125,8 +125,11 @@ export function Glint({ x, y, r, o = 1 }: { x: number; y: number; r: number; o?:
   );
 }
 
+/** Where each sunset colour sits down the letter: a long cream crown, then the heat comes on fast. */
+const STOPS = [0.1, 0.36, 0.55, 0.74, 1];
+
 /**
- * The title, in sunset letters with bands cut across the lower half, a dark
+ * The title, in strong sunset letters, a dark
  * extrusion under them and a glint on the last letter. Lines run centred on x,
  * the last line's baseline at `base`.
  */
@@ -135,13 +138,6 @@ export function StripedTitle({ u, rarity, lines, base, max = 540, cap = 84, glin
   const size = fit(longest, max, 'title', lines.length > 1 ? Math.min(cap, 70) : cap);
   const lead = size * 0.98;
   const capH = size * 0.74;
-  // Bands across the foot of each letter, thickening toward the baseline.
-  const bands = [
-    [0.5, 0.032],
-    [0.63, 0.048],
-    [0.76, 0.064],
-    [0.89, 0.08],
-  ];
   const s = SUNSET[rarity];
   return (
     <g>
@@ -162,25 +158,17 @@ export function StripedTitle({ u, rarity, lines, base, max = 540, cap = 84, glin
         return (
           <g key={i}>
             <linearGradient id={`${id}g`} gradientUnits="userSpaceOnUse" x1="0" y1={y - capH} x2="0" y2={y}>
-              <stop offset="0" stopColor={s[0]} />
-              <stop offset=".3" stopColor={s[1]} />
-              <stop offset=".52" stopColor={s[2]} />
-              <stop offset=".76" stopColor={s[3]} />
-              <stop offset="1" stopColor={s[4]} />
-            </linearGradient>
-            <mask id={id} maskUnits="userSpaceOnUse" x="0" y="0" width="630" height="880">
-              <rect width="630" height="880" fill="#fff" />
-              {bands.map(([at, h]) => (
-                <rect key={at} x="0" y={y - capH + capH * at} width="630" height={size * h} fill="#000" />
+              {STOPS.map((at, k) => (
+                <stop key={at} offset={at} stopColor={s[k]} />
               ))}
-            </mask>
+            </linearGradient>
             <text {...common} dy={size * 0.09} fill="#0c0503" stroke="#0c0503" strokeWidth={size * 0.07} strokeLinejoin="round" opacity=".92">
               {line}
             </text>
             <text {...common} fill="#140804" stroke="#140804" strokeWidth={size * 0.035} strokeLinejoin="round" opacity=".9">
               {line}
             </text>
-            <text {...common} fill={`url(#${id}g)`} mask={`url(#${id})`}>
+            <text {...common} fill={`url(#${id}g)`}>
               {line}
             </text>
             {glint && i === lines.length - 1 && <Glint x={315 + w / 2 - size * 0.08} y={y - capH - size * 0.06} r={size * 0.5} />}
@@ -214,20 +202,14 @@ export function RarityBadge({ u, rarity, label, x = 38, y = 38 }: { u: string; r
         </linearGradient>
         <linearGradient id={`${u}bg`} gradientUnits="userSpaceOnUse" x1="0" y1={27 - capH} x2="0" y2="27">
           {SUNSET[rarity].map((c, i) => (
-            <stop key={i} offset={i / 4} stopColor={c} />
+            <stop key={i} offset={STOPS[i]} stopColor={c} />
           ))}
         </linearGradient>
-        <mask id={`${u}bm`} maskUnits="userSpaceOnUse" x="-20" y="-20" width="400" height="80">
-          <rect x="-20" y="-20" width="400" height="80" fill="#fff" />
-          {[0.5, 0.66, 0.82].map((at, i) => (
-            <rect key={at} x="-20" y={27 - capH + capH * at} width="400" height={1 + i * 0.6} fill="#000" />
-          ))}
-        </mask>
       </defs>
       {b.glow > 0 && <rect x="-3" y="-3" width={w + 6} height="44" rx="11" fill="none" stroke={b.stroke} strokeWidth="5" opacity={b.glow * 0.35} />}
       <rect width={w} height="38" rx="8" fill={`url(#${u}bf)`} stroke={b.stroke} strokeWidth="1.8" />
       <rect x="3" y="3" width={w - 6} height="32" rx="6" fill="none" stroke="#fff" strokeOpacity=".08" />
-      <text x={w / 2} y="27" textAnchor="middle" fill={`url(#${u}bg)`} mask={`url(#${u}bm)`} style={{ fontFamily: TITLE, fontSize: size, letterSpacing: 1 }}>
+      <text x={w / 2} y="27" textAnchor="middle" fill={`url(#${u}bg)`} style={{ fontFamily: TITLE, fontSize: size, letterSpacing: 1 }}>
         {text}
       </text>
     </g>

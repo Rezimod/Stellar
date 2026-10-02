@@ -110,7 +110,7 @@ export function observability(subject: ObservabilitySubject, node: ObservatoryNo
     if (highest < LIMITS.minAltitudeDeg) {
       return {
         status: 'not_available',
-        reason: `Never climbs high enough over ${node.site}: ${highest.toFixed(0)}° at best, and Live Telescope V1 needs ${LIMITS.minAltitudeDeg}°.`,
+        reason: `Never climbs high enough in the sky: ${highest.toFixed(0)}° at best, and Live Telescope V1 needs ${LIMITS.minAltitudeDeg}°.`,
       };
     }
   }
@@ -168,7 +168,7 @@ export function observability(subject: ObservabilitySubject, node: ObservatoryNo
     return { status: 'dedicated', reason: `A showcase: bright and large, Live Telescope V1 photographs it often.` };
   }
 
-  return { status: 'eligible', reason: `Live Telescope V1 can photograph it from ${node.site}.` };
+  return { status: 'eligible', reason: 'Live Telescope V1 can photograph it in the night sky.' };
 }
 
 function formatArcsec(arcsec: number): string {

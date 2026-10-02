@@ -24,7 +24,7 @@ export const dynamic = 'force-dynamic';
 export const metadata: Metadata = {
   title: 'Live Telescope V1 — the telescope the collection points',
   description:
-    'A 150 mm telescope on a roof in Tbilisi. Each clear night it photographs one card, and every holder of that card receives the image. Live Telescope V1 is commissioning.',
+    'A 150 mm telescope under the open sky. Each clear night it photographs one card, and every holder of that card receives the image. Live Telescope V1 is commissioning.',
 };
 
 export default async function NodePage() {

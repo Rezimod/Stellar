@@ -100,7 +100,7 @@ export default async function TonightPage() {
                 {d
                   ? d.basis
                   : lead
-                    ? 'Holders’ votes lock tonight’s card at 17:00 Tbilisi time.'
+                    ? 'Holders’ votes lock tonight’s card at 13:00 UTC.'
                     : 'Nothing in the set clears the horizon for Live Telescope V1.'}
               </p>
               {facts.length > 0 && <DataRow className="sd-facts" items={facts} />}
@@ -145,7 +145,7 @@ export default async function TonightPage() {
         <section className="sd-container sd-chapter-block">
           <Chapter
             n="01"
-            title="Sky over Tbilisi"
+            title="Tonight’s sky"
             aside={`${localTime(view.voting.window.dusk)} – ${localTime(view.voting.window.dawn)}`}
           />
           <TonightSkyChart

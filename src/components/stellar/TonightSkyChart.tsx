@@ -116,7 +116,7 @@ export default function TonightSkyChart({
         <rect x={X0} y={HORIZON} width={X1 - X0} height={H - HORIZON - 30} fill="url(#sd-ground)" />
         <line className="sd-skychart__horizon" x1={X0} x2={X1} y1={HORIZON} y2={HORIZON} />
         <text className="sd-skychart__tick" x={X1} y={HORIZON - 8} textAnchor="end">
-          Horizon · Tbilisi
+          Horizon
         </text>
 
         {nowT > t0 && nowT < t1 && (

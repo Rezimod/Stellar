@@ -54,7 +54,7 @@ describe('what Live Telescope V1 cannot record', () => {
     for (const decDeg of [-52.696, -47.4795]) {
       const verdict = observability(subject({ targetId: 'm42', decDeg }), node);
       expect(verdict.status).toBe('not_available');
-      expect(verdict.reason).toMatch(/Never climbs high enough over .*, and Live Telescope V1 needs 20°/);
+      expect(verdict.reason).toMatch(/Never climbs high enough in the sky: .*, and Live Telescope V1 needs 20°/);
     }
     // -28° culminates at about 20.3°, just inside.
     expect(observability(subject({ targetId: 'm42', decDeg: -28 }), node).status).toBe('eligible');

@@ -108,7 +108,7 @@ export default function StellarBuyCard({
           </button>
         ) : (
           <button type="button" className="sd-btn sd-btn--primary" onClick={() => login()}>
-            Sign in to buy
+            Log in to buy
           </button>
         )}
       </div>

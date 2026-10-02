@@ -82,7 +82,7 @@ function Sealed({ u }: { u: string }) {
         </text>
         <line x1="50" y1="764" x2="580" y2="764" stroke={INK.text} strokeOpacity=".22" />
         <text x="315" y="796" textAnchor="middle" fill={INK.muted} style={{ fontFamily: SPACED, fontWeight: 500, fontSize: 10.5, letterSpacing: 3 }}>
-          LIVE TELESCOPE V1 · TBILISI · COMMISSIONING
+          LIVE TELESCOPE V1 · THE NIGHT SKY · COMMISSIONING
         </text>
         <line x1="50" y1="824" x2="580" y2="824" stroke={INK.text} strokeOpacity=".22" />
         <Footer y={850} right="SEALED" />
@@ -221,7 +221,7 @@ function CardBack({ plate: c, edition, commitment, sealed = false, u }: Props) {
           {commitment ? short(commitment) : '—'}
         </text>
         <text x="58" y="802" fill={INK.muted} style={{ fontFamily: SPACED, fontWeight: 500, fontSize: 9.5, letterSpacing: 2.4 }}>
-          LIVE TELESCOPE V1 · TBILISI · COMMISSIONING
+          LIVE TELESCOPE V1 · THE NIGHT SKY · COMMISSIONING
         </text>
         <line x1="50" y1="824" x2="580" y2="824" stroke={INK.text} strokeOpacity=".22" />
         <Footer y={850} right={`${ed} / ${c.of}`} />

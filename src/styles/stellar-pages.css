@@ -48,8 +48,6 @@
   font-family: var(--sd-title); font-size: 0.9em; letter-spacing: 0.02em; line-height: 1.16;
   -webkit-box-decoration-break: clone; box-decoration-break: clone;
   color: transparent; background: var(--sd-sunset); -webkit-background-clip: text; background-clip: text;
-  -webkit-mask-image: linear-gradient(180deg, #000 0 56%, transparent 56% 59%, #000 59% 68%, transparent 68% 72%, #000 72% 79%, transparent 79% 84%, #000 84% 90%, transparent 90% 96.5%, #000 96.5%);
-  mask-image: linear-gradient(180deg, #000 0 56%, transparent 56% 59%, #000 59% 68%, transparent 68% 72%, #000 72% 79%, transparent 79% 84%, #000 84% 90%, transparent 90% 96.5%, #000 96.5%);
 }
 .sd-hero2__title span:has(em), .sd-closer2__title:has(em) { filter: drop-shadow(0 0.07em 0 #0c0503); }
 .sd-hero2__sub { margin: 26px 0 0; max-width: 48ch; color: var(--sd-ink-2); font-size: 17px; line-height: 1.6; }
@@ -105,113 +103,31 @@
 .sd-home-sec__title { margin: 0; font: 400 clamp(28px, 3.4vw, 46px)/1.04 var(--sd-display); letter-spacing: 0.01em; text-transform: uppercase; }
 .sd-home-sec__lede { margin: 18px 0 0; max-width: 52ch; color: var(--sd-ink-2); font-size: 17px; line-height: 1.6; }
 
-/* ── Home: the flight plan — capsule to object, one instrument each ── */
-.sd-flight { position: relative; list-style: none; margin: 48px 0 0; padding: 0; display: grid; gap: 14px; }
-.sd-flight > li { min-width: 0; }
+/* ── Home: the flight plan — four steps, set like the card's own panel ── */
+.sd-flight { list-style: none; margin: 44px 0 0; padding: 22px 0 0; display: grid; gap: 0;
+  background: linear-gradient(90deg, transparent, #f6c46a 10%, #f6c46a 90%, transparent) top / 100% 1px no-repeat,
+              linear-gradient(90deg, transparent, #ee8c3a 10%, #ee8c3a 90%, transparent) 0 4px / 100% 1.5px no-repeat,
+              linear-gradient(90deg, transparent, #c8402a 10%, #c8402a 90%, transparent) 0 9px / 100% 1px no-repeat; }
+.sd-flight > li { min-width: 0; border-top: 1px solid var(--sd-rule); }
+.sd-flight > li:first-child { border-top: 0; }
 @media (min-width: 860px) {
-  .sd-flight { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
-  /* The trajectory through the four dials, and a gold light travelling it. */
-  .sd-flight::before, .sd-flight::after { content: ''; position: absolute; top: 92px; height: 1px; pointer-events: none; z-index: 1; }
-  .sd-flight::before { left: 12.5%; right: 12.5%; background: linear-gradient(90deg, transparent, rgba(181, 101, 45, 0.7) 12%, rgba(181, 101, 45, 0.7) 88%, transparent); }
-  .sd-flight::after {
-    left: 12.5%; width: 120px; height: 3px; margin-top: -1px; border-radius: 3px; opacity: 0;
-    background: linear-gradient(90deg, transparent, var(--sd-gold) 70%, #fff); filter: drop-shadow(0 0 6px var(--sd-gold));
-  }
+  .sd-flight { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .sd-flight > li { border-top: 0; border-left: 1px solid var(--sd-rule); }
+  .sd-flight > li:first-child { border-left: 0; }
 }
-.sd-flight__step {
-  position: relative; isolation: isolate; display: grid; grid-template-columns: 76px minmax(0, 1fr); column-gap: 18px; row-gap: 6px; height: 100%;
-  padding: 22px 20px; border: 1px solid transparent; border-radius: 22px; color: inherit; text-decoration: none; overflow: hidden;
-  background:
-    radial-gradient(130% 80% at 50% -10%, rgba(181, 101, 45, 0.22), transparent 62%) padding-box,
-    linear-gradient(180deg, color-mix(in srgb, var(--sd-blue-deep) 16%, #0f0705), #0f0705) padding-box,
-    linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.03) 60%, rgba(181, 101, 45, 0.25)) border-box;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 30px 60px -40px rgba(0, 0, 0, 0.9);
-  transition: transform var(--sd-dur-slow) var(--sd-ease), box-shadow var(--sd-dur-slow) var(--sd-ease);
-}
-/* A blue light that follows the edge on hover. */
-.sd-flight__step::before {
-  content: ''; position: absolute; inset: 0; z-index: -1; border-radius: inherit; padding: 1px; opacity: 0;
-  background: conic-gradient(from var(--sd-sweep, 0deg), transparent 0 70%, var(--sd-blue-hi) 82%, #fff 86%, transparent 92%);
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
-  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
-  transition: opacity var(--sd-dur-slow) var(--sd-ease);
-}
-/* A running step wears a gold hairline on its top edge. */
-.sd-flight__step--live::after {
-  content: ''; position: absolute; top: 0; left: 50%; width: 46%; height: 1px; translate: -50% 0;
-  background: linear-gradient(90deg, transparent, var(--sd-gold), transparent); box-shadow: 0 0 18px 1px rgba(244, 177, 19, 0.45);
-}
-@media (min-width: 860px) {
-  .sd-flight__step { grid-template-columns: 1fr; grid-template-rows: auto auto 1fr auto; justify-items: center; text-align: center; row-gap: 12px; padding: 26px 22px 24px; min-height: 340px; }
-}
-@media (hover: hover) {
-  .sd-flight__step:hover { transform: translateY(-6px); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 40px 80px -36px rgba(181, 101, 45, 0.55); }
-  .sd-flight__step:hover::before { opacity: 1; }
-}
-.sd-flight__step:focus-visible { outline: 2px solid var(--sd-focus); outline-offset: 4px; }
-
-.sd-flight__n { position: absolute; top: 16px; left: 18px; font: 500 12px var(--sd-mono); letter-spacing: 0.2em; color: var(--sd-ink-4); }
-.sd-flight__step--live .sd-flight__n { color: var(--sd-accent-ink); }
-@media (max-width: 859px) { .sd-flight__n { top: auto; bottom: 14px; left: auto; right: 18px; } }
-
-.sd-flight__dial {
-  position: relative; grid-row: span 3; align-self: start; display: grid; place-items: center; width: 76px; height: 76px; border-radius: 50%;
-  color: var(--sd-ink);
-  background: radial-gradient(circle at 50% 30%, color-mix(in srgb, var(--sd-blue) 55%, #0f0705), #0f0705 72%);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16), inset 0 -12px 24px rgba(0, 0, 0, 0.6), 0 0 40px -6px rgba(181, 101, 45, 0.6);
-}
-@media (min-width: 860px) { .sd-flight__dial { grid-row: auto; width: 96px; height: 96px; margin: 22px 0 18px; z-index: 2; } }
-/* Graduated bezel, like a setting circle. */
-.sd-flight__dial::before {
-  content: ''; position: absolute; inset: -8px; border-radius: 50%;
-  background: repeating-conic-gradient(from 0deg, rgba(255, 255, 255, 0.34) 0 0.8deg, transparent 0.8deg 10deg);
-  -webkit-mask: radial-gradient(closest-side, transparent calc(100% - 5px), #000 calc(100% - 4px));
-  mask: radial-gradient(closest-side, transparent calc(100% - 5px), #000 calc(100% - 4px));
-}
-/* An outer orbit with one gold body on it. */
-.sd-flight__orbit { position: absolute; inset: -18px; border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.07); }
-.sd-flight__orbit::after {
-  content: ''; position: absolute; top: -3px; left: 50%; width: 6px; height: 6px; margin-left: -3px; border-radius: 50%;
-  background: var(--sd-gold); box-shadow: 0 0 12px 2px rgba(244, 177, 19, 0.6);
-}
-.sd-flight__step:not(.sd-flight__step--live) .sd-flight__orbit::after { background: #fff; box-shadow: 0 0 8px rgba(255, 255, 255, 0.5); opacity: 0.55; }
-.sd-flight__dial svg { position: relative; width: 56%; height: 56%; filter: drop-shadow(0 0 6px rgba(181, 101, 45, 0.8)); transition: color var(--sd-dur-fast) var(--sd-ease); }
-.sd-flight__step:hover .sd-flight__dial svg { color: var(--sd-accent-ink); }
-.sd-flight__fill { fill: currentColor; stroke: none; }
-.sd-flight__spark { fill: var(--sd-gold); stroke: none; }
-
-.sd-flight__title { font: 400 24px/1.1 var(--sd-display); letter-spacing: 0.01em; text-transform: uppercase; }
-.sd-flight__text { align-self: start; color: var(--sd-ink-2); font-size: 15px; line-height: 1.6; max-width: 30ch; }
-.sd-flight__status {
-  display: inline-flex; align-items: center; gap: 9px; justify-self: start; margin-top: 6px; padding: 7px 13px; border-radius: 999px;
-  border: 1px solid var(--sd-rule); background: rgba(255, 255, 255, 0.025);
-  font: 600 12px/1 var(--sd-mono); letter-spacing: 0.16em; text-transform: uppercase; color: var(--sd-ink-3);
-}
-@media (min-width: 860px) { .sd-flight__status { justify-self: center; margin-top: 18px; } }
-.sd-flight__status::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--sd-ink-4); }
-.sd-flight__status--live { color: var(--sd-ink); border-color: rgba(244, 177, 19, 0.35); background: rgba(244, 177, 19, 0.06); }
-.sd-flight__status--live::before { background: var(--sd-gold); box-shadow: 0 0 0 0 rgba(244, 177, 19, 0.5); }
-
-@property --sd-sweep { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
-@media (prefers-reduced-motion: no-preference) {
-  .sd-flight::after { animation: sd-flight-comet 7s cubic-bezier(0.45, 0, 0.2, 1) 1s infinite; }
-  .sd-flight__dial::before { animation: sd-flight-turn 80s linear infinite; }
-  .sd-flight__orbit { animation: sd-flight-turn 14s linear calc(var(--i, 0) * -3.5s) infinite; }
-  .sd-flight__step:hover .sd-flight__orbit { animation-duration: 4s; }
-  .sd-flight__step:hover::before { animation: sd-flight-sweep 2.6s linear infinite; }
-  .sd-flight__status--live::before { animation: sd-flight-ping 2.4s var(--sd-ease) infinite; }
-}
-@keyframes sd-flight-turn { to { transform: rotate(360deg); } }
-@keyframes sd-flight-sweep { to { --sd-sweep: 360deg; } }
-@keyframes sd-flight-comet {
-  0% { left: 12.5%; opacity: 0; }
-  10%, 85% { opacity: 1; }
-  100% { left: calc(87.5% - 120px); opacity: 0; }
-}
-@keyframes sd-flight-ping {
-  0% { box-shadow: 0 0 0 0 rgba(244, 177, 19, 0.55); }
-  70%, 100% { box-shadow: 0 0 0 7px rgba(244, 177, 19, 0); }
-}
+.sd-flight__step { display: grid; grid-template-columns: 40px 1fr; column-gap: 16px; row-gap: 6px; padding: 24px 4px; color: inherit; text-decoration: none; }
+@media (min-width: 860px) { .sd-flight__step { grid-template-columns: 1fr; justify-items: center; text-align: center; padding: 28px 26px 30px; row-gap: 10px; } }
+.sd-flight__step:focus-visible { outline: 2px solid var(--sd-focus); outline-offset: 4px; border-radius: var(--sd-radius-sm); }
+.sd-flight__icon { grid-row: span 3; width: 40px; height: 40px; color: var(--sd-accent-ink); }
+@media (min-width: 860px) { .sd-flight__icon { grid-row: auto; width: 44px; height: 44px; margin-bottom: 6px; } }
+.sd-flight__icon svg { display: block; width: 100%; height: 100%; }
+.sd-flight__step:not(.sd-flight__step--live) .sd-flight__icon { color: var(--sd-ink-3); }
+.sd-flight__title { font: 400 clamp(26px, 2.2vw, 32px)/1 var(--sd-display); letter-spacing: 0.02em; text-transform: uppercase; color: var(--sd-ink); transition: color var(--sd-dur-base) var(--sd-ease); }
+.sd-flight__text { max-width: 30ch; color: var(--sd-ink-2); font-size: 15px; line-height: 1.55; }
+.sd-flight__status { display: inline-flex; align-items: center; gap: 8px; margin-top: 6px; font: 500 11.5px var(--sd-spaced); letter-spacing: 0.26em; text-transform: uppercase; color: var(--sd-ink-4); }
+.sd-flight__status::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+.sd-flight__status--live { color: var(--sd-gold); }
+@media (hover: hover) { .sd-flight__step:hover .sd-flight__title { color: var(--sd-accent-ink); } }
 
 .sd-showcase2 { display: grid; gap: 40px; align-items: center; }
 @media (min-width: 960px) { .sd-showcase2 { grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr); gap: 72px; } }

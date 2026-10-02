@@ -16,14 +16,14 @@ const ICONS: Record<Step['icon'], React.ReactNode> = {
       <rect x="6" y="15" width="36" height="20" rx="10" />
       <path d="M24 15v20" />
       <path d="M12 25h4M32 25h4" opacity="0.6" />
-      <path d="M39 4l1.2 3 3 1.2-3 1.2-1.2 3-1.2-3-3-1.2 3-1.2z" className="sd-flight__spark" />
+      <path d="M39 4l1.2 3 3 1.2-3 1.2-1.2 3-1.2-3-3-1.2 3-1.2z" />
     </>
   ),
   reticle: (
     <>
       <circle cx="24" cy="25" r="12" />
       <path d="M24 7v6M24 37v6M6 25h6M36 25h6" />
-      <path d="M24 19.5l1.7 3.6 3.8.4-2.9 2.6.8 3.8-3.4-2-3.4 2 .8-3.8-2.9-2.6 3.8-.4z" className="sd-flight__fill" />
+      <path d="M24 19.5l1.7 3.6 3.8.4-2.9 2.6.8 3.8-3.4-2-3.4 2 .8-3.8-2.9-2.6 3.8-.4z" fill="currentColor" stroke="none" />
     </>
   ),
   telescope: (
@@ -32,7 +32,7 @@ const ICONS: Record<Step['icon'], React.ReactNode> = {
       <path d="M32 12l3-1.3 3 7-3 1.3" />
       <path d="M8.5 22.2l-2 .8 2 4.7 2-.8" />
       <path d="M22 24.5l-6 15M22 24.5l6 15M22 24.5V40" />
-      <circle cx="40" cy="8" r="1.2" className="sd-flight__fill" />
+      <circle cx="40" cy="8" r="1.2" fill="currentColor" stroke="none" />
     </>
   ),
   meteorite: (
@@ -46,19 +46,15 @@ const ICONS: Record<Step['icon'], React.ReactNode> = {
   ),
 };
 
-/** Four steps from capsule to object, each with its instrument, one line and where it stands. */
+/** Four steps from capsule to object, each with its instrument, one line and where it stands, in four quiet columns. */
 export default function FlightPlan({ steps }: { steps: Step[] }) {
   return (
     <ol className="sd-flight">
-      {steps.map((s, i) => (
-        <li key={s.title} style={{ '--i': i } as React.CSSProperties}>
+      {steps.map((s) => (
+        <li key={s.title}>
           <Link href={s.href} className={`sd-flight__step${s.live ? ' sd-flight__step--live' : ''}`}>
-            <span className="sd-flight__n" aria-hidden="true">
-              {String(i + 1).padStart(2, '0')}
-            </span>
-            <span className="sd-flight__dial" aria-hidden="true">
-              <span className="sd-flight__orbit" />
-              <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+            <span className="sd-flight__icon" aria-hidden="true">
+              <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
                 {ICONS[s.icon]}
               </svg>
             </span>

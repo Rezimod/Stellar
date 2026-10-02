@@ -151,7 +151,7 @@ export async function closeNight(db: Db, node: ObservatoryNode, night: string, n
   if (cloud === null || cloud <= CLOUD_LIMIT) return row
 
   const hour = new Intl.DateTimeFormat('en-GB', { timeZone: node.timezone, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(row.plannedAt)
-  const lostReason = `Cloud cover at ${node.site} was ${Math.round(cloud)}% at ${hour} local time, over the ${CLOUD_LIMIT}% limit.`
+  const lostReason = `Cloud cover was ${Math.round(cloud)}% at ${hour} local time, over the ${CLOUD_LIMIT}% limit.`
   const [lost] = await db
     .update(nightlyTarget)
     .set({ lostAt: now, lostReason })

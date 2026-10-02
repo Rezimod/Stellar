@@ -27,7 +27,7 @@ export default function TermsPage() {
         <section className="sd-chapter-block">
           <Chapter n="02" title="Your account" />
           <p>
-            You sign in through Privy with email or a wallet. Your cards are held against the Solana wallet on that account.
+            You log in through Privy with email or a wallet. Your cards are held against the Solana wallet on that account.
             Keep the account to yourself; whoever controls it controls the cards.
           </p>
         </section>

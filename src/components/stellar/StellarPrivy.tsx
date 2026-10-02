@@ -6,7 +6,7 @@ import { useEffect } from 'react';
 import { SolanaWalletProvider } from '@/components/providers/PrivyProvider';
 import { useStellarSession, type PrivyState } from './StellarAuth';
 
-/** Opens Privy's sign-in window if Sign in is what loaded it. */
+/** Opens Privy's sign-in window if Log in is what loaded it. */
 function LoginOnArrival() {
   const { ready, authenticated, login } = usePrivy();
   const { wantsLogin, loginOpened } = useStellarSession();

@@ -13,7 +13,7 @@ export default function StellarVote({ designation, name }: { designation: string
   if (!ready || !authenticated) {
     return (
       <>
-        <button type="button" className="sd-btn" onClick={() => login()} aria-label={`Sign in to vote for ${name}`}>
+        <button type="button" className="sd-btn" onClick={() => login()} aria-label={`Log in to vote for ${name}`}>
           Vote
         </button>
       </>

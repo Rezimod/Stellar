@@ -1,6 +1,7 @@
 /**
- * The four capsules on the shelf, cheapest first. Each is named for a class of
- * meteorite, commonest to rarest, and the odds climb with the price.
+ * The four capsules on the shelf, cheapest first. Each is named for something
+ * brighter in the sky than the last, and the odds climb with the price. The
+ * keys keep the meteorite classes they were first listed under.
  *
  * PROVISIONAL (Gate 2). A capsule is listed as one tier and keeps its odds
  * from then on (capsule.odds_bps, and its 'listed' log entry), so changing a
@@ -29,33 +30,33 @@ export type Tier = {
 export const TIERS: readonly Tier[] = [
   {
     key: 'chondrite',
-    name: 'Chondrite',
+    name: 'Meteor',
     priceUsd: 5,
-    line: 'Stony, the commonest fall',
+    line: 'A streak across the dark',
     lit: 'common',
     oddsBps: { common: 8600, rare: 1250, epic: 140, legendary: 10 },
   },
   {
     key: 'iron',
-    name: 'Iron',
+    name: 'Comet',
     priceUsd: 20,
-    line: 'Nickel-iron, heavy in the hand',
+    line: 'Ice and fire, on a long return',
     lit: 'rare',
     oddsBps: { common: 6000, rare: 3200, epic: 700, legendary: 100 },
   },
   {
     key: 'pallasite',
-    name: 'Pallasite',
+    name: 'Nova',
     priceUsd: 50,
-    line: 'Olivine set in metal',
+    line: 'A star that flares anew',
     lit: 'epic',
     oddsBps: { common: 2500, rare: 5200, epic: 2000, legendary: 300 },
   },
   {
     key: 'lunar',
-    name: 'Lunar',
+    name: 'Supernova',
     priceUsd: 100,
-    line: 'A piece of the Moon',
+    line: 'The brightest light a star can give',
     lit: 'legendary',
     oddsBps: { common: 0, rare: 5300, epic: 4000, legendary: 700 },
   },

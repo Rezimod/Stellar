@@ -87,13 +87,13 @@ export default function StellarAccount() {
     };
   }, [menuOpen]);
 
-  if (!ready) return <span className="sd-chip" aria-hidden="true" style={{ visibility: 'hidden' }}>Sign in</span>;
+  if (!ready) return <span className="sd-chip" aria-hidden="true" style={{ visibility: 'hidden' }}>Log in</span>;
 
   if (!authenticated) {
     return (
       <>
         <button type="button" className="sd-chip sd-chip--cta" onClick={() => login()}>
-          Sign in
+          Log in
         </button>
       </>
     );

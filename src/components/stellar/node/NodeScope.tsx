@@ -202,7 +202,7 @@ export default function NodeScope({
             {now && (
               <>
                 <span className="sd-scope__clock">{siteClock(now)}</span>
-                <span className="sd-scope__small">{node.site.split(',')[0]} · site time</span>
+                <span className="sd-scope__small">Site time</span>
               </>
             )}
           </div>

@@ -28,7 +28,7 @@ export default function CollectionWallet() {
       <p className="sd-lede">Your editions and every photograph Live Telescope V1 takes of them. Collections are public, like the log.</p>
       <div className="sd-pay__actions sd-section">
         <button type="button" className="sd-btn sd-btn--primary" onClick={() => login()} disabled={!ready}>
-          {ready ? 'Sign in' : 'Reading the account'}
+          {ready ? 'Log in' : 'Reading the account'}
         </button>
       </div>
       <p className="sd-gate__or">or read any holder</p>

@@ -35,9 +35,9 @@ function hadSession() {
 }
 
 /**
- * Sign-in, loaded only when it is wanted. A visitor who has never signed in
+ * Log-in, loaded only when it is wanted. A visitor who has never signed in
  * downloads none of Privy — no SDK, no wallet list, no auth window — until
- * they press Sign in; someone with a session gets it as the page settles.
+ * they press Log in; someone with a session gets it as the page settles.
  *
  * Privy's provider is mounted beside the page, not around it, and reports its
  * state up (StellarPrivy). So Privy arriving never remounts the page: nothing

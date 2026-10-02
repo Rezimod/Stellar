@@ -62,7 +62,7 @@ export default function StellarOpen({ capsuleId }: { capsuleId: string }) {
           </button>
         ) : (
           <button type="button" className="sd-btn sd-btn--primary sd-btn--block" onClick={() => login()}>
-            Sign in to fly it
+            Log in to fly it
           </button>
         )}
       </div>

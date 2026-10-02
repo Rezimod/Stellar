@@ -13,7 +13,7 @@ export default function ContactPage() {
     <StellarShell title="Contact">
       <article className="sd-container sd-top sd-legal">
         <p className="sd-lede">
-          Stellar is run by Astroman in Tbilisi. Email is the fastest way to reach us; a reply can take a day or two. For a
+          Stellar is run by Astroman. Email is the fastest way to reach us; a reply can take a day or two. For a
           payment, include the transaction signature.
         </p>
         <DataRow
@@ -22,7 +22,7 @@ export default function ContactPage() {
           items={[
             { label: 'Email', value: <a href="mailto:info@astroman.ge">info@astroman.ge</a> },
             { label: 'Store', value: <a href="https://astroman.ge" target="_blank" rel="noopener noreferrer">astroman.ge</a> },
-            { label: 'Live Telescope V1', value: 'Tbilisi, Georgia · commissioning' },
+            { label: 'Live Telescope V1', value: 'Under the night sky · commissioning' },
           ]}
         />
       </article>
