@@ -4,7 +4,7 @@
    look. The stage is always night, so it carries its own colours. */
 
 .sf {
-  --sf-tone: #c0d1e9;
+  --sf-tone: #e9d1c0;
   --sf-ray: #fff1d8;
   --sf-card-bottom: 70vh;
   position: fixed; inset: 0; z-index: 80; overflow: hidden; overscroll-behavior: contain;
@@ -26,7 +26,7 @@
 .sf-chutes { position: absolute; left: -80%; width: 260%; height: 260%; bottom: 88%; transform-origin: 50% 100%; transform: scale(0); }
 .sf-drogues svg, .sf-chutes svg { width: 100%; height: 100%; display: block; overflow: visible; }
 .sf-hatch { position: absolute; left: 37%; top: 34%; width: 26%; height: 26%; perspective: 160px; }
-.sf-hatch__hole { position: absolute; inset: 0; border-radius: 50%; background: #05070c; }
+.sf-hatch__hole { position: absolute; inset: 0; border-radius: 50%; background: #0c0705; }
 .sf-hatch__light { position: absolute; inset: 0; border-radius: 50%; opacity: 0; background: radial-gradient(circle, #fff 0, var(--sf-ray) 38%, color-mix(in srgb, var(--sf-ray) 40%, #000) 100%); }
 .sf-hatch__ring { position: absolute; inset: -9%; border-radius: 50%; border: 2px solid #9aa2ae; box-shadow: inset 0 0 0 1.5px #3a404b, 0 0 0 1px #3a404b; }
 .sf-hatch__door { position: absolute; inset: 0; transform-origin: 0% 50%; }
@@ -59,7 +59,7 @@
 .sf-sheen { position: absolute; inset: 0; pointer-events: none; opacity: 0.6; background: linear-gradient(105deg, transparent 32%, rgba(255, 255, 255, 0.4) 50%, transparent 68%); background-size: 260% 100%; background-position: 140% 0; }
 .sf-sheen.is-sweep { animation: sf-sweep 1.1s ease-out; }
 @keyframes sf-sweep { from { background-position: 140% 0; } to { background-position: -40% 0; } }
-.sf-foil { position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity 0.6s; background: linear-gradient(115deg, transparent 20%, rgba(249, 212, 125, 0.22) 40%, rgba(200, 220, 255, 0.2) 50%, rgba(249, 212, 125, 0.22) 60%, transparent 80%); background-size: 240% 100%; background-position: var(--sf-sx, 50%) 0; }
+.sf-foil { position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity 0.6s; background: linear-gradient(115deg, transparent 20%, rgba(249, 212, 125, 0.22) 40%, rgba(255, 220, 200, 0.2) 50%, rgba(249, 212, 125, 0.22) 60%, transparent 80%); background-size: 240% 100%; background-position: var(--sf-sx, 50%) 0; }
 .sf.is-done[data-rarity='epic'] .sf-foil { opacity: 0.55; }
 .sf.is-done[data-rarity='legendary'] .sf-foil { opacity: 0.85; }
 .sf-rim { position: absolute; inset: 0; border-radius: 4.76% / 3.41%; opacity: 0; box-shadow: 0 0 0 1px var(--sf-tone), 0 0 30px 4px color-mix(in srgb, var(--sf-tone) 70%, transparent), 0 0 90px 22px color-mix(in srgb, var(--sf-tone) 35%, transparent); }
@@ -102,8 +102,8 @@
 .sf-fly {
   position: relative; overflow: hidden; display: grid; justify-items: center; gap: 5px; min-width: 220px; padding: 15px 34px 13px;
   border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.22); color: #fff; cursor: pointer;
-  background: linear-gradient(180deg, #3268bd, #234b93);
-  box-shadow: 0 14px 40px -12px rgba(40, 85, 164, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  background: linear-gradient(180deg, #ffd27a 0%, #f6a63f 48%, #e0612e 100%); color: #1a0b05;
+  box-shadow: 0 14px 40px -12px rgba(224, 97, 46, 0.9), inset 0 1px 0 rgba(255, 246, 220, 0.7), inset 0 -2px 0 rgba(120, 30, 15, 0.35);
 }
 .sf-fly b { font: 700 16px/1 var(--sd-display); letter-spacing: 0.3em; padding-left: 0.3em; text-transform: uppercase; }
 .sf-fly small { font: 500 10px/1 var(--sd-mono); letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255, 255, 255, 0.7); }
