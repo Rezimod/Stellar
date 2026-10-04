@@ -867,6 +867,8 @@ export function startFlight(root: HTMLElement, opts: FlightOptions): FlightHandl
     el.mover.style.transform = `translate(${dx}px,${dy}px) scale(${sc})`;
     el.bob.style.transform = `translate(${(Math.random() - 0.5) * quake * 2}px,${settled ? -5 * Math.sin((tt - C0 - EMERGE) / 650) : 0}px) rotate(${settled ? 0.4 * Math.sin((tt - C0) / 900) : 0}deg)`;
     el.card.style.transform = `rotateY(${ang}deg)`;
+    // Until it turns, only the sealed back is ever seen, even mid-spin; the front waits for the flip.
+    root.classList.toggle('is-sealed', ft < 0);
     el.dim.style.opacity = `${dim}`;
     el.tracer.style.opacity = `${trO}`;
     tracerRect.style.strokeDashoffset = `${tr}`;
