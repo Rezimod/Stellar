@@ -124,6 +124,8 @@ export interface SolarSystemCanvasProps {
   room?: RoomLink;
   /** Called once, after the first frame has been drawn. */
   onReady?: () => void;
+  /** The game is paused: the last frame stays on the glass and nothing is drawn. */
+  paused?: boolean;
 }
 
 /** Project a world-space point onto CSS pixel coords. Returns null when the
@@ -202,6 +204,7 @@ export function SolarSystemCanvas({
   flight,
   room,
   onReady,
+  paused = false,
 }: SolarSystemCanvasProps) {
   const mountRef = useRef<HTMLDivElement>(null);
   const epochRef = useRef(epoch);
@@ -234,6 +237,8 @@ export function SolarSystemCanvas({
   const roomRef = useRef(room);
   roomRef.current = room;
   const onReadyRef = useRef(onReady);
+  const pausedRef = useRef(paused);
+  pausedRef.current = paused;
   onReadyRef.current = onReady;
   /** Bumped when the GPU drops the context: the whole scene is rebuilt on a fresh one. */
   const [glGeneration, setGlGeneration] = useState(0);
@@ -922,6 +927,8 @@ export function SolarSystemCanvas({
 
     let pinchActive = false;
     let lastPinchDist = 0;
+    /** A pinch happened in this gesture: no finger lifting out of it is a tap. */
+    let hadPinch = false;
 
     const flying = () => !!flightRef.current?.active;
 
@@ -989,11 +996,13 @@ export function SolarSystemCanvas({
       if (flying()) { e.preventDefault(); return; }
       if (e.touches.length === 2) {
         pinchActive = true;
+        hadPinch = true;
         lastPinchDist = touchDist(e.touches);
         drag = false;
         downOk = false;
       } else if (e.touches.length === 1) {
         pinchActive = false;
+        hadPinch = false;
         lastPinchDist = 0;
         downOk = true;
         drag = true;
@@ -1048,7 +1057,13 @@ export function SolarSystemCanvas({
         pinchActive = false;
         lastPinchDist = 0;
       }
-      if (e.changedTouches.length === 1 && !pinchActive) {
+      // Out of a pinch with one finger still down: that finger turns the view.
+      if (hadPinch && e.touches.length === 1) {
+        drag = true;
+        lx = e.touches[0].clientX;
+        ly = e.touches[0].clientY;
+      }
+      if (e.type === 'touchend' && e.changedTouches.length === 1 && e.touches.length === 0 && !hadPinch) {
         const t = e.changedTouches[0];
         const moved = Math.hypot(t.clientX - downX, t.clientY - downY);
         if (moved < 10) pick(t.clientX, t.clientY);
@@ -1056,6 +1071,7 @@ export function SolarSystemCanvas({
       if (e.touches.length === 0) {
         drag = false;
         downOk = false;
+        hadPinch = false;
       }
     };
 
@@ -1068,6 +1084,7 @@ export function SolarSystemCanvas({
     el.addEventListener('touchstart', onTouchStart, { passive: false });
     el.addEventListener('touchmove', onTouchMove, { passive: false });
     el.addEventListener('touchend', onTouchEnd);
+    el.addEventListener('touchcancel', onTouchEnd);
 
     const onResize = () => {
       if (!mount) return;
@@ -1357,6 +1374,10 @@ export function SolarSystemCanvas({
         raf = 0;
         return;
       }
+      if (pausedRef.current && readyFired) {
+        raf = requestAnimationFrame(loop);
+        return;
+      }
       // Wall-clock seconds for shader animation (convection, cloud bands).
       const sceneTime = reduceMotion ? 0 : (now - t0) / 1000;
       const epochNow = epochRef.current.current;
@@ -1387,7 +1408,7 @@ export function SolarSystemCanvas({
           scene.add(ship.fxGroup);
           // The ship's programs start building now, in parallel where the
           // driver allows, rather than one by one inside its first frame.
-          compileFor(renderer, postFx.drawTarget(), () => renderer.compile(scene, camera));
+          void compileFor(renderer, postFx.drawTarget(), () => renderer.compileAsync(scene, camera)).catch(() => undefined);
           // Which star system is drawn follows the ship; see below.
           ship.fillAnchor.add(shipFill);
           shipFill.position.set(0, 0, 0);
@@ -1544,18 +1565,27 @@ export function SolarSystemCanvas({
 
       projectSunPoint(sunOrigin, camera, sunScreen);
       postFx.setSun(sunScreen.x, sunScreen.y, sunScreen.visible, sunScreen.edge);
-      postFx.render(dtSec);
+      // Under the loader nothing is drawn until the programs are built: a
+      // frame drawn with half-built programs waits for them on the main
+      // thread, and the loader's own animation freezes with it.
+      if (readyFired || compiled) postFx.render(dtSec);
       if (!readyFired) {
         if (mapsPending > 0 && now < mapsDeadline) {
           // Still waiting on the maps; the loader covers the canvas.
         } else if (!warmed) {
           // Every program in the scene — the galactic tiers and the belts
-          // that are faded out now included — and every texture, uploaded,
+          // that are faded out now included — built in parallel off the main
+          // thread where the driver allows, then every texture uploaded,
           // before the loader goes. Then a couple of frames to show it holds.
           warmed = true;
-          compileFor(renderer, postFx.drawTarget(), () => renderer.compile(scene, camera));
-          uploadSceneTextures(renderer, scene);
-        } else if (++settledFrames >= 2) {
+          void compileFor(renderer, postFx.drawTarget(), () => renderer.compileAsync(scene, camera))
+            .catch(() => undefined)
+            .then(() => {
+              if (contextLost) return;
+              uploadSceneTextures(renderer, scene);
+              compiled = true;
+            });
+        } else if (compiled && ++settledFrames >= 2) {
           readyFired = true;
           onReadyRef.current?.();
         }
@@ -1564,6 +1594,7 @@ export function SolarSystemCanvas({
     };
     let readyFired = false;
     let warmed = false;
+    let compiled = false;
     let settledFrames = 0;
     startLoop();
     if (process.env.NODE_ENV !== 'production') window.__stellarOrrery = { probe: (within) => probeCalls(renderer, scene, () => postFx.render(0), within) };
@@ -1584,6 +1615,7 @@ export function SolarSystemCanvas({
       el.removeEventListener('touchstart', onTouchStart);
       el.removeEventListener('touchmove', onTouchMove);
       el.removeEventListener('touchend', onTouchEnd);
+      el.removeEventListener('touchcancel', onTouchEnd);
 
       teardownShip();
       fleet.dispose();
