@@ -3,15 +3,21 @@ import { PgDialect } from 'drizzle-orm/pg-core';
 import type { SQL } from 'drizzle-orm';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-const pay = vi.hoisted(() => ({ findReference: vi.fn(), validateTransfer: vi.fn() }));
+const pay = vi.hoisted(() => ({ signatures: vi.fn(), validateTransfer: vi.fn(), telegram: vi.fn() }));
 vi.mock('@solana/pay', async (actual) => ({
   ...(await actual<typeof import('@solana/pay')>()),
-  findReference: pay.findReference,
   validateTransfer: pay.validateTransfer,
 }));
-import { FindReferenceError } from '@solana/pay';
+vi.mock('@solana/web3.js', async (actual) => {
+  const real = await actual<typeof import('@solana/web3.js')>();
+  class Connection {
+    getSignaturesForAddress = pay.signatures;
+  }
+  return { ...real, Connection };
+});
+vi.mock('@/lib/telegram', () => ({ sendTelegram: pay.telegram }));
 import type { Db } from '@/lib/stellar/attach';
-import { findPayment, fulfilCardOrder, usdToSol, orderHash, type OrderRow } from '@/lib/stellar/orders';
+import { findPayment, fulfilCardOrder, paymentNetworkProblem, unpaidRehearsal, usdToSol, orderHash, type OrderRow } from '@/lib/stellar/orders';
 import { SolPriceUnavailableError, SOL_PRICE_FALLBACK, fetchSolPriceRates } from '@/lib/sol-price';
 
 const MERCHANT = '7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU';
@@ -24,36 +30,87 @@ const order = (extra: Partial<OrderRow> = {}) => ({
 
 beforeEach(() => {
   process.env.NEXT_PUBLIC_MERCHANT_WALLET = MERCHANT;
-  pay.findReference.mockReset();
+  pay.signatures.mockReset().mockResolvedValue([]);
   pay.validateTransfer.mockReset().mockResolvedValue({ blockTime: null });
+  pay.telegram.mockReset().mockResolvedValue(undefined);
 });
 afterEach(() => vi.unstubAllGlobals());
 
 describe('finding a payment', () => {
   const at = (iso: string) => Math.floor(Date.parse(iso) / 1000);
+  // getSignaturesForAddress answers newest first.
+  const sig = (signature: string, iso: string | null, err: unknown = null) => ({ signature, blockTime: iso ? at(iso) : null, err });
 
   it('is paid, inside the window, when the transfer landed before the quote lapsed', async () => {
-    pay.findReference.mockResolvedValue({ signature: 'sig', blockTime: at('2026-09-20T12:10:00Z') });
+    pay.signatures.mockResolvedValue([sig('sig', '2026-09-20T12:10:00Z')]);
     expect(await findPayment(order())).toEqual({ paid: true, signature: 'sig', paidAt: new Date('2026-09-20T12:10:00Z'), late: false });
   });
 
   it('is late when the block time is after the window, or unknown', async () => {
-    pay.findReference.mockResolvedValue({ signature: 'sig', blockTime: at('2026-09-20T12:16:00Z') });
+    pay.signatures.mockResolvedValue([sig('sig', '2026-09-20T12:16:00Z')]);
     expect(await findPayment(order())).toMatchObject({ paid: true, late: true });
-    pay.findReference.mockResolvedValue({ signature: 'sig', blockTime: null });
+    pay.signatures.mockResolvedValue([sig('sig', null)]);
     expect(await findPayment(order())).toMatchObject({ paid: true, late: true });
   });
 
   it('never accepts a transfer for an order of nothing', async () => {
     expect(await findPayment(order({ amountSol: 0 }))).toMatchObject({ paid: false, status: 400 });
-    expect(pay.findReference).not.toHaveBeenCalled();
+    expect(pay.signatures).not.toHaveBeenCalled();
   });
 
   it('tells no transfer yet apart from a chain it could not ask', async () => {
-    pay.findReference.mockRejectedValue(new FindReferenceError('not found'));
     expect(await findPayment(order())).toEqual({ paid: false });
-    pay.findReference.mockRejectedValue(new Error('fetch failed'));
+    pay.signatures.mockRejectedValue(new Error('fetch failed'));
     expect(await findPayment(order())).toMatchObject({ paid: false, status: 503 });
+  });
+
+  it('looks past a failed or wrong transfer to a valid one after it', async () => {
+    pay.signatures.mockResolvedValue([sig('good', '2026-09-20T12:12:00Z'), sig('short', '2026-09-20T12:11:00Z'), sig('failed', '2026-09-20T12:10:00Z', { InstructionError: [0, 'x'] })]);
+    pay.validateTransfer.mockImplementation(async (_c: unknown, s: string) => {
+      if (s === 'short') throw new Error('amount not transferred');
+      return { blockTime: null };
+    });
+    expect(await findPayment(order())).toMatchObject({ paid: true, signature: 'good', late: false });
+    expect(pay.validateTransfer).not.toHaveBeenCalledWith(expect.anything(), 'failed', expect.anything(), expect.anything());
+  });
+
+  it('refuses when the only transfer paid the wrong amount', async () => {
+    pay.signatures.mockResolvedValue([sig('short', '2026-09-20T12:11:00Z')]);
+    pay.validateTransfer.mockRejectedValue(new Error('amount not transferred'));
+    expect(await findPayment(order())).toMatchObject({ paid: false, status: 400 });
+  });
+
+  it('takes the first of two valid transfers and reports the second as owed back', async () => {
+    pay.signatures.mockResolvedValue([sig('second', '2026-09-20T12:12:00Z'), sig('first', '2026-09-20T12:10:00Z')]);
+    expect(await findPayment(order())).toMatchObject({ paid: true, signature: 'first' });
+    expect(pay.telegram).toHaveBeenCalledWith(expect.stringContaining('second'));
+  });
+});
+
+describe('the payment network', () => {
+  afterEach(() => {
+    delete process.env.SOLANA_RPC_URL;
+    delete process.env.NEXT_PUBLIC_SOLANA_CLUSTER;
+    delete process.env.VERCEL_ENV;
+    delete process.env.NEXT_PUBLIC_STELLAR_SIMULATED_PAYMENT;
+  });
+
+  it('refuses a devnet RPC under mainnet wallets, and anything but mainnet in production', async () => {
+    process.env.SOLANA_RPC_URL = 'https://api.devnet.solana.com';
+    expect(paymentNetworkProblem()).toMatch(/devnet/);
+    process.env.NEXT_PUBLIC_SOLANA_CLUSTER = 'devnet';
+    expect(paymentNetworkProblem()).toBeNull();
+    process.env.VERCEL_ENV = 'production';
+    expect(paymentNetworkProblem()).toMatch(/mainnet/);
+    expect(await findPayment(order())).toMatchObject({ paid: false, status: 503 });
+    expect(pay.signatures).not.toHaveBeenCalled();
+  });
+
+  it('has no network to check in a rehearsal', () => {
+    process.env.NEXT_PUBLIC_STELLAR_SIMULATED_PAYMENT = '1';
+    process.env.SOLANA_RPC_URL = 'https://api.devnet.solana.com';
+    process.env.VERCEL_ENV = 'production';
+    expect(paymentNetworkProblem()).toBeNull();
   });
 });
 
@@ -64,14 +121,21 @@ describe('a rehearsal deployment', () => {
     process.env.NEXT_PUBLIC_STELLAR_SIMULATED_PAYMENT = '1';
     const found = await findPayment(order());
     expect(found).toMatchObject({ paid: true, late: false, signature: `simulated-no-payment:${REFERENCE}` });
-    expect(pay.findReference).not.toHaveBeenCalled();
+    expect(pay.signatures).not.toHaveBeenCalled();
     expect(pay.validateTransfer).not.toHaveBeenCalled();
   });
 
   it('is off unless the deployment says exactly 1', async () => {
     process.env.NEXT_PUBLIC_STELLAR_SIMULATED_PAYMENT = 'true';
-    pay.findReference.mockRejectedValue(new FindReferenceError('not found'));
     expect(await findPayment(order())).toEqual({ paid: false });
+  });
+
+  it('leaves its paid orders unpaid on a deployment that sells for real', () => {
+    const rehearsed = { signature: `simulated-no-payment:${REFERENCE}` };
+    expect(unpaidRehearsal(rehearsed)).toBe(true);
+    expect(unpaidRehearsal({ signature: 'real' })).toBe(false);
+    process.env.NEXT_PUBLIC_STELLAR_SIMULATED_PAYMENT = '1';
+    expect(unpaidRehearsal(rehearsed)).toBe(false);
   });
 });
 

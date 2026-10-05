@@ -22,7 +22,7 @@ import type { Db } from './attach';
 import type { LogRow } from './audit';
 import { CAPSULE_PRICE_USD, CARDS_PER_CAPSULE, RARITY_ODDS_BPS } from './economics';
 import type { Tier } from './tiers';
-import { findPayment, markPaid, orderExpiry, simulatedPayments, type OrderRow, type PaymentCheck } from './orders';
+import { CAPSULE_PRODUCT_ID, findPayment, markPaid, orderExpiry, simulatedPayments, type OrderRow, type PaymentCheck } from './orders';
 import {
   SoldOutError,
   commitmentOf,
@@ -258,6 +258,8 @@ type CapsuleRow = {
   demo: boolean;
   tier: string | null;
   odds_bps: unknown;
+  /** The set's status, read with the capsule by readCapsule. */
+  set_status?: string;
 };
 
 const CAPSULE_COLUMNS = sql.raw(`id, set_id, sequence, commitment, server_secret_sealed, server_secret, state, price_usd,
@@ -265,10 +267,19 @@ const CAPSULE_COLUMNS = sql.raw(`id, set_id, sequence, commitment, server_secret
 
 export async function readCapsule(db: Db, capsuleId: string): Promise<CapsuleRow | null> {
   const { rows } = (await db.execute(sql`
-    SELECT ${CAPSULE_COLUMNS}
+    SELECT ${CAPSULE_COLUMNS}, (SELECT s.status FROM card_set s WHERE s.id = capsule.set_id) AS set_status
     FROM capsule WHERE id = ${capsuleId}::uuid
   `)) as Rows<CapsuleRow>;
   return rows[0] ?? null;
+}
+
+/** Capsules this account holds bought and unpaid, with their quote still standing. */
+export async function unpaidCapsules(db: Db, privyId: string): Promise<number> {
+  const { rows } = (await db.execute(sql`
+    SELECT count(*)::int AS n FROM orders
+    WHERE privy_id = ${privyId} AND product_id = ${CAPSULE_PRODUCT_ID} AND status = 'pending' AND expires_at > now()
+  `)) as Rows<{ n: number }>;
+  return Number(rows[0]?.n ?? 0);
 }
 
 async function readOrder(db: Db, orderId: string): Promise<OrderRow | null> {

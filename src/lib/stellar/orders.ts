@@ -3,17 +3,19 @@
  * and the existing Solana Pay rail. A card processor is out of scope for beta.
  *
  * An order is created pending with a fresh reference key and a quote that
- * stands for ORDER_WINDOW_MINUTES; it becomes paid only once findReference
- * finds a transaction carrying that key, validateTransfer confirms it paid the
- * merchant the order's amount, and its block time is inside the window. A
+ * stands for ORDER_WINDOW_MINUTES; it becomes paid only once a transaction
+ * carrying that key is found that validateTransfer confirms paid the merchant
+ * the order's amount, and its block time is inside the window. A
  * transfer that arrives later is recorded as refund_due, never dropped. The
  * pending → paid step is one conditional UPDATE, so a confirmation retried or
  * raced is paid once.
  */
 
 import { createHash } from 'node:crypto';
+import { NextResponse } from 'next/server';
 import { Connection, Keypair, PublicKey } from '@solana/web3.js';
-import { FindReferenceError, encodeURL, findReference, validateTransfer } from '@solana/pay';
+import { encodeURL, validateTransfer } from '@solana/pay';
+import { sendTelegram } from '@/lib/telegram';
 import BigNumber from 'bignumber.js';
 import { and, eq, inArray, sql } from 'drizzle-orm';
 import { card, edition, orders } from '@/lib/schema';
@@ -41,9 +43,46 @@ export function simulatedPayments(): boolean {
   return process.env.NEXT_PUBLIC_STELLAR_SIMULATED_PAYMENT === '1';
 }
 
+const REHEARSAL_PREFIX = 'simulated-no-payment:';
+
 /** What a rehearsal records where a transaction signature would go. */
 export function simulatedSignature(reference: string): string {
-  return `simulated-no-payment:${reference}`;
+  return `${REHEARSAL_PREFIX}${reference}`;
+}
+
+/**
+ * An order a rehearsal marked paid, read by a deployment that sells for real:
+ * nothing was paid for it, so it opens and fulfils nothing here. Guards a
+ * preview, a rolled-back build or a local server that shares the database.
+ */
+export function unpaidRehearsal(order: { signature: string | null }): boolean {
+  return !simulatedPayments() && !!order.signature?.startsWith(REHEARSAL_PREFIX);
+}
+
+const PAYMENT_RPC = () => process.env.SOLANA_RPC_URL ?? 'https://api.mainnet-beta.solana.com';
+const networkOf = (s: string) => (/devnet/i.test(s) ? 'devnet' : /testnet/i.test(s) ? 'testnet' : /mainnet/i.test(s) ? 'mainnet-beta' : 'unknown');
+
+/**
+ * Why payments cannot be taken on this deployment's network, or null. A
+ * rehearsal moves no money and passes. Otherwise the RPC that checks payments
+ * must be on the cluster the wallets pay on, and production takes mainnet only:
+ * a devnet RPC there would accept free test SOL for real cards.
+ */
+export function paymentNetworkProblem(): string | null {
+  if (simulatedPayments()) return null;
+  const cluster = process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? 'mainnet-beta';
+  const rpc = networkOf(PAYMENT_RPC());
+  if (process.env.VERCEL_ENV === 'production' && (cluster !== 'mainnet-beta' || rpc !== 'mainnet-beta')) return 'production must take payments on mainnet';
+  if (rpc !== 'unknown' && rpc !== cluster) return `SOLANA_RPC_URL is ${rpc} but the wallets pay on ${cluster}`;
+  return null;
+}
+
+/** Route guard for every route that quotes or checks a payment. */
+export function paymentNetworkMisconfig(): NextResponse | null {
+  const problem = paymentNetworkProblem();
+  if (!problem) return null;
+  console.error('[stellar/payments] refusing:', problem);
+  return NextResponse.json({ error: 'Payments are not available right now' }, { status: 503 });
 }
 
 export function merchantWallet(): PublicKey | null {
@@ -141,31 +180,43 @@ export async function findPayment(order: OrderRow): Promise<PaymentCheck> {
     return { paid: false, error: 'Invalid reference', status: 400 };
   }
 
-  const connection = new Connection(process.env.SOLANA_RPC_URL ?? 'https://api.mainnet-beta.solana.com', 'confirmed');
-  let signature: string;
-  let blockTime: number | null | undefined;
+  if (paymentNetworkProblem()) return { paid: false, error: 'Payments are not available right now', status: 503 };
+  const connection = new Connection(PAYMENT_RPC(), 'confirmed');
+
+  // Every transaction that carried the key, oldest first. A failed one, or one
+  // that paid the wrong amount, is passed over rather than allowed to hide a
+  // valid transfer that came after it.
+  let found: { signature: string; blockTime?: number | null; err: unknown }[];
   try {
-    ({ signature, blockTime } = await findReference(connection, reference, { finality: 'confirmed' }));
-  } catch (err) {
-    if (err instanceof FindReferenceError) return { paid: false };
+    found = (await connection.getSignaturesForAddress(reference, { limit: 1000 }, 'confirmed')).reverse();
+  } catch {
     return { paid: false, error: 'The Solana network could not be reached', status: 503 };
   }
-  // findReference only proves some transaction carried the key; the transfer
-  // itself must pay the merchant the order's amount.
-  try {
-    const tx = await validateTransfer(
-      connection,
-      signature,
-      { recipient, amount: new BigNumber(order.amountSol), reference },
-      { commitment: 'confirmed' },
-    );
-    blockTime = blockTime ?? tx.blockTime;
-  } catch (err) {
-    console.warn('[stellar/confirm] transfer validation failed:', err instanceof Error ? err.message : err);
-    return { paid: false, error: 'Payment amount does not match order', status: 400 };
+  const valid: { signature: string; blockTime: number | null }[] = [];
+  let mismatched = false;
+  for (const f of found) {
+    if (f.err) continue;
+    try {
+      const tx = await validateTransfer(connection, f.signature, { recipient, amount: new BigNumber(order.amountSol), reference }, { commitment: 'confirmed' });
+      valid.push({ signature: f.signature, blockTime: f.blockTime ?? tx.blockTime ?? null });
+    } catch (err) {
+      mismatched = true;
+      console.warn('[stellar/confirm] transfer validation failed:', f.signature, err instanceof Error ? err.message : err);
+    }
   }
+  if (!valid.length) return mismatched ? { paid: false, error: 'Payment amount does not match order', status: 400 } : { paid: false };
+
+  // The order takes one transfer. Any other one for it is owed back; it is
+  // reported where an operator will see it, since the order row holds one signature.
+  if (valid.length > 1) {
+    const extra = valid.slice(1).map((v) => v.signature);
+    console.error('[stellar/confirm] REFUND DUE: extra transfers for order', order.id, extra);
+    await sendTelegram(`Stellar refund due: order ${order.id} received ${valid.length} transfers. Extra: ${extra.join(', ')}`).catch(() => {});
+  }
+
   // A transfer with no block time cannot be shown to be inside the window; it
   // is treated as late, which refunds it rather than keeps it.
+  const { signature, blockTime } = valid[0];
   const paidAt = blockTime ? new Date(blockTime * 1000) : new Date();
   const late = !blockTime || !order.expiresAt || paidAt.getTime() > order.expiresAt.getTime();
   return { paid: true, signature, paidAt, late };

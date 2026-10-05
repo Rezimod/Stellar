@@ -28,7 +28,7 @@ export async function limited(limiter: Limiter, id: string): Promise<NextRespons
     const { success, reset } = await checkRateLimit(limiter, id);
     if (success) return null;
     const retry = Math.max(1, Math.ceil((reset - Date.now()) / 1000));
-    return NextResponse.json({ error: 'Too many requests. Please wait before trying again.' }, { status: 429, headers: { 'Retry-After': String(retry) } });
+    return NextResponse.json({ error: 'Too many requests. Try again in a moment.' }, { status: 429, headers: { 'Retry-After': String(retry) } });
   } catch {
     return NextResponse.json({ error: 'Service temporarily unavailable' }, { status: 503 });
   }

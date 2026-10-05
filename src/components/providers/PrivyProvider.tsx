@@ -12,24 +12,24 @@ if (!process.env.NEXT_PUBLIC_PRIVY_APP_ID) {
   throw new Error('NEXT_PUBLIC_PRIVY_APP_ID is not set');
 }
 
-const RPC_HTTP_URL =
-  process.env.NEXT_PUBLIC_SOLANA_RPC_URL ??
-  process.env.NEXT_PUBLIC_HELIUS_RPC_URL ??
-  'https://api.devnet.solana.com';
-
 function toWsUrl(url: string): string {
   if (url.startsWith('https://')) return `wss://${url.slice('https://'.length)}`;
   if (url.startsWith('http://')) return `ws://${url.slice('http://'.length)}`;
   return url;
 }
 
-const RPC_WS_URL = toWsUrl(RPC_HTTP_URL);
-
 // Embedded-wallet chain must match the deployed network. Driven by env so the
 // devnet→mainnet cutover is a config flip, not a code change.
 const CLUSTER = process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? 'mainnet-beta';
 const IS_MAINNET = CLUSTER.startsWith('mainnet');
 const PRIVY_CHAIN: `solana:${string}` = IS_MAINNET ? 'solana:mainnet' : 'solana:devnet';
+
+// The fallback follows the cluster, so a mainnet build never talks to devnet.
+const RPC_HTTP_URL =
+  process.env.NEXT_PUBLIC_SOLANA_RPC_URL ??
+  process.env.NEXT_PUBLIC_HELIUS_RPC_URL ??
+  (IS_MAINNET ? 'https://api.mainnet-beta.solana.com' : 'https://api.devnet.solana.com');
+const RPC_WS_URL = toWsUrl(RPC_HTTP_URL);
 const BLOCK_EXPLORER_URL = IS_MAINNET
   ? 'https://explorer.solana.com'
   : 'https://explorer.solana.com?cluster=devnet';

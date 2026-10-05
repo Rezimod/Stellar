@@ -19,8 +19,10 @@ const mocks = vi.hoisted(() => ({
   markRefundDue: vi.fn(),
   cardAvailability: vi.fn(),
   createCardOrder: vi.fn(),
+  unpaidCapsules: vi.fn(),
   orderRows: [] as Array<Record<string, unknown>>,
 }));
+vi.mock('next/server', async (actual) => ({ ...(await actual<typeof import('next/server')>()), after: vi.fn() }));
 vi.mock('@/lib/api-auth', () => ({ verifyPrivy: mocks.privy, assertOwnsWallet: mocks.owns, getSessionWalletAddresses: mocks.linked }));
 process.env.UPSTASH_REDIS_REST_URL = 'https://redis.test';
 process.env.UPSTASH_REDIS_REST_TOKEN = 'test';
@@ -34,6 +36,8 @@ vi.mock('@/lib/stellar/capsule', () => ({
   purchaseCapsule: mocks.purchaseCapsule,
   readFullLog: mocks.readFullLog,
   settleCapsulePayment: mocks.settleCapsulePayment,
+  releaseLapsed: vi.fn(),
+  unpaidCapsules: mocks.unpaidCapsules,
 }));
 vi.mock('@/lib/stellar/orders', () => ({
   CAPSULE_PRODUCT_ID: 'stellar-capsule',
@@ -48,6 +52,8 @@ vi.mock('@/lib/stellar/orders', () => ({
   fulfilCardOrder: vi.fn(),
   cardAvailability: mocks.cardAvailability,
   createCardOrder: mocks.createCardOrder,
+  paymentNetworkMisconfig: () => null,
+  unpaidRehearsal: (o: { signature?: string | null }) => !!o.signature?.startsWith('simulated-no-payment:'),
 }));
 import { POST as open } from '@/app/api/stellar/capsules/open/route';
 import { POST as buy } from '@/app/api/stellar/capsules/buy/route';
@@ -65,7 +71,7 @@ function post(url: string, body: unknown) {
   return new NextRequest(`http://localhost${url}`, { method: 'POST', body: JSON.stringify(body) });
 }
 
-const bought = { id: CAPSULE, sequence: 1, commitment: HEX, state: 'purchased', buyer_wallet: HOLDER, buyer_nonce: HEX, order_id: 'order-1', price_usd: 39 };
+const bought = { id: CAPSULE, sequence: 1, commitment: HEX, state: 'purchased', buyer_wallet: HOLDER, buyer_nonce: HEX, order_id: 'order-1', price_usd: 39, set_status: 'released' };
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -78,6 +84,7 @@ beforeEach(() => {
   mocks.openCapsule.mockResolvedValue({ ok: true, alreadyOpened: false, secret: HEX, pulls: [] });
   mocks.orderRows = [{ status: 'paid' }];
   mocks.usdToSol.mockResolvedValue(0.1);
+  mocks.unpaidCapsules.mockResolvedValue(0);
   const chain: Record<string, unknown> = {};
   for (const m of ['select', 'from', 'where']) chain[m] = () => chain;
   chain.limit = async () => mocks.orderRows;
@@ -90,6 +97,13 @@ describe('opening a capsule', () => {
     expect(res.status).toBe(200);
     expect(mocks.openCapsule).toHaveBeenCalledWith(expect.anything(), CAPSULE);
     expect(mocks.owns).toHaveBeenCalledWith('privy-holder', HOLDER);
+  });
+
+  it('never opens a capsule a rehearsal marked paid', async () => {
+    mocks.orderRows = [{ status: 'paid', signature: 'simulated-no-payment:reference' }];
+    const res = await open(post('/api/stellar/capsules/open', { capsuleId: CAPSULE }));
+    expect(res.status).toBe(409);
+    expect(mocks.openCapsule).not.toHaveBeenCalled();
   });
 
   it('is not found for anyone but the holder', async () => {
@@ -132,6 +146,20 @@ describe('opening a capsule', () => {
 
 describe('buying a capsule', () => {
   const body = { walletAddress: HOLDER, capsuleId: CAPSULE, commitment: HEX, nonce: HEX };
+
+  it('holds no more than two unpaid capsules for one account', async () => {
+    mocks.unpaidCapsules.mockResolvedValue(2);
+    const res = await buy(post('/api/stellar/capsules/buy', body));
+    expect(res.status).toBe(429);
+    expect(mocks.purchaseCapsule).not.toHaveBeenCalled();
+  });
+
+  it('sells no capsule from a set still in draft', async () => {
+    mocks.readCapsule.mockResolvedValue({ ...bought, state: 'listed', set_status: 'draft' });
+    const res = await buy(post('/api/stellar/capsules/buy', body));
+    expect(res.status).toBe(409);
+    expect(mocks.purchaseCapsule).not.toHaveBeenCalled();
+  });
 
   it('refuses a nonce that is not 32 bytes of hex', async () => {
     for (const nonce of ['', 'AB'.repeat(32), 'ab'.repeat(31), 42]) {

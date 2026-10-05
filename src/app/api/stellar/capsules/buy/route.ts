@@ -1,15 +1,18 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
 import { getDb } from '@/lib/db';
 import { verifyPrivy } from '@/lib/api-auth';
 import { paused } from '@/lib/kill-switch';
 import { stellarBuyRateLimit } from '@/lib/rate-limit';
-import { purchaseCapsule, readCapsule } from '@/lib/stellar/capsule';
-import { usdToSol, merchantWallet, newPaymentReference, paymentUrl } from '@/lib/stellar/orders';
+import { purchaseCapsule, readCapsule, releaseLapsed, unpaidCapsules } from '@/lib/stellar/capsule';
+import { usdToSol, merchantWallet, newPaymentReference, paymentUrl, paymentNetworkMisconfig } from '@/lib/stellar/orders';
 import { isHex32, verifyPurchaseSignature } from '@/lib/stellar/randomness';
 import { isUuid, holderWallet, limited, NO_LINKED_WALLET } from '@/lib/stellar/route-guards';
 import { SolPriceUnavailableError } from '@/lib/sol-price';
 
 export const runtime = 'nodejs';
+
+/** Unpaid capsules one account may hold at once. */
+const MAX_UNPAID = 2;
 
 /**
  * Buys one listed capsule.
@@ -27,6 +30,8 @@ export const runtime = 'nodejs';
 export async function POST(req: NextRequest) {
   const p = paused();
   if (p) return p;
+  const n = paymentNetworkMisconfig();
+  if (n) return n;
   const privyId = await verifyPrivy(req);
   if (!privyId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -48,8 +53,16 @@ export async function POST(req: NextRequest) {
   const db = getDb();
   if (!db) return NextResponse.json({ error: 'Database not configured' }, { status: 503 });
 
+  // Capsules left unpaid go back on the shelf as soon as their window closes,
+  // not only at the nightly sweep; and one account holds few unpaid at a time.
+  after(() => releaseLapsed(db, 10).catch((err) => console.error('[stellar/capsules/buy] release sweep', err)));
+  if ((await unpaidCapsules(db, privyId)) >= MAX_UNPAID) {
+    return NextResponse.json({ error: 'Pay for the capsule you are holding, or let its quote lapse, before taking another.' }, { status: 429 });
+  }
+
   const listed = await readCapsule(db, capsuleId);
   if (!listed || listed.demo) return NextResponse.json({ error: 'Capsule not found' }, { status: 404 });
+  if (listed.set_status !== 'released') return NextResponse.json({ error: 'This set is not on sale yet' }, { status: 409 });
   if (signature) {
     const terms = { capsuleId, sequence: Number(listed.sequence), commitment, wallet: walletAddress, nonce };
     if (!verifyPurchaseSignature(terms, signature)) {
@@ -62,7 +75,7 @@ export async function POST(req: NextRequest) {
     amountSol = await usdToSol(Number(listed.price_usd));
   } catch (err) {
     if (!(err instanceof SolPriceUnavailableError)) console.error('[stellar/capsules/buy] quote', err);
-    return NextResponse.json({ error: 'No price can be quoted right now — please retry shortly.' }, { status: 503 });
+    return NextResponse.json({ error: 'No price can be quoted right now. Try again in a moment.' }, { status: 503 });
   }
 
   try {
@@ -102,6 +115,6 @@ export async function POST(req: NextRequest) {
     });
   } catch (err) {
     console.error('[stellar/capsules/buy]', err);
-    return NextResponse.json({ error: 'Could not reserve the capsule — please retry.' }, { status: 500 });
+    return NextResponse.json({ error: 'Could not reserve the capsule. Try again in a moment.' }, { status: 500 });
   }
 }

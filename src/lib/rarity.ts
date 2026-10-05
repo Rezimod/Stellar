@@ -3,7 +3,7 @@
  *
  * Stored on the card when a set is authored, never computed from anything a
  * holder does. How scarce a card is has nothing to do with whether Live Telescope V1 can
- * photograph it: Europa is epic and cannot be resolved; Saturn is legendary
+ * photograph it: Europa is common and cannot be resolved; Saturn is epic
  * and can.
  *
  * The tiers minted into old Stellar observation metadata (`Stellar`,

@@ -6,6 +6,7 @@ import { assertOwnsWallet, verifyPrivy } from '@/lib/api-auth';
 import { paused } from '@/lib/kill-switch';
 import { stellarOpenRateLimit } from '@/lib/rate-limit';
 import { openCapsule, readCapsule } from '@/lib/stellar/capsule';
+import { unpaidRehearsal } from '@/lib/stellar/orders';
 import { SoldOutError } from '@/lib/stellar/randomness';
 import { isUuid, limited } from '@/lib/stellar/route-guards';
 
@@ -40,12 +41,13 @@ export async function POST(req: NextRequest) {
   if (l) return l;
 
   const [order] = await db
-    .select({ status: orders.status })
+    .select({ status: orders.status, signature: orders.signature })
     .from(orders)
     .where(and(eq(orders.id, c.order_id), eq(orders.privyId, privyId)))
     .limit(1);
   if (!order) return NextResponse.json({ error: 'Capsule not found' }, { status: 404 });
   if (order.status !== 'paid') return NextResponse.json({ error: 'The capsule’s payment is not confirmed yet' }, { status: 409 });
+  if (unpaidRehearsal(order)) return NextResponse.json({ error: 'This capsule was bought in a rehearsal and was never paid' }, { status: 409 });
 
   try {
     const result = await openCapsule(db, c.id);
@@ -67,6 +69,6 @@ export async function POST(req: NextRequest) {
       );
     }
     console.error('[stellar/capsules/open]', err);
-    return NextResponse.json({ error: 'Could not open the capsule — please retry.' }, { status: 500 });
+    return NextResponse.json({ error: 'Could not open the capsule. Try again in a moment.' }, { status: 500 });
   }
 }

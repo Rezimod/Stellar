@@ -13,7 +13,9 @@ import {
   fulfilCardOrder,
   markPaid,
   markRefundDue,
+  unpaidRehearsal,
   type OrderRow,
+  paymentNetworkMisconfig,
 } from '@/lib/stellar/orders';
 import { isUuid, limited } from '@/lib/stellar/route-guards';
 
@@ -31,6 +33,8 @@ export const runtime = 'nodejs';
 export async function POST(req: NextRequest) {
   const p = paused();
   if (p) return p;
+  const n = paymentNetworkMisconfig();
+  if (n) return n;
   const privyId = await verifyPrivy(req);
   if (!privyId) return NextResponse.json({ confirmed: false, error: 'Unauthorized' }, { status: 401 });
 
@@ -72,6 +76,9 @@ export async function POST(req: NextRequest) {
   }
   if (order.status !== 'paid') {
     return NextResponse.json({ confirmed: false, status: order.status, error: 'This order is closed' }, { status: 409 });
+  }
+  if (unpaidRehearsal(order)) {
+    return NextResponse.json({ confirmed: false, status: order.status, error: 'This order was a rehearsal and was never paid' }, { status: 409 });
   }
 
   if (order.productId === CAPSULE_PRODUCT_ID) {

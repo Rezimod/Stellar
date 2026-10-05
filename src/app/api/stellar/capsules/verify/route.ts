@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
 import { stellarLogRateLimit } from '@/lib/rate-limit';
-import type { OpenedOutcome } from '@/lib/stellar/audit';
+import type { ListedOutcome, OpenedOutcome } from '@/lib/stellar/audit';
+import { RARITIES } from '@/lib/rarity';
 import { readFullLog } from '@/lib/stellar/capsule';
 import { verifyCapsule } from '@/lib/stellar/randomness';
 import { clientIp, isUuid, limited } from '@/lib/stellar/route-guards';
@@ -46,5 +47,12 @@ export async function GET(req: NextRequest) {
     draws: o.draws,
     oddsBps: o.oddsBps,
   };
-  return NextResponse.json({ capsuleId, entries, inputs, verification: verifyCapsule(inputs) });
+  const verification = verifyCapsule(inputs);
+  // The odds that count are the ones published when the capsule was listed, not the ones the opening repeats.
+  const promised = (listed.outcome as ListedOutcome | null)?.oddsBps;
+  if (promised && RARITIES.some((r) => promised[r] !== o.oddsBps?.[r])) {
+    verification.ok = false;
+    verification.problems.push('opened under odds other than those logged when it was listed');
+  }
+  return NextResponse.json({ capsuleId, entries, inputs, verification });
 }

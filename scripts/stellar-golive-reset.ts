@@ -50,12 +50,13 @@ async function main() {
     card_vote: await q`SELECT * FROM card_vote WHERE night_date >= current_date`,
   }
 
-  const onChain = backup.orders.filter((o) => o.status === 'paid' && o.signature && !String(o.signature).startsWith('simulated-no-payment:'))
+  // Any real signature, whatever the order's status (a refund_due is real money owed), means the shop has traded.
+  const onChain = backup.orders.filter((o) => o.signature && !String(o.signature).startsWith('simulated-no-payment:'))
   const states = backup.capsule.reduce<Record<string, number>>((m, c) => ({ ...m, [c.state]: (m[c.state] ?? 0) + 1 }), {})
 
   console.log(`capsules: ${Object.entries(states).map(([s, n]) => `${n} ${s}`).join(', ') || 'none'}`)
   console.log(`editions: ${backup.edition.length}, pulls: ${backup.capsule_pull.length}, log entries: ${backup.capsule_log.length}`)
-  console.log(`Stellar orders: ${backup.orders.length} (${onChain.length} paid with an on-chain signature)`)
+  console.log(`Stellar orders: ${backup.orders.length} (${onChain.length} with an on-chain signature)`)
   for (const o of onChain) console.log(`  on-chain: order ${o.id} ${o.amount_sol} SOL ${o.signature}`)
   console.log(`votes for tonight onward: ${backup.card_vote.length}`)
   console.log(`then list: ${Object.entries(SHELF).map(([t, n]) => `${n} ${t}`).join(', ')}`)
@@ -63,8 +64,9 @@ async function main() {
     console.log('Dry run. Pass --apply to do it.')
     return
   }
-  if (onChain.length && !process.argv.includes('--include-devnet-payments')) {
-    throw new Error('Paid orders with on-chain signatures exist. If every one of them is devnet test SOL, pass --include-devnet-payments.')
+  // Once anything was paid for real, this reset would erase what holders bought and what is owed back. No flag overrides it.
+  if (onChain.length) {
+    throw new Error('Orders with on-chain signatures exist. This reset is for rehearsal data only and refuses to erase real sales.')
   }
 
   const dir = join(homedir(), 'Desktop', 'Stellar', 'backups')

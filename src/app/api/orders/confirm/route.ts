@@ -41,7 +41,8 @@ export async function POST(req: NextRequest) {
     .where(and(eq(orders.id, orderId), eq(orders.privyId, privyId)))
     .limit(1);
   const order = rows[0];
-  if (!order) return NextResponse.json({ confirmed: false, error: 'Order not found' }, { status: 404 });
+  // Stellar's capsules and cards confirm only through /api/stellar/orders/confirm, which checks status, window and amount.
+  if (!order || order.dealerId === 'stellar') return NextResponse.json({ confirmed: false, error: 'Order not found' }, { status: 404 });
 
   if (order.status === 'paid' && order.signature) {
     return NextResponse.json({ confirmed: true, signature: order.signature, order });

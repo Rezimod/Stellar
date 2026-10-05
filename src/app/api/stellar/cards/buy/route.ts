@@ -5,7 +5,7 @@ import { paused } from '@/lib/kill-switch';
 import { stellarBuyRateLimit } from '@/lib/rate-limit';
 import { isRarity } from '@/lib/rarity';
 import { DIRECT_CARD_PRICE_USD } from '@/lib/stellar/economics';
-import { cardAvailability, createCardOrder, usdToSol, merchantWallet, newPaymentReference, paymentUrl } from '@/lib/stellar/orders';
+import { cardAvailability, createCardOrder, usdToSol, merchantWallet, newPaymentReference, paymentUrl, paymentNetworkMisconfig } from '@/lib/stellar/orders';
 import { holderWallet, limited, NO_LINKED_WALLET } from '@/lib/stellar/route-guards';
 import { SolPriceUnavailableError } from '@/lib/sol-price';
 
@@ -22,6 +22,8 @@ export const runtime = 'nodejs';
 export async function POST(req: NextRequest) {
   const p = paused();
   if (p) return p;
+  const n = paymentNetworkMisconfig();
+  if (n) return n;
   const privyId = await verifyPrivy(req);
   if (!privyId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -53,7 +55,7 @@ export async function POST(req: NextRequest) {
     amountSol = await usdToSol(priceUsd);
   } catch (err) {
     if (!(err instanceof SolPriceUnavailableError)) console.error('[stellar/cards/buy] quote', err);
-    return NextResponse.json({ error: 'No price can be quoted right now — please retry shortly.' }, { status: 503 });
+    return NextResponse.json({ error: 'No price can be quoted right now. Try again in a moment.' }, { status: 503 });
   }
 
   try {
@@ -72,6 +74,6 @@ export async function POST(req: NextRequest) {
     });
   } catch (err) {
     console.error('[stellar/cards/buy]', err);
-    return NextResponse.json({ error: 'Could not place the order — please retry.' }, { status: 500 });
+    return NextResponse.json({ error: 'Could not place the order. Try again in a moment.' }, { status: 500 });
   }
 }

@@ -34,7 +34,7 @@ function minutesLeft(expiresAt: string | null): number | null {
 /** A deployment that rehearses instead of selling. Set at build, not by the page. */
 const REHEARSAL = process.env.NEXT_PUBLIC_STELLAR_SIMULATED_PAYMENT === '1';
 const DEVNET = process.env.NEXT_PUBLIC_SOLANA_CLUSTER === 'devnet';
-const RPC = process.env.NEXT_PUBLIC_SOLANA_RPC_URL ?? (DEVNET ? 'https://api.devnet.solana.com' : 'https://api.mainnet-beta.solana.com');
+const RPC = process.env.NEXT_PUBLIC_SOLANA_RPC_URL ?? process.env.NEXT_PUBLIC_HELIUS_RPC_URL ?? (DEVNET ? 'https://api.devnet.solana.com' : 'https://api.mainnet-beta.solana.com');
 const explorer = (sig: string) => `https://explorer.solana.com/tx/${sig}${DEVNET ? '?cluster=devnet' : ''}`;
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -125,7 +125,7 @@ export default function StellarPay({
         await wait(2500);
         if (await check(true)) return;
       }
-      setNote('Sent, but not confirmed yet. Press "I have paid" in a moment.');
+      setNote('Sent, but not confirmed yet. Press “I have paid” in a moment.');
     } catch (err) {
       const msg = err instanceof Error ? err.message : '';
       setNote(/insufficient|balance/i.test(msg) ? 'This wallet has too little SOL for the transfer and its fee.' : msg || 'The transfer was not sent.');
@@ -173,8 +173,8 @@ export default function StellarPay({
               {checking ? 'Settling' : 'Settle & open'}
             </button>
           ) : (
-            <button type="button" className="sd-btn sd-btn--primary sd-btn--block" onClick={payFromWallet} disabled={paying || !wallet}>
-              {paying ? 'Sending' : `Pay ${order.amountSol.toFixed(4)} SOL`}
+            <button type="button" className="sd-btn sd-btn--primary sd-btn--block" onClick={payFromWallet} disabled={paying || !wallet || !!sent}>
+              {paying ? 'Sending' : sent ? 'Sent' : `Pay ${order.amountSol.toFixed(4)} SOL`}
             </button>
           )}
           {!REHEARSAL && (
@@ -236,8 +236,8 @@ export default function StellarPay({
             </button>
           ) : (
             <>
-              <button type="button" className="sd-btn sd-btn--primary" onClick={payFromWallet} disabled={paying || !wallet}>
-                {paying ? 'Sending' : `Pay ${order.amountSol.toFixed(4)} SOL`}
+              <button type="button" className="sd-btn sd-btn--primary" onClick={payFromWallet} disabled={paying || !wallet || !!sent}>
+                {paying ? 'Sending' : sent ? 'Sent' : `Pay ${order.amountSol.toFixed(4)} SOL`}
               </button>
               <a className="sd-btn" href={order.url}>
                 Other wallet
