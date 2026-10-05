@@ -71,3 +71,9 @@ it('names the opening plainly, with no banned words and no exclamation marks', (
   expect(text).not.toContain('!');
   expect(html).toContain('Open another');
 });
+
+it('plays without sound for now, and offers no sound toggle', () => {
+  const html = render([card('M31', 'rare', 0)]);
+  expect(html).not.toContain('Sound on');
+  expect(html).not.toContain('Sound off');
+});

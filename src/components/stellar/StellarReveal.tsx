@@ -36,6 +36,8 @@ export type Draw = {
 const pad = (n: number) => String(n).padStart(3, '0');
 const rarityOf = (c: RevealedCard): Rarity => (isRarity(c.rarity) ? c.rarity : 'common');
 const SOUND_KEY = 'stellar_flight_sound';
+/** The supernova's sound is held back for now; the score and the toggle return when this is true. */
+const SOUND = false;
 
 /** Ink speed of the provenance line, per character. */
 const TYPE_MS = 18;
@@ -123,7 +125,7 @@ export default function StellarReveal({
         rarity,
         tone: info.color,
         reducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
-        sound: soundOn,
+        sound: SOUND && soundOn,
         onDone: () => setPhase('done'),
       });
       nova.current = handle;
@@ -339,9 +341,11 @@ export default function StellarReveal({
 
       <div className="sn-top">
         <span className="sd-label sn-caption">{caption}</span>
-        <button type="button" className="sn-chip" aria-pressed={sound} onClick={toggleSound}>
-          {sound ? 'Sound on' : 'Sound off'}
-        </button>
+        {SOUND && (
+          <button type="button" className="sn-chip" aria-pressed={sound} onClick={toggleSound}>
+            {sound ? 'Sound on' : 'Sound off'}
+          </button>
+        )}
         <button
           ref={close}
           type="button"
