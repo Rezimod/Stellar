@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import Link from 'next/link';
 import Wordmark from './ui/Wordmark';
 import StellarNavLinks from './StellarNavLinks';
+import StellarTabBar from './StellarTabBar';
 import StellarAccountGate from './StellarAccountGate';
 import StellarAuth from './StellarAuth';
 import { getNode } from '@/lib/observatory/nodes';
@@ -127,6 +128,7 @@ export default function StellarShell({
             </div>
           </div>
         </footer>
+        <StellarTabBar />
       </div>
     </StellarAuth>
   );

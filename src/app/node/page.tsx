@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import StellarShell from '@/components/stellar/StellarShell';
+import StellarTabBar from '@/components/stellar/StellarTabBar';
 import ObservatoryConsole, { type TonightCard } from '@/components/stellar/observatory/ObservatoryConsole';
 import { getDb } from '@/lib/db';
 import { getNode } from '@/lib/observatory/nodes';
@@ -37,6 +38,7 @@ export default async function ObservatoryPage() {
   return (
     <StellarShell bare>
       <ObservatoryConsole tonight={tonight} nodeCloud={nodeCloud} />
+      <StellarTabBar />
     </StellarShell>
   );
 }

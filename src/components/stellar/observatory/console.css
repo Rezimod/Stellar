@@ -414,3 +414,18 @@
   .sdo-dl { grid-template-columns: 1fr; }
   .sdo-targets__top { flex-direction: column; align-items: stretch; }
 }
+
+/* A fingertip, not a cursor: controls at least 40–44px, and no console text under 12px on a phone. */
+@media (pointer: coarse) {
+  .sdo-ib { width: 44px; height: 44px; }
+  .sdo-ib--sm { width: 40px; height: 40px; }
+  .sdo-seg button { height: 40px; padding: 0 14px; }
+}
+@media (max-width: 767px) {
+  .sdo-lbl, .sdo-clocks .sdo-lbl, .sdo-skyrow .sdo-lbl, .sdo-ph__id, .sdo-badge, .sdo-kbd, .sdo-stn__meta > span:first-child, .sdo-note, .sdo-v small { font-size: 12px; }
+}
+/* On a phone the Stellar tab bar runs along the foot; the console's dock sits on top of it. */
+@media (max-width: 719px) {
+  .sdo { padding-bottom: calc(104px + var(--sd-tabs-h, 0px)); }
+  .sdo-pdock { bottom: var(--sd-tabs-h, 0px); padding-bottom: 14px; }
+}

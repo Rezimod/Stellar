@@ -19,6 +19,7 @@ import type { ObservationStatus } from '@/lib/stellar/observability';
 import { cardAvailability } from '@/lib/stellar/orders';
 import { photoFor } from '@/lib/stellar/photos';
 import { posterFor } from '@/lib/stellar/poster';
+import CardBuyBar from '@/components/stellar/CardBuyBar';
 
 export const dynamic = 'force-dynamic';
 
@@ -122,7 +123,7 @@ export default async function CardPage({ params }: { params: Promise<{ designati
             {sealed ? (
               <p className="sd-note">Sealed. The event has passed; the editions that were held are the editions there are.</p>
             ) : (
-              <div className="sd-buy">
+              <div className="sd-buy" id="buy">
                 <StellarBuyCard
                   designation={seed.designation}
                   name={seed.name}
@@ -179,6 +180,9 @@ export default async function CardPage({ params }: { params: Promise<{ designati
           ]}
         />
       </section>
+      {!sealed && available && (
+        <CardBuyBar name={seed.name} priceUsd={priceUsd} left={`${seed.editionSize - (allocated ?? 0)} of ${seed.editionSize} left`} target="buy" />
+      )}
     </StellarShell>
   );
 }

@@ -7,6 +7,7 @@ import '../styles/stellar-motion.css';
 import '../styles/stellar-pages.css';
 import '../styles/stellar-reveal.css';
 import '../styles/stellar-supernova.css';
+import '../styles/stellar-mobile.css';
 import { AnalyticsBoot } from '@/components/providers/AnalyticsBoot';
 import JsonLd from '@/components/shared/JsonLd';
 
@@ -39,6 +40,7 @@ const jetbrainsMono = JetBrains_Mono({
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
+  viewportFit: 'cover',
   themeColor: '#000000',
 };
 
