@@ -17,7 +17,7 @@ export default function CardThumb({ designation, eager = false }: { designation:
   return (
     <span className="sd-thumb">
       <img
-        src={`${plate.art}/card.webp?v=poster4`}
+        src={`${plate.art}/card.webp?v=poster5`}
         alt=""
         width={520}
         height={726}

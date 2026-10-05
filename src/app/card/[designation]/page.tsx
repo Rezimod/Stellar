@@ -147,7 +147,7 @@ export default async function CardPage({ params }: { params: Promise<{ designati
               <ObservationStatusMark status={seed.observationStatus as ObservationStatus} />
               <span className="sd-data">{card.observability.reason}</span>
               <Link href="/tonight" className="sd-link sd-data">
-                Tonight on Live Telescope V1
+                See tonight’s target
               </Link>
             </div>
           </div>

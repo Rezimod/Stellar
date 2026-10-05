@@ -19,7 +19,7 @@ function galaxy(facts: Facts, at: Place, extras: Omit<Extras, 'family' | 'line'>
 
 export const GALAXY_CARDS: AuthoredCard[] = [
   galaxy(
-    { designation: 'MILKY-WAY', name: 'The Milky Way', objectType: 'our galaxy', rarity: 'epic', catalogRef: 'The Galaxy · core in Sagittarius', blurb: 'Home: two hundred billion suns, seen from inside.' },
+    { designation: 'MILKY-WAY', name: 'The Milky Way', objectType: 'our galaxy', rarity: 'epic', catalogRef: 'The Galaxy · core in Sagittarius', blurb: 'A third of humanity can no longer see it at night.' },
     fixed(17.7611, -29.0078, null, [1800, 600]),
     {
       stats: [['STARS', '~200 billion'], ['SIZE', '~100,000 ly'], ['ONE TURN', '~230 Myr']],
@@ -28,7 +28,7 @@ export const GALAXY_CARDS: AuthoredCard[] = [
     },
   ),
   galaxy(
-    { designation: 'M51', name: 'The Whirlpool', objectType: 'spiral galaxy', rarity: 'rare', catalogRef: 'M51 (NGC 5194)', blurb: 'A perfect spiral, pulling a smaller galaxy along.' },
+    { designation: 'M51', name: 'The Whirlpool', objectType: 'spiral galaxy', rarity: 'rare', catalogRef: 'M51 (NGC 5194)', blurb: 'Twenty-three million light-years away, in the Hunting Dogs.' },
     deepSky('m51'),
     {
       stats: [['DISTANCE', '~27 Mly'], ['COMPANION', 'NGC 5195'], ['SPIRAL SEEN', '1845']],
@@ -38,7 +38,7 @@ export const GALAXY_CARDS: AuthoredCard[] = [
     },
   ),
   galaxy(
-    { designation: 'M104', name: 'The Sombrero', objectType: 'spiral galaxy', rarity: 'rare', catalogRef: 'M104 (NGC 4594)', blurb: 'A bright bulge with a dark brim of dust.' },
+    { designation: 'M104', name: 'The Sombrero', objectType: 'spiral galaxy', rarity: 'rare', catalogRef: 'M104 (NGC 4594)', blurb: 'Twenty-nine million light-years away, in Virgo.' },
     deepSky('m104'),
     {
       stats: [['DISTANCE', '~31 Mly'], ['GLOBULARS', '~2,000'], ['MAGNITUDE', '8.0']],
@@ -48,7 +48,7 @@ export const GALAXY_CARDS: AuthoredCard[] = [
     },
   ),
   galaxy(
-    { designation: 'M101', name: 'The Pinwheel', objectType: 'spiral galaxy', rarity: 'common', catalogRef: 'M101 (NGC 5457)', blurb: 'A wide, lopsided spiral, face on.' },
+    { designation: 'M101', name: 'The Pinwheel', objectType: 'spiral galaxy', rarity: 'common', catalogRef: 'M101 (NGC 5457)', blurb: 'About 21 million light-years away.' },
     deepSky('m101'),
     {
       stats: [['DISTANCE', '~21 Mly'], ['SIZE', '~170,000 ly'], ['SUPERNOVA', '2023']],
@@ -57,7 +57,7 @@ export const GALAXY_CARDS: AuthoredCard[] = [
     },
   ),
   galaxy(
-    { designation: 'M33', name: 'The Triangulum', objectType: 'spiral galaxy', rarity: 'common', catalogRef: 'M33 (NGC 598)', blurb: 'The third great spiral of our Local Group.' },
+    { designation: 'M33', name: 'The Triangulum', objectType: 'spiral galaxy', rarity: 'common', catalogRef: 'M33 (NGC 598)', blurb: 'About three million light-years away.' },
     deepSky('m33'),
     {
       stats: [['DISTANCE', '~2.7 Mly'], ['SIZE', '~60,000 ly'], ['STARS', '~40 billion']],
@@ -66,7 +66,7 @@ export const GALAXY_CARDS: AuthoredCard[] = [
     },
   ),
   galaxy(
-    { designation: 'LMC', name: 'The Large Magellanic Cloud', objectType: 'dwarf galaxy', rarity: 'common', catalogRef: 'LMC', blurb: 'A small galaxy in orbit around ours.' },
+    { designation: 'LMC', name: 'The Large Magellanic Cloud', objectType: 'dwarf galaxy', rarity: 'common', catalogRef: 'LMC', blurb: 'It is falling toward us, and will merge with us.' },
     fixed(5.3929, -69.7561, 0.9, [645, 550]),
     {
       stats: [['DISTANCE', '~160,000 ly'], ['SIZE', '~32,000 ly'], ['STARS', '~30 billion']],
@@ -76,7 +76,7 @@ export const GALAXY_CARDS: AuthoredCard[] = [
     },
   ),
   galaxy(
-    { designation: 'SMC', name: 'The Small Magellanic Cloud', objectType: 'dwarf galaxy', rarity: 'common', catalogRef: 'SMC (NGC 292)', blurb: 'The Large Cloud’s smaller partner.' },
+    { designation: 'SMC', name: 'The Small Magellanic Cloud', objectType: 'dwarf galaxy', rarity: 'common', catalogRef: 'SMC (NGC 292)', blurb: 'About 200,000 light-years away.' },
     fixed(0.8773, -72.8286, 2.7, [320, 205]),
     {
       stats: [['DISTANCE', '~200,000 ly'], ['SIZE', '~7,000 ly'], ['NEIGHBOUR', '47 Tucanae']],
@@ -86,7 +86,7 @@ export const GALAXY_CARDS: AuthoredCard[] = [
     },
   ),
   galaxy(
-    { designation: 'CEN-A', name: 'Centaurus A', objectType: 'elliptical galaxy', rarity: 'rare', catalogRef: 'NGC 5128', blurb: 'A galaxy wrapped in the dust of one it ate.' },
+    { designation: 'CEN-A', name: 'Centaurus A', objectType: 'elliptical galaxy', rarity: 'rare', catalogRef: 'NGC 5128', blurb: 'Thirteen million light-years away.' },
     fixed(13.4247, -43.0192, 6.8, [25.7, 20]),
     {
       stats: [['DISTANCE', '~12 Mly'], ['BLACK HOLE', '~55M × Sun'], ['JETS', '~1 Mly long']],
@@ -95,7 +95,7 @@ export const GALAXY_CARDS: AuthoredCard[] = [
     },
   ),
   galaxy(
-    { designation: 'CARTWHEEL', name: 'The Cartwheel', objectType: 'ring galaxy', rarity: 'epic', catalogRef: 'ESO 350-40', blurb: 'A galaxy rippled into a ring by a collision.' },
+    { designation: 'CARTWHEEL', name: 'The Cartwheel', objectType: 'ring galaxy', rarity: 'epic', catalogRef: 'ESO 350-40', blurb: '500 million light-years away, in the Sculptor.' },
     fixed(0.6283, -33.7161, 15.2, [1.1, 0.9]),
     {
       stats: [['DISTANCE', '~500 Mly'], ['RING', '~150,000 ly'], ['CAUSE', 'A collision']],
@@ -104,7 +104,7 @@ export const GALAXY_CARDS: AuthoredCard[] = [
     },
   ),
   galaxy(
-    { designation: 'M82', name: 'The Cigar', objectType: 'starburst galaxy', rarity: 'common', catalogRef: 'M82 (NGC 3034)', blurb: 'A galaxy making stars ten times faster than ours.' },
+    { designation: 'M82', name: 'The Cigar', objectType: 'starburst galaxy', rarity: 'common', catalogRef: 'M82 (NGC 3034)', blurb: 'It shines five times brighter than the whole Milky Way.' },
     deepSky('m82'),
     {
       stats: [['DISTANCE', '~12 Mly'], ['STAR BIRTH', '10 × Milky Way'], ['NEIGHBOUR', 'M81']],
@@ -114,7 +114,7 @@ export const GALAXY_CARDS: AuthoredCard[] = [
     },
   ),
   galaxy(
-    { designation: 'M87', name: 'M87', objectType: 'giant elliptical galaxy', rarity: 'epic', catalogRef: 'M87 (Virgo A)', blurb: 'The galaxy whose black hole was photographed first.' },
+    { designation: 'M87', name: 'M87', objectType: 'giant elliptical galaxy', rarity: 'epic', catalogRef: 'M87 (Virgo A)', blurb: 'Thousands of star clusters swarm around it.' },
     fixed(12.5137, 12.3911, 8.6, [8.3, 6.6]),
     {
       stats: [['DISTANCE', '~54 Mly'], ['BLACK HOLE', '6.5B × Sun'], ['IMAGED', '2019']],

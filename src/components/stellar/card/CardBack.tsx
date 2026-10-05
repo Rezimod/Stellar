@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { editionLabel, type Plate } from '@/lib/stellar/plate';
 import { photoFor } from '@/lib/stellar/photos';
-import { CONDENSED, FOIL_OP, Footer, INK, LOGO_D, MONO, Paper, PosterDefs, Rules, SANS, SPACED, StripedTitle, fit, rr, width } from './frame';
+import { CONDENSED, FOIL_OP, Footer, Glint, INK, LOGO_D, MONO, Paper, PosterDefs, Rules, SANS, SPACED, StripedTitle, fit, rr, width } from './frame';
 
 type Props = {
   plate: Plate;
@@ -28,7 +28,7 @@ function rosette(cx: number, cy: number, R: number, r: number, d: number, s: num
   return 'M' + pts.join('L');
 }
 
-const SEAL = [rosette(315, 262, 24, 7, 12, 6.2, 0, 1400), rosette(315, 262, 20, 9, 7, 6.6, 9, 1200), rosette(315, 262, 30, 11, 16, 4.6, 4, 1500)];
+const SEAL = [rosette(315, 300, 24, 7, 12, 6.2, 0, 1400), rosette(315, 300, 20, 9, 7, 6.6, 9, 1200), rosette(315, 300, 30, 11, 16, 4.6, 4, 1500)];
 
 const short = (hash: string) => `[${hash.slice(0, 4)}…${hash.slice(-4)}]`;
 
@@ -43,50 +43,155 @@ const pct = (x: number, y: number, w: number, h: number, r: number) => ({
 /** The photograph's window on the back: wider than tall, the way the telescopes frame them. */
 const PW = { x: 22, y: 22, w: 586, h: 420, r: 16 };
 
+/** A crimped foil seam across the card: ridges pressed into it and a row of teeth along its inner edge. */
+function seam(top: boolean) {
+  const y0 = top ? 0 : 880;
+  const y1 = top ? 62 : 818;
+  const tooth = top ? 7 : -7;
+  let d = `M0 ${y0}H630V${y1}`;
+  for (let x = 630; x > 0; x -= 15) d += `L${x - 7.5} ${y1 + tooth}L${x - 15} ${y1}`;
+  return `${d}Z`;
+}
+
+const SEAMS = [seam(true), seam(false)];
+const RIDGES = Array.from({ length: 105 }, (_, i) => 3 + i * 6);
+/** Fixed specks of starlight on the wrapper, the same on every sealed card. */
+const SPECKS = Array.from({ length: 46 }, (_, i) => {
+  const a = Math.sin(i * 12.9898) * 43758.5453;
+  const b = Math.sin(i * 78.233) * 12543.1234;
+  return { x: 40 + (a - Math.floor(a)) * 550, y: 90 + (b - Math.floor(b)) * 700, r: 0.5 + ((i * 7) % 5) * 0.28 };
+});
+/** The eight long points of the burst behind the medallion. */
+const BURST = Array.from({ length: 16 }, (_, i) => {
+  const a = (i * Math.PI) / 8;
+  const long = i % 2 === 0;
+  const r = long ? 210 : 120;
+  const w = long ? 0.07 : 0.05;
+  const pt = (ang: number, rad: number) => `${(315 + Math.cos(ang) * rad).toFixed(1)} ${(300 + Math.sin(ang) * rad).toFixed(1)}`;
+  return { d: `M${pt(a - w, 56)}L${pt(a, r)}L${pt(a + w, 56)}Z`, long };
+});
+
+/**
+ * A card still in its wrapper: an obsidian foil pack, crimped shut at both
+ * ends, a gold medallion at its heart under a burst of light, a holographic
+ * sheen running over it. Nothing on it says which card is inside.
+ */
 function Sealed({ u }: { u: string }) {
-  const win = rr(22, 22, 586, 598, 16);
+  const edge = rr(10, 10, 610, 860, 22);
   return (
-    <div className="sdc-card">
-      <div className="sdc-window sdc-window--sealed" style={pct(22, 22, 586, 598, 16)}>
-        <div className="sdc-rays sdc-rays--seal" />
-        <div className="sdc-halftone" />
-      </div>
+    <div className="sdc-card sdc-card--sealed">
+      <div className="sdc-seal-body" />
+      <div className="sdc-seal-rays" />
+      <div className="sdc-halftone" />
       <svg className="sdc-frame" viewBox="0 0 630 880" aria-hidden="true">
         <defs>
-          <PosterDefs u={u} rarity="rare" />
+          <PosterDefs u={u} rarity="legendary" />
+          <linearGradient id={`${u}chrome`} x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stopColor="#fff6dc" />
+            <stop offset=".22" stopColor="#c99a4a" />
+            <stop offset=".45" stopColor="#fff1c4" />
+            <stop offset=".62" stopColor="#8a5a22" />
+            <stop offset=".82" stopColor="#ffe3a0" />
+            <stop offset="1" stopColor="#7a4a1a" />
+          </linearGradient>
+          <linearGradient id={`${u}seam`} x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stopColor="#3a2412" />
+            <stop offset=".18" stopColor="#c9924a" />
+            <stop offset=".36" stopColor="#fff0c8" />
+            <stop offset=".5" stopColor="#b07a36" />
+            <stop offset=".68" stopColor="#ffe2a0" />
+            <stop offset=".86" stopColor="#9a6428" />
+            <stop offset="1" stopColor="#3a2412" />
+          </linearGradient>
+          <radialGradient id={`${u}medal`} cx=".38" cy=".3" r=".8">
+            <stop offset="0" stopColor="#3a2210" />
+            <stop offset=".6" stopColor="#140904" />
+            <stop offset="1" stopColor="#060302" />
+          </radialGradient>
+          <radialGradient id={`${u}core`}>
+            <stop offset="0" stopColor="#fff4d6" stopOpacity=".95" />
+            <stop offset=".25" stopColor="#ffc35a" stopOpacity=".55" />
+            <stop offset="1" stopColor="#ff7a2a" stopOpacity="0" />
+          </radialGradient>
+          <linearGradient id={`${u}flare`} x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stopColor="#ffd38a" stopOpacity="0" />
+            <stop offset=".5" stopColor="#fff8e6" stopOpacity=".95" />
+            <stop offset="1" stopColor="#ffd38a" stopOpacity="0" />
+          </linearGradient>
+          <clipPath id={`${u}clip`}>
+            <path d={rr(0, 0, 630, 880, 30)} />
+          </clipPath>
         </defs>
-        <Paper u={u} hole={win} />
-        <path d={win} fill="none" stroke="#1a0d07" strokeWidth="2.5" />
-        <g fill="none" stroke={INK.orange} strokeWidth=".6">
-          <path d={SEAL[0]} opacity=".5" />
-          <path d={SEAL[1]} opacity=".4" />
-          <path d={SEAL[2]} opacity=".3" />
+
+        <g clipPath={`url(#${u}clip)`}>
+          {SPECKS.map((s, i) => (
+            <circle key={i} cx={s.x.toFixed(1)} cy={s.y.toFixed(1)} r={s.r.toFixed(2)} fill="#fff2d4" opacity={0.35 + (i % 4) * 0.15} />
+          ))}
+
+          <g className="sdc-seal-burst">
+            {BURST.map((b, i) => (
+              <path key={i} d={b.d} fill={`url(#${u}core)`} opacity={b.long ? 0.9 : 0.55} />
+            ))}
+          </g>
+          <circle cx="315" cy="300" r="190" fill={`url(#${u}core)`} opacity=".45" />
+
+          <g fill="none" stroke={`url(#${u}chrome)`}>
+            <path d={SEAL[0]} strokeWidth=".8" opacity=".75" />
+            <path d={SEAL[1]} strokeWidth=".7" opacity=".6" />
+            <path d={SEAL[2]} strokeWidth=".6" opacity=".5" />
+          </g>
+          <circle cx="315" cy="300" r="168" fill="none" stroke={`url(#${u}chrome)`} strokeWidth="1" opacity=".7" />
+          <circle cx="315" cy="300" r="174" fill="none" stroke={`url(#${u}chrome)`} strokeWidth=".5" strokeDasharray="2 6" opacity=".7" />
+
+          <circle cx="315" cy="300" r="66" fill="none" stroke="#ffcf7a" strokeWidth="10" opacity=".14" />
+          <circle cx="315" cy="300" r="60" fill={`url(#${u}chrome)`} />
+          <circle cx="315" cy="300" r="53" fill={`url(#${u}medal)`} />
+          <circle cx="315" cy="300" r="53" fill="none" stroke="#000" strokeOpacity=".5" strokeWidth="2" />
+          <g transform="translate(288 274) scale(2.45)">
+            <path d={LOGO_D} fill={`url(#${u}sun)`} />
+          </g>
+          <rect x="95" y="298.5" width="440" height="3" fill={`url(#${u}flare)`} />
+          <Glint x={315} y={300} r={34} o={0.55} />
+
+          <StripedTitle u={u} rarity="legendary" lines={['STELLAR']} base={598} cap={96} />
+          <text x="315" y="640" textAnchor="middle" fill={INK.cream} style={{ fontFamily: SPACED, fontWeight: 400, fontSize: 19, letterSpacing: 12 }}>
+            FIRST LIGHT
+          </text>
+
+          <g transform="translate(205 670)">
+            <path d="M14 0H206L220 19L206 38H14L0 19Z" fill="#0b0604" stroke={`url(#${u}chrome)`} strokeWidth="1.6" />
+            <text x="110" y="26" textAnchor="middle" fill={`url(#${u}sun)`} style={{ fontFamily: CONDENSED, fontSize: 21, letterSpacing: 4 }}>
+              SEALED CARD
+            </text>
+          </g>
+          <text x="315" y="752" textAnchor="middle" fill="rgba(243,230,204,.72)" style={{ fontFamily: SPACED, fontWeight: 400, fontSize: 14, letterSpacing: 5 }}>
+            ONE OF A HUNDRED SKIES
+          </text>
+
+          {SEAMS.map((d, i) => (
+            <g key={i}>
+              <path d={d} fill={`url(#${u}seam)`} />
+              <g stroke="#2a1608" strokeOpacity=".28" strokeWidth="1.2">
+                {RIDGES.map((x) => (
+                  <line key={x} x1={x} x2={x} y1={i ? 826 : 0} y2={i ? 880 : 54} />
+                ))}
+              </g>
+              <path d={d} fill="none" stroke="#fff3cf" strokeOpacity=".5" strokeWidth=".8" />
+            </g>
+          ))}
+          <text x="315" y="38" textAnchor="middle" fill="#2a1608" style={{ fontFamily: SPACED, fontWeight: 600, fontSize: 14, letterSpacing: 7 }}>
+            FOUNDING SET
+          </text>
+          <text x="315" y="858" textAnchor="middle" fill="#2a1608" style={{ fontFamily: SPACED, fontWeight: 600, fontSize: 14, letterSpacing: 7 }}>
+            OPEN UNDER A CLEAR SKY
+          </text>
         </g>
-        {[48, 53, 160].map((radius) => (
-          <circle key={radius} cx="315" cy="262" r={radius} fill="none" stroke={INK.orange} strokeWidth={radius === 48 ? 1.4 : 0.7} opacity=".75" />
-        ))}
-        <circle cx="315" cy="262" r="47" fill={INK.night} />
-        <g transform="translate(294 241) scale(1.9)">
-          <path d={LOGO_D} fill={`url(#${u}sun)`} />
-        </g>
-        <StripedTitle u={u} rarity="rare" lines={['STELLAR']} base={520} cap={78} />
-        <text x="315" y="566" textAnchor="middle" fill={INK.cream} style={{ fontFamily: SPACED, fontWeight: 300, fontSize: 15, letterSpacing: 7 }}>
-          FIRST LIGHT · SEALED
-        </text>
-        <Rules u={u} y={634} />
-        <text x="315" y="706" textAnchor="middle" fill={INK.text} style={{ fontFamily: CONDENSED, fontSize: 36, letterSpacing: 0.4 }}>
-          ONE CARD OF FIRST LIGHT
-        </text>
-        <text x="315" y="732" textAnchor="middle" fill={INK.red} style={{ fontFamily: SPACED, fontWeight: 500, fontSize: 12, letterSpacing: 5 }}>
-          TURN IT OVER
-        </text>
-        <line x1="50" y1="764" x2="580" y2="764" stroke={INK.text} strokeOpacity=".22" />
-        <text x="315" y="796" textAnchor="middle" fill={INK.muted} style={{ fontFamily: SPACED, fontWeight: 500, fontSize: 10.5, letterSpacing: 3 }}>
-          LIVE TELESCOPE V1 · THE NIGHT SKY · COMMISSIONING
-        </text>
-        <line x1="50" y1="824" x2="580" y2="824" stroke={INK.text} strokeOpacity=".22" />
-        <Footer y={850} right="SEALED" />
+
+        <path d={rr(1.5, 1.5, 627, 877, 29)} fill="none" stroke={`url(#${u}chrome)`} strokeWidth="3" />
+        <path d={edge} fill="none" stroke={`url(#${u}chrome)`} strokeWidth=".8" opacity=".55" />
       </svg>
+      <div className="sdc-seal-holo" />
+      <div className="sdc-seal-sweep" />
       <div className="sdc-glare" />
     </div>
   );

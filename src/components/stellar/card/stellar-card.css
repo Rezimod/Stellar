@@ -93,5 +93,40 @@
     linear-gradient(180deg, rgba(14, 8, 6, .5) 0%, rgba(14, 8, 6, 0) 22%),
     linear-gradient(0deg, rgba(14, 8, 6, .85) 0%, rgba(14, 8, 6, 0) 22%);
 }
-.sdc-window--sealed { background: radial-gradient(circle at 50% 44%, #3a1a0c, #160a05 55%, #0e0806); }
-.sdc-rays--seal { opacity: .8; }
+.sdc-card--sealed { background: #070403; }
+.sdc-seal-body {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(circle at 50% 34%, rgba(255, 150, 60, .42), rgba(170, 60, 20, .22) 26%, transparent 58%),
+    repeating-linear-gradient(118deg, rgba(255, 220, 170, .035) 0 1px, transparent 1px 4px),
+    linear-gradient(170deg, #1d0f07 0%, #0a0503 48%, #140906 100%);
+}
+.sdc-seal-rays {
+  position: absolute; inset: -30%; pointer-events: none; mix-blend-mode: screen; opacity: .55;
+  background: repeating-conic-gradient(from 0deg at 50% 41%, rgba(255, 190, 110, .16) 0deg 3deg, transparent 3deg 12deg);
+  -webkit-mask-image: radial-gradient(circle at 50% 41%, #000 8%, transparent 46%);
+  mask-image: radial-gradient(circle at 50% 41%, #000 8%, transparent 46%);
+  animation: sdc-spin 60s linear infinite;
+}
+.sdc-seal-burst { transform-origin: 315px 300px; animation: sdc-spin 90s linear infinite reverse; }
+.sdc-seal-holo {
+  position: absolute; inset: 0; pointer-events: none; mix-blend-mode: color-dodge; opacity: .26;
+  background: linear-gradient(125deg, #ff5a4a 0%, #ffc85a 18%, #ffeec0 30%, #ff9a6a 44%, #e86aa0 56%, #ffd27a 70%, #8ad6ff 82%, #ff8a4a 100%);
+  background-size: 300% 300%;
+  background-position: calc(var(--px) * 100%) calc(var(--py) * 100%);
+  -webkit-mask-image: radial-gradient(ellipse at 50% 46%, transparent 34%, #000 78%);
+  mask-image: radial-gradient(ellipse at 50% 46%, transparent 34%, #000 78%);
+  animation: sdc-holo 9s ease-in-out infinite;
+}
+.sdc-seal-sweep {
+  position: absolute; inset: 0; pointer-events: none; mix-blend-mode: screen; overflow: hidden;
+  background: linear-gradient(105deg, transparent 38%, rgba(255, 244, 214, .0) 42%, rgba(255, 244, 214, .38) 50%, rgba(255, 244, 214, 0) 58%, transparent 62%);
+  background-size: 260% 100%;
+  animation: sdc-sweep 4.6s cubic-bezier(.5, 0, .3, 1) infinite;
+}
+@keyframes sdc-spin { to { transform: rotate(360deg); } }
+@keyframes sdc-holo { 0%, 100% { background-position: 0% 30%; } 50% { background-position: 100% 70%; } }
+@keyframes sdc-sweep { 0% { background-position: 130% 0; } 55%, 100% { background-position: -40% 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .sdc-seal-rays, .sdc-seal-burst, .sdc-seal-holo, .sdc-seal-sweep { animation: none; }
+}
