@@ -29,8 +29,11 @@ type Props = {
   u: string;
 };
 
-/** The window: the poster's night, from the top margin down to the panel. */
-export const WIN = { x: 22, y: 22, w: 586, h: 598, r: 16 };
+/** The window: the poster's night, from the top margin nearly to the foot; only the set line sits below it. */
+export const WIN = { x: 20, y: 20, w: 590, h: 784, r: 18 };
+
+/** A fine line just inside the window, in the rarity's metal. */
+const EDGE: Record<Plate['rarity'], [string, number]> = { common: ['#cbb994', 0.28], rare: ['#e0703a', 0.45], epic: ['#ff8a3d', 0.6], legendary: ['#ffd36e', 0.85] };
 
 /** Where the lens glints sit in the sky, as fractions of the window; the same on every card, a little off the grid. */
 const GLINTS: [number, number, number][] = [
@@ -42,9 +45,10 @@ const GLINTS: [number, number, number][] = [
 ];
 
 /**
- * The face of a card, as a space-opera poster: the drawing in a dark window
- * under a quote, the name in striped sunset letters across its foot, and below
- * it a cream panel with the headline, three figures and the edition.
+ * The face of a card, as a space-opera poster: the drawing fills a tall dark
+ * window under its quote, the name in striped sunset letters across its foot,
+ * and below it only the set line and the edition. The headline, the three
+ * figures and the record are on the back.
  */
 function CardFront({ plate: c, edition, capture, lite = false, u }: Props) {
   const ext = lite ? 'webp' : 'svg';
@@ -60,16 +64,12 @@ function CardFront({ plate: c, edition, capture, lite = false, u }: Props) {
   const epSize = 15;
   const epTrack = Math.min(9, Math.max(3, (430 - epithet.length * epSize * 0.45) / Math.max(1, epithet.length)));
   const epW = width(epithet.length, epSize, 'spaced', epTrack);
-  const titleBase = 548;
+  const titleBase = 726;
 
   const quote = p.quote ? `“${p.quote.toUpperCase()}”` : null;
   const qSize = quote ? fit(quote.length, 520, 'condensed', 24) : 0;
 
-  const head = p.headline.toUpperCase();
-  const hSize = fit(head.length, 500, 'condensed', 38);
-  const sub = p.sub.toUpperCase();
-  const subSize = 11.5;
-  const subTrack = Math.min(3.8, Math.max(0.6, (540 - sub.length * subSize * 0.49) / Math.max(1, sub.length)));
+  const [edge, edgeOp] = EDGE[r];
 
   return (
     <div className="sdc-card">
@@ -100,18 +100,19 @@ function CardFront({ plate: c, edition, capture, lite = false, u }: Props) {
         <Paper u={f} hole={win} />
         <path d={win} fill="none" stroke="#1a0d07" strokeWidth="2.5" />
         <path d={rr(WIN.x + 1.5, WIN.y + 1.5, WIN.w - 3, WIN.h - 3, WIN.r - 1)} fill="none" stroke="#fff" strokeOpacity=".07" />
+        <path d={rr(WIN.x + 7, WIN.y + 7, WIN.w - 14, WIN.h - 14, WIN.r - 5)} fill="none" stroke={edge} strokeOpacity={edgeOp} strokeWidth="1.2" />
 
         {GLINTS.map(([gx, gy, gr]) => (
           <Glint key={`${gx}-${gy}`} x={WIN.x + gx * WIN.w} y={WIN.y + gy * WIN.h} r={gr} o={0.75} />
         ))}
 
         <RarityBadge u={f} rarity={r} label={c.rname} />
-        <text x="586" y="62" textAnchor="end" fill="rgba(243,230,204,.62)" style={{ fontFamily: SPACED, fontWeight: 400, fontSize: 11, letterSpacing: 3 }}>
+        <text x="584" y="62" textAnchor="end" fill="rgba(243,230,204,.62)" style={{ fontFamily: SPACED, fontWeight: 400, fontSize: 11, letterSpacing: 3 }}>
           {c.num} / {c.total}
         </text>
 
         {quote && (
-          <text x="315" y="128" textAnchor="middle" fill={INK.quote} style={{ fontFamily: CONDENSED, fontSize: qSize, letterSpacing: 0.6 }}>
+          <text x="315" y="122" textAnchor="middle" fill={INK.quote} style={{ fontFamily: CONDENSED, fontSize: qSize, letterSpacing: 0.6 }}>
             {quote}
           </text>
         )}
@@ -128,33 +129,9 @@ function CardFront({ plate: c, edition, capture, lite = false, u }: Props) {
           </g>
         )}
 
-        <Rules u={f} y={WIN.y + WIN.h + 14} />
+        <Rules u={f} y={WIN.y + WIN.h + 11} />
 
-        <text x="315" y="706" textAnchor="middle" fill={INK.text} style={{ fontFamily: CONDENSED, fontSize: hSize, letterSpacing: 0.4 }}>
-          {head}
-        </text>
-        <text x="315" y="730" textAnchor="middle" fill={INK.red} style={{ fontFamily: SPACED, fontWeight: 500, fontSize: subSize, letterSpacing: subTrack }}>
-          {sub}
-        </text>
-
-        <line x1="50" y1="746" x2="580" y2="746" stroke={INK.text} strokeOpacity=".22" />
-        {c.figures.map(([value, label], i) => {
-          const cx = 138 + i * 177;
-          const v = value.toUpperCase();
-          return (
-            <g key={label}>
-              {i > 0 && <line x1={cx - 88.5} y1="756" x2={cx - 88.5} y2="814" stroke={INK.text} strokeOpacity=".2" />}
-              <text x={cx} y="792" textAnchor="middle" fill={INK.text} style={{ fontFamily: CONDENSED, fontSize: fit(v.length, 160, 'condensed', 30) }}>
-                {v}
-              </text>
-              <text x={cx} y="810" textAnchor="middle" fill={INK.muted} style={{ fontFamily: SPACED, fontWeight: 500, fontSize: 9.5, letterSpacing: label.length > 14 ? 1.6 : 3 }}>
-                {label.toUpperCase()}
-              </text>
-            </g>
-          );
-        })}
-        <line x1="50" y1="824" x2="580" y2="824" stroke={INK.text} strokeOpacity=".22" />
-        <Footer y={850} right={`${ed} / ${c.of}`} />
+        <Footer y={857} right={`${ed} / ${c.of}`} />
       </svg>
 
       {FOIL_OP[r] > 0 && <div className="sdc-foil" style={{ opacity: FOIL_OP[r], ['--sdc-foil' as string]: FOIL_OP[r] }} />}
