@@ -1,12 +1,13 @@
 import type { Metadata } from 'next';
 import type { Viewport } from 'next';
-import { Anton, Bowlby_One, Orbitron, Geist, JetBrains_Mono, Oswald } from 'next/font/google';
+import { Anton, Bowlby_One, Orbitron, Geist, JetBrains_Mono, Krona_One, Oswald, Syncopate } from 'next/font/google';
 import './stellar-base.css';
 import '../styles/stellar-theme.css';
 import '../styles/stellar-motion.css';
 import '../styles/stellar-pages.css';
 import '../styles/stellar-reveal.css';
 import '../styles/stellar-supernova.css';
+import '../styles/stellar-type.css';
 import '../styles/stellar-mobile.css';
 import { AnalyticsBoot } from '@/components/providers/AnalyticsBoot';
 import JsonLd from '@/components/shared/JsonLd';
@@ -30,6 +31,9 @@ const geist = Geist({
 const bowlby = Bowlby_One({ subsets: ['latin'], variable: '--font-bowlby', weight: '400', display: 'swap' });
 const anton = Anton({ subsets: ['latin'], variable: '--font-anton', weight: '400', display: 'swap' });
 const oswald = Oswald({ subsets: ['latin'], variable: '--font-oswald', weight: ['300', '400', '500'], display: 'swap' });
+// The site's own voice, space-opera wide: Krona One for titles, Syncopate for labels and buttons.
+const krona = Krona_One({ subsets: ['latin'], variable: '--font-krona', weight: '400', display: 'swap' });
+const syncopate = Syncopate({ subsets: ['latin'], variable: '--font-syncopate', weight: ['400', '700'], display: 'swap' });
 const jetbrainsMono = JetBrains_Mono({
   subsets: ['latin'],
   variable: '--font-mono',
@@ -77,7 +81,7 @@ export const metadata: Metadata = {
  */
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${orbitron.variable} ${geist.variable} ${jetbrainsMono.variable} ${bowlby.variable} ${anton.variable} ${oswald.variable}`}>
+    <html lang="en" className={`${orbitron.variable} ${geist.variable} ${jetbrainsMono.variable} ${bowlby.variable} ${anton.variable} ${oswald.variable} ${krona.variable} ${syncopate.variable}`}>
       <head>
         <meta name="apple-mobile-web-app-title" content="Stellar" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
