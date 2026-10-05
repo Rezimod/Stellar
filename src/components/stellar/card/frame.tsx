@@ -36,6 +36,16 @@ const ADV = { title: 0.73, condensed: 0.45, spaced: 0.45, spacedBold: 0.49 };
 
 /** Font size at which a line of `len` characters fills no more than `max` units. */
 export const fit = (len: number, max: number, adv: keyof typeof ADV, cap: number) => Math.min(cap, max / (Math.max(1, len) * ADV[adv]));
+/** Bowlby One's advance per capital, in em, read from the font: an average undersizes M and W, and the title then gets squeezed to fit. */
+const BOWLBY: Record<string, number> = {
+  ' ': 0.35, A: 0.8, B: 0.767, C: 0.76, D: 0.805, E: 0.638, F: 0.618, G: 0.821, H: 0.808, I: 0.411, J: 0.675, K: 0.804, L: 0.618, M: 1.071,
+  N: 0.843, O: 0.803, P: 0.746, Q: 0.802, R: 0.762, S: 0.725, T: 0.644, U: 0.789, V: 0.759, W: 1.04, X: 0.781, Y: 0.744, Z: 0.681,
+  '0': 0.714, '1': 0.771, '2': 0.712, '3': 0.71, '4': 0.7, '5': 0.717, '6': 0.711, '7': 0.714, '8': 0.708, '9': 0.711,
+  '-': 0.419, '.': 0.378, ',': 0.359, "'": 0.392, '’': 0.354, '‘': 0.355, '*': 0.454, '&': 0.886,
+};
+/** A title line's width in em. */
+const titleEm = (line: string) => [...line].reduce((sum, ch) => sum + (BOWLBY[ch] ?? ADV.title), 0);
+
 /** Width a line will take at that size, plus its tracking. */
 export const width = (len: number, size: number, adv: keyof typeof ADV, track = 0) => len * (size * ADV[adv] + track);
 
@@ -134,8 +144,8 @@ const STOPS = [0.1, 0.36, 0.55, 0.74, 1];
  * the last line's baseline at `base`.
  */
 export function StripedTitle({ u, rarity, lines, base, max = 540, cap = 84, glint = true }: { u: string; rarity: Rarity; lines: string[]; base: number; max?: number; cap?: number; glint?: boolean }) {
-  const longest = Math.max(...lines.map((l) => l.length));
-  const size = fit(longest, max, 'title', lines.length > 1 ? Math.min(cap, 70) : cap);
+  const widest = Math.max(...lines.map(titleEm));
+  const size = Math.min(lines.length > 1 ? Math.min(cap, 70) : cap, max / widest);
   const lead = size * 0.98;
   const capH = size * 0.74;
   const s = SUNSET[rarity];
@@ -143,7 +153,7 @@ export function StripedTitle({ u, rarity, lines, base, max = 540, cap = 84, glin
     <g>
       {lines.map((line, i) => {
         const y = base - (lines.length - 1 - i) * lead;
-        const natural = width(line.length, size, 'title');
+        const natural = titleEm(line) * size;
         // Short names spread out the way SATURN does on the poster; long ones keep their own spacing.
         const w = line.length <= 7 ? Math.min(max, natural * (1 + (7 - line.length) * 0.06 + 0.08)) : Math.min(max, natural);
         const id = `${u}t${i}`;
@@ -191,7 +201,7 @@ export function RarityBadge({ u, rarity, label, x = 38, y = 38 }: { u: string; r
   const b = BADGE[rarity];
   const text = label.toUpperCase();
   const size = 20;
-  const w = width(text.length, size, 'title') + 30;
+  const w = titleEm(text) * size + 30;
   const capH = size * 0.74;
   return (
     <g transform={`translate(${x} ${y})`}>

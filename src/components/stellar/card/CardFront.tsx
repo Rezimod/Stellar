@@ -34,6 +34,9 @@ export const WIN = { x: 20, y: 20, w: 590, h: 690, r: 18 };
 /** A fine line just inside the window, in the rarity's metal. */
 const EDGE: Record<Plate['rarity'], [string, number]> = { common: ['#cbb994', 0.28], rare: ['#e0703a', 0.45], epic: ['#ff8a3d', 0.6], legendary: ['#ffd36e', 0.85] };
 
+/** The art is taller than the window; showing more of its top lowers the object toward the rays' centre, clear of the quote. */
+const ART_POS = { objectPosition: '50% 20%' };
+
 /** Where the lens glints sit in the sky, as fractions of the window; the same on every card, a little off the grid. */
 const GLINTS: [number, number, number][] = [
   [0.1, 0.24, 9],
@@ -84,11 +87,11 @@ function CardFront({ plate: c, edition, capture, lite = false, u }: Props) {
         ) : (
           <>
             <div className="sdc-lay0 sdc-grade">
-              <img src={`${c.art}/sky.${ext}`} alt="" loading="lazy" decoding="async" />
+              <img src={`${c.art}/sky.${ext}`} alt="" loading="lazy" decoding="async" style={ART_POS} />
             </div>
             <div className="sdc-rays" />
             <div className="sdc-lay1 sdc-grade sdc-fringe">
-              <img src={`${c.art}/object.${ext}`} alt="" loading="lazy" decoding="async" />
+              <img src={`${c.art}/object.${ext}`} alt="" loading="lazy" decoding="async" style={ART_POS} />
             </div>
           </>
         )}
@@ -115,7 +118,7 @@ function CardFront({ plate: c, edition, capture, lite = false, u }: Props) {
         </text>
 
         {quote && (
-          <text x="315" y="122" textAnchor="middle" fill={INK.quote} style={{ fontFamily: CONDENSED, fontSize: qSize, letterSpacing: 0.6 }}>
+          <text x="315" y="122" textAnchor="middle" fill={INK.quote} stroke="#0e0806" strokeOpacity=".8" strokeWidth={qSize * 0.16} strokeLinejoin="round" paintOrder="stroke" style={{ fontFamily: CONDENSED, fontSize: qSize, letterSpacing: 0.6 }}>
             {quote}
           </text>
         )}
