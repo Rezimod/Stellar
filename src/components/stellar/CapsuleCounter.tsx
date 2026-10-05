@@ -120,7 +120,7 @@ export default function CapsuleCounter({ cards, onSale }: { cards: TierCard[]; o
           onFocus={loadSheet}
           onClick={() => setSheet(tier)}
         >
-          {stock === 0 ? 'None on sale' : `Buy & fly — $${tier.priceUsd}`}
+          {stock === 0 ? 'None on sale' : `Buy & ignite — $${tier.priceUsd}`}
         </button>
         <button
           type="button"
@@ -133,7 +133,7 @@ export default function CapsuleCounter({ cards, onSale }: { cards: TierCard[]; o
           <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true">
             <path d="M5 3.5v9l7-4.5z" fill="currentColor" />
           </svg>
-          Preview the flight — nothing is bought
+          Preview the supernova — nothing is bought
         </button>
       </div>
 

@@ -180,13 +180,13 @@ export default function StellarBuyCapsule({
           }}
           disabled={!!busy}
         >
-          {busy ? <Working label={busy} /> : 'Fly it'}
+          {busy ? <Working label={busy} /> : 'Ignite'}
         </button>
       ) : order ? (
         <StellarPay order={order} onConfirmed={confirmed} compact />
       ) : ready && authenticated ? (
         <button type="button" className="sd-btn sd-btn--primary sd-btn--block" onClick={reserve} disabled={!!busy}>
-          {busy ? <Working label={busy} /> : `Buy & fly — $${priceUsd}`}
+          {busy ? <Working label={busy} /> : `Buy & ignite — $${priceUsd}`}
         </button>
       ) : (
         <button type="button" className="sd-btn sd-btn--primary sd-btn--block" onClick={() => login()}>
@@ -196,7 +196,7 @@ export default function StellarBuyCapsule({
 
       {!order && !paid && (
         <p className="sd-buyflow__note">
-          {cardsPerCapsule === 1 ? 'One card' : `${cardsPerCapsule} cards`} · {REHEARSAL ? 'rehearsal — nothing is charged' : 'ready to fly the moment it is paid'}
+          {cardsPerCapsule === 1 ? 'One card' : `${cardsPerCapsule} cards`} · {REHEARSAL ? 'rehearsal — nothing is charged' : 'ready to ignite the moment it is paid'}
         </p>
       )}
       {error && (

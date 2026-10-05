@@ -60,7 +60,7 @@ export default async function CapsulesPage() {
             />
             <p className="sd-capsule-top__line">
               One card, committed by hash before the sale. Your nonce seals the draw; anyone can recompute it after
-              the flight.
+              the card is out.
             </p>
             {simulatedPayments() ? (
               <p className="sd-strip-note">Rehearsal · no payment is taken · every sale is marked in the log</p>
