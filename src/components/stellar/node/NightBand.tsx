@@ -62,7 +62,7 @@ export default function NightBand({
       <svg
         viewBox={`0 0 ${W} ${H}`}
         role="img"
-        aria-label={`The day under the telescope's sky, noon to noon. Dark from ${hourLabel(dusk.getTime())} to ${hourLabel(dawn.getTime())}.`}
+        aria-label={`The day under the telescope’s sky, noon to noon. Dark from ${hourLabel(dusk.getTime())} to ${hourLabel(dawn.getTime())}.`}
       >
         <defs>
           <linearGradient id="sd-nightband-sky" x1="0" x2="1">

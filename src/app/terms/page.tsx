@@ -19,7 +19,7 @@ export default function TermsPage() {
           <Chapter n="01" title="What Stellar is" />
           <p>
             Stellar is a set of collectible cards, each a numbered edition of a real object or a dated event in the sky. It is run
-            by Astroman, Tbilisi. Live Telescope V1, the telescope that photographs the night&rsquo;s card, is commissioning: until it is
+            by Astroman (astroman.ge). Live Telescope V1, the telescope that photographs the night&rsquo;s card, is commissioning: until it is
             operational, no photograph is promised.
           </p>
         </section>
@@ -46,12 +46,20 @@ export default function TermsPage() {
           <Chapter n="04" title="What a card is not" />
           <p>
             A card is a record of an edition in this collection. It carries no promise of financial value, resale or return.
-            Buy a capsule for the cards and the night photographs, not as an investment.
+            Buy a capsule for the cards and the photographs to come, not as an investment.
           </p>
         </section>
 
         <section className="sd-chapter-block">
-          <Chapter n="05" title="When something goes wrong" />
+          <Chapter n="05" title="Physical items" />
+          <p>
+            A few cards are marked as carrying a physical item, such as a meteorite fragment. These items are planned, not yet
+            shipping. How to redeem one, and where it can be sent, will be published here before any item ships.
+          </p>
+        </section>
+
+        <section className="sd-chapter-block">
+          <Chapter n="06" title="When something goes wrong" />
           <p>
             If a payment lands and nothing is delivered, because a card sold out between order and payment or a capsule was
             withdrawn, write to us with the transaction and we will refund it by hand. Opened capsules are final.
@@ -59,7 +67,7 @@ export default function TermsPage() {
         </section>
 
         <section className="sd-chapter-block">
-          <Chapter n="06" title="Changes" />
+          <Chapter n="07" title="Changes" />
           <p>
             These terms change as Stellar does. The date above moves when they do, and continuing to use Stellar after a change
             means accepting it. Questions go to <Link href="/contact">Contact</Link>.

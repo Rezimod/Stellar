@@ -30,29 +30,29 @@ const NAME_SIZE: Record<string, number> = { SATURN: 44, 'PLEIADES-OCCULTATION': 
 
 /** Two lines on the back: what this is, said simply, and why it matters. */
 const STORY: Record<string, [string, string]> = {
-  'FIRST-LIGHT': ['Before any star, a shutter opens.', 'Whatever the sky gives first, you hold.'],
-  IMILAC: ['A world broke apart before Earth had oceans.', 'This is a piece of its heart, green with olivine.'],
-  'LUNAR-FRAGMENT': ['An impact threw it off the Moon.', 'It fell here, and now it is held.'],
-  TYCHO: ['One strike, 108 million years ago.', 'Its rays still cross the whole near side.'],
-  'OLYMPUS-MONS': ['Three Everests high, wide as France.', 'You could stand on it and not know it was a mountain.'],
-  JUPITER: ['A thousand Earths would fit inside.', 'Its storm has raged longer than any nation.'],
-  EUROPA: ['Under the ice, twice the water of Earth.', 'The best place to look for life we have not met.'],
-  SATURN: ['Ice as small as sand, as big as houses.', 'From here, the thinnest thing we have ever seen.'],
-  HALLEY: ['It came in 1986. It comes again in 2061.', 'Hold the card, and wait with it.'],
-  'VOYAGER-1': ['Launched in 1977, still calling home.', 'Every year, farther from everyone who ever lived.'],
-  M45: ['Seven sisters, a hundred million years young.', 'Named by every people who ever looked up.'],
-  M42: ['A cloud where stars are being born tonight.', 'You can see it with your own eyes.'],
-  M1: ['In 1054, a star was seen in daylight.', 'This is what remains, a heart still spinning.'],
-  'SGR-A': ['Four million suns, hidden in the dark.', 'Everything in our galaxy turns around it.'],
-  M31: ['A trillion stars, 2.5 million light-years out.', 'It is coming toward us. In four billion years, we meet.'],
-  ORIONIDS: ['Dust shed by Halley, centuries ago.', 'It burns above you at 66 kilometres a second.'],
-  'HUNTERS-MOON': ['The full Moon that rises with the dusk.', 'For a few nights, it lights the whole field.'],
-  'PLEIADES-OCCULTATION': ['The Moon crosses the seven sisters.', 'One by one, they vanish and return.'],
-  GEMINIDS: ['Not comet dust: the crumbs of an asteroid.', 'The richest shower of the year, under no Moon.'],
-  'CHRISTMAS-SUPERMOON': ['The closest full Moon of the year.', 'Fourteen percent wider, thirty percent brighter.'],
-  'DOUBLE-OPPOSITION': ['Jupiter, then Mars, at their closest to Earth.', 'Eight days apart. The next pair is years away.'],
-  'SNOW-MOON-ECLIPSE': ['A full Moon slips into the edge of Earth’s shadow.', 'Watch one limb go quietly dusky.'],
-  'GREAT-ECLIPSE': ['Six minutes of night at midday.', 'The longest darkness on land this century.'],
+  'FIRST-LIGHT': ['The first frame Live Telescope V1 will keep.', 'No one knows yet what it will show.'],
+  IMILAC: ['A world broke apart before Earth had oceans.', 'Its metal cooled slowly, over millions of years.'],
+  'LUNAR-FRAGMENT': ['Only a few hundred stones like it are known.', 'It drifted through space for ages before it fell.'],
+  TYCHO: ['Its central peak rises nearly 2 km from the floor.', 'At full Moon you can see it with your own eyes.'],
+  'OLYMPUS-MONS': ['Built by lava, layer on layer, over ages.', 'The crater at its top is up to 80 km across.'],
+  JUPITER: ['Four of its moons were the first found beyond our own.', 'It gives off more heat than it gets from the Sun.'],
+  EUROPA: ['Its ice shell may be tens of kilometres thick.', 'It is a little smaller than our Moon.'],
+  SATURN: ['Ice as small as sand, as big as houses.', 'Seen edge on, the rings all but vanish.'],
+  HALLEY: ['Recorded at every return since 240 BC.', 'Its dust falls as the Orionids each October.'],
+  'VOYAGER-1': ['It passed Jupiter in 1979 and Saturn in 1980.', 'Its radio signal takes nearly a day to reach us.'],
+  M45: ['Most eyes count six, not seven.', 'Over a thousand stars belong to it.'],
+  M42: ['It is about 1,300 light-years away.', 'Its newborn stars light up the gas around them.'],
+  M1: ['The first object in Messier’s catalogue.', 'It glows in every kind of light, from radio to gamma rays.'],
+  'SGR-A': ['Stars race around it at thousands of km a second.', 'Its discovery earned the 2020 Nobel Prize.'],
+  M31: ['The largest galaxy in our Local Group.', 'It moves toward us at about 110 km a second.'],
+  ORIONIDS: ['They peak around 21 October.', 'Some leave glowing trails that linger for seconds.'],
+  'HUNTERS-MOON': ['Near the horizon it looks larger, though it is not.', 'Moonlight is sunlight, reflected off grey rock.'],
+  'PLEIADES-OCCULTATION': ['The cluster lies 444 light-years behind the Moon.', 'Watch how quickly the Moon moves against the stars.'],
+  GEMINIDS: ['They seem to fly out of Gemini.', 'They peak around 14 December.'],
+  'CHRISTMAS-SUPERMOON': ['The Moon swings nearest us once a month.', 'It rises at sunset and sets at sunrise.'],
+  'DOUBLE-OPPOSITION': ['Opposition puts the Earth between a planet and the Sun.', 'Mars looks red, Jupiter cream-white.'],
+  'SNOW-MOON-ECLIPSE': ['A penumbral eclipse: the Moon misses the dark core.', 'It needs no filter and no telescope.'],
+  'GREAT-ECLIPSE': ['Along the path, birds roost and the air turns cold.', 'Its shadow races over the ground faster than sound.'],
 };
 
 export type Plate = {
@@ -75,6 +75,10 @@ export type Plate = {
   nameSize: number;
   back: string;
   noun: string | null;
+  /** Whether Live Telescope V1 can point at it at all. */
+  observable: boolean;
+  /** A daytime event at the Sun, which the telescope never points at. */
+  solar: boolean;
   section: Section;
   family: Family;
   /** The directory holding sky.svg, object.svg and survey.svg. */
@@ -86,6 +90,9 @@ export type Plate = {
 };
 
 const pad3 = (n: number) => String(n).padStart(3, '0');
+
+/** Events at the Sun: a filterless telescope never points at it. */
+const SOLAR = new Set(['TOTAL-ECLIPSE', 'RING-OF-FIRE', 'VENUS-TRANSIT', 'GREAT-ECLIPSE']);
 
 /** "RA 00H 42M 44S · DEC +41° 16′ 09″" */
 function position(ra: number, dec: number) {
@@ -135,6 +142,8 @@ export function plateFor(designation: string): Plate | null {
     nameSize: NAME_SIZE[designation] ?? Math.min(60, Math.floor(400 / (seed.name.length * 0.56))),
     back,
     noun: NOUN[designation] ?? record.noun,
+    observable: seed.observationStatus !== 'not_available',
+    solar: SOLAR.has(designation),
     section: record.section,
     family: record.family,
     art: `/cards/plate/${designation}`,

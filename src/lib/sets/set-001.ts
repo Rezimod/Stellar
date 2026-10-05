@@ -51,7 +51,7 @@ const FIRST_24: AuthoredCard[] = [
       blurb: 'The observatory’s opening picture, kept for good.',
     },
     'Whatever Live Telescope V1 points at first. Decided on the first clear night, not by vote.',
-    { stats: [['OBSERVATION', '000001'], ['NODE', '01'], ['DATE', 'First clear night']], line: 'The observatory’s opening picture, kept for good.' },
+    { stats: [['OBSERVATION', '000001'], ['BY', 'Live Telescope V1'], ['DATE', 'First clear night']], line: 'The observatory’s opening picture, kept for good.' },
   ),
   authorKept(
     {
@@ -65,11 +65,11 @@ const FIRST_24: AuthoredCard[] = [
   authorKept(
     {
       designation: 'LUNAR-FRAGMENT', name: 'A Piece of the Moon', objectType: 'lunar meteorite', rarity: 'legendary',
-      catalogRef: 'Class TBC',
+      catalogRef: 'Fallen to Earth',
       blurb: 'Found in a desert, matched to Apollo samples by its chemistry.',
     },
     SPECIMEN,
-    { stats: [['TYPE', 'Lunar meteorite'], ['CLASS', 'TBC'], ['FROM', '384,400 km']], line: 'Found in a desert, matched to Apollo samples by its chemistry.', pairsWith: 'TYCHO', physical: true },
+    { stats: [['TYPE', 'Lunar meteorite'], ['ORIGIN', 'The Moon'], ['FROM', '384,400 km']], line: 'Found in a desert, matched to Apollo samples by its chemistry.', pairsWith: 'TYCHO', physical: true },
   ),
   authorCard(
     {
@@ -79,7 +79,7 @@ const FIRST_24: AuthoredCard[] = [
       blurb: 'Surveyor 7 landed beside its rim in 1968.',
     },
     body(arcsecFromKm(86, MOON_DISTANCE_KM)),
-    { stats: [['DIAMETER', '86 km'], ['AGE', '~108 Myr'], ['DEPTH', '4.8 km']], line: 'Surveyor 7 landed beside its rim in 1968.', pairsWith: 'LUNAR-FRAGMENT' },
+    { stats: [['DIAMETER', '85 km'], ['AGE', '~108 Myr'], ['DEPTH', '4.8 km']], line: 'Surveyor 7 landed beside its rim in 1968.', pairsWith: 'LUNAR-FRAGMENT' },
   ),
   authorCard(
     {
@@ -94,10 +94,10 @@ const FIRST_24: AuthoredCard[] = [
     {
       designation: 'JUPITER', name: 'Jupiter', objectType: 'planet', rarity: 'rare',
       targetId: 'jupiter', catalogRef: 'JPL Horizons 599', ...NO_POSITION,
-      blurb: 'The largest world, and the brightest in winter.',
+      blurb: 'The largest planet, and the brightest of winter evenings.',
     },
     body(arcsecFromKmAtAu(142_984, 4.2)),
-    { stats: [['DIAMETER', '142,984 km'], ['DAY', '9 h 56 m'], ['OPPOSITION', '11 Feb 2027']], line: 'The largest world, and the brightest in winter.', pairsWith: 'DOUBLE-OPPOSITION' },
+    { stats: [['DIAMETER', '142,984 km'], ['DAY', '9 h 56 m'], ['OPPOSITION', '11 Feb 2027']], line: 'The largest planet, and the brightest of winter evenings.', pairsWith: 'DOUBLE-OPPOSITION' },
   ),
   authorCard(
     {
@@ -200,7 +200,7 @@ const FIRST_24: AuthoredCard[] = [
   ),
   authorAlmanac(
     {
-      designation: 'HUNTERS-MOON', name: "Hunter's Moon", objectType: 'full moon', rarity: 'common',
+      designation: 'HUNTERS-MOON', name: 'Hunter’s Moon', objectType: 'full moon', rarity: 'common',
       catalogRef: 'Full, 26 Oct 2026',
       blurb: 'It follows the Harvest Moon, a month later.',
     },
@@ -223,7 +223,7 @@ const FIRST_24: AuthoredCard[] = [
       blurb: "Their parent is 3200 Phaethon, a rock that acts like a comet.",
     },
     { start: '2026-12-13T00:00:00Z', end: '2026-12-15T12:00:00Z' },
-    { stats: [['PEAK', '13–14 Dec 2026'], ['RATE', 'up to 120/hr'], ['MOON', 'New']], line: "Their parent is 3200 Phaethon, a rock that acts like a comet." },
+    { stats: [['PEAK', '13–14 Dec 2026'], ['RATE', 'up to 120/hr'], ['MOON', 'Sets early']], line: "Their parent is 3200 Phaethon, a rock that acts like a comet." },
   ),
   authorAlmanac(
     {
@@ -250,7 +250,7 @@ const FIRST_24: AuthoredCard[] = [
       blurb: "Named for the deepest month of winter.",
     },
     { start: '2027-02-20T00:00:00Z', end: '2027-02-21T12:00:00Z' },
-    { stats: [['DATE', '20 Feb 2027'], ['ECLIPSE', 'Penumbral'], ['MOON', 'Super']], line: "Named for the deepest month of winter." },
+    { stats: [['DATE', '20 Feb 2027'], ['ECLIPSE', 'Penumbral'], ['MOON', 'Full']], line: "Named for the deepest month of winter." },
   ),
   authorAlmanac(
     {
@@ -259,7 +259,8 @@ const FIRST_24: AuthoredCard[] = [
       blurb: 'Luxor gets the longest totality on land until 2114.',
     },
     { start: '2027-08-02T00:00:00Z', end: '2027-08-03T00:00:00Z' },
-    { stats: [['DATE', '2 Aug 2027'], ['TOTALITY', '6+ min'], ['PATH', 'Spain to Egypt']], line: 'Luxor gets the longest totality on land until 2114.' },
+    { stats: [['DATE', '2 Aug 2027'], ['TOTALITY', '6+ min'], ['PATH', 'Spain to Arabia']], line: 'Luxor gets the longest totality on land until 2114.' },
+    'A daytime event at the Sun. Live Telescope V1 does not point at the Sun; this card records the day.',
   ),
 ];
 

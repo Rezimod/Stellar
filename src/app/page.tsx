@@ -23,7 +23,7 @@ export const revalidate = 60;
 export const metadata: Metadata = {
   title: 'Stellar — the night sky, issued in editions',
   description:
-    'First Light: a hundred cards, each held as a numbered edition — planets, stars, nebulae, galaxies, the extremes of the universe, ten worlds of fiction and eight dated events. Opened from sealed capsules, from $5.',
+    'First Light: a hundred cards, each held as a numbered edition — planets, stars, nebulae, galaxies, the extremes of the universe, eight rare sights and eight dated events. Opened from sealed capsules, from $5.',
 };
 
 /** Six cards from across the set, one shelf of it. */
@@ -47,7 +47,7 @@ const RECOGNITION = [
     href: 'https://superteam.fun/earn/grants/solana-foundation-georgia-grants',
     logo: '/brand-partners/superteam.webp', logoAlt: 'Superteam', logoWidth: 160, logoHeight: 48,
     label: 'Superteam', rank: 'Grant',
-    linkLabel: 'View Solana Foundation Georgia Grants on Superteam Earn',
+    linkLabel: 'View the Solana Foundation grant on Superteam Earn',
   },
 ];
 
@@ -69,7 +69,7 @@ const PLAN: FlightStep[] = [
   { title: 'Watch', text: 'Holders of the chosen card watch the observation live.', status: 'Commissioning', live: false, href: '/node', icon: 'telescope' },
   {
     title: 'Claim',
-    text: 'Marked cards carry a real object — meteorite, flown hardware, space debris, print, scale rocket.',
+    text: 'Two cards in First Light carry a real meteorite fragment, redeemable later.',
     status: 'In preparation',
     live: false,
     href: '/set/001',
@@ -85,7 +85,7 @@ const GUARANTEES = [
   },
   {
     title: 'Numbered editions',
-    text: `${SET_001_CARDS.length} cards, each a fixed run. Gone is gone.`,
+    text: `${SET_001_CARDS.length} cards, each a fixed run, never reissued.`,
     icon: <><path d="M5 9h14M5 15h14M10 4L8 20M16 4l-2 16" /></>,
   },
   {
@@ -122,7 +122,7 @@ export default async function HomePage() {
         <div className="sd-container sd-hero2__grid">
           <div className="sd-hero2__copy">
             <h1 className="sd-hero2__title">
-              <span>Hold a piece of</span>
+              <span>Hold a piece of</span>{' '}
               <span>
                 <em>the night sky</em>
               </span>
@@ -253,7 +253,7 @@ export default async function HomePage() {
             Every card turns with the sky
           </h2>
           <p className="sd-home-sec__lede">
-            From the craters of the Moon to the black hole at the centre of the galaxy — each one a real object, issued once and numbered.
+            From the craters of the Moon to the black hole at the centre of the galaxy — each one real, issued once and numbered.
           </p>
         </div>
         <OrbitRing designations={ORBIT} />

@@ -2,11 +2,11 @@
 
 import { useState } from 'react';
 import { RARITIES, rarityInfo, type Rarity } from '@/lib/rarity';
-import { CARDS_PER_TIER, TIERS } from '@/lib/stellar/tiers';
+import { CARDS_PER_TIER, TIERS, formatOdds } from '@/lib/stellar/tiers';
 
 type Supply = Record<Rarity, { cards: number; editions: number }>;
 
-const pct = (bps: number) => (bps === 0 ? '0%' : `${(bps / 100).toFixed(bps < 100 ? 1 : 0)}%`);
+const pct = (bps: number) => (bps === 0 ? '0%' : formatOdds(bps));
 
 /** The odds of every capsule on the shelf, one tier at a time, with what each rarity holds in the set. */
 export default function OddsBoard({ supply }: { supply: Supply }) {

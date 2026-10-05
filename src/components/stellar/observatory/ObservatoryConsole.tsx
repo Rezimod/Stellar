@@ -41,8 +41,14 @@ const NIGHT_KEY = 'stellar.observatory.night';
 const NODE_ID = 'tbilisi-01';
 /** Parking from the handover position, settling, then aligning. */
 const CAL_ESTIMATE_S = Math.round((slewMs(HANDOVER, { altitude: ALT_TRAVEL.max, azimuth: HANDOVER.azimuth }) + SETTLE_MS + CALIBRATE_MS) / 1000);
-/** The simulated stations, with the network's own node under its Stellar name. */
-const STATIONS: Station[] = SIM_STATIONS.map((s) => (s.id === NODE_ID ? { ...s, name: 'Live Telescope V1' } : s));
+/** The simulated stations, with the network's own node under its Stellar name. No station names its city. */
+const STATIONS: Station[] = SIM_STATIONS.map((s) =>
+  s.id === NODE_ID
+    ? { ...s, name: 'Live Telescope V1', site: 'Under the night sky' }
+    : s.id === 'abastumani-sim'
+      ? { ...s, name: 'Mountain station (simulated)', site: 'A dark mountain ridge' }
+      : s,
+);
 
 const ARROWS: Record<string, { axis: Axis; dir: 1 | -1 }> = {
   ArrowLeft: { axis: 'az', dir: -1 },
@@ -728,7 +734,7 @@ export default function ObservatoryConsole({ tonight, nodeCloud }: { tonight: To
 
       <div className="sdo-phone">
         <div className="sdo-phead">
-          <p className="sdo-phead__t">Live telescope</p>
+          <p className="sdo-phead__t">Live Telescope V1</p>
           <div>
             <span className="sdo-pill sdo-pill--sim"><span className="sdo-led is-go" />Simulated</span>
             <button className={`sdo-ib${night ? ' is-on' : ''}`} type="button" onClick={toggleNight} aria-pressed={night} aria-label="Night mode"><Icon name="moon" /></button>
@@ -747,7 +753,7 @@ export default function ObservatoryConsole({ tonight, nodeCloud }: { tonight: To
       </div>
 
       <main className="sdo-grid">
-        <h1 className="sdo-sr">Live telescope</h1>
+        <h1 className="sdo-sr">Live Telescope V1</h1>
         <div className="sdo-col sdo-desk">
           <QuickStart name={quickName} designation={tonight?.designation ?? null} onStart={quickStart} />
           <Telescopes rows={rows} selectedId={selectedId} onPick={pick} sky={skyRow} />

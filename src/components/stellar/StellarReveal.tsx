@@ -91,6 +91,8 @@ export default function StellarReveal({
   const [staged, setStaged] = useState(true);
   const [sound, setSoundState] = useState(true);
   const [turned, setTurned] = useState(false);
+  /** The engine loads after the stage shows; until then Ignite has nothing to start. */
+  const [ready, setReady] = useState(false);
   const [host, setHost] = useState<HTMLElement | null>(null);
   const root = useRef<HTMLDivElement>(null);
   const tilt = useRef<HTMLDivElement>(null);
@@ -129,6 +131,7 @@ export default function StellarReveal({
         onDone: () => setPhase('done'),
       });
       nova.current = handle;
+      setReady(true);
       if (autoLaunch) {
         setPhase('flying');
         handle.launch();
@@ -229,15 +232,18 @@ export default function StellarReveal({
   const after = (
     <div className="sn-after" hidden={!done}>
       <p className="sd-data sn-provenance">
-        {typed.map((p) =>
-          p.href ? (
-            <a key={p.text} href={p.href}>
+        {typed.map((p, i) => (
+          <span key={p.text} className="sn-provenance__part">
+            {i > 0 && <span className="sn-provenance__dot">{"\u00a0·\u00a0"}</span>}
+            {p.href ? (
+              <a href={p.href}>
+                <Typed text={p.text} at={`${p.at}ms`} />
+              </a>
+            ) : (
               <Typed text={p.text} at={`${p.at}ms`} />
-            </a>
-          ) : (
-            <Typed key={p.text} text={p.text} at={`${p.at}ms`} />
-          ),
-        )}
+            )}
+          </span>
+        ))}
       </p>
       {rest.length > 0 && (
         <div className="sn-rest">
@@ -363,7 +369,7 @@ export default function StellarReveal({
         <div className="sn-pre" hidden={phase !== 'pad'}>
           <span className="sn-pre__kicker">You are opening</span>
           <h2 className="sn-pre__cap">{preview ? `${preview} capsule` : outright ? flown.name : `Capsule No. ${pad(sequence ?? 0)}`}</h2>
-          <button type="button" className="sn-go" onClick={ignite}>
+          <button type="button" className="sn-go" onClick={ignite} disabled={!ready} aria-busy={!ready}>
             Ignite
           </button>
           <span className="sn-pre__sub">{preview ? 'Preview · nothing is bought' : 'One card · First Light'}</span>

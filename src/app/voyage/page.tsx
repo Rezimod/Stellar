@@ -5,6 +5,7 @@ import VoyageClient from '@/components/play/VoyageClient';
 export default function VoyagePage() {
   return (
     <StellarShell bare>
+      <h1 className="sr-only">Voyage</h1>
       <VoyageClient />
     </StellarShell>
   );

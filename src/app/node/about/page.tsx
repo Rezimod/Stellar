@@ -94,7 +94,7 @@ export default async function NodePage() {
             items={[
               { label: 'Aperture', value: `${instrument.apertureMm} mm` },
               { label: 'Focal length', value: `${instrument.focalLengthMm} mm` },
-              { label: 'Site', value: `${base.site.split(',')[0]} · Bortle ${base.bortle}` },
+              { label: 'Sky', value: `Bortle ${base.bortle} · city` },
               { label: 'Status', value: base.status },
             ]}
           />

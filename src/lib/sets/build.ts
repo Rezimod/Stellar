@@ -150,13 +150,19 @@ export function authorSight(facts: NoSky, reason: string, extras: Extras): Autho
 
 /**
  * An Almanac card: a dated event in the real sky. Sold until the event ends,
- * then sealed. No vote decides it; Live Telescope V1 records it on the night.
+ * then sealed. No vote decides it; Live Telescope V1 records it on the night,
+ * unless it happens at the Sun, which the telescope never points at.
  */
-export function authorAlmanac(facts: NoSky, event: { start: string; end: string }, extras: Extras): AuthoredCard {
+export function authorAlmanac(
+  facts: NoSky,
+  event: { start: string; end: string },
+  extras: Extras,
+  reason = 'A dated event. Live Telescope V1 records it on the night, weather allowing; no vote decides it.',
+): AuthoredCard {
   return unpointable(
     facts,
     'event',
-    'A dated event. Live Telescope V1 records it on the night, weather allowing; no vote decides it.',
+    reason,
     record(extras, { section: 'almanac', eventStartUtc: event.start, eventEndUtc: event.end }),
   );
 }

@@ -29,7 +29,7 @@ export default function PrivacyPage() {
           <Chapter n="02" title="What we never hold" />
           <ul>
             <li>Private keys or recovery phrases. They stay with Privy or your wallet.</li>
-            <li>Card details. Payment is made in SOL from your wallet.</li>
+            <li>Payment card details. Payment is made in SOL from your wallet.</li>
             <li>Your location. The sky is computed for Live Telescope V1, not for you.</li>
           </ul>
         </section>

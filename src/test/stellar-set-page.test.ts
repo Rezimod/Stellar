@@ -64,7 +64,7 @@ it('shows a card’s record, its observation verdict and its rarity', async () =
   const html = await renderCard('JUPITER');
   expect(html).toContain('Jupiter');
   expect(html).toContain('JUPITER');
-  expect(html).toContain('Catalogue');
+  expect(html).toContain('Editions issued');
   expect(html).toContain('Rare');
 });
 

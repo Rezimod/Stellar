@@ -17,7 +17,7 @@ import { addDays, tonightView, type TonightView } from '@/lib/stellar/night';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'Tonight — the card Live Telescope V1 photographs',
+  title: 'Tonight — the card Live Telescope V1 will photograph',
   description: 'One object a night, chosen by the holders among what Live Telescope V1 can photograph.',
 };
 

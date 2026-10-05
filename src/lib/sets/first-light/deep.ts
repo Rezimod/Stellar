@@ -24,7 +24,7 @@ export const DEEP_CARDS: AuthoredCard[] = [
     deepSky('m16'),
     {
       stats: [['DISTANCE', '~6,500 ly'], ['TALLEST', '~4 ly'], ['PICTURED', '1995']],
-      story: ['Each pillar is taller than the gap to the next star.', 'Light from young stars is slowly eating them away.'],
+      story: ['The pillars stand about 7,000 light-years away.', 'Webb saw them again in infrared in 2022.'],
       glow: '#e8c07a',
       noun: 'the Pillars of Creation',
     },
@@ -34,7 +34,7 @@ export const DEEP_CARDS: AuthoredCard[] = [
     fixed(5.6819, -2.4583, 11.0, [8, 6]),
     {
       stats: [['DISTANCE', '~1,400 ly'], ['HEIGHT', '~3.5 ly'], ['FOUND', '1888']],
-      story: ['Dust so thick it blots out the glow behind it.', 'First noticed on a photographic plate, not by eye.'],
+      story: ['It is about 1,400 light-years away.', 'Behind it glows red hydrogen gas.'],
       glow: '#ff6a6a',
     },
   ),
@@ -43,7 +43,7 @@ export const DEEP_CARDS: AuthoredCard[] = [
     deepSky('m57'),
     {
       stats: [['DISTANCE', '~2,300 ly'], ['SIZE', '~1.3 ly'], ['MAGNITUDE', '8.8']],
-      story: ['The Sun will make one of these, in five billion years.', 'At its centre, the small hot core that is left.'],
+      story: ['It lies about 2,500 light-years away.', 'Even a small telescope shows its hollow centre.'],
       glow: '#8ad8c0',
       noun: 'the Ring Nebula',
     },
@@ -53,7 +53,7 @@ export const DEEP_CARDS: AuthoredCard[] = [
     fixed(22.4939, -20.8372, 7.6, [25, 25]),
     {
       stats: [['DISTANCE', '~650 ly'], ['SIZE', '~2.5 ly'], ['AGE', '~10,000 yr']],
-      story: ['One of the nearest dying stars to us.', 'Its rim is combed with thousands of comet-like knots.'],
+      story: ['Its glow is gas lit by the hot core left behind.', 'Within tens of thousands of years it will fade.'],
       glow: '#6ad0e0',
     },
   ),
@@ -62,7 +62,7 @@ export const DEEP_CARDS: AuthoredCard[] = [
     fixed(17.9758, 66.6331, 8.1, [0.4, 0.4]),
     {
       stats: [['DISTANCE', '~3,300 ly'], ['SHELLS', '11 or more'], ['FIRST', 'Spectrum 1864']],
-      story: ['Its star shed a shell every fifteen hundred years.', 'The first nebula shown to be glowing gas.'],
+      story: ['It lies over 3,000 light-years away.', 'X-rays show hot gas at its heart.'],
       glow: '#7ae0b0',
     },
   ),
@@ -71,7 +71,7 @@ export const DEEP_CARDS: AuthoredCard[] = [
     deepSky('m8'),
     {
       stats: [['DISTANCE', '~4,100 ly'], ['SIZE', '~110 × 50 ly'], ['MAGNITUDE', '6.0']],
-      story: ['Visible to the eye from a dark summer field.', 'At its heart, a bright knot called the Hourglass.'],
+      story: ['A young cluster sits inside it.', 'In the sky it spans about three full Moons.'],
       glow: '#ff8ab0',
       noun: 'the Lagoon Nebula',
     },
@@ -81,7 +81,7 @@ export const DEEP_CARDS: AuthoredCard[] = [
     deepSky('m20'),
     {
       stats: [['DISTANCE', '~5,200 ly'], ['LOBES', '3'], ['MAGNITUDE', '6.3']],
-      story: ['Three kinds of nebula in one field.', 'Red glowing gas, blue scattered light, black dust.'],
+      story: ['It is about 4,000 light-years away.', 'New stars are still forming in its dark lanes.'],
       glow: '#ff7aa0',
       noun: 'the Trifid Nebula',
     },
@@ -91,7 +91,7 @@ export const DEEP_CARDS: AuthoredCard[] = [
     fixed(20.9403, 31.717, 7.0, [180, 160]),
     {
       stats: [['DISTANCE', '~2,400 ly'], ['AGE', '~15,000 yr'], ['SPAN', '3°']],
-      story: ['Six full Moons wide, and still expanding.', 'Braided threads of gas, lit by the shock.'],
+      story: ['It lies about 2,400 light-years away.', 'A filter makes its threads stand out in a small telescope.'],
       glow: '#8ac8ff',
     },
   ),
@@ -100,7 +100,7 @@ export const DEEP_CARDS: AuthoredCard[] = [
     fixed(6.5333, 4.95, 9.0, [80, 60]),
     {
       stats: [['DISTANCE', '~5,200 ly'], ['SIZE', '~130 ly'], ['CLUSTER', 'NGC 2244']],
-      story: ['Young stars at its centre blew the hollow.', 'Dark knots in its petals are stars still forming.'],
+      story: ['It lies about 5,000 light-years away.', 'Its hollow holds a cluster you can see in binoculars.'],
       glow: '#ff5a6a',
     },
   ),
@@ -109,7 +109,7 @@ export const DEEP_CARDS: AuthoredCard[] = [
     fixed(10.7508, -59.8667, 1.0, [120, 120]),
     {
       stats: [['DISTANCE', '~7,500 ly'], ['SIZE', '~300 ly'], ['MAGNITUDE', '1.0']],
-      story: ['Four times the size of the Orion Nebula.', 'Home to some of the most massive stars known.'],
+      story: ['It lies about 7,500 light-years away.', 'Eta Carinae, an unstable giant, sits inside it.'],
       glow: '#ffa060',
       pairsWith: 'ETA-CARINAE',
     },
@@ -119,7 +119,7 @@ export const DEEP_CARDS: AuthoredCard[] = [
     fixed(5.6442, -69.1006, 8.0, [40, 25]),
     {
       stats: [['DISTANCE', '~160,000 ly'], ['SIZE', '~600 ly'], ['CORE', 'R136']],
-      story: ['It lies in another galaxy, and still we see it.', 'Its core holds the most massive star known.'],
+      story: ['It is about 160,000 light-years away.', 'Supernova 1987A went off at its edge.'],
       glow: '#ff7ac0',
     },
   ),
@@ -130,7 +130,7 @@ export const DEEP_CARDS: AuthoredCard[] = [
     deepSky('m13'),
     {
       stats: [['DISTANCE', '~22,000 ly'], ['STARS', '~300,000'], ['MESSAGE', 'Sent 1974']],
-      story: ['Older than almost everything in the galaxy.', 'In 1974 a radio message was aimed at it.'],
+      story: ['Older than almost everything in the galaxy.', 'It lies over 20,000 light-years away.'],
       glow: '#ffe2b0',
       noun: 'the Hercules Cluster',
     },
@@ -140,7 +140,7 @@ export const DEEP_CARDS: AuthoredCard[] = [
     fixed(13.4467, -47.4794, 3.9, [36, 36]),
     {
       stats: [['DISTANCE', '~17,000 ly'], ['STARS', '~10 million'], ['MAGNITUDE', '3.9']],
-      story: ['The largest cluster of stars around our galaxy.', 'It may be the heart of a galaxy we swallowed.'],
+      story: ['It is about 17,000 light-years away.', 'Its stars were born at different times, unlike most clusters.'],
       glow: '#ffd08a',
     },
   ),
@@ -149,7 +149,7 @@ export const DEEP_CARDS: AuthoredCard[] = [
     deepSky('m44'),
     {
       stats: [['DISTANCE', '~577 ly'], ['STARS', '~1,000'], ['MAGNITUDE', '3.7']],
-      story: ['To the eye, a small cloud in Cancer.', 'Galileo was the first to see it was stars.'],
+      story: ['One of the nearest clusters to the Sun.', 'Its stars formed together, long before the Pleiades.'],
       glow: '#fff0c8',
     },
   ),

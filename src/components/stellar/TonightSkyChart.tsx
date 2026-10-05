@@ -64,9 +64,10 @@ export default function TonightSkyChart({
   const nowT = now.getTime();
 
   const lit = drawn.find((p) => p.lead);
+  const count = `${candidates.length} ${candidates.length === 1 ? 'card' : 'cards'} can be photographed`;
   const summary = lit
-    ? `${lit.names.join(', ')} climbs highest to ${lit.c.altitudeDeg.toFixed(0)}° at ${clock(Date.parse(lit.c.at))}. ${candidates.length} cards can be photographed between ${clock(t0)} and ${clock(t1)}.`
-    : `${candidates.length} cards can be photographed between ${clock(t0)} and ${clock(t1)}.`;
+    ? `${lit.names.join(', ')} climbs highest to ${lit.c.altitudeDeg.toFixed(0)}° at ${clock(Date.parse(lit.c.at))}. ${count} between ${clock(t0)} and ${clock(t1)}.`
+    : `${count} between ${clock(t0)} and ${clock(t1)}.`;
 
   return (
     <figure className="sd-skychart">

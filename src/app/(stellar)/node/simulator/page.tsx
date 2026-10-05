@@ -32,7 +32,7 @@ export default async function NodeSimulatorPage() {
       </div>
 
       <div className="obs sd-sim">
-        <SessionConsole node={{ ...node, name: 'Live Telescope V1' }} cloudCover={node.readiness.cloudCover} />
+        <SessionConsole node={{ ...node, name: 'Live Telescope V1', site: 'Under the night sky' }} cloudCover={node.readiness.cloudCover} />
       </div>
 
       <section className="sd-container sd-chapter-block sd-node-last">

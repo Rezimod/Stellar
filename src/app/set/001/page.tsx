@@ -22,7 +22,7 @@ export const revalidate = 60;
 export const metadata: Metadata = {
   title: 'First Light — capsules and cards',
   description:
-    'A hundred cards, numbered outward from Earth: the Solar System, the Stars, the Deep Sky, the Galaxies, the Extremes, the Frontier and the Almanac. Opened from four capsules, from $5.',
+    'A hundred cards, numbered outward from Earth: the Solar System, the Stars, the Deep Sky, the Galaxies, the Extremes, the Rare Sights and the Almanac. Opened from four capsules, from $5.',
 };
 
 export default async function FirstLightPage() {

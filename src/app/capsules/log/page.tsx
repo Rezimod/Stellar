@@ -10,7 +10,7 @@ import { readFullLog } from '@/lib/stellar/capsule';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'The log',
+  title: 'Public log — Stellar',
   description: 'Every capsule listed, bought, opened, released and withdrawn, in the order it happened.',
 };
 
@@ -78,7 +78,7 @@ export default async function LogPage() {
   const newestFirst = entries ? [...entries].sort((a, b) => b.seq - a.seq) : [];
 
   return (
-    <StellarShell title="Capsule log">
+    <StellarShell title="Public log">
       <section className="sd-container sd-top">
         {audit && (
           <DataRow

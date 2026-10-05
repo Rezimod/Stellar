@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { RARITIES, rarityInfo, type Rarity } from '@/lib/rarity';
 import { DIRECT_CARD_PRICE_USD } from '@/lib/stellar/economics';
-import { CARDS_PER_TIER, TIERS, rarityAt, tierByKey, type Tier } from '@/lib/stellar/tiers';
+import { CARDS_PER_TIER, TIERS, formatOdds, rarityAt, tierByKey, type Tier } from '@/lib/stellar/tiers';
 import type { Draw } from './StellarReveal';
 import TierCapsule from './TierCapsule';
 
@@ -18,10 +18,7 @@ const StellarReveal = dynamic(loadReveal, { ssr: false });
 
 export type TierCard = { designation: string; name: string; rarity: Rarity; editionSize: number };
 
-const pct = (bps: number) => {
-  const p = bps / 100;
-  return p === 0 ? '—' : p < 1 ? `${p.toFixed(1)}%` : `${Math.round(p)}%`;
-};
+const pct = (bps: number) => (bps === 0 ? '—' : formatOdds(bps));
 
 /** A capsule's cards at a tier's odds, drawn here in the browser. Preview only. */
 function drawFrom(tier: Tier, cards: TierCard[]): Draw {
@@ -159,7 +156,7 @@ export default function CapsuleCounter({ cards, onSale }: { cards: TierCard[]; o
       <div className="sd-counter__foot">
         <span>{stock === null ? 'Sale not read' : `${stock} on sale`}</span>
         <Link href="/capsules/log" className="sd-counter__fair">
-          Provably fair
+          Checkable by anyone
         </Link>
       </div>
 

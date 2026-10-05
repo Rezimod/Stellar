@@ -29,7 +29,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { designation } = await params;
   const card = SET_001_CARD_BY_DESIGNATION.get(designation.toUpperCase());
-  if (!card) return { title: 'Card not found' };
+  if (!card) return { title: 'Card not found — Stellar' };
   return { title: `${card.seed.name} — First Light · Stellar`, description: card.seed.blurb };
 }
 
@@ -106,9 +106,8 @@ export default async function CardPage({ params }: { params: Promise<{ designati
                 <span key={line}>{line}</span>
               ))}
             </h2>
-            {poster.epithet && <p className="sd-cardhero__epithet">{poster.epithet}</p>}
+            {/* The card beside it carries the epithet, quote and headline; the page adds what the card does not say. */}
             <hr className="sd-rules sd-cardhero__rules" />
-            <p className="sd-cardhero__head">{poster.headline}</p>
             <p className="sd-cardhero__line">{record.line}</p>
             <DataRow
               className="sd-facts"
@@ -134,8 +133,8 @@ export default async function CardPage({ params }: { params: Promise<{ designati
                 />
               </div>
             )}
-            {almanac && !sealed && <p className="sd-note">If clouds cover the night, this card stays open until the next clear capture.</p>}
-            {record.physical && <p className="sd-note">Includes a physical fragment.</p>}
+            {almanac && !sealed && <p className="sd-note">If clouds cover the night, there is no capture; the card still seals when the event ends.</p>}
+            {record.physical && <p className="sd-note">A physical fragment is planned for this card. How to redeem it will be published before it ships.</p>}
             {pair && (
               <div className="sd-cardhero__pair">
                 <span className="sd-label">Pairs with</span>
@@ -156,7 +155,7 @@ export default async function CardPage({ params }: { params: Promise<{ designati
 
       {photo && (
         <section className="sd-container sd-chapter-block">
-          <Chapter n="01" title="The real thing" aside={photo.kind === 'impression' ? 'Artist’s impression' : [photo.source, photo.year].filter(Boolean).join(' · ')} />
+          <Chapter n="01" title="The real thing" aside={photo.kind === 'impression' ? 'Artist’s impression' : 'Photograph'} />
           <figure className="sd-realphoto">
             <img src={photo.file} alt={photo.kind === 'impression' ? `An artist’s impression of ${seed.name}` : `${seed.name}, photographed by ${photo.source}`} loading="lazy" decoding="async" />
             <figcaption className="sd-caption">
@@ -173,7 +172,6 @@ export default async function CardPage({ params }: { params: Promise<{ designati
           items={[
             { label: 'Object', value: seed.objectType },
             { label: 'Rarity', value: rarityInfo(rarity).label },
-            { label: 'Catalogue', value: seed.catalogRef },
             ...position,
             ...record.stats.map(([label, value]) => ({ label, value })),
             { label: 'Editions issued', value: allocated === null ? `0 / ${seed.editionSize}` : `${allocated} / ${seed.editionSize}` },

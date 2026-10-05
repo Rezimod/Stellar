@@ -118,7 +118,7 @@ export function observability(subject: ObservabilitySubject, node: ObservatoryNo
   if (subject.resolveArcsec !== null && subject.resolveArcsec < limit) {
     return {
       status: 'not_available',
-      reason: `Too small to see from Earth's surface: ${formatArcsec(subject.resolveArcsec)} across, and the air blurs anything under ${limit.toFixed(1)}".`,
+      reason: `Too small to see from Earth’s surface: ${formatArcsec(subject.resolveArcsec)} across, and the air blurs anything under ${limit.toFixed(1)}″.`,
     };
   }
 
@@ -149,14 +149,14 @@ export function observability(subject: ObservabilitySubject, node: ObservatoryNo
     if (subject.sizeArcmin.major > MAX_FIELDS_ACROSS * widest) {
       return {
         status: 'not_available',
-        reason: `Too big to fit: ${subject.sizeArcmin.major}' across, more than ${MAX_FIELDS_ACROSS} times Live Telescope V1's widest view.`,
+        reason: `Too big to fit: ${subject.sizeArcmin.major}′ across, more than ${MAX_FIELDS_ACROSS} times Live Telescope V1’s widest view.`,
       };
     }
   }
 
   const target = SIM_TARGET_BY_ID.get(subject.targetId);
   if (!target) {
-    return { status: 'not_available', reason: `Not on Live Telescope V1's list of targets yet.` };
+    return { status: 'not_available', reason: `Not on Live Telescope V1’s list of targets yet.` };
   }
 
   if (
@@ -165,12 +165,12 @@ export function observability(subject: ObservabilitySubject, node: ObservatoryNo
     subject.resolveArcsec !== null &&
     subject.resolveArcsec >= DEDICATED_ELEMENTS * limit
   ) {
-    return { status: 'dedicated', reason: `A showcase: bright and large, Live Telescope V1 photographs it often.` };
+    return { status: 'dedicated', reason: `A showcase: bright and large, Live Telescope V1 will photograph it often.` };
   }
 
   return { status: 'eligible', reason: 'Live Telescope V1 can photograph it in the night sky.' };
 }
 
 function formatArcsec(arcsec: number): string {
-  return arcsec < 0.1 ? `${arcsec.toFixed(3)}"` : `${arcsec.toFixed(1)}"`;
+  return arcsec < 0.1 ? `${arcsec.toFixed(3)}″` : `${arcsec.toFixed(1)}″`;
 }

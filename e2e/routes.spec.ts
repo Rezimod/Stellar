@@ -14,19 +14,11 @@ const ROUTES = [
   '/capsules/log',
   '/collection',
   '/tonight',
-  '/sky',
-  '/observatory',
-  '/first-light',
-  '/star',
-  '/marketplace',
-  '/profile',
-  '/nfts',
-  '/darksky',
   '/contact',
   '/terms',
   '/privacy',
-  '/settings',
-  '/marketplace/checkout',
+  '/voyage',
+  '/node',
 ];
 
 for (const route of ROUTES) {

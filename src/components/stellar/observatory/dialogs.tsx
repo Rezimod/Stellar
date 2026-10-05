@@ -60,14 +60,14 @@ const STEPS: Array<[string, string]> = [
 
 export function WelcomeDialog({ night, quickName, onQuick, onClose }: { night: boolean; quickName: string | null; onQuick: () => void; onClose: () => void }) {
   return (
-    <Modal width={820} night={night} onClose={onClose} labelledBy="sdo-welcome-t" head={<><Icon name="sky" size={16} />Start here · the live telescope</>}>
+    <Modal width={820} night={night} onClose={onClose} labelledBy="sdo-welcome-t" head={<><Icon name="sky" size={16} />Start here · Live Telescope V1</>}>
       <div className="sdo-welcome">
         <div className="sdo-welcome__art" aria-hidden="true">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={plateArt('SATURN', 'object')} alt="" />
         </div>
         <div className="sdo-welcome__lede">
-          <h2 id="sdo-welcome-t">Drive a telescope under a dark sky.</h2>
+          <h2 id="sdo-welcome-t">Drive a simulated telescope. Every frame is computed.</h2>
           <p>Five steps from connect to a frame you keep. Every frame is drawn by the sky model and says so.</p>
         </div>
         <ol className="sdo-welcome__steps">

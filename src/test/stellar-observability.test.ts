@@ -41,7 +41,7 @@ describe('what Live Telescope V1 cannot record', () => {
     expect(europa).toBeGreaterThan(resolvingPowerArcsec(node.instrument));
     const verdict = observability(subject({ targetId: 'jupiter', resolveArcsec: europa, magnitude: 5.3 }), node);
     expect(verdict.status).toBe('not_available');
-    expect(verdict.reason).toMatch(/1\.0" across, and the air blurs anything under 2\.6"/);
+    expect(verdict.reason).toMatch(/1\.0″ across, and the air blurs anything under 2\.6″/);
   });
 
   it('cannot see the Apollo 11 descent stage', () => {
@@ -89,13 +89,13 @@ describe('what Live Telescope V1 cannot record', () => {
       node,
     );
     expect(verdict.status).toBe('not_available');
-    expect(verdict.reason).toMatch(/Too big to fit: 200' across, more than 3 times/);
+    expect(verdict.reason).toMatch(/Too big to fit: 200′ across, more than 3 times/);
   });
 
   it('does not fake a target its capture path does not carry', () => {
     const verdict = observability(subject({ targetId: 'm51', decDeg: 47.195 }), node);
     expect(verdict.status).toBe('not_available');
-    expect(verdict.reason).toBe("Not on Live Telescope V1's list of targets yet.");
+    expect(verdict.reason).toBe('Not on Live Telescope V1’s list of targets yet.');
   });
 
   it('gives the physical reason before the missing target', () => {

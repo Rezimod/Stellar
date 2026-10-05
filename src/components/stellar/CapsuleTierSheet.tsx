@@ -3,13 +3,13 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
 import { RARITIES, rarityInfo } from '@/lib/rarity';
-import { CARDS_PER_TIER, type Tier } from '@/lib/stellar/tiers';
+import { CARDS_PER_TIER, formatOdds, type Tier } from '@/lib/stellar/tiers';
 import StellarBuyCapsule from './StellarBuyCapsule';
 import TierCapsule from './TierCapsule';
 
 type OnSale = { id: string; sequence: number; commitment: string; priceUsd: number; cardsPerCapsule: number };
 
-const pct = (bps: number) => (bps === 0 ? '—' : `${(bps / 100).toFixed(bps < 100 ? 1 : 0)}%`);
+const pct = (bps: number) => (bps === 0 ? '—' : formatOdds(bps));
 
 /**
  * One tier, taken off the shelf: its odds in full, and the next capsule of it

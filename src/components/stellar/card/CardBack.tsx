@@ -227,12 +227,13 @@ function CardBack({ plate: c, edition, commitment, sealed = false, u }: Props) {
   const creditSize = fit(Math.max(...creditLines.map((l) => l.length)), 540, 'spaced', 9.5);
 
   const name = c.name.toUpperCase();
-  const promise =
-    c.section === 'almanac'
-      ? 'On the night, every holder receives the capture.'
+  const promise = c.solar
+    ? 'A daytime event. Live Telescope V1 does not point at the Sun; this card records the day.'
+    : c.section === 'almanac'
+      ? 'If the night is clear, every holder receives the capture.'
       : c.family === 'sights'
         ? 'When it comes, Live Telescope V1 records it for every holder.'
-        : c.noun
+        : c.noun && c.observable
           ? `When Live Telescope V1 photographs ${c.noun}, every holder receives the image.`
           : `One of ${c.of} editions.`;
   const ledger: [string, string][] = [...c.figures.map(([v, l]) => [l.toUpperCase(), v] as [string, string]), [c.section === 'almanac' ? 'WINDOW' : 'POSITION', c.back]];

@@ -78,3 +78,9 @@ export function rarityAt(tier: Tier, u: number): Rarity {
   }
   return 'common';
 }
+
+/** Odds in basis points as a percentage, never rounded: 12.5%, 1.4%, 7%. */
+export function formatOdds(bps: number): string {
+  const p = bps / 100;
+  return `${Number.isInteger(p) ? p : Number.isInteger(p * 10) ? p.toFixed(1) : p.toFixed(2)}%`;
+}

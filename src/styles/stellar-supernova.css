@@ -76,6 +76,7 @@
   transition: transform 0.15s ease, filter 0.2s;
 }
 .sn-go:hover { filter: brightness(1.05); }
+.sn-go:disabled { opacity: 0.6; cursor: progress; filter: none; }
 .sn-go:active { transform: scale(0.985); }
 .sn-pre__sub { font: 400 12px/1.4 var(--sd-mono); letter-spacing: 0.06em; color: rgba(255, 255, 255, 0.4); }
 
@@ -88,7 +89,8 @@
 @keyframes sn-rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 .sn-after { display: grid; justify-items: center; gap: 12px; width: min(560px, 100%); animation: sn-rise 0.8s 0.3s ease-out both; }
 .sn-after .sd-pay__actions { justify-content: center; flex-wrap: wrap; }
-.sn-provenance { margin: 0; display: flex; flex-wrap: wrap; justify-content: center; column-gap: 12px; row-gap: 2px; color: rgba(255, 255, 255, 0.55); font-size: 12px; }
+.sn-provenance { margin: 0; display: flex; flex-wrap: wrap; justify-content: center; column-gap: 4px; row-gap: 2px; color: rgba(255, 255, 255, 0.55); font-size: 12px; }
+.sn-provenance__dot { opacity: 0.6; }
 .sn-provenance a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
 .sn-rest { display: flex; align-items: center; gap: 10px; }
 .sn-rest ul { display: flex; gap: 8px; margin: 0; padding: 0; list-style: none; }

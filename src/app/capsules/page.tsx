@@ -9,7 +9,7 @@ import RarityMark from '@/components/stellar/ui/RarityMark';
 import { getDb } from '@/lib/db';
 import { RARITIES } from '@/lib/rarity';
 import { CARDS_PER_CAPSULE, ORDER_WINDOW_MINUTES, RARITY_ODDS_BPS } from '@/lib/stellar/economics';
-import { TIERS, tierByKey } from '@/lib/stellar/tiers';
+import { TIERS, formatOdds, tierByKey } from '@/lib/stellar/tiers';
 import { capsulesOnSale } from '@/lib/stellar/capsule';
 import { simulatedPayments } from '@/lib/stellar/orders';
 
@@ -83,7 +83,7 @@ export default async function CapsulesPage() {
               {RARITIES.map((r) => (
                 <li key={r} data-rarity={r}>
                   <RarityMark rarity={r} />
-                  <span className="sd-oddsboard__n">{(row.odds[r] / 100).toFixed(r === 'legendary' ? 1 : 0)}%</span>
+                  <span className="sd-oddsboard__n">{formatOdds(row.odds[r])}</span>
                 </li>
               ))}
             </ul>
