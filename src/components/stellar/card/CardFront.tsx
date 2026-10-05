@@ -3,7 +3,6 @@ import { editionLabel, type Plate } from '@/lib/stellar/plate';
 import {
   CONDENSED,
   FOIL_OP,
-  Footer,
   GLIT_OP,
   Glint,
   INK,
@@ -20,7 +19,7 @@ import {
 
 type Props = {
   plate: Plate;
-  /** The holder's edition number. Absent, the footer prints a dash. */
+  /** The holder's edition number. Given, the corner prints it in place of the card's number in the set. */
   edition?: number | null;
   /** A real capture from Live Telescope V1 in place of the drawn plate. */
   capture?: string | null;
@@ -29,8 +28,8 @@ type Props = {
   u: string;
 };
 
-/** The window: the poster's night, from the top margin nearly to the foot; only the set line sits below it. */
-export const WIN = { x: 20, y: 20, w: 590, h: 784, r: 18 };
+/** The window: the poster's night, from the top margin down to the headline. */
+export const WIN = { x: 20, y: 20, w: 590, h: 690, r: 18 };
 
 /** A fine line just inside the window, in the rarity's metal. */
 const EDGE: Record<Plate['rarity'], [string, number]> = { common: ['#cbb994', 0.28], rare: ['#e0703a', 0.45], epic: ['#ff8a3d', 0.6], legendary: ['#ffd36e', 0.85] };
@@ -47,15 +46,14 @@ const GLINTS: [number, number, number][] = [
 /**
  * The face of a card, as a space-opera poster: the drawing fills a tall dark
  * window under its quote, the name in striped sunset letters across its foot,
- * and below it only the set line and the edition. The headline, the three
- * figures and the record are on the back.
+ * and below it the headline and the line under it. Nothing else: the figures
+ * and the record are on the back; an owned card's edition sits in the corner.
  */
 function CardFront({ plate: c, edition, capture, lite = false, u }: Props) {
   const ext = lite ? 'webp' : 'svg';
   const r = c.rarity;
   const f = `${u}f`;
   const p = c.poster;
-  const ed = editionLabel(edition);
   const win = rr(WIN.x, WIN.y, WIN.w, WIN.h, WIN.r);
   const flat = p.title.replace('\n', ' ');
   const lines = flat.length <= 14 ? [flat] : p.title.split('\n');
@@ -64,12 +62,17 @@ function CardFront({ plate: c, edition, capture, lite = false, u }: Props) {
   const epSize = 15;
   const epTrack = Math.min(9, Math.max(3, (430 - epithet.length * epSize * 0.45) / Math.max(1, epithet.length)));
   const epW = width(epithet.length, epSize, 'spaced', epTrack);
-  const titleBase = 726;
+  const titleBase = 632;
 
   const quote = p.quote ? `“${p.quote.toUpperCase()}”` : null;
   const qSize = quote ? fit(quote.length, 520, 'condensed', 24) : 0;
 
   const [edge, edgeOp] = EDGE[r];
+  const head = p.headline.toUpperCase();
+  const hSize = fit(head.length, 520, 'condensed', 42);
+  const sub = p.sub.toUpperCase();
+  const subSize = 11.5;
+  const subTrack = Math.min(3.8, Math.max(0.6, (540 - sub.length * subSize * 0.49) / Math.max(1, sub.length)));
 
   return (
     <div className="sdc-card">
@@ -108,7 +111,7 @@ function CardFront({ plate: c, edition, capture, lite = false, u }: Props) {
 
         <RarityBadge u={f} rarity={r} label={c.rname} />
         <text x="584" y="62" textAnchor="end" fill="rgba(243,230,204,.62)" style={{ fontFamily: SPACED, fontWeight: 400, fontSize: 11, letterSpacing: 3 }}>
-          {c.num} / {c.total}
+          {edition != null ? `No. ${editionLabel(edition)} / ${c.of}` : `${c.num} / ${c.total}`}
         </text>
 
         {quote && (
@@ -131,7 +134,12 @@ function CardFront({ plate: c, edition, capture, lite = false, u }: Props) {
 
         <Rules u={f} y={WIN.y + WIN.h + 11} />
 
-        <Footer y={857} right={`${ed} / ${c.of}`} />
+        <text x="315" y="800" textAnchor="middle" fill={INK.text} style={{ fontFamily: CONDENSED, fontSize: hSize, letterSpacing: 0.5 }}>
+          {head}
+        </text>
+        <text x="315" y="830" textAnchor="middle" fill={INK.red} style={{ fontFamily: SPACED, fontWeight: 500, fontSize: subSize, letterSpacing: subTrack }}>
+          {sub}
+        </text>
       </svg>
 
       {FOIL_OP[r] > 0 && <div className="sdc-foil" style={{ opacity: FOIL_OP[r], ['--sdc-foil' as string]: FOIL_OP[r] }} />}
