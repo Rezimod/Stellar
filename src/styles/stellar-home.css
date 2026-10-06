@@ -5,8 +5,8 @@
    or a gradient. The hero stands on a red world's horizon under a sunburst. */
 
 .stellar {
-  --sd-orange: #ef9b4c;   /* the accent line — one ink, readable on the teal */
-  --sd-print: #0a2a2e;    /* the shadow every display line is printed over */
+  --sd-orange: var(--sd-accent);   /* the accent line — the poster's flat vermilion */
+  --sd-print: #3a0f08;    /* the shadow every display line is printed over, a deep red on the black */
   --sd-ray: #e2b86a;      /* sunburst and orbit lines */
 }
 
@@ -55,21 +55,6 @@
 .stellar .sd-hero2__stats dd { color: var(--sd-ink); text-shadow: 0.05em 0.06em 0 var(--sd-print); }
 .stellar .sd-hero2__stats dt { color: rgba(244, 232, 204, 0.6); }
 
-/* The vault: the capsule on the sunburst instead of crossed blades, a warm light behind. */
-.sd-burst { display: block; stroke: var(--sd-ray); fill: none; pointer-events: none; }
-.stellar .sd-herofan__burst {
-  position: absolute; z-index: 0; left: 50%; top: 56%; width: 165%; translate: -50% -50%;
-  -webkit-mask-image: radial-gradient(closest-side, #000 38%, transparent 96%); mask-image: radial-gradient(closest-side, #000 38%, transparent 96%);
-  opacity: 0.8;
-}
-.stellar .sd-herofan__light { background: radial-gradient(34% 32% at 50% 56%, rgba(244, 196, 120, 0.2), transparent 72%); }
-.stellar .sd-herofan__capsule .sd-tier__saber { display: none; }
-.stellar .sd-herofan__pedestal { background: radial-gradient(50% 50% at 50% 50%, rgba(10, 42, 46, 0.55), rgba(10, 42, 46, 0.2) 60%, transparent 74%); box-shadow: none; }
-.stellar .sd-herofan__pedestal::after { border-color: rgba(226, 184, 106, 0.28); }
-@media (prefers-reduced-motion: no-preference) {
-  .stellar .sd-herofan__burst { animation: sd-burst-turn 140s linear infinite; }
-}
-@keyframes sd-burst-turn { to { rotate: 360deg; } }
 
 /* ── Partners and recognition: one quiet band, every mark in the same cream ink ── */
 .stellar .sd-trust { padding-top: 64px; }
@@ -110,14 +95,14 @@
   }
 }
 
-/* ── The odds: a cream-ruled panel on the teal, not a black box ── */
+/* ── The odds: a cream-ruled panel ── */
 .stellar .sd-pub__panel {
   background:
-    linear-gradient(180deg, #123b41, #0d3237) padding-box,
+    linear-gradient(180deg, #141210, #0a0908) padding-box,
     linear-gradient(180deg, rgba(244, 232, 204, 0.32), rgba(244, 232, 204, 0.08)) border-box;
-  box-shadow: 0 34px 60px -34px rgba(4, 22, 24, 0.85), inset 0 1px 0 rgba(244, 232, 204, 0.08);
+  box-shadow: 0 34px 60px -34px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(244, 232, 204, 0.08);
 }
-.stellar .sd-pub__tabs { background: rgba(4, 26, 29, 0.5); }
+.stellar .sd-pub__tabs { background: rgba(0, 0, 0, 0.5); }
 .stellar .sd-pub__tile { background: rgba(244, 232, 204, 0.035); }
 .stellar .sd-pub__icon { color: var(--sd-gold); background: rgba(226, 184, 106, 0.1); box-shadow: inset 0 0 0 1px rgba(226, 184, 106, 0.36); }
 .stellar .sd-pub__d { color: rgba(244, 232, 204, 0.68); }
@@ -150,5 +135,4 @@
   .stellar .sd-recog__item { flex-direction: column; gap: 8px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .stellar .sd-herofan__burst { animation: none; }
 }
