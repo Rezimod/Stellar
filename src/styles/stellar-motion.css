@@ -93,14 +93,12 @@
     .sd-home-sec > :not(.sd-showcase2__cards, .sd-orbit__stage), .sd-fl__head {
       animation: sd-lv-rise linear both; animation-timeline: view(); animation-range: entry 0% entry 60%;
     }
-    .sd-herofan__light { animation: sd-lv-drift linear both; animation-timeline: view(); animation-range: cover 50% cover 100%; }
     .sd-showcase2__cards > li { --par: 18px; animation: sd-lv-par linear both; animation-timeline: view(); animation-range: cover; }
     .sd-showcase2__cards > li:nth-child(3n + 2) { --par: 46px; }
     .sd-showcase2__cards > li:nth-child(3n) { --par: 30px; }
   }
 }
 @keyframes sd-lv-rise { from { opacity: 0; transform: translateY(44px); } }
-@keyframes sd-lv-drift { to { transform: translateY(18%) scale(1.15); opacity: 0.4; } }
 @keyframes sd-lv-par { from { transform: translateY(var(--par)); } to { transform: translateY(calc(var(--par) * -1)); } }
 
 /* Without a scroll timeline, the same rise on arrival. */

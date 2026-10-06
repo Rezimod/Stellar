@@ -7,22 +7,22 @@
 .stellar {
   color-scheme: dark;
 
-  /* Ground — the poster's deep teal sky, cream grain over it; the cards are the warm thing on the page */
-  --sd-canvas: #163f46;
-  --sd-deep: #0e3036;
-  --sd-bar-bg: rgba(14, 48, 54, 0.94);
+  /* Ground — the poster's black sky, print grain over it; the cards are the only colour on the page */
+  --sd-canvas: #000000;
+  --sd-deep: #070707;
+  --sd-bar-bg: rgba(6, 6, 6, 0.94);
   --sd-plate: rgba(244, 232, 204, 0.06);
   --sd-plate-hover: rgba(244, 232, 204, 0.11);
 
   /* Ink ramp — the card's cream at night-mode opacities */
-  --sd-ink: #f4e8cc;
-  --sd-ink-2: rgba(244, 232, 204, 0.78);
-  --sd-ink-3: rgba(244, 232, 204, 0.6);
-  --sd-ink-4: rgba(244, 232, 204, 0.38);
+  --sd-ink: #f1e6cf;
+  --sd-ink-2: rgba(241, 230, 207, 0.72);
+  --sd-ink-3: rgba(241, 230, 207, 0.5);
+  --sd-ink-4: rgba(241, 230, 207, 0.3);
 
   /* Borders — hairlines, and one stronger for panels */
-  --sd-rule: rgba(244, 232, 204, 0.14);
-  --sd-rule-strong: rgba(244, 232, 204, 0.26);
+  --sd-rule: rgba(241, 230, 207, 0.12);
+  --sd-rule-strong: rgba(241, 230, 207, 0.22);
   --sd-hairline: 1px;
 
   /* The palette — the card poster's: cream stock, and the sunset its titles are
@@ -44,11 +44,11 @@
   --sd-blue: #d9442a;
   --sd-blue-hi: #ee6a3c;
   --sd-blue-deep: #9e2a1c;
-  --sd-gold: #e9b64a;
-  --sd-accent: #e25c33;
-  --sd-accent-hi: #ef7a46;
-  --sd-accent-ink: #f2ad60;
-  --sd-accent-dim: rgba(226, 92, 51, 0.14);
+  --sd-gold: #e2b85a;
+  --sd-accent: #e3482c;
+  --sd-accent-hi: #f06a45;
+  --sd-accent-ink: #f0785a;
+  --sd-accent-dim: rgba(227, 72, 44, 0.14);
   --sd-teal: var(--sd-gold);
 
   /* Rarity — cream to orange to brick to gold, so scarcity reads as heat */
@@ -475,7 +475,7 @@
 /* ── Opting out of the legacy chrome ──────────────────────────── */
 html:has(.stellar) [data-stellar-chrome] { display: none !important; }
 html:has(.stellar):not([data-field="on"]),
-html:has(.stellar):not([data-field="on"]) body { background: #163f46; }
+html:has(.stellar):not([data-field="on"]) body { background: #000; }
 html:has(.stellar) body::before,
 html:has(.stellar) body::after { display: none; }
 html:has(.stellar) #stellar-main { padding-top: 0; padding-bottom: 0; }
@@ -808,18 +808,18 @@ html:has(.stellar) #stellar-main { padding-top: 0; padding-bottom: 0; }
   background:
     var(--sd-stars) 0 0 / 340px 300px,
     var(--sd-stars) 170px 120px / 520px 460px,
-    radial-gradient(120% 70% at 50% 108%, rgba(232, 137, 58, 0.22), transparent 60%),
-    linear-gradient(180deg, var(--sd-deep), var(--sd-canvas) 55%, #1c4d54);
+    radial-gradient(120% 60% at 50% 110%, rgba(217, 68, 42, 0.16), transparent 60%),
+    #000;
 }
 /* The print grain: the poster's paper, laid over the sky at a whisper, and a vignette at the edges. */
 .sd-backdrop::before {
   content: ''; position: absolute; inset: 0; pointer-events: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 0.93 0 0 0 0 0.8 0 0 0 0.55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
-  background-size: 220px 220px; opacity: 0.22; mix-blend-mode: soft-light;
+  background-size: 220px 220px; opacity: 0.16; mix-blend-mode: screen;
 }
 .sd-backdrop::after {
   content: ''; position: absolute; inset: 0; pointer-events: none;
-  background: radial-gradient(90% 90% at 50% 40%, transparent 55%, rgba(8, 30, 34, 0.55));
+  background: radial-gradient(90% 90% at 50% 40%, transparent 55%, rgba(0, 0, 0, 0.6));
 }
 
 /* ── Phones ───────────────────────────────────────────────────── */

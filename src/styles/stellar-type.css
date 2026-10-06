@@ -20,7 +20,7 @@
   .sd-counter__price span, .sd-counter__foot, .sd-fl__meta, .sd-pub__per, .sd-foot__head, .sd-menu__big small) {
   font-family: var(--sd-spaced); font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase;
 }
-.stellar .sd-kicker { color: var(--sd-gold); }
+.stellar .sd-kicker, .stellar .sd-eyebrow { color: var(--sd-accent); }
 .stellar :is(.sd-spaced, .sd-cardhero__epithet) { font-weight: 400; letter-spacing: 0.3em; }
 .stellar .sd-counter__foot { font: 500 12px var(--sd-spaced); letter-spacing: 0.1em; white-space: nowrap; }
 .stellar .sd-counter__foot .sd-counter__fair { font: 600 12px var(--sd-spaced); letter-spacing: 0.06em; }
@@ -32,7 +32,7 @@
 .stellar .sd-hero2__stats div:first-child { padding-left: 0; }
 .stellar .sd-hero2__stats div + div { border-left: 1px solid var(--sd-rule); }
 .stellar .sd-hero2__stats dt { font-size: 12px; letter-spacing: 0.14em; color: var(--sd-ink-3); line-height: 1.35; }
-.stellar .sd-hero2__stats dd { font-family: var(--sd-title); font-weight: 400; font-size: clamp(28px, 2.5vw, 38px); letter-spacing: 0.01em; color: var(--sd-gold); }
+.stellar .sd-hero2__stats dd { font-family: var(--sd-title); font-weight: 400; font-size: clamp(28px, 2.5vw, 38px); letter-spacing: 0.01em; color: var(--sd-ink); }
 
 /* Display titles: the poster's heavy rounded caps, set tight, cream on teal. */
 .stellar h1, .stellar h2, .stellar .sd-hero2__title, .stellar .sd-cardhero__title, .stellar .sd-closer2__title {
@@ -41,7 +41,8 @@
 .stellar h3, .stellar h4 { font-family: var(--sd-spaced); font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; }
 .stellar .sd-hero2__title { font-size: clamp(32px, 4.4vw, 68px); line-height: 1; }
 @media (min-width: 768px) { .stellar .sd-hero2__title span { white-space: nowrap; } }
-.stellar .sd-hero2__title em, .stellar .sd-closer2__title em { font-family: var(--sd-title); font-weight: 400; font-size: 1em; letter-spacing: 0.01em; line-height: 1; }
+/* The second line in the poster's flat vermilion, the dark extrusion kept beneath it. */
+.stellar .sd-hero2__title em, .stellar .sd-closer2__title em { font-family: var(--sd-title); font-weight: 400; font-size: 1em; letter-spacing: 0.01em; line-height: 1; color: var(--sd-accent); background: none; -webkit-text-fill-color: currentColor; }
 .stellar .sd-hero2__sub { font-weight: 500; color: var(--sd-ink-2); }
 .stellar .sd-cardhero__title { font-size: clamp(30px, 4.8vw, 62px); }
 
@@ -71,7 +72,7 @@
 /* The wordmark and nav, the poster's cream and mustard. */
 .stellar .sd-wordmark { font-family: var(--sd-title); font-weight: 400; letter-spacing: 0.02em; text-transform: uppercase; }
 .stellar .sd-navlink { font-family: var(--sd-spaced); font-weight: 500; font-size: 15px; letter-spacing: 0.12em; text-transform: uppercase; }
-.stellar .sd-navlink[aria-current], .stellar .sd-navlink:hover { color: var(--sd-gold); }
+.stellar .sd-navlink[aria-current], .stellar .sd-navlink:hover { color: var(--sd-ink); }
 
 /* On a narrow phone the heavy face needs a little less of everything. */
 @media (max-width: 479px) {
