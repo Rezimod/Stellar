@@ -103,7 +103,7 @@ export default function StellarBuyCard({
     <>
       <div className="sd-pay__actions">
         {ready && authenticated ? (
-          <button type="button" className="sd-btn sd-btn--primary" onClick={place} disabled={placing}>
+          <button type="button" className={`sd-btn sd-btn--primary${placing ? ' is-loading' : ''}`} onClick={place} disabled={placing}>
             {placing ? 'Placing' : `Buy direct — $${priceUsd}`}
           </button>
         ) : (

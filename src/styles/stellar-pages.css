@@ -90,7 +90,7 @@
 .sd-herofan__card:focus-visible { outline: 2px solid var(--sd-focus); outline-offset: 6px; }
 @media (hover: hover) { .sd-herofan__card:hover { transform: var(--place) translateY(-14px); } }
 @media (prefers-reduced-motion: no-preference) {
-  .sd-herofan__card { animation: sd-deal 1100ms cubic-bezier(0.2, 0.8, 0.2, 1) 120ms backwards; }
+  .sd-herofan__card { animation: sd-deal 1100ms var(--sd-ease-out) 120ms backwards; }
   .sd-herofan__card .sd-thumb { animation: sd-bob 9s ease-in-out calc(var(--side) * 1.7s - 2s) infinite; }
 }
 @keyframes sd-deal { from { opacity: 0; transform: translateY(34px) scale(0.92); } }
@@ -229,7 +229,7 @@
 .sd-counter__bar::after {
   content: ''; position: absolute; inset: 0; border-radius: inherit; background: var(--r);
   transform-origin: left center; transform: scaleX(max(var(--w), 0.01));
-  transition: transform 420ms var(--sd-ease);
+  transition: transform var(--sd-dur-slow) var(--sd-ease);
 }
 .sd-counter__odds li[data-zero] .sd-counter__bar::after { display: none; }
 .sd-counter__foot {
@@ -302,6 +302,26 @@
 .sd-tile__name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 700 14px/1.2 var(--sd-sans); letter-spacing: 0.01em; text-transform: uppercase; }
 .sd-tile__price { font: 700 15px/1 var(--sd-mono); color: var(--sd-ink); font-variant-numeric: tabular-nums; }
 .sd-tile__sub { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 12px; color: var(--sd-ink-3); }
+
+/* Scarcity on the shelf: the hotter the card, the warmer its frame. Common
+   stays quiet; the edge, the price and (for legendary) a slow pass of foil
+   all read from --rarity, set once by data-rarity on the tile. */
+.sd-tile:not([data-rarity='common']) { border-color: var(--rarity-edge); }
+.sd-tile:not([data-rarity='common']):hover,
+.sd-tile:not([data-rarity='common']):focus-visible { border-color: color-mix(in srgb, var(--rarity) 55%, var(--sd-rule-strong)); }
+.sd-tile[data-rarity='epic'] .sd-tile__price, .sd-tile[data-rarity='legendary'] .sd-tile__price { color: var(--rarity); }
+.sd-tile[data-rarity='legendary'] .sd-tile__stage::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none; mix-blend-mode: screen; border-radius: 12px;
+  background: linear-gradient(105deg, transparent 42%, color-mix(in srgb, var(--rarity) 26%, transparent) 50%, transparent 58%);
+  background-size: 300% 100%; background-position: 130% 0; background-repeat: no-repeat;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .sd-tile[data-rarity='legendary'] .sd-tile__stage::after { animation: sd-foil-pass 9s var(--sd-ease-inout) infinite; }
+}
+@keyframes sd-foil-pass {
+  0%, 72% { background-position: 130% 0; }
+  100% { background-position: -30% 0; }
+}
 @media (max-width: 559px) {
   .sd-tile { padding: 12px 12px 12px; }
   .sd-tile__name { font-size: 13px; }
@@ -392,8 +412,8 @@
   will-change: transform, translate, opacity; backface-visibility: hidden;
   --phase: calc(var(--k) * var(--T) / var(--n) * -1);
   animation:
-    sd-orbit-x calc(var(--T) / 2) cubic-bezier(0.37, 0, 0.63, 1) var(--phase) infinite alternate,
-    sd-orbit-depth calc(var(--T) / 2) cubic-bezier(0.37, 0, 0.63, 1) calc(var(--phase) - var(--T) / 4) infinite alternate,
+    sd-orbit-x calc(var(--T) / 2) var(--sd-ease-inout) var(--phase) infinite alternate,
+    sd-orbit-depth calc(var(--T) / 2) var(--sd-ease-inout) calc(var(--phase) - var(--T) / 4) infinite alternate,
     sd-orbit-z calc(var(--T) / 2) linear calc(var(--phase) - var(--T) / 4) infinite alternate;
 }
 .sd-orbit__body .sd-thumb { box-shadow: none; outline: 1px solid rgba(255, 255, 255, 0.14); outline-offset: -1px; }

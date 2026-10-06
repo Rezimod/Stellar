@@ -174,7 +174,7 @@ export default function StellarBuyCapsule({
       {paid ? (
         <button
           type="button"
-          className="sd-btn sd-btn--primary sd-btn--block"
+          className={`sd-btn sd-btn--primary sd-btn--block${busy ? ' is-loading' : ''}`}
           onClick={() => {
             setLaunchNow(true);
             void open();
@@ -186,7 +186,7 @@ export default function StellarBuyCapsule({
       ) : order ? (
         <StellarPay order={order} onConfirmed={confirmed} compact />
       ) : ready && authenticated ? (
-        <button type="button" className="sd-btn sd-btn--primary sd-btn--block" onClick={reserve} disabled={!!busy}>
+        <button type="button" className={`sd-btn sd-btn--primary sd-btn--block${busy ? ' is-loading' : ''}`} onClick={reserve} disabled={!!busy}>
           {busy ? <Working label={busy} /> : `Buy & ignite — $${priceUsd}`}
         </button>
       ) : (

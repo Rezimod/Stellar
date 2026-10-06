@@ -55,6 +55,7 @@
   --sd-rarity-rare: #f6a63f;
   --sd-rarity-epic: #ef5f33;
   --sd-rarity-legendary: #ffd36e;
+  --rarity: var(--sd-rarity-common);
 
   /* Observation status — gold for what the node can reach, ink for the rest */
   --sd-status-dedicated: var(--sd-teal);
@@ -77,11 +78,25 @@
   --sd-radius: 14px;
   --sd-radius-sm: 10px;
 
-  /* Motion. One clock for the whole product, so a hover and a reveal agree. */
-  --sd-dur-fast: 140ms;
-  --sd-dur-base: 240ms;
-  --sd-dur-slow: 420ms;
+  /* Motion. One clock for the whole product, so a hover and a reveal agree.
+     The scale steps by the golden ratio, the same ratio the layout spaces by:
+     t1 flicks, t2 answers a press, t3 settles a hover, t4 opens a panel,
+     t5 reveals a section, t6 is ceremony (a deal, a flip). */
+  --sd-t1: 90ms;
+  --sd-t2: 150ms;
+  --sd-t3: 240ms;
+  --sd-t4: 390ms;
+  --sd-t5: 630ms;
+  --sd-t6: 1020ms;
+  --sd-dur-fast: var(--sd-t2);
+  --sd-dur-base: var(--sd-t3);
+  --sd-dur-slow: var(--sd-t4);
+  /* Four hands: the house ease settles, out arrives, spring overshoots
+     (card fans, lifts), inout carries loops and sweeps. */
   --sd-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --sd-ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --sd-ease-spring: cubic-bezier(0.18, 1.25, 0.3, 1);
+  --sd-ease-inout: cubic-bezier(0.37, 0, 0.63, 1);
 
   --font-display: var(--sd-display);
   --font-body: var(--sd-sans);
@@ -178,6 +193,20 @@
 .sd-datarow--stacked > div::after { content: ''; order: 1; flex: 1 1 auto; min-width: 24px; border-bottom: 1px dotted var(--sd-ink-4); transform: translateY(-4px); }
 .sd-datarow--stacked dd { order: 2; text-align: right; }
 
+/* ── Rarity as a surface ──────────────────────────────────────── */
+/* An element that carries data-rarity re-points --rarity once; the derived
+   tints are declared here, on the carrier, so they follow it. Anything inside
+   — edge, glow, chip, number — reads the vars instead of naming a tier. */
+.stellar [data-rarity] {
+  --rarity-glow: color-mix(in srgb, var(--rarity) 45%, transparent);
+  --rarity-dim: color-mix(in srgb, var(--rarity) 12%, transparent);
+  --rarity-edge: color-mix(in srgb, var(--rarity) 32%, var(--sd-rule));
+}
+.stellar [data-rarity='common'] { --rarity: var(--sd-rarity-common); }
+.stellar [data-rarity='rare'] { --rarity: var(--sd-rarity-rare); }
+.stellar [data-rarity='epic'] { --rarity: var(--sd-rarity-epic); }
+.stellar [data-rarity='legendary'] { --rarity: var(--sd-rarity-legendary); }
+
 /* Chips — rarity is hot, status is cool, both read as data not decoration */
 .sd-rarity, .sd-status {
   display: inline-flex; align-items: center; gap: 7px;
@@ -270,6 +299,29 @@
 }
 .sd-btn--primary:hover:not(:disabled) { background: linear-gradient(180deg, var(--sd-sun-1) 0%, var(--sd-sun-2) 40%, var(--sd-sun-3) 100%); border-color: rgba(255, 230, 180, 0.8); box-shadow: 0 0 0 4px rgba(238, 140, 58, 0.16), 0 14px 36px rgba(224, 97, 46, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.7); }
 .sd-btn--primary:disabled { background: var(--sd-plate); color: var(--sd-ink-4); box-shadow: none; }
+
+/* States the money flow speaks in. Loading keeps the button hot and loops the
+   pass of light (stellar-motion.css); success turns gold once and settles. */
+.sd-btn.is-loading { pointer-events: none; }
+.sd-btn:not(.sd-btn--primary).is-loading { color: var(--sd-ink-2); border-color: var(--sd-ink-4); }
+.sd-btn--primary.is-loading, .sd-btn--primary.is-loading:disabled {
+  background: linear-gradient(180deg, var(--sd-sun-2) 0%, var(--sd-sun-3) 48%, var(--sd-sun-4) 100%);
+  color: #1a0b05; opacity: 0.92;
+  box-shadow: 0 10px 30px rgba(224, 97, 46, 0.24), inset 0 1px 0 rgba(255, 246, 220, 0.7), inset 0 -2px 0 rgba(120, 30, 15, 0.35);
+}
+.sd-btn--primary.is-success, .sd-btn--primary.is-success:disabled {
+  background: linear-gradient(180deg, var(--sd-sun-1) 0%, var(--sd-gold) 55%, var(--sd-sun-3) 100%);
+  border-color: color-mix(in srgb, var(--sd-gold) 70%, transparent);
+  color: #1a0b05;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .sd-btn--primary.is-success { animation: sd-btn-land var(--sd-t5) var(--sd-ease-spring); }
+}
+@keyframes sd-btn-land {
+  0% { scale: 0.96; box-shadow: 0 0 0 0 color-mix(in srgb, var(--sd-gold) 55%, transparent); }
+  60% { scale: 1.02; }
+  100% { scale: 1; box-shadow: 0 0 0 22px transparent; }
+}
 
 .sd-input {
   font-family: var(--sd-mono); font-size: 14px; color: var(--sd-ink);
@@ -524,7 +576,7 @@ html:has(.stellar) #stellar-main { padding-top: 0; padding-bottom: 0; }
 }
 @media (min-width: 480px) { .sd-ballot__row { grid-template-columns: auto 52px minmax(0, 1fr) auto auto; grid-template-areas: "rank art main votes act"; } .sd-ballot__rank { display: block; } }
 .sd-ballot__row:hover { border-color: var(--sd-rule-strong); background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.025)); }
-.sd-ballot__row[data-rarity='epic'], .sd-ballot__row[data-rarity='legendary'] { border-color: color-mix(in srgb, var(--sd-rarity-epic) 30%, transparent); }
+.sd-ballot__row[data-rarity='epic'], .sd-ballot__row[data-rarity='legendary'] { border-color: color-mix(in srgb, var(--rarity) 30%, transparent); }
 .sd-ballot__rank { display: none; grid-area: rank; font-family: var(--sd-mono); font-size: 12px; color: var(--sd-ink-4); }
 .sd-ballot__art { grid-area: art; width: 100%; max-width: 52px; aspect-ratio: 63 / 88; border-radius: 6px; border: 1px solid var(--sd-rule); }
 .sd-ballot__main { grid-area: main; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
@@ -595,9 +647,7 @@ html:has(.stellar) #stellar-main { padding-top: 0; padding-bottom: 0; }
 @media (min-width: 760px) { .sd-oddsboard { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 .sd-oddsboard li { display: flex; flex-direction: column; align-items: flex-start; gap: 18px; padding: 24px 20px 24px 0; border-bottom: 1px solid var(--sd-rule); }
 .sd-oddsboard__n { font-family: var(--sd-sans); font-weight: 600; font-size: clamp(40px, 6vw, 72px); line-height: 1; letter-spacing: -0.05em; }
-.sd-oddsboard li[data-rarity='rare'] .sd-oddsboard__n { color: var(--sd-rarity-rare); }
-.sd-oddsboard li[data-rarity='epic'] .sd-oddsboard__n { color: var(--sd-rarity-epic); }
-.sd-oddsboard li[data-rarity='legendary'] .sd-oddsboard__n { color: var(--sd-rarity-legendary); }
+.sd-oddsboard li[data-rarity]:not([data-rarity='common']) .sd-oddsboard__n { color: var(--rarity); }
 .sd-capsule__n { font-family: var(--sd-mono); font-size: 28px; font-weight: 500; letter-spacing: -0.02em; display: inline-flex; align-items: baseline; gap: 10px; }
 .sd-capsule__price { font-family: var(--sd-mono); font-size: 14px; color: var(--sd-accent-ink); }
 .sd-capsule { background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.015)); border-style: solid; }
@@ -858,7 +908,7 @@ html:has(.stellar) #stellar-main { padding-top: 0; padding-bottom: 0; }
     linear-gradient(180deg, rgba(28, 28, 28, 0.985), rgba(15, 15, 15, 0.99));
   box-shadow: 0 40px 120px -30px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.03) inset;
   color: var(--sd-ink);
-  animation: sd-sheet-up 420ms cubic-bezier(0.2, 0.9, 0.25, 1.05) both;
+  animation: sd-sheet-up var(--sd-dur-slow) cubic-bezier(0.2, 0.9, 0.25, 1.05) both;
 }
 .sd-sheet__panel:focus, .sd-sheet__panel:focus-visible { outline: none; }
 .sd-sheet__close {

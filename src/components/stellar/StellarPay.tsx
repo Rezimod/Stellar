@@ -170,11 +170,16 @@ export default function StellarPay({
             </span>
           </p>
           {REHEARSAL ? (
-            <button type="button" className="sd-btn sd-btn--primary sd-btn--block" onClick={() => check()} disabled={checking}>
+            <button type="button" className={`sd-btn sd-btn--primary sd-btn--block${checking ? ' is-loading' : ''}`} onClick={() => check()} disabled={checking}>
               {checking ? 'Settling' : 'Settle & open'}
             </button>
           ) : (
-            <button type="button" className="sd-btn sd-btn--primary sd-btn--block" onClick={payFromWallet} disabled={paying || !wallet || !!sent}>
+            <button
+              type="button"
+              className={`sd-btn sd-btn--primary sd-btn--block${paying ? ' is-loading' : sent ? ' is-success' : ''}`}
+              onClick={payFromWallet}
+              disabled={paying || !wallet || !!sent}
+            >
               {paying ? 'Sending' : sent ? 'Sent' : `Pay ${order.amountSol.toFixed(4)} SOL`}
             </button>
           )}
@@ -232,18 +237,23 @@ export default function StellarPay({
         />
         <div className="sd-pay__actions">
           {REHEARSAL ? (
-            <button type="button" className="sd-btn sd-btn--primary" onClick={() => check()} disabled={checking}>
+            <button type="button" className={`sd-btn sd-btn--primary${checking ? ' is-loading' : ''}`} onClick={() => check()} disabled={checking}>
               {checking ? 'Settling' : 'Settle without paying'}
             </button>
           ) : (
             <>
-              <button type="button" className="sd-btn sd-btn--primary" onClick={payFromWallet} disabled={paying || !wallet || !!sent}>
+              <button
+                type="button"
+                className={`sd-btn sd-btn--primary${paying ? ' is-loading' : sent ? ' is-success' : ''}`}
+                onClick={payFromWallet}
+                disabled={paying || !wallet || !!sent}
+              >
                 {paying ? 'Sending' : sent ? 'Sent' : `Pay ${order.amountSol.toFixed(4)} SOL`}
               </button>
               <a className="sd-btn" href={order.url}>
                 Other wallet
               </a>
-              <button type="button" className="sd-btn" onClick={() => check()} disabled={checking}>
+              <button type="button" className={`sd-btn${checking ? ' is-loading' : ''}`} onClick={() => check()} disabled={checking}>
                 {checking ? 'Checking the chain' : 'I have paid'}
               </button>
               {DEVNET && (
