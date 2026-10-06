@@ -30,6 +30,7 @@ export default function HomeFan() {
               href={`/card/${f.designation}`}
               className="sd-herofan__card"
               aria-label={c.seed.name}
+              data-zoom={f.designation}
               style={{ '--side': f.side, '--off': Math.abs(f.side), '--tile-glow': glowFor(f.designation) } as CSSProperties}
             >
               <CardThumb designation={f.designation} eager />

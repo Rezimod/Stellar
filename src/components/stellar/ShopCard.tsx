@@ -24,6 +24,8 @@ export default function ShopCard({ designation, name, rarity, sub, price, tag }:
       className="sd-tile"
       data-rarity={rarity}
       aria-label={`${name}, ${price}`}
+      data-zoom={designation}
+      data-zoom-price={price}
       style={{ '--tile-glow': glowFor(designation) } as CSSProperties}
     >
       <span className="sd-tile__stage">

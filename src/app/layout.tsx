@@ -80,7 +80,7 @@ export const metadata: Metadata = {
  */
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${orbitron.variable} ${geist.variable} ${jetbrainsMono.variable} ${bowlby.variable} ${anton.variable} ${oswald.variable} ${unbounded.variable}`}>
+    <html lang="en" suppressHydrationWarning className={`${orbitron.variable} ${geist.variable} ${jetbrainsMono.variable} ${bowlby.variable} ${anton.variable} ${oswald.variable} ${unbounded.variable}`}>
       <head>
         <meta name="apple-mobile-web-app-title" content="Stellar" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />

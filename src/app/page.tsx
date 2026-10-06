@@ -238,7 +238,7 @@ export default async function HomePage() {
         <ul className="sd-showcase2__cards">
           {SHOWCASE.map((d) => (
             <li key={d}>
-              <Link href={`/card/${d}`} aria-label={SET_001_CARD_BY_DESIGNATION.get(d)?.seed.name ?? d}>
+              <Link href={`/card/${d}`} aria-label={SET_001_CARD_BY_DESIGNATION.get(d)?.seed.name ?? d} data-zoom={d}>
                 <CardThumb designation={d} />
               </Link>
             </li>

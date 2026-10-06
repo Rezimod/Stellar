@@ -81,7 +81,7 @@
 }
 .sd-herofan__deck { position: relative; width: var(--cw); aspect-ratio: 520 / 726; }
 .sd-herofan__card {
-  --place: translate(calc(var(--side) * var(--cw) * 0.64), calc(var(--off) * 18px)) rotate(calc(var(--side) * 9deg)) scale(calc(1 - var(--off) * 0.06));
+  --place: translate(calc(var(--side) * var(--cw) * (0.64 + var(--sd-spread, 0) * 0.4)), calc(var(--off) * 18px - var(--sd-spread, 0) * 36px)) rotate(calc(var(--side) * (9deg + var(--sd-spread, 0) * 9deg))) scale(calc(1 - var(--off) * 0.06));
   position: absolute; inset: 0; display: block; border-radius: 4.76% / 3.41%;
   transform: var(--place);
   transition: transform 520ms cubic-bezier(0.2, 0.9, 0.25, 1.15);
@@ -289,9 +289,9 @@
 }
 .sd-tile:hover, .sd-tile:focus-visible { border-color: color-mix(in srgb, var(--tile-glow) 45%, var(--sd-rule-strong)); }
 .sd-tile__stage { position: relative; display: block; padding: 4px 9% 12px; }
-.sd-tile .sd-thumb { transition: transform 300ms var(--sd-ease); }
-@media (hover: hover) { .sd-tile:hover .sd-thumb { transform: translateY(-6px); } }
-.sd-tile:active .sd-thumb { transform: scale(0.97); transition-duration: 80ms; }
+.sd-tile .sd-thumb { transition: transform 500ms var(--sd-ease), translate 300ms var(--sd-ease), scale 300ms var(--sd-ease); }
+@media (hover: hover) { .sd-tile:hover .sd-thumb { translate: 0 -6px; } }
+.sd-tile:active .sd-thumb { scale: 0.97; transition-duration: 80ms; }
 .sd-tile__tag {
   position: absolute; top: -2px; left: 50%; z-index: 1; translate: -50% 0; display: inline-flex; align-items: center; gap: 6px;
   padding: 4px 9px; border-radius: 7px; border: 1px solid color-mix(in srgb, var(--sd-accent) 40%, transparent);

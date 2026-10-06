@@ -34,6 +34,9 @@ export const WIN = { x: 20, y: 20, w: 590, h: 690, r: 18 };
 /** A fine line just inside the window, in the rarity's metal. */
 const EDGE: Record<Plate['rarity'], [string, number]> = { common: ['#cbb994', 0.28], rare: ['#e0703a', 0.45], epic: ['#ff8a3d', 0.6], legendary: ['#ffd36e', 0.85] };
 
+/** The rainbow that slides over the face as it tilts: a faint sheen on a common, a full spectrum on a legendary. */
+const HOLO: Record<Plate['rarity'], number> = { common: 0.03, rare: 0.07, epic: 0.12, legendary: 0.22 };
+
 /** The art is taller than the window; showing more of its top lowers the object toward the rays' centre, clear of the quote. */
 const ART_POS = { objectPosition: '50% 20%' };
 
@@ -90,11 +93,13 @@ function CardFront({ plate: c, edition, capture, lite = false, u }: Props) {
               <img src={`${c.art}/sky.${ext}`} alt="" loading="lazy" decoding="async" style={ART_POS} />
             </div>
             <div className="sdc-rays" />
+            <div className="sdc-breath" style={{ ['--sdc-breath' as string]: EDGE[r][0] }} />
             <div className="sdc-lay1 sdc-grade sdc-fringe">
               <img src={`${c.art}/object.${ext}`} alt="" loading="lazy" decoding="async" style={ART_POS} />
             </div>
           </>
         )}
+        <div className="sdc-twinkle" />
         <div className="sdc-halftone" />
         <div className="sdc-scrim" />
       </div>
@@ -145,7 +150,8 @@ function CardFront({ plate: c, edition, capture, lite = false, u }: Props) {
         </text>
       </svg>
 
-      {FOIL_OP[r] > 0 && <div className="sdc-foil" style={{ opacity: FOIL_OP[r], ['--sdc-foil' as string]: FOIL_OP[r] }} />}
+      {FOIL_OP[r] > 0 && <div className="sdc-foil" style={{ ['--sdc-foil' as string]: FOIL_OP[r] }} />}
+      <div className={`sdc-holo sdc-holo--${r}`} style={{ ['--sdc-holo' as string]: HOLO[r] }} />
       {GLIT_OP[r] > 0 && (
         <svg className="sdc-glitter" style={{ opacity: GLIT_OP[r] }} viewBox="0 0 630 880" preserveAspectRatio="none" aria-hidden="true">
           <defs>

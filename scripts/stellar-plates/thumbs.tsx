@@ -28,7 +28,8 @@ const style = `
   .wrap { --px: 0.5; --py: 0.5; width: 520px; }
   ${fs.readFileSync('src/components/stellar/card/stellar-card.css', 'utf8')}
   .sdc-card { box-shadow: none !important; }
-  .sdc-foil { opacity: 0 !important; }
+  .sdc-foil, .sdc-holo, .sdc-breath, .sdc-twinkle { opacity: 0 !important; }
+  *, *::before, *::after { animation: none !important; }
   .sdc-glitter { opacity: 0.25 !important; }
   .sdc-glare { opacity: 0.5 !important; }
 `;

@@ -5,6 +5,7 @@ import StellarNavLinks from './StellarNavLinks';
 import StellarTabBar from './StellarTabBar';
 import StellarAccountGate from './StellarAccountGate';
 import StellarAuth from './StellarAuth';
+import StellarLiving, { LIVE_SCRIPT } from './StellarLiving';
 import { getNode } from '@/lib/observatory/nodes';
 import { LEGACY_HOST } from '@/lib/stellar/legacy';
 
@@ -82,6 +83,7 @@ export default function StellarShell({
   return (
     <StellarAuth>
       <div className="stellar">
+        <script dangerouslySetInnerHTML={{ __html: LIVE_SCRIPT }} />
         <div className="sd-backdrop" aria-hidden="true" />
         <header className="sd-bar">
           <div className="sd-container sd-bar__inner">
@@ -129,6 +131,7 @@ export default function StellarShell({
           </div>
         </footer>
         <StellarTabBar />
+        <StellarLiving />
       </div>
     </StellarAuth>
   );
