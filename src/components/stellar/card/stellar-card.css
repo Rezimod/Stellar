@@ -12,8 +12,12 @@
 
 .sdc-flip { position: relative; width: 100%; aspect-ratio: 630 / 880; transform-style: preserve-3d; transition: transform 1s cubic-bezier(.2,.7,.2,1); }
 .sdc-flip.is-over { transform: rotateY(180deg); }
-.sdc-face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
-.sdc-face--back { transform: rotateY(180deg); }
+/* Safari flattens the 3D once a face holds blended or clipped layers, and then shows the front mirrored
+   through the back. So the faces also swap visibility at the turn's midpoint; the 3D only has to look right. */
+.sdc-face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; transition: visibility 0s linear .5s; }
+.sdc-face--back { transform: rotateY(180deg); visibility: hidden; }
+.sdc-flip.is-over .sdc-face { visibility: hidden; }
+.sdc-flip.is-over .sdc-face--back { visibility: visible; }
 
 .sdc-card { position: relative; width: 100%; aspect-ratio: 630 / 880; border-radius: 4.76% / 3.41%; overflow: hidden; background: #e8dbbd; isolation: isolate; contain: layout paint; transform: translateZ(0); }
 .sdc-window { position: absolute; overflow: hidden; background: #0e0806; }
@@ -148,7 +152,7 @@
 @keyframes sdc-holo-rest { 0%, 100% { translate: 0 -13.3%; } 50% { translate: -66.67% -53.3%; } }
 @media (prefers-reduced-motion: reduce) {
   .sdc--hero .sdc-stage:not(.is-live) .sdc-tilt, .sdc--hero .sdc-stage:not(.is-live) .sdc-foil::before, .sdc--hero .sdc-stage:not(.is-live) .sdc-holo::before { animation: none; }
-  .sdc-flip { transition: none; }
+  .sdc-flip, .sdc-face { transition: none; }
 }
 
 /* The back: the photograph full-bleed in its window, a scrim at its foot for the credit. */
