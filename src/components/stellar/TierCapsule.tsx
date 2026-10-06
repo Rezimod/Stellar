@@ -20,7 +20,7 @@ export default function TierCapsule({ tier }: { tier: Tier }) {
     <span key={tier.key} className="sd-tier__capsule" aria-hidden="true">
       <Blade side="l" />
       <Blade side="r" />
-      <img className="sd-tier__sealed" src="/cards/sealed.webp?v=pack1" alt="" width={520} height={726} decoding="async" />
+      <img className="sd-tier__sealed" src="/cards/sealed.webp?v=pack2" alt="" width={520} height={726} decoding="async" />
     </span>
   );
 }

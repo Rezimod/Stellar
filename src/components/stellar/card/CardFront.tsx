@@ -8,7 +8,6 @@ import {
   INK,
   Paper,
   PosterDefs,
-  RarityBadge,
   Rules,
   SPACED,
   StripedTitle,
@@ -16,6 +15,7 @@ import {
   rr,
   width,
 } from './frame';
+import RarityChip from './RarityChip';
 
 type Props = {
   plate: Plate;
@@ -117,7 +117,6 @@ function CardFront({ plate: c, edition, capture, lite = false, u }: Props) {
           <Glint key={`${gx}-${gy}`} x={WIN.x + gx * WIN.w} y={WIN.y + gy * WIN.h} r={gr} o={0.75} />
         ))}
 
-        <RarityBadge u={f} rarity={r} label={c.rname} />
         <text x="584" y="62" textAnchor="end" fill="rgba(243,230,204,.62)" style={{ fontFamily: SPACED, fontWeight: 400, fontSize: 11, letterSpacing: 3 }}>
           {edition != null ? `No. ${editionLabel(edition)} / ${c.of}` : `${c.num} / ${c.total}`}
         </text>
@@ -164,6 +163,7 @@ function CardFront({ plate: c, edition, capture, lite = false, u }: Props) {
         </svg>
       )}
       <div className="sdc-glare" />
+      <RarityChip rarity={r} label={c.rname} />
     </div>
   );
 }

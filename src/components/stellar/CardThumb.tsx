@@ -1,4 +1,6 @@
 import { plateFor } from '@/lib/stellar/plate';
+import RarityChip from './card/RarityChip';
+import './card/rarity-chip.css';
 
 /**
  * A card as a picture: the face, frame and all, pre-rendered at rest
@@ -17,7 +19,7 @@ export default function CardThumb({ designation, eager = false }: { designation:
   return (
     <span className="sd-thumb">
       <img
-        src={`${plate.art}/card.webp?v=poster6`}
+        src={`${plate.art}/card.webp?v=poster7`}
         alt=""
         width={520}
         height={726}
@@ -26,6 +28,7 @@ export default function CardThumb({ designation, eager = false }: { designation:
         decoding="async"
       />
       <span className="sd-thumb__live" aria-hidden="true" />
+      <RarityChip rarity={plate.rarity} label={plate.rname} />
     </span>
   );
 }

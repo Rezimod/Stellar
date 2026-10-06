@@ -5,6 +5,7 @@ import { editionLabel, plateFor } from '@/lib/stellar/plate';
 import CardBack from './CardBack';
 import CardFront from './CardFront';
 import './stellar-card.css';
+import './rarity-chip.css';
 
 type Props = {
   designation: string;

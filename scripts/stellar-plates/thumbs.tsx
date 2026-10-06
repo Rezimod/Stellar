@@ -21,7 +21,7 @@ const only = process.argv.slice(2);
 const names = only.length ? only : SET_001_CARDS.map((c) => c.seed.designation);
 
 // The shelf's resting state (foil dark, glitter and glare low), on nothing, so the corners stay clear.
-// Drawn at 520px wide so the poster's small type stays crisp in the WebP.
+// Laid out at 520px and drawn at 2x, so the WebP is 1040px wide: sharp on a high-density screen and in the held card's fly-in.
 const style = `
   :root { --font-geist: 'Geist'; --font-mono: 'JetBrains Mono'; --font-bowlby: 'Bowlby One'; --font-anton: 'Anton'; --font-oswald: 'Oswald'; }
   html, body { margin: 0; background: transparent; }
@@ -29,6 +29,7 @@ const style = `
   ${fs.readFileSync('src/components/stellar/card/stellar-card.css', 'utf8')}
   .sdc-card { box-shadow: none !important; }
   .sdc-foil, .sdc-holo, .sdc-breath, .sdc-twinkle { opacity: 0 !important; }
+  .sdc-chips { display: none !important; }
   *, *::before, *::after { animation: none !important; }
   .sdc-glitter { opacity: 0.25 !important; }
   .sdc-glare { opacity: 0.5 !important; }
@@ -67,7 +68,7 @@ async function main() {
     const card = page.locator('.sdc-card');
     await card.evaluate((el) => Promise.all([...el.querySelectorAll('img')].map((i) => i.decode().catch(() => {}))));
     const png = await card.screenshot({ omitBackground: true });
-    await sharp(png).resize(520).webp({ quality: 82, alphaQuality: 90, effort: 6 }).toFile(sealed ? path.join(PUBLIC, 'cards/sealed.webp') : path.join(PUBLIC, 'cards/plate', name, 'card.webp'));
+    await sharp(png).resize(1040).webp({ quality: 92, alphaQuality: 95, effort: 6 }).toFile(sealed ? path.join(PUBLIC, 'cards/sealed.webp') : path.join(PUBLIC, 'cards/plate', name, 'card.webp'));
     console.log(name);
   }
   await browser.close();
