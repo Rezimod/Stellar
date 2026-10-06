@@ -36,12 +36,14 @@
 .sd-hero2 { position: relative; overflow: clip; padding-block: 40px 56px; border-bottom: 1px solid var(--sd-rule); }
 /* The stage: the words in the middle, the cards scattered around them. */
 @media (min-width: 560px) {
-  .sd-hero2 { padding-block: clamp(64px, 9vw, 120px) clamp(72px, 9vw, 128px); min-height: min(86vh, 900px); display: grid; align-items: center; }
+  /* The ring's radii start at the copy's half-width and half-height and add most of a card, so
+     the cards sit just outside the words whatever the screen. */
+  .sd-hero2 { --cw: clamp(96px, 11.5vw, 190px); --ch: calc(var(--cw) * 1.396); --rx: min(calc(330px + var(--cw) * 0.8), calc(50vw - var(--cw) * 0.62)); --ry: calc(200px + var(--ch) * 0.5);
+    padding-block: 48px; min-height: calc(var(--ry) * 2 + var(--ch) * 0.64 + 96px); display: grid; align-items: center; }
   .sd-hero2__grid { position: static; display: grid; justify-items: center; text-align: center; }
-  .sd-hero2__copy { position: relative; z-index: 2; max-width: 680px; }
+  .sd-hero2__copy { position: relative; z-index: 2; max-width: 640px; }
   .sd-hero2__sub { margin-inline: auto; }
   .sd-hero2__cta { justify-content: center; }
-  .sd-hero2__stats { justify-content: center; }
   .stellar .sd-hero2__stats { justify-content: center; }
 }
 .sd-hero2__title {
@@ -98,18 +100,20 @@
 @media (hover: hover) { .sd-herofan__card:hover { transform: var(--place) translateY(-14px); z-index: 3; } }
 @media (max-width: 559px) { .sd-herofan__card[data-phone='hide'] { display: none; } }
 @media (min-width: 560px) {
-  .sd-herofan { position: absolute; inset: 0; z-index: 1; display: block; min-height: 0; --cw: clamp(110px, 12.5vw, 200px); }
+  .sd-herofan { position: absolute; inset: 0; z-index: 1; display: block; min-height: 0; }
   .sd-herofan__light { inset: 0; background:
     radial-gradient(34% 40% at 50% 50%, rgba(255, 185, 150, 0.14), transparent 70%),
     radial-gradient(16% 14% at 50% 58%, rgba(244, 177, 19, 0.1), transparent 70%); }
   .sd-herofan__light::after { top: 62%; width: 70%; }
   .sd-herofan__deck { position: absolute; inset: 0; width: auto; aspect-ratio: auto; }
   .sd-herofan__card {
-    --place: translate(-50%, -50%) rotate(var(--rot)) scale(var(--s));
-    inset: auto; left: calc(var(--x) * 1%); top: calc(var(--y) * 1%); width: var(--cw); aspect-ratio: 520 / 726;
-    --side: 0; --off: 0;
+    --place: translate(calc(-50% + var(--dx-px, 0px)), calc(-50% + var(--dy-px, 0px))) rotate(var(--rot)) scale(var(--s));
+    inset: auto; left: calc(50% + var(--ax) * var(--rx)); top: calc(50% + var(--ay) * var(--ry)); width: var(--cw); aspect-ratio: 520 / 726;
+    --side: 0; --off: 0; cursor: grab; touch-action: none; user-select: none; -webkit-user-drag: none;
   }
-  @media (hover: hover) { .sd-herofan__card:hover { transform: translate(-50%, -50%) rotate(var(--rot)) scale(calc(var(--s) * 1.06)) translateY(-10px); } }
+  .sd-herofan__card[data-drag='on'] { cursor: grabbing; transition: none; z-index: 5; }
+  .sd-herofan__card[data-drag='on'] .sd-thumb { animation-play-state: paused; }
+  @media (hover: hover) { .sd-herofan__card:hover { transform: var(--place) translateY(-10px); } }
 }
 @media (prefers-reduced-motion: no-preference) {
   .sd-herofan__card { animation: sd-deal 1100ms var(--sd-ease-out) calc(120ms + var(--i, 0) * 70ms) backwards; }
