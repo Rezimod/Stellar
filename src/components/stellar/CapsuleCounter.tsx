@@ -7,7 +7,7 @@ import { RARITIES, rarityInfo, type Rarity } from '@/lib/rarity';
 import { DIRECT_CARD_PRICE_USD } from '@/lib/stellar/economics';
 import { CARDS_PER_TIER, TIERS, formatOdds, rarityAt, tierByKey, type Tier } from '@/lib/stellar/tiers';
 import type { Draw } from './StellarReveal';
-import TierCapsule from './TierCapsule';
+import StarPulse from './StarPulse';
 
 // The sheet carries the wallet and payment code; it is fetched on first
 // intent (a pointer over the button, a touch) rather than with the page.
@@ -88,8 +88,7 @@ export default function CapsuleCounter({ cards, onSale }: { cards: TierCard[]; o
       </div>
 
       <div className="sd-counter__stage">
-        <span className="sd-hyper" aria-hidden="true" />
-        <TierCapsule tier={tier} />
+        <StarPulse className="sd-counter__star" centre={0.4} />
         <div className="sd-counter__over">
           <div>
             <span className="sd-counter__label">You are opening</span>

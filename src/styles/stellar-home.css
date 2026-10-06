@@ -136,3 +136,32 @@
 }
 @media (prefers-reduced-motion: reduce) {
 }
+
+/* ── The waiting star: the supernova's own star before it is lit ──
+   The engine draws it on the canvas; until then, or without WebGL, a still
+   CSS star stands in, so the print is never empty. */
+.sd-starpulse { position: absolute; inset: 0; overflow: hidden; background: #050505; }
+.sd-starpulse__sky { position: absolute; inset: 0; width: 100%; height: 100%; display: block; pointer-events: none; }
+.sd-starpulse:not([data-nogl='0'])::before {
+  content: ''; position: absolute; left: 50%; top: var(--sp-cy, 48%); width: 36%; aspect-ratio: 1; translate: -50% -50%; border-radius: 50%;
+  background: radial-gradient(closest-side, #fff8e6 0 18%, #ffd27a 30%, rgba(232, 120, 50, 0.55) 52%, rgba(200, 60, 30, 0.18) 72%, transparent 100%);
+}
+.sd-starpulse[data-nogl='0']::before { display: none; }
+@media (prefers-reduced-motion: no-preference) {
+  .sd-starpulse:not([data-nogl='0'])::before { animation: sd-star-wait 3.4s ease-in-out infinite; }
+}
+@keyframes sd-star-wait { 0%, 100% { scale: 1; opacity: 0.92; } 12% { scale: 1.06; opacity: 1; } 22% { scale: 1.01; } 30% { scale: 1.04; } }
+
+/* The home print: the star in the cream frame, the whole print a way into the set. */
+.sd-homeprint { display: block; color: inherit; text-decoration: none; cursor: pointer; transition: transform var(--sd-dur-slow) var(--sd-ease); }
+.sd-homeprint:focus-visible { outline: 2px solid var(--sd-focus); outline-offset: 6px; }
+@media (hover: hover) { .sd-homeprint:hover { transform: translateY(-6px) rotate(-0.4deg); } }
+.sd-homeprint__print { display: block; }
+.sd-homeprint__star { --sp-cy: 48%; }
+.sd-homeprint__note {
+  position: absolute; z-index: 2; left: 0; right: 0; bottom: 5%; text-align: center;
+  font: 500 2.4cqw var(--sd-spaced); letter-spacing: 0.34em; text-transform: uppercase; color: rgba(244, 232, 204, 0.62);
+}
+
+/* The set page: the stage holds the same star, the tier's name over its foot. */
+.sd-counter__star { --sp-cy: 40%; border-radius: inherit; }

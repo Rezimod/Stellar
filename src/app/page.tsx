@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { eq } from 'drizzle-orm';
 import CardThumb from '@/components/stellar/CardThumb';
 import FlightPlan, { type FlightStep } from '@/components/stellar/FlightPlan';
-import HomeFan from '@/components/stellar/HomeFan';
+import HomePrint from '@/components/stellar/HomePrint';
 import OddsBoard from '@/components/stellar/OddsBoard';
 import OrbitRing from '@/components/stellar/OrbitRing';
 import Sunburst from '@/components/stellar/Sunburst';
@@ -122,7 +122,7 @@ export default async function HomePage() {
       <section className="sd-hero2">
         <span className="sd-hero2__horizon" aria-hidden="true" />
         <div className="sd-container sd-hero2__grid">
-          <HomeFan />
+          <HomePrint />
           <div className="sd-hero2__copy">
             <p className="sd-kicker sd-hero2__kicker">Founding set · Genesis</p>
             <h1 className="sd-hero2__title">

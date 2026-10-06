@@ -129,6 +129,7 @@ export default function StellarReveal({
         reducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
         sound: SOUND && soundOn,
         onDone: () => setPhase('done'),
+        waiting: true,
       });
       nova.current = handle;
       setReady(true);

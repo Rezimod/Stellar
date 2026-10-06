@@ -19,6 +19,8 @@ export type SupernovaHandle = {
   launch: () => void;
   skip: () => void;
   setSound: (on: boolean) => void;
+  /** Stop drawing (off screen) or start again. */
+  setPaused: (paused: boolean) => void;
   destroy: () => void;
 };
 
@@ -29,6 +31,10 @@ export type SupernovaOptions = {
   reducedMotion: boolean;
   sound: boolean;
   onDone: () => void;
+  /** The star before any press: it breathes on a slow heartbeat and waits. Used where no card is opened (the home print, the set page). */
+  waiting?: boolean;
+  /** Where the star sits, as a fraction of the box's height from the top. Defaults to the reveal's own placement. */
+  centre?: number;
 };
 
 type Tier = {
@@ -227,7 +233,7 @@ export function startSupernova(root: HTMLElement, opts: SupernovaOptions): Super
     W = r.width;
     H = r.height;
     const cw = Math.min(W * 0.62, H * 0.4, 330);
-    CY = Math.min(H * 0.42, (H - 210) / 2 + 30);
+    CY = opts.centre != null ? H * opts.centre : Math.min(H * 0.42, (H - 210) / 2 + 30);
     root.style.setProperty('--sn-cw', `${cw}px`);
     root.style.setProperty('--sn-cy', `${CY}px`);
     size();
@@ -241,7 +247,22 @@ export function startSupernova(root: HTMLElement, opts: SupernovaOptions): Super
       fa: [0, 0, 0, 0], fi: [0, 0, 0, 0], inH: 0, inI: 0, flash: 0, flare: 0, s1: 0, s1i: 0, s2: 0, s2i: 0,
       E: 0.05, neb: 0, nebHot: 0, teal: 0, deb: 0, debI: 0, core: 0, blur: 0, rays: 0, ca: 0, vig: 0.35, white: 0, shk: 0, bloom: 0.4, dof: 0,
     };
-    if (t < 0) return S;
+    if (t < 0) {
+      if (opts.waiting && !opts.reducedMotion) {
+        // Waiting: a slow double heartbeat, every 3.4 s; the star swells, warms and throws a little light off its limb.
+        const ph = now % 3.4, b = Math.exp(-Math.pow((ph - 0.25) / 0.11, 2)) + 0.55 * Math.exp(-Math.pow((ph - 0.62) / 0.12, 2));
+        const swell = 0.5 + 0.5 * Math.sin(now * 0.55);
+        S.starR = R0 * (1 + 0.012 * Math.sin(now * 1.3) + 0.045 * b + 0.02 * swell);
+        S.heat = 0.17 + 0.07 * b + 0.04 * swell;
+        S.starI = 1 + 0.24 * b + 0.06 * swell;
+        S.wob = 0.03 + 0.035 * b;
+        S.rays = 0.07 + 0.12 * b;
+        S.bloom = 0.42 + 0.3 * b;
+        S.fa[0] = ((Math.floor(now / 3.4) * 2.39996 + seed) % 6.283) - 3.14159;
+        S.fi[0] = 0.3 * b;
+      }
+      return S;
+    }
     if (t < T.TI) {
       const k = t / T.TI, bt = kick(t, 0.16);
       S.zoom = lerp(1, p.push, ein2(k) * 0.92);
@@ -444,8 +465,9 @@ export function startSupernova(root: HTMLElement, opts: SupernovaOptions): Super
     }
   }
 
+  let paused = false;
   function frame(ms: number) {
-    if (dead) return;
+    if (dead || paused) return;
     const now = ms / 1000;
     const t = t0 === null ? -1 : (ms - t0) / 1000;
     if (last) {
@@ -695,6 +717,15 @@ export function startSupernova(root: HTMLElement, opts: SupernovaOptions): Super
       if (opts.reducedMotion || !live) skip();
     },
     skip,
+    setPaused(on) {
+      if (dead || on === paused) return;
+      paused = on;
+      cancelAnimationFrame(raf);
+      if (!on) {
+        last = 0;
+        raf = requestAnimationFrame(frame);
+      }
+    },
     setSound(on) {
       soundOn = on;
       if (!on) hush();
