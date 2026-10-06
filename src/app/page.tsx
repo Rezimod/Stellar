@@ -24,7 +24,7 @@ export const revalidate = 60;
 export const metadata: Metadata = {
   title: 'Stellar — the night sky, issued in editions',
   description:
-    'First Light: a hundred cards, each held as a numbered edition — planets, stars, nebulae, galaxies, the extremes of the universe, eight rare sights and eight dated events. Opened from sealed capsules, from $5.',
+    'Genesis: a hundred cards, each held as a numbered edition — planets, stars, nebulae, galaxies, the extremes of the universe, eight rare sights and eight dated events. Opened from sealed capsules, from $5.',
 };
 
 /** Six cards from across the set, one shelf of it. */
@@ -70,7 +70,7 @@ const PLAN: FlightStep[] = [
   { title: 'Watch', text: 'Holders of the chosen card watch the observation live.', status: 'Commissioning', live: false, href: '/node', icon: 'telescope' },
   {
     title: 'Claim',
-    text: 'Two cards in First Light carry a real meteorite fragment, redeemable later.',
+    text: 'Two cards in Genesis carry a real meteorite fragment, redeemable later.',
     status: 'In preparation',
     live: false,
     href: '/set/001',
@@ -124,7 +124,7 @@ export default async function HomePage() {
         <div className="sd-container sd-hero2__grid">
           <HomeFan />
           <div className="sd-hero2__copy">
-            <p className="sd-kicker sd-hero2__kicker">Founding set · First Light</p>
+            <p className="sd-kicker sd-hero2__kicker">Founding set · Genesis</p>
             <h1 className="sd-hero2__title">
               <span>Hold a piece of</span>{' '}
               <span>
@@ -226,7 +226,7 @@ export default async function HomePage() {
         <div className="sd-showcase2__copy">
           <p className="sd-kicker">Founding set</p>
           <h2 className="sd-home-sec__title" id="set-title">
-            First Light
+            Genesis
           </h2>
           <p className="sd-home-sec__lede">{SET_001_CARDS.length} objects, numbered outward from Earth.</p>
           <ul className="sd-families">

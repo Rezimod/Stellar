@@ -20,9 +20,9 @@ import { siteNightDate } from '@/lib/stellar/target';
 export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title: 'First Light — capsules and cards',
+  title: 'Genesis — capsules and cards',
   description:
-    'A hundred cards, numbered outward from Earth: the Solar System, the Stars, the Deep Sky, the Galaxies, the Extremes, the Rare Sights and the Almanac. Opened from four capsules, from $5.',
+    'A hundred cards, numbered outward from Earth: the Solar System, the Stars, the Deep Sky, the Galaxies, the Extremes, the Rare Sights and the Meteors & Moons. Opened from four capsules, from $5.',
 };
 
 export default async function FirstLightPage() {
@@ -81,7 +81,7 @@ export default async function FirstLightPage() {
           <header className="sd-fl__head">
             <div>
               <h1 className="sd-fl__title" id="fl-title">
-                First Light
+                Genesis
               </h1>
               <p className="sd-fl__meta">
                 Founding set · {editions.toLocaleString('en-GB')} editions · {status === 'released' ? 'Released' : 'Pre-release'}

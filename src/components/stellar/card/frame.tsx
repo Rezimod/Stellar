@@ -232,7 +232,7 @@ export function Footer({ y, right }: { y: number; right: string }) {
   return (
     <g>
       <text x="58" y={y} fill={INK.muted} style={st}>
-        FIRST LIGHT
+        GENESIS
       </text>
       <text x="315" y={y} textAnchor="middle" fill={INK.muted} style={st}>
         <tspan fill={INK.red}>◆</tspan>

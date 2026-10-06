@@ -13,7 +13,7 @@ const FOOT = [
   {
     title: 'Cards',
     links: [
-      { href: '/set/001', label: 'First Light' },
+      { href: '/set/001', label: 'Genesis' },
       { href: '/collection', label: 'Collection' },
       { href: '/capsules/log', label: 'Public log' },
     ],

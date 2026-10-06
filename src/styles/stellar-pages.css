@@ -230,7 +230,7 @@
 }
 .sd-counter__over {
   position: absolute; left: 0; right: 0; bottom: 0; display: flex; align-items: flex-end; justify-content: space-between; gap: 12px;
-  padding: 44px 16px 14px; background: linear-gradient(180deg, transparent, rgba(6, 6, 6, 0.92) 60%);
+  padding: 44px 16px 14px; background: linear-gradient(180deg, transparent, rgba(13, 13, 13, 0.92) 60%);
 }
 .sd-counter__label { font: 500 12px var(--sd-spaced); letter-spacing: 0.28em; text-transform: uppercase; color: var(--sd-ink-3); }
 .sd-counter__name { margin: 5px 0 0; font: 700 22px/1.05 var(--sd-sans); letter-spacing: 0.005em; text-transform: uppercase; }

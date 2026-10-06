@@ -155,7 +155,7 @@ function Sealed({ u }: { u: string }) {
 
           <StripedTitle u={u} rarity="legendary" lines={['STELLAR']} base={598} cap={96} />
           <text x="315" y="640" textAnchor="middle" fill={INK.cream} style={{ fontFamily: SPACED, fontWeight: 400, fontSize: 19, letterSpacing: 12 }}>
-            FIRST LIGHT
+            GENESIS
           </text>
 
           <g transform="translate(205 670)">

@@ -39,7 +39,7 @@ export default function StellarBuyCard({
   const [placing, setPlacing] = useState(false);
 
   if (!released) {
-    return <p className="sd-note">Direct sale opens when First Light is released. Until then, every card comes out of a capsule.</p>;
+    return <p className="sd-note">Direct sale opens when Genesis is released. Until then, every card comes out of a capsule.</p>;
   }
 
   if (!available) {

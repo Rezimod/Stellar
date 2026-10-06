@@ -8,9 +8,9 @@
   color-scheme: dark;
 
   /* Ground — the poster's black sky, print grain over it; the cards are the only colour on the page */
-  --sd-canvas: #000000;
-  --sd-deep: #070707;
-  --sd-bar-bg: rgba(6, 6, 6, 0.94);
+  --sd-canvas: #0d0d0d;
+  --sd-deep: #131313;
+  --sd-bar-bg: rgba(13, 13, 13, 0.94);
   --sd-plate: rgba(244, 232, 204, 0.06);
   --sd-plate-hover: rgba(244, 232, 204, 0.11);
 
@@ -475,7 +475,7 @@
 /* ── Opting out of the legacy chrome ──────────────────────────── */
 html:has(.stellar) [data-stellar-chrome] { display: none !important; }
 html:has(.stellar):not([data-field="on"]),
-html:has(.stellar):not([data-field="on"]) body { background: #000; }
+html:has(.stellar):not([data-field="on"]) body { background: #0d0d0d; }
 html:has(.stellar) body::before,
 html:has(.stellar) body::after { display: none; }
 html:has(.stellar) #stellar-main { padding-top: 0; padding-bottom: 0; }
@@ -808,8 +808,8 @@ html:has(.stellar) #stellar-main { padding-top: 0; padding-bottom: 0; }
   background:
     var(--sd-stars) 0 0 / 340px 300px,
     var(--sd-stars) 170px 120px / 520px 460px,
-    radial-gradient(120% 60% at 50% 110%, rgba(217, 68, 42, 0.16), transparent 60%),
-    #000;
+    radial-gradient(120% 60% at 50% 110%, rgba(217, 68, 42, 0.14), transparent 60%),
+    #0d0d0d;
 }
 /* The print grain: the poster's paper, laid over the sky at a whisper, and a vignette at the edges. */
 .sd-backdrop::before {
@@ -819,7 +819,7 @@ html:has(.stellar) #stellar-main { padding-top: 0; padding-bottom: 0; }
 }
 .sd-backdrop::after {
   content: ''; position: absolute; inset: 0; pointer-events: none;
-  background: radial-gradient(90% 90% at 50% 40%, transparent 55%, rgba(0, 0, 0, 0.6));
+  background: radial-gradient(90% 90% at 50% 40%, transparent 55%, rgba(0, 0, 0, 0.45));
 }
 
 /* ── Phones ───────────────────────────────────────────────────── */

@@ -60,7 +60,7 @@ export default function HomeFan() {
   }
 
   return (
-    <div className="sd-herofan" aria-label="Cards from First Light">
+    <div className="sd-herofan" aria-label="Cards from Genesis">
       <div className="sd-herofan__print">
         <span className="sd-herofan__moon" aria-hidden="true" />
         <span className="sd-herofan__moon sd-herofan__moon--far" aria-hidden="true" />
@@ -94,7 +94,7 @@ export default function HomeFan() {
           })}
         </div>
       </div>
-      <span className="sd-herofan__caption" aria-hidden="true">First Light</span>
+      <span className="sd-herofan__caption" aria-hidden="true">Genesis</span>
     </div>
   );
 }

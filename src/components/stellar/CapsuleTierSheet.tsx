@@ -77,7 +77,7 @@ export default function CapsuleTierSheet({ tier, onPreview, onClose }: { tier: T
         </div>
 
         <div className="sd-sheet__body">
-          <p className="sd-label">Capsule · First Light</p>
+          <p className="sd-label">Capsule · Genesis</p>
           <div className="sd-sheet__head">
             <h2 className="sd-sheet__name">{tier.name}</h2>
             <span className="sd-sheet__price">${tier.priceUsd}</span>

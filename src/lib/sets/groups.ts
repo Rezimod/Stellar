@@ -8,7 +8,7 @@ export const SET_GROUPS: Array<{ key: Family; title: string; short: string }> = 
   { key: 'galaxies', title: 'The Galaxies', short: 'Galaxies' },
   { key: 'extremes', title: 'The Extremes', short: 'Extremes' },
   { key: 'sights', title: 'Rare Sights', short: 'Rare Sights' },
-  { key: 'almanac', title: 'The Almanac', short: 'Almanac' },
+  { key: 'almanac', title: 'Meteors & Moons', short: 'Meteors & Moons' },
 ];
 
 export function groupCards(cards: AuthoredCard[], family: Family): AuthoredCard[] {

@@ -193,7 +193,7 @@ export default function StellarReveal({
   }, []);
   useEffect(() => lay(turned), [turned, lay]);
 
-  const caption = preview ? `${preview} capsule · preview` : outright ? 'Bought outright · First Light' : `Capsule No. ${pad(sequence ?? 0)} · First Light`;
+  const caption = preview ? `${preview} capsule · preview` : outright ? 'Bought outright · Genesis' : `Capsule No. ${pad(sequence ?? 0)} · First Light`;
   const label = preview ? `${preview} capsule, preview` : outright ? `${flown.name}, bought` : `Capsule ${sequence}, opening`;
 
   /* The provenance line, printed a character at a time once the card is down. */
@@ -372,7 +372,7 @@ export default function StellarReveal({
           <button type="button" className="sn-go" onClick={ignite} disabled={!ready} aria-busy={!ready}>
             Ignite
           </button>
-          <span className="sn-pre__sub">{preview ? 'Preview · nothing is bought' : 'One card · First Light'}</span>
+          <span className="sn-pre__sub">{preview ? 'Preview · nothing is bought' : 'One card · Genesis'}</span>
         </div>
         {tag}
         {after}

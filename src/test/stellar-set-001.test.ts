@@ -22,7 +22,7 @@ const MOVING = new Set(['moon', 'mercury', 'venus', 'mars', 'jupiter', 'saturn',
 
 describe('First Light', () => {
   it('is a hundred cards in seven families, the Almanac last, each filed under its own designation', () => {
-    expect(SET_001.name).toBe('First Light');
+    expect(SET_001.name).toBe('Genesis');
     expect(seeds.length).toBe(100);
     expect(objects).toHaveLength(92);
     expect(almanac).toHaveLength(8);

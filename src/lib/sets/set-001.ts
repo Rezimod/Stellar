@@ -30,7 +30,7 @@ import { STAR_CARDS } from './first-light/stars';
 
 export const SET_001 = {
   code: 'SET001',
-  name: 'First Light',
+  name: 'Genesis',
   status: 'draft',
   releasedAt: null,
 } as const;

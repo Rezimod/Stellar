@@ -31,7 +31,7 @@ export async function generateMetadata({
   const { designation } = await params;
   const card = SET_001_CARD_BY_DESIGNATION.get(designation.toUpperCase());
   if (!card) return { title: 'Card not found — Stellar' };
-  return { title: `${card.seed.name} — First Light · Stellar`, description: card.seed.blurb };
+  return { title: `${card.seed.name} — Genesis · Stellar`, description: card.seed.blurb };
 }
 
 /** A selenographic degree, with a real minus sign rather than a hyphen. */
@@ -89,7 +89,7 @@ export default async function CardPage({ params }: { params: Promise<{ designati
       <StellarView step="card" />
       <section className="sd-container sd-top">
         <nav aria-label="Breadcrumb" className="sd-crumb sd-data">
-          <Link href="/set/001">First Light</Link>
+          <Link href="/set/001">Genesis</Link>
           <span aria-hidden="true">/</span>
           <strong>{seed.designation}</strong>
         </nav>
