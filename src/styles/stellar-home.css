@@ -165,3 +165,44 @@
 
 /* The set page: the stage holds the same star, the tier's name over its foot. */
 .sd-counter__star { --sp-cy: 40%; border-radius: inherit; }
+
+/* ── Phones: the hero laid out like a launch poster on a phone ──
+   The star first, full bleed with no frame, its foot dissolving into the black
+   under the words; then the title and the line, centred; the one button at the
+   foot of the first screen, just above the tab bar. */
+@media (max-width: 559px) {
+  .stellar .sd-hero2 { padding-top: 0; }
+  .stellar .sd-hero2__grid { text-align: center; }
+  .stellar .sd-hero2__kicker { display: none; }
+
+  .stellar .sd-herofan.sd-homeprint {
+    /* The star takes whatever the first screen has left after the words and the button (~252px below it). */
+    order: 0; display: flex; flex-direction: column;
+    height: clamp(240px, calc(100svh - var(--sd-bar-h) - var(--sd-tabs-h) - 252px), 480px);
+    width: auto; margin: 0 calc(-1 * var(--sd-gutter)); padding: 0;
+    background: none; border-radius: 0; box-shadow: none;
+  }
+  .stellar .sd-herofan.sd-homeprint:hover { transform: none; }
+  .stellar .sd-homeprint .sd-homeprint__print {
+    flex: 1 1 auto; aspect-ratio: auto; border-radius: 0; box-shadow: none; background: none;
+    -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 58%, transparent 100%);
+    mask-image: linear-gradient(180deg, #000 0%, #000 58%, transparent 100%);
+  }
+  .stellar .sd-homeprint .sd-starpulse { background: none; }
+  .stellar .sd-homeprint .sd-homeprint__star { --sp-cy: 46%; }
+  .stellar .sd-homeprint .sd-homeprint__note,
+  .stellar .sd-homeprint .sd-herofan__caption { display: none; }
+
+  .stellar .sd-hero2__title { order: 1; margin-top: -6px; }
+  .stellar .sd-hero2__sub { order: 3; margin: 14px auto 0; max-width: 34ch; }
+  .stellar .sd-hero2__cta { order: 4; flex-direction: column; align-items: stretch; margin-top: 22px; }
+  .stellar .sd-hero2__cta .sd-btn { width: 100%; min-height: 54px; }
+  .stellar .sd-hero2__more { justify-content: center; margin-top: 34px; } /* below the fold, clear of the button */
+  .stellar .sd-hero2__stats { text-align: left; }
+}
+
+/* The home star breathing: without WebGL the still CSS star grows and shrinks on the same slow breath. */
+@media (prefers-reduced-motion: no-preference) {
+  .sd-starpulse--breathe:not([data-nogl='0'])::before { animation: sd-star-breathe 6s ease-in-out infinite; }
+}
+@keyframes sd-star-breathe { 0%, 100% { scale: 0.94; opacity: 0.86; } 50% { scale: 1.1; opacity: 1; } }

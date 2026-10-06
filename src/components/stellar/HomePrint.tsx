@@ -10,7 +10,7 @@ export default function HomePrint() {
   return (
     <Link href="/set/001" className="sd-herofan sd-homeprint" aria-label="Genesis — blast a star">
       <span className="sd-herofan__print sd-homeprint__print">
-        <StarPulse className="sd-homeprint__star" centre={0.48} />
+        <StarPulse className="sd-homeprint__star" centre={0.48} breathe />
         <span className="sd-homeprint__note" aria-hidden="true">Sealed · waiting for ignition</span>
       </span>
       <span className="sd-herofan__caption" aria-hidden="true">Genesis</span>

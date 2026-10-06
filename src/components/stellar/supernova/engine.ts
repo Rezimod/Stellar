@@ -33,6 +33,8 @@ export type SupernovaOptions = {
   onDone: () => void;
   /** The star before any press: it breathes on a slow heartbeat and waits. Used where no card is opened (the home print, the set page). */
   waiting?: boolean;
+  /** With `waiting`: instead of the heartbeat, one slow, even breath — the star grows and shrinks over a few seconds (the home page). */
+  breathe?: boolean;
   /** Where the star sits, as a fraction of the box's height from the top. Defaults to the reveal's own placement. */
   centre?: number;
 };
@@ -248,7 +250,16 @@ export function startSupernova(root: HTMLElement, opts: SupernovaOptions): Super
       E: 0.05, neb: 0, nebHot: 0, teal: 0, deb: 0, debI: 0, core: 0, blur: 0, rays: 0, ca: 0, vig: 0.35, white: 0, shk: 0, bloom: 0.4, dof: 0,
     };
     if (t < 0) {
-      if (opts.waiting && !opts.reducedMotion) {
+      if (opts.waiting && opts.breathe && !opts.reducedMotion) {
+        // Breathing: one slow, even swell every 6 s — the star grows, warms and settles back.
+        const sw = 0.5 - 0.5 * Math.cos((now * Math.PI * 2) / 6);
+        S.starR = R0 * (0.94 + 0.16 * sw);
+        S.heat = 0.16 + 0.08 * sw;
+        S.starI = 0.95 + 0.3 * sw;
+        S.wob = 0.03;
+        S.rays = 0.06 + 0.12 * sw;
+        S.bloom = 0.4 + 0.35 * sw;
+      } else if (opts.waiting && !opts.reducedMotion) {
         // Waiting: a slow double heartbeat, every 3.4 s; the star swells, warms and throws a little light off its limb.
         const ph = now % 3.4, b = Math.exp(-Math.pow((ph - 0.25) / 0.11, 2)) + 0.55 * Math.exp(-Math.pow((ph - 0.62) / 0.12, 2));
         const swell = 0.5 + 0.5 * Math.sin(now * 0.55);

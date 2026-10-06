@@ -9,7 +9,7 @@ import type { SupernovaHandle } from './supernova/engine';
  * card is born inside it. It draws only while on screen; without WebGL, or
  * before the engine arrives, a still CSS star stands in.
  */
-export default function StarPulse({ className = '', centre = 0.5, tone = '#f0c75e', label }: { className?: string; centre?: number; tone?: string; label?: string }) {
+export default function StarPulse({ className = '', centre = 0.5, tone = '#f0c75e', label, breathe = false }: { className?: string; centre?: number; tone?: string; label?: string; breathe?: boolean }) {
   const root = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -32,6 +32,7 @@ export default function StarPulse({ className = '', centre = 0.5, tone = '#f0c75
         sound: false,
         onDone: () => undefined,
         waiting: true,
+        breathe,
         centre,
       });
       handle.setPaused(!seen);
@@ -41,10 +42,10 @@ export default function StarPulse({ className = '', centre = 0.5, tone = '#f0c75
       io.disconnect();
       handle?.destroy();
     };
-  }, [centre, tone]);
+  }, [centre, tone, breathe]);
 
   return (
-    <div ref={root} className={`sd-starpulse ${className}`.trim()} role={label ? 'img' : undefined} aria-label={label} aria-hidden={label ? undefined : true}>
+    <div ref={root} className={`sd-starpulse ${breathe ? 'sd-starpulse--breathe ' : ''}${className}`.trim()} role={label ? 'img' : undefined} aria-label={label} aria-hidden={label ? undefined : true}>
       <canvas className="sd-starpulse__sky" data-sn="sky" />
     </div>
   );
