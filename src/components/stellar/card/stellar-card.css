@@ -8,7 +8,7 @@
   transition: transform .08s ease-out;
 }
 .sdc--hero .sdc-stage:not(.is-live) .sdc-tilt { animation: sdc-float 11s ease-in-out infinite; }
-.sdc--hero .sdc-stage:not(.is-live) .sdc-foil { animation: sdc-foil 11s ease-in-out infinite; }
+.sdc--hero .sdc-stage:not(.is-live) .sdc-foil::before { animation: sdc-foil 11s ease-in-out infinite; }
 
 .sdc-flip { position: relative; width: 100%; aspect-ratio: 630 / 880; transform-style: preserve-3d; transition: transform 1s cubic-bezier(.2,.7,.2,1); }
 .sdc-flip.is-over { transform: rotateY(180deg); }
@@ -30,7 +30,7 @@
 }
 /* The burst on a layer of its own, twice the window, centred on the object so it can turn. */
 .sdc-rays::before {
-  content: ''; position: absolute; inset: -50%; transform-origin: 50% 47%;
+  content: ''; position: absolute; inset: -50%; transform-origin: 50% 47%; will-change: transform;
   background: repeating-conic-gradient(from 0deg at 50% 47%, rgba(255, 170, 90, .14) 0deg 2.2deg, transparent 2.2deg 9deg);
 }
 
@@ -38,9 +38,9 @@
 .sdc-breath {
   position: absolute; inset: 0; pointer-events: none; mix-blend-mode: screen; opacity: 0;
   background: radial-gradient(circle at 50% 44%, color-mix(in srgb, var(--sdc-breath) 70%, #ffb070) 0%, transparent 34%);
-  transform-origin: 50% 44%;
+  transform-origin: 50% 44%; will-change: transform, opacity;
 }
-.sdc-twinkle, .sdc-twinkle::before { position: absolute; inset: 0; pointer-events: none; opacity: 0; }
+.sdc-twinkle, .sdc-twinkle::before { position: absolute; inset: 0; pointer-events: none; opacity: 0; will-change: opacity; }
 .sdc-twinkle {
   background:
     radial-gradient(circle at 14% 9%, #fff6e0 0 1.2px, transparent 2.4px),
@@ -61,8 +61,8 @@
     radial-gradient(circle at 96% 68%, #fff 0 1px, transparent 2px);
 }
 @media (prefers-reduced-motion: no-preference) {
-  .sdc-window img { animation: sdc-drift 26s ease-in-out infinite alternate; }
-  .sdc-lay0 img { animation-duration: 34s; }
+  .sdc-lay0, .sdc-lay1 { animation: sdc-drift 26s ease-in-out infinite alternate; }
+  .sdc-lay0 { animation-duration: 34s; }
   .sdc-rays::before { animation: sdc-spin 120s linear infinite; }
   .sdc-breath { animation: sdc-breath 7s ease-in-out infinite; }
   .sdc-twinkle { animation: sdc-twinkle 3.8s ease-in-out infinite; }
@@ -89,33 +89,42 @@
 .sdc-lay1 { transform: translate(calc((var(--px) - .5) * 5px), calc((var(--py) - .5) * 5px)); }
 .sdc-lay2 { transform: translate(calc((var(--px) - .5) * 18px), calc((var(--py) - .5) * 18px)); }
 .sdc-stage.is-live .sdc-lay0, .sdc-stage.is-live .sdc-lay1, .sdc-stage.is-live .sdc-lay2 { transition: transform .08s ease-out; }
-.sdc-frame { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+.sdc-frame { position: absolute; inset: 0; display: block; width: 100%; height: 100%; will-change: transform; }
 
 .sdc-foil {
-  position: absolute; inset: 0; pointer-events: none; mix-blend-mode: color-dodge; opacity: var(--sdc-foil, 0); transition: opacity .4s ease-out;
+  position: absolute; inset: 0; overflow: hidden; pointer-events: none; mix-blend-mode: color-dodge; opacity: var(--sdc-foil, 0); transition: opacity .4s ease-out;
+}
+.sdc-foil::before, .sdc-holo::before, .sdc-glare::before { content: ''; position: absolute; left: 0; top: 0; will-change: translate; }
+.sdc-foil::before {
+  width: 260%; height: 260%;
   background: linear-gradient(115deg, transparent 18%, #ff8a5a 28%, #ffd36e 36%, #fff0b8 44%, #ffb36a 52%, #ff6a6a 60%, #ffd36e 68%, transparent 80%);
-  background-size: 260% 260%;
-  background-position: calc(var(--px) * 100%) calc(var(--py) * 100%);
+  translate: calc(var(--px) * -61.54%) calc(var(--py) * -61.54%);
 }
 /* Held, the foil wakes and the spectrum slides with the light; the rarer the card, the more of it. */
 .sdc-stage.is-live .sdc-foil { opacity: calc(var(--sdc-foil, 0) * 1.3); }
 .sdc-holo {
   position: absolute; inset: 0; pointer-events: none; mix-blend-mode: color-dodge;
-  opacity: calc(var(--sdc-holo) * .3); transition: opacity .4s ease-out;
-  background: repeating-linear-gradient(110deg, #ff6a5a 0%, #ffc85a 5%, #fff0b8 9%, #7ee0c8 13%, #8ac8ff 17%, #e08aff 21%, #ff6a5a 25%);
-  background-size: 300% 300%;
-  background-position: calc(var(--px) * 100%) calc(var(--py) * 100%);
+  overflow: hidden; opacity: calc(var(--sdc-holo) * .3); transition: opacity .4s ease-out;
   -webkit-mask-image: radial-gradient(circle at calc(var(--px) * 100%) calc(var(--py) * 100%), #000 0%, rgba(0, 0, 0, .3) 30%, transparent 58%);
   mask-image: radial-gradient(circle at calc(var(--px) * 100%) calc(var(--py) * 100%), #000 0%, rgba(0, 0, 0, .3) 30%, transparent 58%);
+}
+.sdc-holo::before {
+  width: 300%; height: 300%;
+  background: repeating-linear-gradient(110deg, #ff6a5a 0%, #ffc85a 5%, #fff0b8 9%, #7ee0c8 13%, #8ac8ff 17%, #e08aff 21%, #ff6a5a 25%);
+  translate: calc(var(--px) * -66.67%) calc(var(--py) * -66.67%);
 }
 .sdc-holo--common { filter: saturate(.2) sepia(.6); }
 .sdc-holo--rare { filter: saturate(.55) sepia(.3); }
 .sdc-stage.is-live .sdc-holo { opacity: var(--sdc-holo); }
-.sdc--hero .sdc-stage:not(.is-live) .sdc-holo { animation: sdc-foil 11s ease-in-out infinite; }
-.sdc-glitter { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; mix-blend-mode: color-dodge; }
+.sdc--hero .sdc-stage:not(.is-live) .sdc-holo::before { animation: sdc-holo-rest 11s ease-in-out infinite; }
+.sdc-glitter { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; mix-blend-mode: color-dodge; will-change: transform; }
 .sdc-glare {
-  position: absolute; inset: 0; pointer-events: none; mix-blend-mode: soft-light;
-  background: radial-gradient(circle at calc(var(--px) * 100%) calc(var(--py) * 100%), rgba(255,255,255,.55), rgba(255,255,255,.12) 26%, transparent 55%);
+  position: absolute; inset: 0; overflow: hidden; pointer-events: none; mix-blend-mode: soft-light;
+}
+.sdc-glare::before {
+  width: 240%; height: 240%;
+  background: radial-gradient(circle closest-side, rgba(255,255,255,.55), rgba(255,255,255,.12) 26%, transparent 55%);
+  translate: calc(var(--px) * 41.67% - 50%) calc(var(--py) * 41.67% - 50%);
 }
 
 .sdc-turn { min-width: 160px; }
@@ -135,9 +144,10 @@
 }
 
 @keyframes sdc-float { 0% { transform: rotateX(7deg) rotateY(-11deg); } 50% { transform: rotateX(-4deg) rotateY(11deg); } 100% { transform: rotateX(7deg) rotateY(-11deg); } }
-@keyframes sdc-foil { 0% { background-position: 0% 20%; } 50% { background-position: 100% 80%; } 100% { background-position: 0% 20%; } }
+@keyframes sdc-foil { 0%, 100% { translate: 0 -12.3%; } 50% { translate: -61.54% -49.2%; } }
+@keyframes sdc-holo-rest { 0%, 100% { translate: 0 -13.3%; } 50% { translate: -66.67% -53.3%; } }
 @media (prefers-reduced-motion: reduce) {
-  .sdc--hero .sdc-stage:not(.is-live) .sdc-tilt, .sdc--hero .sdc-stage:not(.is-live) .sdc-foil, .sdc--hero .sdc-stage:not(.is-live) .sdc-holo { animation: none; }
+  .sdc--hero .sdc-stage:not(.is-live) .sdc-tilt, .sdc--hero .sdc-stage:not(.is-live) .sdc-foil::before, .sdc--hero .sdc-stage:not(.is-live) .sdc-holo::before { animation: none; }
   .sdc-flip { transition: none; }
 }
 

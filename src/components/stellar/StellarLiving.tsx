@@ -68,6 +68,11 @@ export default function StellarLiving() {
     document.querySelectorAll(DEALT).forEach((el) => deal.observe(el));
     offs.push(() => deal.disconnect());
 
+    // In view: only these cards carry anything that runs (the lean, a pass of foil).
+    const view = new IntersectionObserver((entries) => entries.forEach((en) => en.target.classList.toggle('is-view', en.isIntersecting)), { rootMargin: '10% 0px' });
+    document.querySelectorAll(`${DEALT}, .sd-herofan__card`).forEach((el) => view.observe(el));
+    offs.push(() => view.disconnect());
+
     // Browsers without scroll-driven animation: sections rise on arrival, the fan opens from script.
     if (!CSS.supports('animation-timeline: view()')) {
       root.classList.add('sd-io');

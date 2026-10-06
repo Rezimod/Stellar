@@ -310,17 +310,19 @@
 .sd-tile:not([data-rarity='common']):hover,
 .sd-tile:not([data-rarity='common']):focus-visible { border-color: color-mix(in srgb, var(--rarity) 55%, var(--sd-rule-strong)); }
 .sd-tile[data-rarity='epic'] .sd-tile__price, .sd-tile[data-rarity='legendary'] .sd-tile__price { color: var(--rarity); }
+/* The pass of foil is a sheet three tiles wide slid across, clipped a little outside the stage so the lifted card still shows. */
+.sd-tile[data-rarity='legendary'] .sd-tile__stage { overflow: clip; overflow-clip-margin: 8px; }
 .sd-tile[data-rarity='legendary'] .sd-tile__stage::after {
-  content: ''; position: absolute; inset: 0; pointer-events: none; mix-blend-mode: screen; border-radius: 12px;
+  content: ''; position: absolute; inset: 0 auto 0 0; width: 300%; pointer-events: none; mix-blend-mode: screen;
   background: linear-gradient(105deg, transparent 42%, color-mix(in srgb, var(--rarity) 26%, transparent) 50%, transparent 58%);
-  background-size: 300% 100%; background-position: 130% 0; background-repeat: no-repeat;
+  translate: -86.67% 0;
 }
 @media (prefers-reduced-motion: no-preference) {
-  .sd-tile[data-rarity='legendary'] .sd-tile__stage::after { animation: sd-foil-pass 9s var(--sd-ease-inout) infinite; }
+  li.is-view > .sd-tile[data-rarity='legendary'] .sd-tile__stage::after { animation: sd-foil-pass 9s var(--sd-ease-inout) infinite; will-change: translate; }
 }
 @keyframes sd-foil-pass {
-  0%, 72% { background-position: 130% 0; }
-  100% { background-position: -30% 0; }
+  0%, 72% { translate: -86.67% 0; }
+  100% { translate: 20% 0; }
 }
 @media (max-width: 559px) {
   .sd-tile { padding: 12px 12px 12px; }

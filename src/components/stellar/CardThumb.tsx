@@ -25,7 +25,6 @@ export default function CardThumb({ designation, eager = false }: { designation:
         fetchPriority={eager ? 'high' : undefined}
         decoding="async"
       />
-      <span className="sd-thumb__live" aria-hidden="true" />
     </span>
   );
 }

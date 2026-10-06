@@ -5,7 +5,8 @@
    dealt onto the table as they come into view, and lift off the shelf to be
    held (StellarLiving.tsx). Sections rise as they arrive and the home fan
    opens as it leaves, on the scroll timeline where the browser has one.
-   Transform and opacity only, so a long shelf scrolls on the compositor. */
+   Transform and opacity only, and only on cards in view (li.is-view), so a
+   long shelf scrolls on the compositor with nothing running off screen. */
 
 /* ── Controls ─────────────────────────────────────────────────── */
 /* Lift on hover, give on press, a pass of light across the hot ones. Focus
@@ -57,51 +58,23 @@
   .sd-wordmark:hover img { transform: rotate(-14deg) translate(-1px, -1px); }
 }
 
-/* ── Cards on the shelf: the lean, the glare that follows it, a sky still moving ── */
-[data-zoom] .sd-thumb {
+/* ── Cards on the shelf: the lean and the glare that follows it ── */
+/* Only the card under the pointer, or in view on a phone, is given depth: a hundred
+   cards each on a 3D layer would cost more than the lean is worth. */
+[data-zoom] .sd-thumb { transition: transform 500ms var(--sd-ease), translate 300ms var(--sd-ease), scale 300ms var(--sd-ease); }
+[data-zoom] .sd-thumb.is-tilt, :is(.is-view [data-zoom], .is-view[data-zoom]) .sd-thumb.is-scroll {
   transform: perspective(800px) rotateX(calc(var(--ty, 0) * -16deg)) rotateY(calc(var(--tx, 0) * 18deg));
-  transition: transform 500ms var(--sd-ease), translate 300ms var(--sd-ease), scale 300ms var(--sd-ease);
 }
 [data-zoom] .sd-thumb.is-tilt { transition: transform 90ms ease-out, translate 300ms var(--sd-ease), scale 300ms var(--sd-ease); }
 [data-zoom] .sd-thumb.is-scroll { transition: transform 160ms linear; }
-[data-zoom] .sd-thumb::before {
+:is(.is-view [data-zoom], .is-view[data-zoom]) .sd-thumb.is-scroll { will-change: transform; }
+[data-zoom] .sd-thumb.is-tilt::before {
   content: ''; position: absolute; z-index: 1; left: -50%; top: -50%; width: 200%; height: 200%; pointer-events: none;
   background: radial-gradient(circle, rgba(255, 240, 214, 0.42), rgba(255, 220, 170, 0.1) 20%, transparent 42%);
-  mix-blend-mode: soft-light; opacity: 0;
+  mix-blend-mode: soft-light;
   transform: translate(calc(var(--tx, 0) * 50%), calc(var(--ty, 0) * 50%));
-  transition: opacity 300ms var(--sd-ease);
+  animation: sd-lv-fade 300ms var(--sd-ease) both;
 }
-[data-zoom] .sd-thumb.is-tilt::before { opacity: 1; }
-
-/* The window of a printed card, where its sky is. */
-.sd-thumb__live {
-  position: absolute; left: 3.17%; top: 2.27%; width: 93.65%; height: 78.4%; overflow: hidden; pointer-events: none;
-  border-radius: 3% / 2.6%;
-}
-.sd-thumb__live::before, .sd-thumb__live::after { content: ''; position: absolute; inset: 0; opacity: 0; }
-.sd-thumb__live::before {
-  background:
-    radial-gradient(circle at 12% 14%, #fff4dc 0 1px, transparent 2px),
-    radial-gradient(circle at 84% 22%, #fff 0 0.8px, transparent 1.8px),
-    radial-gradient(circle at 91% 52%, #ffe4bd 0 1px, transparent 2px),
-    radial-gradient(circle at 7% 58%, #fff 0 0.8px, transparent 1.8px),
-    radial-gradient(circle at 68% 9%, #fff 0 0.8px, transparent 1.6px);
-}
-.sd-thumb__live::after {
-  inset: 0 -60%; mix-blend-mode: screen;
-  background: linear-gradient(105deg, transparent 40%, rgba(255, 226, 184, 0.22) 50%, transparent 60%);
-  transform: translateX(-60%);
-}
-@media (prefers-reduced-motion: no-preference) {
-  .sd-thumb__live::before { animation: sd-lv-twinkle 4.4s ease-in-out infinite; }
-  .sd-thumb__live::after { animation: sd-lv-sweep 11s cubic-bezier(0.5, 0, 0.3, 1) infinite; }
-  li:nth-child(5n + 2) .sd-thumb__live::before, li:nth-child(5n + 2) .sd-thumb__live::after { animation-delay: -2.1s; }
-  li:nth-child(5n + 3) .sd-thumb__live::before, li:nth-child(5n + 3) .sd-thumb__live::after { animation-delay: -4.6s; }
-  li:nth-child(5n + 4) .sd-thumb__live::before, li:nth-child(5n + 4) .sd-thumb__live::after { animation-delay: -6.9s; }
-  li:nth-child(5n) .sd-thumb__live::before, li:nth-child(5n) .sd-thumb__live::after { animation-delay: -8.8s; }
-}
-@keyframes sd-lv-twinkle { 0%, 100% { opacity: 0; } 50% { opacity: 0.85; } }
-@keyframes sd-lv-sweep { 0%, 78% { opacity: 1; transform: translateX(-60%); } 100% { opacity: 1; transform: translateX(60%); } }
 
 /* ── The deal: cards land on the table as they come into view ── */
 @media (prefers-reduced-motion: no-preference) {
