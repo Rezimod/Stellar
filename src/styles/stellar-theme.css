@@ -745,7 +745,7 @@ html:has(.stellar) #stellar-main { padding-top: 0; padding-bottom: 0; }
 .sd-cardhero__plate { position: relative; display: grid; place-items: center; padding-block: 12px; }
 .sd-cardhero__plate .sd-tilt { position: relative; z-index: 1; width: min(100%, 360px); }
 .sd-cardhero__plate .sd-cardplate { --sd-card-cap: 440px; }
-.sd-cardhero__line { color: var(--sd-ink); font-size: 17px; line-height: 1.6; max-width: 46ch; margin: 0; }
+.sd-cardhero__line { color: var(--sd-ink); font-size: 17px; line-height: 1.6; max-width: 46ch; margin: 26px 0 0; }
 /* The card's poster title, as the face prints it: sunset letters, banded at the foot. */
 .sd-cardhero__title {
   margin: 4px 0 0; font-family: var(--sd-title); font-weight: 400; font-size: clamp(40px, 6vw, 76px); line-height: 1.04; letter-spacing: 0.02em;
@@ -755,7 +755,6 @@ html:has(.stellar) #stellar-main { padding-top: 0; padding-bottom: 0; }
   display: block; width: fit-content; color: transparent; background: var(--sd-sunset); -webkit-background-clip: text; background-clip: text;
 }
 .sd-cardhero__epithet { margin: 14px 0 0; font-family: var(--sd-spaced); font-weight: 300; font-size: 15px; letter-spacing: 0.5em; text-transform: uppercase; color: var(--sd-ink); }
-.sd-cardhero__rules { max-width: 460px; margin: 22px 0 18px; }
 .sd-cardhero__head { margin: 0 0 8px; font-family: var(--sd-display); font-size: clamp(22px, 2.4vw, 30px); line-height: 1.1; text-transform: uppercase; color: var(--sd-ink); }
 .sd-realphoto { margin: 0; }
 .sd-realphoto img { display: block; width: 100%; max-height: 78vh; object-fit: contain; border-radius: var(--sd-radius); background: #090909; box-shadow: 0 0 0 1px var(--sd-rule), 0 30px 60px -30px rgba(0, 0, 0, 0.9); }

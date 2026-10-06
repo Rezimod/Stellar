@@ -108,7 +108,6 @@ export default async function CardPage({ params }: { params: Promise<{ designati
               ))}
             </h2>
             {/* The card beside it carries the epithet, quote and headline; the page adds what the card does not say. */}
-            <hr className="sd-rules sd-cardhero__rules" />
             <p className="sd-cardhero__line">{record.line}</p>
             <DataRow
               className="sd-facts"
