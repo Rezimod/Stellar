@@ -21,7 +21,7 @@ const render = (cards: RevealedCard[], extra: Record<string, unknown> = {}) =>
 it('waits on the star for one press', () => {
   const html = render([card('EUROPA', 'common', 0)]);
   expect(html).toContain('class="sn-go"');
-  expect(html).toContain('Ignite');
+  expect(html).toContain('Blast the star');
   expect(html).toContain('data-sn="sky"');
 });
 
@@ -69,7 +69,7 @@ it('names the opening plainly, with no banned words and no exclamation marks', (
   const text = html.replace(/<[^>]+>/g, ' ');
   expect(text).not.toMatch(/\b(NFT|mint|drop|payload|manifest|registry|airdrop)\b/i);
   expect(text).not.toContain('!');
-  expect(html).toContain('Open another');
+  expect(html).toContain('Blast another');
 });
 
 it('plays without sound for now, and offers no sound toggle', () => {
