@@ -34,9 +34,16 @@
 
 /* ── Home: the hero ───────────────────────────────────────────── */
 .sd-hero2 { position: relative; overflow: clip; padding-block: 40px 56px; border-bottom: 1px solid var(--sd-rule); }
-@media (min-width: 960px) { .sd-hero2 { padding-block: 64px 72px; } }
-.sd-hero2__grid { display: grid; gap: 28px; align-items: center; }
-@media (min-width: 960px) { .sd-hero2__grid { grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr); gap: 24px; } }
+/* The stage: the words in the middle, the cards scattered around them. */
+@media (min-width: 560px) {
+  .sd-hero2 { padding-block: clamp(64px, 9vw, 120px) clamp(72px, 9vw, 128px); min-height: min(86vh, 900px); display: grid; align-items: center; }
+  .sd-hero2__grid { position: static; display: grid; justify-items: center; text-align: center; }
+  .sd-hero2__copy { position: relative; z-index: 2; max-width: 680px; }
+  .sd-hero2__sub { margin-inline: auto; }
+  .sd-hero2__cta { justify-content: center; }
+  .sd-hero2__stats { justify-content: center; }
+  .stellar .sd-hero2__stats { justify-content: center; }
+}
 .sd-hero2__title {
   margin: 0; font-family: var(--sd-display); font-weight: 400; text-transform: uppercase;
   font-size: clamp(38px, 4.6vw, 66px); line-height: 1; letter-spacing: 0.01em; color: var(--sd-ink);
@@ -65,9 +72,9 @@
 }
 @keyframes sd-arrive { from { opacity: 0; transform: translateY(14px); } }
 
-/* Three cards held in a fan, in their own light. */
+/* The cards around the headline: each one has a spot on the stage, a lean and a size.
+   They deal out on arrival and drift a little; a card lifts when pointed at. */
 .sd-herofan { --cw: clamp(124px, 32vw, 176px); position: relative; display: grid; place-items: center; min-height: calc(var(--cw) * 1.4 + 72px); }
-@media (min-width: 960px) { .sd-herofan { --cw: clamp(180px, 17vw, 262px); } }
 .sd-herofan__light {
   position: absolute; inset: -12% -30%; pointer-events: none;
   background:
@@ -81,19 +88,34 @@
 }
 .sd-herofan__deck { position: relative; width: var(--cw); aspect-ratio: 520 / 726; }
 .sd-herofan__card {
-  --place: translate(calc(var(--side) * var(--cw) * (0.64 + var(--sd-spread, 0) * 0.4)), calc(var(--off) * 18px - var(--sd-spread, 0) * 36px)) rotate(calc(var(--side) * (9deg + var(--sd-spread, 0) * 9deg))) scale(calc(1 - var(--off) * 0.06));
+  --place: translate(calc(var(--side) * var(--cw) * 0.64), calc(var(--off) * 18px)) rotate(calc(var(--side) * 9deg)) scale(calc(1 - var(--off) * 0.06));
   position: absolute; inset: 0; display: block; border-radius: 4.76% / 3.41%;
   transform: var(--place);
   transition: transform 520ms cubic-bezier(0.2, 0.9, 0.25, 1.15);
 }
 .sd-herofan__card .sd-thumb { box-shadow: 0 0 0 1px color-mix(in srgb, var(--tile-glow) 30%, rgba(255, 255, 255, 0.06)), 0 30px 60px -24px rgba(0, 0, 0, 0.95), 0 0 60px -20px color-mix(in srgb, var(--tile-glow) 60%, transparent); }
 .sd-herofan__card:focus-visible { outline: 2px solid var(--sd-focus); outline-offset: 6px; }
-@media (hover: hover) { .sd-herofan__card:hover { transform: var(--place) translateY(-14px); } }
-@media (prefers-reduced-motion: no-preference) {
-  .sd-herofan__card { animation: sd-deal 1100ms var(--sd-ease-out) 120ms backwards; }
-  .sd-herofan__card .sd-thumb { animation: sd-bob 9s ease-in-out calc(var(--side) * 1.7s - 2s) infinite; }
+@media (hover: hover) { .sd-herofan__card:hover { transform: var(--place) translateY(-14px); z-index: 3; } }
+@media (max-width: 559px) { .sd-herofan__card[data-phone='hide'] { display: none; } }
+@media (min-width: 560px) {
+  .sd-herofan { position: absolute; inset: 0; z-index: 1; display: block; min-height: 0; --cw: clamp(110px, 12.5vw, 200px); }
+  .sd-herofan__light { inset: 0; background:
+    radial-gradient(34% 40% at 50% 50%, rgba(255, 185, 150, 0.14), transparent 70%),
+    radial-gradient(16% 14% at 50% 58%, rgba(244, 177, 19, 0.1), transparent 70%); }
+  .sd-herofan__light::after { top: 62%; width: 70%; }
+  .sd-herofan__deck { position: absolute; inset: 0; width: auto; aspect-ratio: auto; }
+  .sd-herofan__card {
+    --place: translate(-50%, -50%) rotate(var(--rot)) scale(var(--s));
+    inset: auto; left: calc(var(--x) * 1%); top: calc(var(--y) * 1%); width: var(--cw); aspect-ratio: 520 / 726;
+    --side: 0; --off: 0;
+  }
+  @media (hover: hover) { .sd-herofan__card:hover { transform: translate(-50%, -50%) rotate(var(--rot)) scale(calc(var(--s) * 1.06)) translateY(-10px); } }
 }
-@keyframes sd-deal { from { opacity: 0; transform: translateY(34px) scale(0.92); } }
+@media (prefers-reduced-motion: no-preference) {
+  .sd-herofan__card { animation: sd-deal 1100ms var(--sd-ease-out) calc(120ms + var(--i, 0) * 70ms) backwards; }
+  .sd-herofan__card .sd-thumb { animation: sd-bob 9s ease-in-out calc(var(--i, 0) * -1.3s) infinite; }
+}
+@keyframes sd-deal { from { opacity: 0; translate: 0 34px; } }
 @keyframes sd-bob { 0%, 100% { translate: 0 0; } 50% { translate: 0 -8px; } }
 
 /* ── Home: the sections under it ──────────────────────────────── */
