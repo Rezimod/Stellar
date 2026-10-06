@@ -1,13 +1,15 @@
 // What you hear inside the helmet. There is no sound outside it — the Moon
-// is silent — so everything here is the suit: the fan and pump of the life
-// support pack, your own breathing (faster when you work), boot strikes
-// and landings carried up through the suit, a comms bleep when the base
-// names something. Synthesised in Web Audio, created on the first gesture.
+// is silent — so everything here is the suit: the low hum of the life
+// support pack, boot strikes and landings carried up through the suit, a
+// comms bleep when the base names something. No breath track and no air
+// hiss — a loop of blown noise under every scene is fatiguing, and the hum
+// alone already says "you are sealed in". Synthesised in Web Audio, created
+// on the first gesture.
 
 export interface SuitAudio {
   /** Call from a user gesture; safe to call repeatedly. */
   start: () => void;
-  /** Exertion 0..1 drives breath rate and depth. Inside the helmet the suit is louder. */
+  /** Exertion 0..1 lifts the pack a little. Inside the helmet the suit is louder. */
   update: (dt: number, exertion: number, helmet: boolean) => void;
   step: (hard: number) => void;
   bleep: () => void;
@@ -18,10 +20,7 @@ export interface SuitAudio {
 export function makeSuitAudio(): SuitAudio {
   let ctx: AudioContext | null = null;
   let master: GainNode | null = null;
-  let breathGain: GainNode | null = null;
   let fanGain: GainNode | null = null;
-  let breathT = 0;
-  let rate = 0.28;
   let noise: AudioBuffer | null = null;
   let helmetK = 0;
 
@@ -35,34 +34,18 @@ export function makeSuitAudio(): SuitAudio {
         noise = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
         const d = noise.getChannelData(0);
         for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
-        // Fan: a soft hum with a whisper of air.
+        // The pack: a low hum, well under the voice band, and nothing else.
+        // The lowpass sits at 190 Hz so no part of it reads as blown air.
         const fan = ctx.createOscillator();
         fan.type = 'triangle';
-        fan.frequency.value = 92;
+        fan.frequency.value = 78;
         const fanLp = ctx.createBiquadFilter();
         fanLp.type = 'lowpass';
-        fanLp.frequency.value = 260;
+        fanLp.frequency.value = 190;
         fanGain = ctx.createGain();
-        fanGain.gain.value = 0.05;
+        fanGain.gain.value = 0.03;
         fan.connect(fanLp); fanLp.connect(fanGain); fanGain.connect(master);
         fan.start();
-        const air = ctx.createBufferSource();
-        air.buffer = noise; air.loop = true;
-        const airBp = ctx.createBiquadFilter();
-        airBp.type = 'bandpass'; airBp.frequency.value = 900; airBp.Q.value = 0.6;
-        const airGain = ctx.createGain();
-        airGain.gain.value = 0.035;
-        air.connect(airBp); airBp.connect(airGain); airGain.connect(fanGain);
-        air.start();
-        // Breath: filtered noise, opened and closed by the update loop.
-        const breath = ctx.createBufferSource();
-        breath.buffer = noise; breath.loop = true;
-        const bp = ctx.createBiquadFilter();
-        bp.type = 'bandpass'; bp.frequency.value = 520; bp.Q.value = 0.8;
-        breathGain = ctx.createGain();
-        breathGain.gain.value = 0;
-        breath.connect(bp); bp.connect(breathGain); breathGain.connect(master);
-        breath.start();
       }
       if (ctx.state === 'suspended') void ctx.resume();
     } catch {
@@ -76,16 +59,10 @@ export function makeSuitAudio(): SuitAudio {
   return {
     start,
     update(dt, exertion, helmet) {
-      if (!ctx || !breathGain || !fanGain) return;
+      if (!ctx || !fanGain) return;
       helmetK += ((helmet ? 1 : 0.45) - helmetK) * (1 - Math.exp(-dt * 4));
-      rate += ((0.24 + exertion * 0.55) - rate) * (1 - Math.exp(-dt * 0.5));
-      breathT += dt * rate;
-      // In through the first 40 % of the cycle, out through the next 45 %, a rest.
-      const ph = breathT % 1;
-      const env = ph < 0.4 ? Math.sin(ph / 0.4 * Math.PI) : ph < 0.85 ? Math.sin((ph - 0.4) / 0.45 * Math.PI) * 0.75 : 0;
-      const depth = 0.05 + exertion * 0.16;
-      breathGain.gain.setTargetAtTime(env * depth * helmetK, ctx.currentTime, 0.05);
-      fanGain.gain.setTargetAtTime(0.05 * helmetK, ctx.currentTime, 0.1);
+      // The pack works a touch harder when you do — heard as level, not as air.
+      fanGain.gain.setTargetAtTime((0.026 + exertion * 0.012) * helmetK, ctx.currentTime, 0.2);
     },
     step(hard) {
       one((c, m) => {

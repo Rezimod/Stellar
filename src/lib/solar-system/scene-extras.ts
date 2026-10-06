@@ -106,11 +106,21 @@ function diskSprite(): THREE.CanvasTexture {
   return t;
 }
 
+/** Below this many device pixels a GL point stops being drawn reliably. */
+const MIN_POINT_PX = 1.6;
+
 /**
  * PointsMaterial whose sprites never balloon when the camera flies close —
  * gl_PointSize is clamped to `maxPx` (device pixels), and optionally scaled
  * per-particle by an `aSize` attribute. Fixes the "giant bokeh blob" artifact
  * when the orbit camera passes through a particle field.
+ *
+ * It also holds every sprite at `MIN_POINT_PX` and pays the difference back in
+ * opacity. A GL point narrower than one pixel is rasterised all-or-nothing
+ * depending on where its centre falls, so a field of sub-pixel stars boils
+ * violently with the smallest camera move — that is the "sparkle" you see
+ * across the sky and over a planet's limb. Holding the floor and dimming
+ * instead turns the same star into a steady, faint dot.
  */
 export function clampedPointsMaterial(
   params: THREE.PointsMaterialParameters,
@@ -124,12 +134,29 @@ export function clampedPointsMaterial(
         .replace('uniform float size;', 'uniform float size;\nattribute float aSize;')
         .replace('gl_PointSize = size;', 'gl_PointSize = size * aSize;');
     }
-    shader.vertexShader = shader.vertexShader.replace(
-      'if ( isPerspective ) gl_PointSize *= ( scale / - mvPosition.z );',
-      `if ( isPerspective ) gl_PointSize *= ( scale / - mvPosition.z );
-	gl_PointSize = min( gl_PointSize, ${maxPx.toFixed(1)} );`,
-    );
+    shader.vertexShader = shader.vertexShader
+      .replace('#include <common>', '#include <common>\nvarying float vPointFade;')
+      // Size attenuation is behind an #ifdef; seed the varying outside it so
+      // it is always written.
+      .replace('#include <project_vertex>', '#include <project_vertex>\n\tvPointFade = 1.0;')
+      .replace(
+        'if ( isPerspective ) gl_PointSize *= ( scale / - mvPosition.z );',
+        `if ( isPerspective ) gl_PointSize *= ( scale / - mvPosition.z );
+	gl_PointSize = min( gl_PointSize, ${maxPx.toFixed(1)} );
+	vPointFade = clamp( gl_PointSize / ${MIN_POINT_PX.toFixed(1)}, 0.0, 1.0 );
+	vPointFade *= vPointFade;
+	gl_PointSize = max( gl_PointSize, ${MIN_POINT_PX.toFixed(1)} );`,
+      );
+    shader.fragmentShader = shader.fragmentShader
+      .replace('#include <common>', '#include <common>\nvarying float vPointFade;')
+      .replace(
+        'vec4 diffuseColor = vec4( diffuse, opacity );',
+        'vec4 diffuseColor = vec4( diffuse, opacity * vPointFade );',
+      );
   };
+  // onBeforeCompile bakes maxPx into the source, so two materials with
+  // different clamps must not share a compiled program.
+  mat.customProgramCacheKey = () => `clampedPoints:${maxPx}:${perParticleSize}`;
   return mat;
 }
 

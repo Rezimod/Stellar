@@ -869,7 +869,7 @@
 }
 
 /* Explore Mode — the flight deck. One console along the bottom: the compass
-   circle, then a single cut-cornered panel carrying the odometer, the speed
+   circle, then a single cut-cornered panel carrying the throttle lever, the speed
    dial and the three system bars. Everything else lives at the edges — the
    heading block top left, the pause key top right, a target bracket out on
    the glass — so the middle of the frame stays the view. */
@@ -1001,7 +1001,7 @@
 /* ── Standing order, top right under the pause keys ── */
 .flight-hud__order {
   position: absolute;
-  top: calc(max(16px, env(safe-area-inset-top)) + 116px);
+  top: calc(max(16px, env(safe-area-inset-top)) + 56px);
   right: max(16px, env(safe-area-inset-right));
   width: 190px;
   display: grid;
@@ -1062,7 +1062,7 @@
 .flight-hud__panel {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1.15fr);
+  grid-template-columns: auto auto minmax(0, 1fr);
   align-items: center;
   gap: 12px;
   padding: 10px 18px;
@@ -1079,8 +1079,6 @@
   clip-path: polygon(17px 0, calc(100% - 17px) 0, 100% 17px, 100% calc(100% - 7px), calc(100% - 7px) 100%, 7px 100%, 0 calc(100% - 7px), 0 17px);
 }
 .flight-hud__panel > * { position: relative; }
-.flight-hud__odometer { display: grid; gap: 6px; font-size: 15px; }
-.flight-hud__odometer > span:first-child { font-size: 10px; color: var(--hud-dim); text-transform: uppercase; letter-spacing: 0.14em; }
 .flight-hud small { font-size: 10px; color: var(--hud-dim); }
 
 /* Speed dial: a ring open at the bottom, filled to the regime's ceiling,
@@ -1151,13 +1149,10 @@
   /* The panel gives way rather than overflowing: the compass and the thumb
      keys keep their size, the instruments shrink into what is left. */
   .flight-hud__console { left: 6px; right: 6px; gap: 6px; grid-template-columns: auto minmax(0, 1fr) auto; }
-  .flight-hud__panel { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); }
-  .flight-hud__odometer, .flight-hud__systems { min-width: 0; }
-  .flight-hud__odometer > span:last-child { display: flex; align-items: baseline; gap: 3px; }
+  .flight-hud__panel { grid-template-columns: auto auto minmax(0, 1fr); }
+  .flight-hud__systems { min-width: 0; }
   .flight-hud .flight-hud__radar { width: 44px; height: 44px; }
   .flight-hud__panel { padding: 8px 10px; gap: 8px; }
-  .flight-hud__odometer { font-size: 13px; gap: 4px; }
-  .flight-hud__odometer > span:first-child { font-size: 8px; letter-spacing: 0.1em; }
   .flight-hud .flight-hud__speed { width: 82px; height: 82px; margin: -14px 0; }
   .flight-hud__speed-value { font-size: 21px; }
   .flight-hud__mode, .flight-hud small { font-size: 8px; }
@@ -1179,7 +1174,6 @@
   .flight-hud__sys-name { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; }
   .flight-hud__percent, .flight-hud small, .flight-hud__mode { font-size: 11px; }
   .flight-hud__head { top: max(28px, env(safe-area-inset-top)); left: max(28px, env(safe-area-inset-left)); font-size: 14px; }
-  .flight-hud__odometer { font-size: 21px; }
   .flight-hud .flight-hud__speed { width: 124px; height: 124px; margin: -26px 0; }
   .flight-hud__speed-value { font-size: 30px; }
 }
@@ -1191,7 +1185,6 @@
   .flight-hud__sys-name { display: none; }
   .flight-hud .flight-hud__speed { width: 84px; height: 84px; margin: -14px 0; }
   .flight-hud__speed-value { font-size: 20px; }
-  .flight-hud__odometer { font-size: 14px; }
 }
 
 /* ──────────────────── planet info chip (opens the facts card) ────────────────────
@@ -1634,7 +1627,7 @@
 .moon-hud__foot { width: min(560px, calc(100% - 340px)); }
 .flight-hud__move, .flight-hud__look {
   position: absolute;
-  bottom: calc(116px + env(safe-area-inset-bottom));
+  bottom: calc(160px + env(safe-area-inset-bottom));
 }
 .flight-hud__move { left: max(16px, env(safe-area-inset-left)); }
 .flight-hud__look { right: max(16px, env(safe-area-inset-right)); }
@@ -1642,7 +1635,7 @@
 .flight-hud[data-touch='true'] .flight-hud__aux {
   position: absolute;
   right: 0;
-  bottom: 256px;
+  bottom: 302px;
   display: flex;
   flex-direction: row;
   gap: 8px;
@@ -1667,123 +1660,79 @@
   .game-stick { width: 104px; height: 104px; }
   .flight-hud__move, .flight-hud__look { bottom: max(16px, env(safe-area-inset-bottom)); }
   .flight-hud[data-touch='true'] .flight-hud__console { left: 132px; right: 132px; }
-  .flight-hud[data-touch='true'] .flight-hud__aux { right: calc(max(16px, env(safe-area-inset-right)) - 132px); bottom: 126px; }
+  .flight-hud[data-touch='true'] .flight-hud__aux { right: calc(max(16px, env(safe-area-inset-right)) - 132px); bottom: 150px; }
   .flight-hud[data-touch='true'] .flight-hud__panel { padding: 8px; gap: 6px; }
-  .flight-hud[data-touch='true'] .flight-hud__odometer { font-size: 12px; }
   .moon-hud__station { bottom: max(12px, env(safe-area-inset-bottom)); gap: 6px; }
   .moon-hud__suit { top: 76px; left: auto; right: 16px; display: grid; grid-template-columns: 1fr 1fr; }
   .moon-hud__foot { bottom: 20px; width: calc(100% - 320px); }
   .moon-hud__head { gap: 3px; top: 12px; }
 }
 
-/* ── Drive: slower / faster through the regimes, and the light-year jump ── */
-.flight-drive {
-  position: absolute;
-  left: 50%;
-  bottom: calc(max(20px, env(safe-area-inset-bottom)) + 124px);
-  transform: translateX(-50%);
+/* ── Deck: the jump tabs ride the console's top edge, the throttle lever
+   sits beside the dial — one instrument block instead of panels all over
+   the glass. ── */
+.flight-hud__deck { display: grid; justify-items: center; min-width: 0; }
+.flight-jumps { display: flex; gap: 4px; max-width: 100%; margin-bottom: -1px; }
+.flight-hud .flight-jumps button {
   display: flex;
-  align-items: stretch;
-  gap: 6px;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  min-height: 0;
+  height: 34px;
+  padding: 0 16px 0 14px;
+  border: 0;
+  border-radius: 0;
+  background: var(--hud-line);
+  clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 100%, 0 100%);
+  position: relative;
 }
-.flight-hud .flight-drive__step { position: relative; width: 52px; display: grid; place-items: center; }
-.flight-drive kbd, .flight-drive__jump kbd {
+.flight-hud .flight-jumps button::before {
+  content: '';
+  position: absolute;
+  inset: 1px 1px 0;
+  background: rgba(6, 14, 28, 0.78);
+  clip-path: polygon(9.5px 0, calc(100% - 9.5px) 0, 100% 100%, 0 100%);
+  z-index: -1;
+}
+.flight-hud .flight-jumps button { isolation: isolate; }
+.flight-jumps button svg { flex: none; color: var(--hud-accent); }
+.flight-jumps__text { display: grid; min-width: 0; text-align: left; line-height: 1.2; }
+.flight-jumps__name { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.flight-jumps__ly { font-size: 10px; color: var(--hud-dim); white-space: nowrap; }
+.flight-jumps kbd, .flight-gears kbd {
   font: inherit;
-  font-size: 10px;
+  font-size: 9px;
   line-height: 1;
-  padding: 2px 4px;
+  padding: 2px 3px;
   border: 1px solid var(--hud-line);
   border-radius: 3px;
   color: var(--hud-dim);
-  letter-spacing: 0;
 }
-.flight-drive__step kbd { position: absolute; top: 3px; right: 5px; }
-.flight-drive__gear {
-  display: grid;
-  align-content: center;
-  justify-items: center;
-  gap: 6px;
-  min-width: 92px;
-  padding: 0 10px;
-  border: 1px solid var(--hud-line);
-  border-radius: 4px;
-  background: var(--hud-glass);
-}
-.flight-drive__mode { font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; white-space: nowrap; }
-.flight-drive__pips { display: flex; gap: 4px; }
-.flight-drive__pips i { width: 18px; height: 3px; border-radius: 2px; background: var(--hud-line); }
-.flight-drive[data-mode='cruise'] .flight-drive__pips i:first-child,
-.flight-drive:is([data-mode='fast'], [data-mode='jump']) .flight-drive__pips i { background: var(--hud-accent); }
-.flight-drive[data-mode='cruise'] .flight-drive__step:first-child,
-.flight-drive[data-mode='fast'] .flight-drive__step:last-child,
-.flight-drive[data-mode='jump'] .flight-drive__step { color: var(--hud-dim); border-color: rgba(120, 180, 235, 0.14); }
-.flight-drive[data-mode='eva'] { visibility: hidden; }
+.flight-jumps[data-state='locked'] button, .flight-jumps[data-state='locked'] button svg { color: var(--hud-dim); }
+.flight-hud .flight-jumps button[data-active='true'] { background: var(--hud-accent); }
+.flight-hud .flight-jumps button[data-active='true'] .flight-jumps__ly { color: var(--hud-accent); }
 
-.flight-drive__jump-wrap {
-  position: absolute;
-  top: calc(max(16px, env(safe-area-inset-top)) + 56px);
-  right: max(16px, env(safe-area-inset-right));
-  display: grid;
-  justify-items: end;
-  gap: 6px;
-  z-index: 3;
-}
-.flight-hud .flight-drive__jump {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  max-width: 240px;
-  padding: 5px 12px 5px 10px;
-  text-align: left;
-}
-.flight-drive__jump svg { flex: none; color: var(--hud-accent); }
-.flight-drive__jump-text { display: grid; gap: 2px; min-width: 0; }
-.flight-drive__jump-label { display: flex; align-items: center; gap: 8px; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--hud-accent); }
-.flight-drive__dest { font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.flight-drive__jump[data-state='locked'] .flight-drive__dest { color: var(--hud-dim); }
-.flight-hud .flight-drive__jump[data-state='jumping'] { border-color: var(--hud-accent); }
-.flight-drive__menu {
-  display: grid;
-  gap: 4px;
-  min-width: 230px;
-  padding: 6px;
-  border: 1px solid var(--hud-line);
-  border-radius: 4px;
-  background: rgba(6, 14, 28, 0.9);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-}
-.flight-hud .flight-drive__menu button {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 0 12px;
-  font-size: 12px;
-  text-align: left;
-}
-.flight-drive__ly { color: var(--hud-dim); white-space: nowrap; }
+.flight-gears { display: grid; justify-items: center; gap: 5px; }
+.flight-hud .flight-gears button { position: relative; width: 44px; height: 32px; min-height: 0; display: grid; place-items: center; }
+.flight-gears kbd { position: absolute; top: 2px; right: 3px; font-size: 8px; padding: 0; border: 0; }
+.flight-gears__pips { display: flex; gap: 3px; }
+.flight-gears__pips i { width: 12px; height: 3px; border-radius: 2px; background: var(--hud-line); }
+.flight-gears[data-mode='cruise'] .flight-gears__pips i:first-child,
+.flight-gears:is([data-mode='fast'], [data-mode='jump']) .flight-gears__pips i { background: var(--hud-accent); }
+.flight-gears[data-mode='fast'] button:first-child,
+.flight-gears[data-mode='cruise'] button:last-child,
+.flight-gears[data-mode='jump'] button { color: var(--hud-dim); }
+.flight-gears[data-mode='eva'] { visibility: hidden; }
 
-/* Touch: the gears sit over the left stick, mirroring the action keys on the right. */
-.flight-hud[data-touch='true'] .flight-drive {
-  left: max(16px, env(safe-area-inset-left));
-  bottom: calc(268px + env(safe-area-inset-bottom));
-  transform: none;
-  gap: 4px;
-}
-.flight-hud[data-touch='true'] .flight-drive__step { width: 48px; }
-.flight-hud[data-touch='true'] .flight-drive__gear { min-width: 56px; padding: 0 6px; }
-.flight-hud[data-touch='true'] .flight-drive__mode { font-size: 11px; letter-spacing: 0.06em; }
+/* Readouts, top left: tighter, so they sit in the corner rather than over the view. */
+.flight-hud__head { gap: 3px; padding-left: 10px; }
+.flight-hud__place { letter-spacing: 0.16em; }
+.flight-hud__status { font-size: 11px; max-width: 240px; }
 @media (max-width: 599px) {
-  .flight-hud__head { max-width: calc(100% - 216px); }
-  .flight-hud .flight-drive__jump { max-width: 176px; }
-  /* Narrow: the destination wraps rather than hiding its distance. */
-  .flight-drive__dest { white-space: normal; line-height: 1.35; }
-  .flight-hud__order { top: calc(max(16px, env(safe-area-inset-top)) + 136px); }
-}
-@media (max-width: 599px) and (min-height: 501px) {
-  .flight-hud[data-touch='true'] :is(.flight-hud__comms, .flight-hud__help) { top: 196px; }
-}
-@media (max-height: 500px) {
-  .flight-hud[data-touch='true'] .flight-drive { bottom: calc(max(16px, env(safe-area-inset-bottom)) + 116px); }
+  .flight-hud__head { max-width: calc(100% - 172px); font-size: 11px; }
+  .flight-hud__reading { gap: 8px; }
+  .flight-hud__reading > span:first-child { width: 24px; }
+  .flight-hud .flight-gears button { width: 38px; height: 30px; }
+  .flight-hud .flight-jumps button { padding: 0 12px 0 11px; gap: 6px; }
 }

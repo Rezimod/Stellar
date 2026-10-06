@@ -54,6 +54,7 @@ import {
   type NebulaeHandle,
 } from '@/lib/solar-system/scene-extras';
 import { makeSunSurface } from '@/lib/solar-system/sun-surface';
+import { makeAdaptiveRes } from '@/lib/solar-system/adaptive-res';
 import { makePostFx } from '@/lib/solar-system/post-processing';
 import {
   createPlayerShip,
@@ -262,13 +263,17 @@ export function SolarSystemCanvas({
     const lite = isMobile || lowData;
 
     const renderer = new THREE.WebGLRenderer({
-      antialias: !lite,
+      // Everything is drawn through the composer into its own target and
+      // presented as a full-screen quad, so a multisampled backbuffer is
+      // never resolved — it would only cost memory and bandwidth.
+      antialias: false,
       alpha: false,
       // 'default' avoids pinning the discrete GPU on for the tab's lifetime on
       // dual-GPU laptops (macOS), which keeps the machine hot/slow.
       powerPreference: 'default',
     });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, lite ? 1.5 : 1.75));
+    const maxPixelRatio = Math.min(window.devicePixelRatio, lite ? 1.5 : 1.75);
+    renderer.setPixelRatio(maxPixelRatio);
     renderer.setSize(mount.clientWidth, mount.clientHeight);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -1016,14 +1021,35 @@ export function SolarSystemCanvas({
     el.addEventListener('touchmove', onTouchMove, { passive: false });
     el.addEventListener('touchend', onTouchEnd);
 
-    const onResize = () => {
+    // Render size = CSS size x the ratio the frame budget can afford.
+    let suspendedSize = false;
+    const applySize = () => {
       if (!mount) return;
-      camera.aspect = mount.clientWidth / mount.clientHeight;
+      const w = mount.clientWidth;
+      const h = mount.clientHeight;
+      if (!w || !h) return;
+      camera.aspect = w / h;
       camera.updateProjectionMatrix();
-      renderer.setSize(mount.clientWidth, mount.clientHeight);
-      postFx.setSize(mount.clientWidth, mount.clientHeight);
+      renderer.setSize(w, h);
+      // While Moon Mode owns the screen this canvas draws nothing, so its
+      // composer targets shrink to almost nothing and give the GPU back the
+      // memory the surface scene needs. Two full-size HDR chains at once is
+      // what loses the context on integrated graphics.
+      postFx.setSize(suspendedSize ? 16 : w, suspendedSize ? 16 : h);
     };
+    const adaptive = makeAdaptiveRes(maxPixelRatio, (ratio) => {
+      renderer.setPixelRatio(ratio);
+      applySize();
+    });
+    const onResize = () => applySize();
     window.addEventListener('resize', onResize);
+    // A lost context freezes the canvas; without this Chrome also tears the
+    // page down. Swallow it and stop the loop so the rest of the app lives.
+    const onContextLost = (e: Event) => {
+      e.preventDefault();
+      stopLoop();
+    };
+    renderer.domElement.addEventListener('webglcontextlost', onContextLost);
 
     let raf = 0;
     let lastFrame = performance.now();
@@ -1235,9 +1261,18 @@ export function SolarSystemCanvas({
       const dtSec = Math.min(0.1, (now - lastFrame) / 1000);
       lastFrame = now;
       if (suspendedRef.current) {
+        if (!suspendedSize) {
+          suspendedSize = true;
+          applySize();
+        }
         raf = requestAnimationFrame(loop);
         return;
       }
+      if (suspendedSize) {
+        suspendedSize = false;
+        applySize();
+      }
+      adaptive.tick(dtSec);
       // Wall-clock seconds for shader animation (convection, cloud bands).
       const sceneTime = reduceMotion ? 0 : (now - t0) / 1000;
 
@@ -1435,6 +1470,7 @@ export function SolarSystemCanvas({
       stopLoop();
       document.removeEventListener('visibilitychange', onVis);
       window.removeEventListener('resize', onResize);
+      renderer.domElement.removeEventListener('webglcontextlost', onContextLost);
       el.removeEventListener('pointerdown', onPointerDown);
       el.removeEventListener('pointermove', onPointerMove);
       el.removeEventListener('pointerup', onPointerUp);

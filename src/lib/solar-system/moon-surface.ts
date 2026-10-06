@@ -7,6 +7,7 @@
 // file owns the frame.
 
 import * as THREE from 'three';
+import { makeAdaptiveRes } from '@/lib/solar-system/adaptive-res';
 import { makeMoonPost } from '@/lib/solar-system/moon-post';
 import { softSpriteTexture } from '@/lib/solar-system/soft-sprite';
 import { makeMoonTerrain, makeMoonHorizon, TERRAIN_WALK_RADIUS } from '@/lib/solar-system/moon-terrain';
@@ -154,8 +155,11 @@ const AtmosphereShader = {
 export function makeMoonSurface(mount: HTMLElement): MoonSurfaceHandle {
   const isMobile = window.matchMedia('(max-width: 768px)').matches;
   const lite = isMobile;
-  const renderer = new THREE.WebGLRenderer({ antialias: !lite, alpha: false, powerPreference: 'high-performance' });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, lite ? 1.5 : 2));
+  // No MSAA backbuffer: every frame goes through the composer and is
+  // presented as a full-screen quad, so it would never be resolved.
+  const renderer = new THREE.WebGLRenderer({ antialias: false, alpha: false, powerPreference: 'high-performance' });
+  const maxPixelRatio = Math.min(window.devicePixelRatio, lite ? 1.5 : 1.75);
+  renderer.setPixelRatio(maxPixelRatio);
   renderer.setSize(mount.clientWidth, mount.clientHeight);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -476,10 +480,11 @@ export function makeMoonSurface(mount: HTMLElement): MoonSurfaceHandle {
     sun.target.position.copy(crew);
     sun.position.copy(crew).addScaledVector(SUN_DIR, 220);
     stars.position.copy(camera.position);
+    adaptive.tick(dt);
     post.render(dt);
   };
 
-  const onResize = () => {
+  const applySize = () => {
     const w = mount.clientWidth; const h = mount.clientHeight;
     if (!w || !h) return;
     renderer.setSize(w, h);
@@ -487,6 +492,15 @@ export function makeMoonSurface(mount: HTMLElement): MoonSurfaceHandle {
     camera.updateProjectionMatrix();
     post.setSize(w, h);
   };
+  // The surface is fill-rate bound like the deck above it: trade resolution
+  // for frames rather than hand the pilot a slideshow on a Retina panel.
+  const adaptive = makeAdaptiveRes(maxPixelRatio, (ratio) => {
+    renderer.setPixelRatio(ratio);
+    applySize();
+  });
+  const onResize = () => applySize();
+  const onContextLost = (e: Event) => { e.preventDefault(); if (raf) cancelAnimationFrame(raf); raf = 0; };
+  renderer.domElement.addEventListener('webglcontextlost', onContextLost);
   window.addEventListener('resize', onResize);
   document.addEventListener('visibilitychange', onVis);
   raf = requestAnimationFrame(loop);
@@ -501,6 +515,7 @@ export function makeMoonSurface(mount: HTMLElement): MoonSurfaceHandle {
       if (raf) cancelAnimationFrame(raf);
       if (window.__stellarMoon === handle) delete window.__stellarMoon;
       window.removeEventListener('resize', onResize);
+      renderer.domElement.removeEventListener('webglcontextlost', onContextLost);
       document.removeEventListener('visibilitychange', onVis);
       earthTexCancelled = true;
       audio.dispose();

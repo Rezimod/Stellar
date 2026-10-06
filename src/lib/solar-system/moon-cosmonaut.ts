@@ -61,6 +61,15 @@ const HIP_H = 0.98;
 /** Leg segments, hip pivot → knee → ankle → sole. */
 const THIGH = 0.46;
 const SHIN = 0.42;
+/** Hip to sole — the radius the swinging foot travels on. */
+const LEG = THIGH + SHIN;
+/** Ground covered by one full cycle (left step + right step). A short,
+ *  careful pace at a walk; the long two-footed float of the lope. */
+const STRIDE_WALK = 1.5;
+const STRIDE_LOPE = 3;
+/** The hip will not swing past this, however long the stride gets — beyond it
+ *  the suit reads as doing the splits rather than loping. */
+const MAX_SWING = 0.72;
 
 /** A fine ripstop weave, so the white cloth is not a flat plastic. */
 function fabricNormal(): THREE.CanvasTexture {
@@ -371,10 +380,18 @@ export function makeCosmonaut(dust: DustHandle): CosmonautHandle {
       // together, a long float between contacts — as the speed comes up.
       const lopeTarget = THREE.MathUtils.smoothstep(speed, WALK * 1.1, RUN * 0.8);
       lope += (lopeTarget - lope) * (1 - Math.exp(-dt * 3));
-      const strideHz = THREE.MathUtils.lerp(0.9 + gait * 0.7, 1.2, lope);
-      if (!airborne) phase += dt * strideHz * Math.PI * 2 * Math.min(1, speed / 0.6);
+      // The cycle is driven by the ground, not by a fixed tempo: one stride
+      // covers a fixed distance, so the step rate falls out of the speed and
+      // the boots stay planted where they land. A constant tempo is what
+      // makes a walk cycle skate — the feet shuffle while the body slides.
+      const stride = THREE.MathUtils.lerp(STRIDE_WALK, STRIDE_LOPE, lope);
+      const strideHz = speed / stride;
+      if (!airborne) phase += dt * strideHz * Math.PI * 2;
       const moving = Math.min(1, speed / 0.6);
-      const amp = airborne ? 0 : THREE.MathUtils.lerp(0.28 + gait * 0.3, 0.4, lope) * moving;
+      // Over one stance the hip sweeps the foot back by one step — half a
+      // cycle — so the sole tracks the ground instead of scuffing along it.
+      const swingAmp = Math.min(MAX_SWING, Math.asin(THREE.MathUtils.clamp(stride / (4 * LEG), 0, 0.99)));
+      const amp = airborne ? 0 : swingAmp * moving;
       const legLag = THREE.MathUtils.lerp(Math.PI, 0.45, lope);
       const bob = airborne ? 0 : THREE.MathUtils.lerp(Math.abs(Math.cos(phase)) * 0.03 * gait, Math.max(0, Math.sin(phase)) * 0.09, lope) * moving;
       body.position.y = bob - squat * 0.16;
@@ -395,8 +412,10 @@ export function makeCosmonaut(dust: DustHandle): CosmonautHandle {
         hips[i].rotation.x = -swing * free + tuck * (-0.6 - i * 0.12) - squat * 0.8;
         hips[i].rotation.z = s * 0.035;
         knees[i].rotation.x = flex * free + tuck * (1.0 + i * 0.15) + squat * 1.45;
-        // Boots stay close to level with the ground.
-        ankles[i].rotation.x = -(hips[i].rotation.x + knees[i].rotation.x) * 0.8;
+        // Boots stay level with the ground: the ankle cancels everything the
+        // hip and the knee did, so the sole never toes into the regolith.
+        // Only the airborne tuck is allowed to point the toe.
+        ankles[i].rotation.x = -(hips[i].rotation.x + knees[i].rotation.x) + tuck * 0.35;
         // Arms: a small counter-swing at a walk; carried forward for balance in the lope.
         const walkArm = swing * 0.45 - 0.08;
         const lopeArm = -0.3 + Math.sin(phase) * 0.08 * moving;
@@ -413,7 +432,9 @@ export function makeCosmonaut(dust: DustHandle): CosmonautHandle {
         neck.rotation.x = airborne ? -0.15 : 0.05;
       }
       // Footfalls on the ground raise a little dust.
-      if (!airborne && speed > 0.8) {
+      if (airborne || speed <= 0.8) {
+        lastStepPhase = 0;
+      } else {
         const stepPhase = Math.sin(phase) * stepSide;
         if (lastStepPhase > 0 && stepPhase <= 0) {
           stepSide = -stepSide;

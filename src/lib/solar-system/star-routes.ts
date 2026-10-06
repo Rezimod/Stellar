@@ -20,9 +20,7 @@ export function resolveDestination(current: string, chosen: string): StarSystemI
   return current === 'sol' ? 'alphaCentauri' : 'sol';
 }
 
-/** Walk the destination through every system except the one the ship is in. */
-export function stepDestination(current: string, chosen: string, dir: number): StarSystemId {
-  const pool = STAR_SYSTEMS.filter((s) => s !== current);
-  const i = pool.indexOf(resolveDestination(current, chosen));
-  return pool[(i + (dir >= 0 ? 1 : -1) + pool.length) % pool.length];
+/** Where the drive can go from here: every system but the current one. */
+export function jumpChoices(current: string): StarSystemId[] {
+  return STAR_SYSTEMS.filter((s) => s !== current);
 }

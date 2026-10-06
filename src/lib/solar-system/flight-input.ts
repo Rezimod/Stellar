@@ -6,7 +6,7 @@
 
 import * as THREE from 'three';
 import type { FlightInput, FlightSession, SpeedMode } from '@/lib/solar-system/player-ship';
-import { stepDestination } from '@/lib/solar-system/star-routes';
+import { jumpChoices } from '@/lib/solar-system/star-routes';
 
 const HANDLED_KEYS = new Set([
   'KeyW', 'KeyA', 'KeyS', 'KeyD', 'KeyQ', 'KeyE', 'Space',
@@ -73,7 +73,7 @@ export function attachDesktopControls(
     input.fire = has('Space');
     input.align = has('KeyG');
   };
-  const modeFor: Record<string, SpeedMode> = { Digit1: 'cruise', Digit2: 'fast', Digit3: 'jump', KeyH: 'jump' };
+  const modeFor: Record<string, SpeedMode> = { Digit1: 'cruise', Digit2: 'fast', Digit3: 'jump' };
   const onKeyDown = (e: KeyboardEvent) => {
     if (e.code === 'Escape' || e.code === 'KeyX') {
       onExit();
@@ -85,7 +85,11 @@ export function attachDesktopControls(
     const mode = modeFor[e.code];
     if (mode) input.modeRequest = mode;
     else if (e.code === 'KeyF') input.foilsToggle = true;
-    else if (e.code === 'KeyJ') session.destination = stepDestination(session.telemetry.systemName, session.destination, e.shiftKey ? -1 : 1);
+    else if (e.code === 'KeyH' || e.code === 'KeyJ') {
+      // The console's two jump tabs, left and right.
+      session.destination = jumpChoices(session.telemetry.systemName)[e.code === 'KeyH' ? 0 : 1];
+      input.modeRequest = 'jump';
+    }
     else if (e.code === 'KeyV') input.eject = true;
     else if (e.code === 'KeyC') input.viewToggle = true;
     else if (e.code === 'KeyZ') input.assistToggle = true;

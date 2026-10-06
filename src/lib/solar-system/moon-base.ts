@@ -310,9 +310,14 @@ export function makeMoonBase(heightAt: (x: number, z: number) => number, lite: b
     pois.push({ id: 'rover', x: px + 12, z: pz + 10, r: 5.5 });
   }
 
-  // ── Descent stage: the ride down, left where it landed. ──
+  // ── Descent stage: the ride down, left where it landed. The crew steps
+  // out of it, so this position is also where Moon Mode's descent ends. ──
+  const LANDER_X = px - 12;
+  const LANDER_Z = pz + 24;
   {
-    const g = place(px - 12, pz + 24, 0.4);
+    // The ladder is built on the module's +Z face; this yaw turns it to
+    // look down on the spot the crew steps off onto.
+    const g = place(LANDER_X, LANDER_Z, Math.PI * 0.75);
     mesh(g, new THREE.CylinderGeometry(2.4, 2.6, 1.7, 8), gold, 0, 1.9, 0);
     mesh(g, new THREE.CylinderGeometry(1.1, 1.6, 1.1, 12), dark, 0, 0.5, 0);
     mesh(g, new THREE.CylinderGeometry(0.9, 0.9, 0.5, 12), steel, 0, 2.95, 0);
@@ -327,8 +332,8 @@ export function makeMoonBase(heightAt: (x: number, z: number) => number, lite: b
     for (let i = 0; i < 6; i++) mesh(g, new THREE.BoxGeometry(0.5, 0.05, 0.05), steel, 0, 0.5 + i * 0.45, 2.55);
     for (const s of [-1, 1]) mesh(g, new THREE.CylinderGeometry(0.03, 0.03, 2.8, 6), steel, s * 0.25, 1.75, 2.55);
     mesh(g, new THREE.SphereGeometry(0.1, 8, 6), beacon, 0, 3.3, 0);
-    colliders.push({ x: px - 12, z: pz + 24, r: 3.8 });
-    pois.push({ id: 'lander', x: px - 12, z: pz + 24, r: 7 });
+    colliders.push({ x: LANDER_X, z: LANDER_Z, r: 3.8 });
+    pois.push({ id: 'lander', x: LANDER_X, z: LANDER_Z, r: 9 });
   }
 
   // ── Flag. ──
@@ -406,7 +411,14 @@ export function makeMoonBase(heightAt: (x: number, z: number) => number, lite: b
   }
 
   const beaconMats = [beacon];
-  const spawn = new THREE.Vector3(px, heightAt(px, pz + 4), pz + 4);
+  // Touchdown is at the foot of the descent stage's ladder, not in open
+  // ground somewhere else on the pad — the crew arrives in that stage, so
+  // that is where they step out. Diagonally off it, because the chase camera
+  // rides ~5 m behind: any closer and the first thing on screen is the
+  // inside of a wall of gold foil.
+  const spawnX = LANDER_X + 5.5;
+  const spawnZ = LANDER_Z - 5.5;
+  const spawn = new THREE.Vector3(spawnX, heightAt(spawnX, spawnZ), spawnZ);
   const tmp = new THREE.Vector3();
   const roverPoi = pois.find((p) => p.id === 'rover')!;
   return {

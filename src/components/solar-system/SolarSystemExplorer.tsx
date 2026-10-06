@@ -40,12 +40,25 @@ export default function SolarSystemExplorer() {
   useEffect(() => {
     if (!playing || flightActive) return;
     let last = performance.now();
+    let lastPush = last;
+    let carried = 0;
     let raf = 0;
+    // The clock advances in ~15 Hz steps, not once per frame. Every epoch
+    // change re-renders this tree and the canvas beneath it, and at 60 Hz that
+    // React work measured as a sixth of the frame — for motion far too small
+    // to see, since even at a day a second a planet crosses a fraction of a
+    // pixel between steps.
+    const STEP_MS = 1000 / 15;
     const tick = (now: number) => {
+      raf = requestAnimationFrame(tick);
       const dt = Math.min(0.1, (now - last) / 1000);
       last = now;
-      setEpochMs((e) => e + SPEED_STEPS[speedIdx].rate * dt * 1000);
-      raf = requestAnimationFrame(tick);
+      carried += SPEED_STEPS[speedIdx].rate * dt * 1000;
+      if (now - lastPush < STEP_MS) return;
+      lastPush = now;
+      const advance = carried;
+      carried = 0;
+      setEpochMs((e) => e + advance);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);

@@ -1138,7 +1138,6 @@
       "camera": "Camera",
       "camIn": "Camera closer",
       "camOut": "Camera farther",
-      "odometer": "Odometer",
       "shield": "Shield",
       "energy": "Energy",
       "altShort": "Alt",
@@ -1395,17 +1394,17 @@
         "r3": "Mouse — steer",
         "r4": "Q / E — roll",
         "r5": "Shift — boost · Space — fire",
-        "r6": "1 / 2 or the arrows above the deck — slower, faster",
+        "r6": "1 / 2 or the arrows beside the dial — slower, faster",
         "r7": "T — next target · G — hold to align",
         "r8": "F — wings · C — cockpit · Esc — pause",
         "t1": "Left stick — thrust and turn; release to coast",
         "t2": "Right stick — aim; right keys — fire, boost, brake",
-        "t3": "Arrows on the left — slower, faster",
+        "t3": "Arrows beside the dial — slower, faster",
         "t4": "Tap the compass — next target",
         "t5": "Pause — top right",
         "r9": "Right mouse — hold and drag for a 360° look at the ship",
-        "r10": "H — light-year jump · J — change destination",
-        "t6": "Light-year jump, top right — pick a star and go"
+        "r10": "H / J — jump to the left or right tab over the console",
+        "t6": "Tabs over the console — jump to Alpha Centauri or Gargantua"
       },
       "dockedAt": "Docked at {body} — W to release",
       "supplying": "Taking on fuel and stores",
@@ -1415,7 +1414,6 @@
       "slower": "Slower",
       "faster": "Faster",
       "jumpLabel": "Light-year jump",
-      "jumpMenu": "Choose a destination",
       "lyLeft": "ly to go"
     },
     "moon": {

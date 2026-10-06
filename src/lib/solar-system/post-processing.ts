@@ -13,7 +13,9 @@ export interface PostFxHandle {
 /**
  * Scene → bloom → tone-mapped output. Threshold sits above every lit planet
  * surface so only HDR emitters bloom: the Sun's photosphere, engine glows,
- * laser bolts. On lite devices the bloom chain runs at half resolution.
+ * laser bolts. The bloom chain always runs at half resolution — it is a wide
+ * blur, so the halved buffer is indistinguishable, and on integrated graphics
+ * a full-resolution five-level blur is the most expensive thing in the frame.
  */
 export function makePostFx(
   renderer: THREE.WebGLRenderer,
@@ -23,7 +25,7 @@ export function makePostFx(
 ): PostFxHandle {
   const composer = new EffectComposer(renderer);
   const size = renderer.getSize(new THREE.Vector2());
-  const bloomScale = lite ? 0.5 : 1;
+  const bloomScale = lite ? 0.4 : 0.5;
   const renderPass = new RenderPass(scene, camera);
   const bloom = new UnrealBloomPass(
     new THREE.Vector2(size.x * bloomScale, size.y * bloomScale),

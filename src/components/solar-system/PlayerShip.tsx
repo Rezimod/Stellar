@@ -5,7 +5,7 @@ import { ArrowDownToLine, ChevronsUp, Crosshair, HelpCircle, Pause, Play, Rocket
 import { useTranslations } from 'next-intl';
 import { attachDesktopControls, clearFlightInput } from '@/lib/solar-system/flight-input';
 import { type FlightSession, type ShipKind } from '@/lib/solar-system/player-ship';
-import { FlightDrive } from './FlightDrive';
+import { FlightGears, FlightJumps } from './FlightDrive';
 import { GameStick } from './GameStick';
 
 interface PlayerShipProps {
@@ -41,7 +41,6 @@ export function PlayerShip({ session, onActiveChange, onLand, landed }: PlayerSh
   const speedRef = useRef<HTMLSpanElement>(null);
   const unitRef = useRef<HTMLElement>(null);
   const modeRef = useRef<HTMLSpanElement>(null);
-  const odoRef = useRef<HTMLSpanElement>(null);
   const statusRef = useRef<HTMLSpanElement>(null);
   const markerRef = useRef<HTMLDivElement>(null);
   const markerNameRef = useRef<HTMLSpanElement>(null);
@@ -166,7 +165,6 @@ export function PlayerShip({ session, onActiveChange, onLand, landed }: PlayerSh
       text(speedRef.current, fmt(jumping ? tel.targetLy * (1 - tel.jumpT) : tel.speedKmS));
       text(unitRef.current, jumping ? t('lyLeft') : t('kmS'));
       text(modeRef.current, t(`modes.${tel.pilot === 'eva' ? 'eva' : tel.mode}`));
-      text(odoRef.current, fmt(tel.odometerKm));
       root?.style.setProperty('--speed', String(Math.min(1, tel.speedFrac)));
       if (root) root.dataset.view = tel.view;
       let status = '';
@@ -320,28 +318,30 @@ export function PlayerShip({ session, onActiveChange, onLand, landed }: PlayerSh
             <span ref={orderTextRef} />
             <span className="flight-hud__track"><span ref={orderBarRef} /></span>
           </div>
-          <FlightDrive session={session} paused={paused} touch={touch} />
           <div className="flight-hud__console">
             <button type="button" className="flight-hud__radar" aria-label={t('target')} onClick={() => { session.input.targetStep = 1; }} disabled={paused}>
               <canvas ref={radarRef} aria-hidden />
             </button>
-            <div className="flight-hud__panel">
-              <div className="flight-hud__odometer"><span>{t('odometer')}</span><span><span ref={odoRef}>0</span> <small>km</small></span></div>
-              <div className="flight-hud__speed">
-                <svg viewBox="0 0 120 120" aria-hidden>
-                  <circle cx="60" cy="60" r="52" />
-                  <circle className="flight-hud__speed-arc" cx="60" cy="60" r="52" pathLength="1" />
-                  <line className="flight-hud__speed-index" x1="60" y1="4" x2="60" y2="14" />
-                </svg>
-                <span ref={modeRef} className="flight-hud__mode" />
-                <span ref={speedRef} className="flight-hud__speed-value">0</span><small ref={unitRef}>{t('kmS')}</small>
-              </div>
-              <div className="flight-hud__systems">
-                {BARS.map((key, i) => { const Icon = ICONS[i]; return <div key={key} className="flight-hud__sys" aria-label={t(key)}>
-                  <Icon size={14} aria-hidden /><span className="flight-hud__sys-name">{t(key)}</span>
-                  <span className="flight-hud__track"><span ref={(el) => { barRefs.current[i] = el; }} /></span>
-                  <span ref={(el) => { barValRefs.current[i] = el; }} className="flight-hud__percent">100%</span>
-                </div>; })}
+            <div className="flight-hud__deck">
+              <FlightJumps session={session} paused={paused} touch={touch} />
+              <div className="flight-hud__panel">
+                <FlightGears session={session} paused={paused} touch={touch} />
+                <div className="flight-hud__speed">
+                  <svg viewBox="0 0 120 120" aria-hidden>
+                    <circle cx="60" cy="60" r="52" />
+                    <circle className="flight-hud__speed-arc" cx="60" cy="60" r="52" pathLength="1" />
+                    <line className="flight-hud__speed-index" x1="60" y1="4" x2="60" y2="14" />
+                  </svg>
+                  <span ref={modeRef} className="flight-hud__mode" />
+                  <span ref={speedRef} className="flight-hud__speed-value">0</span><small ref={unitRef}>{t('kmS')}</small>
+                </div>
+                <div className="flight-hud__systems">
+                  {BARS.map((key, i) => { const Icon = ICONS[i]; return <div key={key} className="flight-hud__sys" aria-label={t(key)}>
+                    <Icon size={14} aria-hidden /><span className="flight-hud__sys-name">{t(key)}</span>
+                    <span className="flight-hud__track"><span ref={(el) => { barRefs.current[i] = el; }} /></span>
+                    <span ref={(el) => { barValRefs.current[i] = el; }} className="flight-hud__percent">100%</span>
+                  </div>; })}
+                </div>
               </div>
             </div>
             <div className="flight-hud__aux">

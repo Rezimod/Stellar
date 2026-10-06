@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { lightYearsBetween, resolveDestination, stepDestination } from '@/lib/solar-system/star-routes';
+import { jumpChoices, lightYearsBetween, resolveDestination } from '@/lib/solar-system/star-routes';
 
 describe('star routes', () => {
   it('falls back to the default hop when the pick is the current system', () => {
@@ -15,9 +15,9 @@ describe('star routes', () => {
     expect(lightYearsBetween('sol', 'sol')).toBe(0);
   });
 
-  it('steps through every system except the one the ship is in', () => {
-    expect(stepDestination('sol', 'alphaCentauri', 1)).toBe('gargantua');
-    expect(stepDestination('sol', 'gargantua', 1)).toBe('alphaCentauri');
-    expect(stepDestination('gargantua', 'sol', -1)).toBe('alphaCentauri');
+  it('offers every system except the one the ship is in, Gargantua included from any', () => {
+    expect(jumpChoices('sol')).toEqual(['alphaCentauri', 'gargantua']);
+    expect(jumpChoices('alphaCentauri')).toEqual(['sol', 'gargantua']);
+    expect(jumpChoices('gargantua')).toEqual(['sol', 'alphaCentauri']);
   });
 });
