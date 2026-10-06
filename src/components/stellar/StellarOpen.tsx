@@ -58,11 +58,11 @@ export default function StellarOpen({ capsuleId }: { capsuleId: string }) {
       <div className="sd-pay__actions">
         {ready && authenticated ? (
           <button type="button" className="sd-btn sd-btn--primary sd-btn--block" onClick={open} disabled={busy}>
-            {busy ? 'Opening' : 'Ignite'}
+            {busy ? 'Blasting' : 'Blast the star'}
           </button>
         ) : (
           <button type="button" className="sd-btn sd-btn--primary sd-btn--block" onClick={() => login()}>
-            Log in to ignite it
+            Log in to blast it
           </button>
         )}
       </div>

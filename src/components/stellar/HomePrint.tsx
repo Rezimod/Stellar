@@ -8,7 +8,7 @@ import StarPulse from './StarPulse';
  */
 export default function HomePrint() {
   return (
-    <Link href="/set/001" className="sd-herofan sd-homeprint" aria-label="Genesis — open a capsule">
+    <Link href="/set/001" className="sd-herofan sd-homeprint" aria-label="Genesis — blast a star">
       <span className="sd-herofan__print sd-homeprint__print">
         <StarPulse className="sd-homeprint__star" centre={0.48} />
         <span className="sd-homeprint__note" aria-hidden="true">Sealed · waiting for ignition</span>

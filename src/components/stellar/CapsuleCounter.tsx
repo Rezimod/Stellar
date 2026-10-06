@@ -91,7 +91,7 @@ export default function CapsuleCounter({ cards, onSale }: { cards: TierCard[]; o
         <StarPulse className="sd-counter__star" centre={0.4} />
         <div className="sd-counter__over">
           <div>
-            <span className="sd-counter__label">You are opening</span>
+            <span className="sd-counter__label">You are blasting</span>
             <h2 className="sd-counter__name">
               {tier.name}
               <span className="sr-only"> capsule</span>
@@ -116,7 +116,7 @@ export default function CapsuleCounter({ cards, onSale }: { cards: TierCard[]; o
           onFocus={loadSheet}
           onClick={() => setSheet(tier)}
         >
-          {stock === 0 ? 'None on sale' : `Buy & ignite — $${tier.priceUsd}`}
+          {stock === 0 ? 'None on sale' : `Buy & blast — $${tier.priceUsd}`}
         </button>
         <button
           type="button"

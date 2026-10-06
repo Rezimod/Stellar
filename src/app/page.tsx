@@ -22,7 +22,7 @@ import { siteNightDate } from '@/lib/stellar/target';
 export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title: 'Stellar — the night sky, issued in editions',
+  title: 'Stellar — the cosmos, issued in editions',
   description:
     'Genesis: a hundred cards, each held as a numbered edition — planets, stars, nebulae, galaxies, the extremes of the universe, eight rare sights and eight dated events. Opened from sealed capsules, from $5.',
 };
@@ -128,7 +128,7 @@ export default async function HomePage() {
             <h1 className="sd-hero2__title">
               <span>Hold a piece of</span>{' '}
               <span>
-                <em>the night sky</em>
+                <em>the cosmos</em>
               </span>
             </h1>
             <p className="sd-hero2__sub">
@@ -136,7 +136,7 @@ export default async function HomePage() {
             </p>
             <div className="sd-hero2__cta">
               <Link href="/set/001" className="sd-btn sd-btn--light">
-                Open a capsule — from ${FROM_USD}
+                Blast a star — from ${FROM_USD}
               </Link>
               <Link href="/set/001" className="sd-hero2__more">
                 See the {SET_001_CARDS.length} cards
@@ -268,12 +268,12 @@ export default async function HomePage() {
       <section className="sd-container sd-home-sec sd-closer2" aria-labelledby="close-title">
         <Sunburst className="sd-closer2__burst" />
         <h2 className="sd-closer2__title" id="close-title">
-          The night sky, <em>issued in editions</em>.
+          The cosmos, <em>issued in editions</em>.
         </h2>
         <p className="sd-home-sec__lede">Sealed before sale. Published after opening.</p>
         <div className="sd-hero2__cta">
           <Link href="/set/001" className="sd-btn sd-btn--light">
-            Open a capsule
+            Blast a star
           </Link>
           <Link href="/capsules/log" className="sd-btn">
             Public log

@@ -194,7 +194,7 @@ export default function StellarReveal({
   }, []);
   useEffect(() => lay(turned), [turned, lay]);
 
-  const caption = preview ? `${preview} capsule · preview` : outright ? 'Bought outright · Genesis' : `Capsule No. ${pad(sequence ?? 0)} · First Light`;
+  const caption = preview ? `${preview} capsule · preview` : outright ? 'Bought outright · Genesis' : `Capsule No. ${pad(sequence ?? 0)} · Genesis`;
   const label = preview ? `${preview} capsule, preview` : outright ? `${flown.name}, bought` : `Capsule ${sequence}, opening`;
 
   /* The provenance line, printed a character at a time once the card is down. */
@@ -213,7 +213,7 @@ export default function StellarReveal({
   const actions = preview ? (
     <div className="sd-pay__actions">
       <button type="button" className="sd-btn sd-btn--primary" onClick={onAgain}>
-        Open another
+        Blast another
       </button>
       <button type="button" className="sd-btn" onClick={onClose}>
         Back to the shelf
@@ -225,7 +225,7 @@ export default function StellarReveal({
         {outright ? 'See it in your Collection' : 'Add to Collection'}
       </a>
       <a className="sd-btn" href="/set/001">
-        {outright ? 'Back to the set' : 'Open another'}
+        {outright ? 'Back to the set' : 'Blast another'}
       </a>
     </div>
   );
@@ -368,10 +368,10 @@ export default function StellarReveal({
 
       <div className="sn-hud">
         <div className="sn-pre" hidden={phase !== 'pad'}>
-          <span className="sn-pre__kicker">You are opening</span>
+          <span className="sn-pre__kicker">Ready to blast</span>
           <h2 className="sn-pre__cap">{preview ? `${preview} capsule` : outright ? flown.name : `Capsule No. ${pad(sequence ?? 0)}`}</h2>
           <button type="button" className="sn-go" onClick={ignite} disabled={!ready} aria-busy={!ready}>
-            Ignite
+            Blast the star
           </button>
           <span className="sn-pre__sub">{preview ? 'Preview · nothing is bought' : 'One card · Genesis'}</span>
         </div>

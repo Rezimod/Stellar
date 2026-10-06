@@ -44,10 +44,10 @@ type Tier = {
 
 // TI the struggle, hold the silence, X how far it goes, hold2 how long the nebula is held alone, em the card's approach, fl its turn.
 const TIERS: Record<Rarity, Tier> = {
-  common: { TI: 2.0, hold: 0.45, X: 0.66, flash: 0.9, white: 0.16, flare: 0.45, deb: 0.6, neb: 0.85, teal: 0.5, rings: 1, blur: 0.6, push: 1.2, hold2: 2.45, em: 2.4, fl: 0.8 },
-  rare: { TI: 2.2, hold: 0.5, X: 0.8, flash: 1.15, white: 0.28, flare: 0.7, deb: 0.85, neb: 0.95, teal: 0.7, rings: 1, blur: 0.75, push: 1.26, hold2: 2.55, em: 2.5, fl: 0.85 },
-  epic: { TI: 2.45, hold: 0.56, X: 0.95, flash: 1.45, white: 0.42, flare: 1, deb: 1.05, neb: 1.05, teal: 0.9, rings: 2, blur: 0.9, push: 1.32, hold2: 2.65, em: 2.55, fl: 0.9 },
-  legendary: { TI: 2.7, hold: 0.65, X: 1.1, flash: 1.9, white: 0.58, flare: 1.4, deb: 1.3, neb: 1.15, teal: 1.1, rings: 2, blur: 1, push: 1.4, hold2: 2.75, em: 2.65, fl: 1.0 },
+  common: { TI: 2.6, hold: 0.55, X: 0.85, flash: 1.3, white: 0.3, flare: 0.8, deb: 0.9, neb: 1.0, teal: 0.6, rings: 2, blur: 0.8, push: 1.32, hold2: 2.3, em: 2.4, fl: 0.85 },
+  rare: { TI: 2.8, hold: 0.6, X: 1.0, flash: 1.55, white: 0.42, flare: 1.05, deb: 1.15, neb: 1.1, teal: 0.8, rings: 2, blur: 0.95, push: 1.38, hold2: 2.4, em: 2.5, fl: 0.9 },
+  epic: { TI: 3.05, hold: 0.68, X: 1.15, flash: 1.9, white: 0.58, flare: 1.4, deb: 1.4, neb: 1.2, teal: 1.0, rings: 2, blur: 1.1, push: 1.45, hold2: 2.5, em: 2.55, fl: 0.95 },
+  legendary: { TI: 3.4, hold: 0.8, X: 1.35, flash: 2.4, white: 0.78, flare: 1.9, deb: 1.7, neb: 1.32, teal: 1.2, rings: 2, blur: 1.25, push: 1.55, hold2: 2.65, em: 2.7, fl: 1.05 },
 };
 const TCOL = 0.5;
 const BELL: Record<Rarity, number> = { common: 392, rare: 440, epic: 523.25, legendary: 587.33 };
@@ -252,32 +252,32 @@ export function startSupernova(root: HTMLElement, opts: SupernovaOptions): Super
         // Waiting: a slow double heartbeat, every 3.4 s; the star swells, warms and throws a little light off its limb.
         const ph = now % 3.4, b = Math.exp(-Math.pow((ph - 0.25) / 0.11, 2)) + 0.55 * Math.exp(-Math.pow((ph - 0.62) / 0.12, 2));
         const swell = 0.5 + 0.5 * Math.sin(now * 0.55);
-        S.starR = R0 * (1 + 0.012 * Math.sin(now * 1.3) + 0.045 * b + 0.02 * swell);
-        S.heat = 0.17 + 0.07 * b + 0.04 * swell;
-        S.starI = 1 + 0.24 * b + 0.06 * swell;
-        S.wob = 0.03 + 0.035 * b;
-        S.rays = 0.07 + 0.12 * b;
-        S.bloom = 0.42 + 0.3 * b;
+        S.starR = R0 * (1 + 0.012 * Math.sin(now * 1.3) + 0.1 * b + 0.035 * swell);
+        S.heat = 0.17 + 0.14 * b + 0.05 * swell;
+        S.starI = 1 + 0.55 * b + 0.12 * swell;
+        S.wob = 0.03 + 0.06 * b;
+        S.rays = 0.08 + 0.35 * b;
+        S.bloom = 0.45 + 0.7 * b;
         S.fa[0] = ((Math.floor(now / 3.4) * 2.39996 + seed) % 6.283) - 3.14159;
-        S.fi[0] = 0.3 * b;
+        S.fi[0] = 0.55 * b;
       }
       return S;
     }
     if (t < T.TI) {
       const k = t / T.TI, bt = kick(t, 0.16);
       S.zoom = lerp(1, p.push, ein2(k) * 0.92);
-      S.starR = R0 * (1 + 0.07 * bt * (0.5 + k) + 0.05 * sm(0.75, 1, k));
-      S.heat = 0.16 + 0.3 * k * k + 0.06 * bt;
-      S.wob = 0.025 + 0.14 * k * k + 0.05 * bt;
-      S.starI = 1 + 0.15 * k + 0.2 * bt;
+      S.starR = R0 * (1 + 0.11 * bt * (0.5 + k) + 0.08 * sm(0.75, 1, k));
+      S.heat = 0.16 + 0.4 * k * k + 0.1 * bt;
+      S.wob = 0.025 + 0.18 * k * k + 0.08 * bt;
+      S.starI = 1 + 0.25 * k + 0.35 * bt;
       beats.filter((b) => t >= b.t).slice(-4).forEach((b, i) => {
         const kk = t - b.t;
         S.fa[i] = b.a;
         S.fi[i] = b.s * eout(kk / 0.25) * Math.exp(-kk / 0.9);
       });
-      S.shk = 0.15 * bt + 0.35 * k * k * k;
+      S.shk = 0.25 * bt + 0.6 * k * k * k;
       S.vig = 0.3 + 0.35 * k;
-      S.rays = 0.1 * k * k;
+      S.rays = 0.22 * k * k;
       S.dim = 1 - 0.35 * k;
     } else if (t < T.TC) {
       const c = (t - T.TI) / TCOL, e = ein(c);
@@ -285,14 +285,14 @@ export function startSupernova(root: HTMLElement, opts: SupernovaOptions): Super
       S.starR = Math.max(0.003, R0 * 1.06 * (1 - e));
       S.heat = lerp(0.5, 0.92, ein2(c));
       S.wob = 0.15 * (1 - c);
-      S.starI = 1.1 + 1.6 * e;
+      S.starI = 1.1 + 2.4 * e;
       S.inH = lerp(0.62, 0, eout(c));
       S.inI = Math.sin(Math.PI * clamp(c * 1.1));
       S.core = 0.6 * e;
       S.vig = 0.65 + 0.25 * c;
-      S.rays = 0.1 + 0.5 * e;
+      S.rays = 0.15 + 0.8 * e;
       S.dim = 0.65 - 0.5 * c;
-      S.shk = 0.5 * (1 - c);
+      S.shk = 0.8 * (1 - c) + 0.6 * e;
     } else if (t < T.TB) {
       // The held breath: nothing but a point, and it flickers.
       const h = (t - T.TC) / p.hold;
@@ -306,12 +306,12 @@ export function startSupernova(root: HTMLElement, opts: SupernovaOptions): Super
       const k = t - T.TB, X = p.X;
       S.starI = 0;
       // The camera: thrown back by the blast, then drifting slowly into the nebula.
-      S.zoom = lerp(0.84, 1, eout(k / 2.2)) + (p.push * 1.1 - 0.84) * Math.exp(-k / 0.05) + 0.08 * sm(1.6, 9, k);
+      S.zoom = lerp(0.78, 1, eout(k / 2.4)) + (p.push * 1.1 - 0.78) * Math.exp(-k / 0.05) + 0.08 * sm(1.6, 9, k);
       S.pan = [0.018 * Math.sin(k * 0.21) * sm(1, 4, k), 0.012 * Math.sin(k * 0.17 + 1) * sm(1, 4, k)];
-      S.flash = p.flash * Math.min(1, k / 0.03) * Math.exp(-k / 0.28);
-      S.white = p.white * Math.min(1, k / 0.02) * Math.exp(-k / 0.16);
+      S.flash = p.flash * Math.min(1, k / 0.03) * Math.exp(-k / 0.34);
+      S.white = p.white * Math.min(1, k / 0.02) * Math.exp(-k / 0.22);
       S.flare = p.flare * (Math.exp(-k / 0.65) * Math.min(1, k / 0.04)) + p.flare * 0.08 * sm(0.3, 1.2, k);
-      S.s1 = X * 1.3 * eout(k / 1.5);
+      S.s1 = X * 1.45 * eout(k / 1.5);
       S.s1i = Math.exp(-k / 0.6) * Math.min(1, k / 0.05);
       if (p.rings > 1) {
         const k2 = k - 0.32;
@@ -320,7 +320,7 @@ export function startSupernova(root: HTMLElement, opts: SupernovaOptions): Super
           S.s2i = 0.8 * Math.exp(-k2 / 0.75) * Math.min(1, k2 / 0.05);
         }
       }
-      S.E = 0.06 + (0.24 + 0.08 * X) * eout(k / 3.2) + 0.005 * k;
+      S.E = 0.06 + (0.3 + 0.1 * X) * eout(k / 3.2) + 0.005 * k;
       S.neb = p.neb * sm(0, 0.12, k) * (1.3 * Math.exp(-k / 1) + 0.52);
       S.nebHot = Math.exp(-k / 0.7);
       S.teal = p.teal * sm(0.8, 2.8, k);
@@ -328,21 +328,23 @@ export function startSupernova(root: HTMLElement, opts: SupernovaOptions): Super
       S.debI = p.deb * Math.exp(-k / 1.2) * Math.min(1, k / 0.05);
       S.blur = p.blur * Math.exp(-k / 0.55);
       S.ca = 0.018 * p.blur * Math.exp(-k / 0.35);
-      S.rays = 0.5 * Math.exp(-k / 1) + 0.32;
+      S.rays = 0.9 * Math.exp(-k / 1.1) + 0.34;
       S.vig = lerp(0.9, 0.42, eout(k / 1.6));
       S.dim = lerp(0.1, 1, sm(0.1, 1.8, k));
-      S.shk = 2.2 * X * Math.exp(-k / 0.3);
-      S.bloom = 0.5 + 0.9 * Math.exp(-k / 0.6);
+      S.shk = 3.4 * X * Math.exp(-k / 0.38);
+      S.bloom = 0.55 + 1.3 * Math.exp(-k / 0.7);
       // The core: bright after the blast, quiet while the nebula is held, swelling as the card comes out, a pulse as it turns.
       const kt = t - T.TE, kf = t - T.TF;
       const burst = Math.exp(-Math.pow((kf - 0.45 * p.fl) / 0.12, 2));
-      S.core = 1.6 * Math.exp(-k / 0.35) + 0.4 + 0.05 * Math.sin(now * 8.2) + 0.7 * sm(-1.2, 0.3, kt) * (1 - sm(0.6, 2.2, kt)) + 1.4 * Math.exp(-Math.pow((kf - 0.45 * p.fl) / 0.14, 2));
+      // The birth: the core flares once more as the card leaves it.
+      const born = Math.exp(-Math.pow(kt / 0.2, 2));
+      S.core = 1.6 * Math.exp(-k / 0.35) + 0.4 + 0.05 * Math.sin(now * 8.2) + 0.9 * sm(-1.2, 0.3, kt) * (1 - sm(0.6, 2.2, kt)) + 1.9 * Math.exp(-Math.pow((kf - 0.45 * p.fl) / 0.14, 2)) + 1.2 * born;
       S.dof = 0.82 * sm(T.TE + p.em * 0.55, T.TF + p.fl * 0.6, t);
       S.bloom += 0.5 * burst;
       S.rays *= 1 - 0.6 * S.dof;
-      S.rays += (0.25 + (0.35 * p.flash) / 1.9) * burst + 0.25 * sm(0, 1, kt) * (1 - sm(1.5, 2.6, kt));
-      S.white += 0.12 * X * burst * (opts.rarity === 'legendary' ? 1.6 : 1);
-      S.shk += 0.5 * burst;
+      S.rays += (0.25 + (0.35 * p.flash) / 1.9) * burst + 0.25 * sm(0, 1, kt) * (1 - sm(1.5, 2.6, kt)) + 0.45 * born;
+      S.white += 0.2 * X * burst * (opts.rarity === 'legendary' ? 1.6 : 1) + 0.1 * X * born;
+      S.shk += 0.9 * burst + 0.4 * born;
       if (kf > 0.4 * p.fl && p.rings > 1) {
         const k3 = kf - 0.4 * p.fl;
         S.s2 = 0.06 + 0.6 * eout(k3 / 1.4);
@@ -488,7 +490,7 @@ export function startSupernova(root: HTMLElement, opts: SupernovaOptions): Super
     last = ms;
     const S = state(t, now);
     draw(S, now);
-    if (shake) shake.style.transform = S.shk > 0.01 ? `translate(${(Math.sin(now * 71) * S.shk * 3).toFixed(2)}px,${(Math.cos(now * 83) * S.shk * 3).toFixed(2)}px)` : '';
+    if (shake) shake.style.transform = S.shk > 0.01 ? `translate(${(Math.sin(now * 71) * S.shk * 4).toFixed(2)}px,${(Math.cos(now * 83) * S.shk * 4).toFixed(2)}px)` : '';
     card(t, now);
     raf = requestAnimationFrame(frame);
   }

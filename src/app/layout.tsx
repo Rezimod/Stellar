@@ -48,7 +48,7 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: {
-    default: 'Stellar — the night sky, issued in editions',
+    default: 'Stellar — the cosmos, issued in editions',
     template: '%s',
   },
   metadataBase: new URL('https://stellarr.club'),
