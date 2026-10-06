@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import type { Viewport } from 'next';
-import { Anton, Bowlby_One, Orbitron, Geist, JetBrains_Mono, Oswald, Unbounded } from 'next/font/google';
+import { Anton, Bowlby_One, Orbitron, Geist, JetBrains_Mono, Oswald } from 'next/font/google';
 import './stellar-base.css';
 import '../styles/stellar-theme.css';
 import '../styles/stellar-motion.css';
@@ -31,8 +31,6 @@ const geist = Geist({
 const bowlby = Bowlby_One({ subsets: ['latin'], variable: '--font-bowlby', weight: '400', display: 'swap' });
 const anton = Anton({ subsets: ['latin'], variable: '--font-anton', weight: '400', display: 'swap' });
 const oswald = Oswald({ subsets: ['latin'], variable: '--font-oswald', weight: ['300', '400', '500'], display: 'swap' });
-// The site's own voice, wide and heavy: Unbounded for titles, labels and buttons.
-const unbounded = Unbounded({ subsets: ['latin'], variable: '--font-unbounded', weight: ['500', '600', '700', '800', '900'], display: 'swap' });
 const jetbrainsMono = JetBrains_Mono({
   subsets: ['latin'],
   variable: '--font-mono',
@@ -80,7 +78,7 @@ export const metadata: Metadata = {
  */
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${orbitron.variable} ${geist.variable} ${jetbrainsMono.variable} ${bowlby.variable} ${anton.variable} ${oswald.variable} ${unbounded.variable}`}>
+    <html lang="en" suppressHydrationWarning className={`${orbitron.variable} ${geist.variable} ${jetbrainsMono.variable} ${bowlby.variable} ${anton.variable} ${oswald.variable}`}>
       <head>
         <meta name="apple-mobile-web-app-title" content="Stellar" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />

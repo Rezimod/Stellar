@@ -8,7 +8,7 @@
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 44;
     display: flex; align-items: center; gap: 12px;
     padding: 10px var(--sd-gutter, 16px);
-    background: rgba(12, 10, 9, 0.97); border-top: 1px solid var(--sd-rule);
+    background: var(--sd-bar-bg, rgba(14, 48, 54, 0.97)); border-top: 1px solid var(--sd-rule);
     transform: translateY(0); transition: transform 220ms var(--sd-ease, ease), opacity 220ms;
   }
   .sd-buybar[data-hidden="true"] { transform: translateY(110%); opacity: 0; pointer-events: none; }
@@ -35,7 +35,7 @@
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 45;
     display: grid; grid-template-columns: repeat(5, minmax(0, 1fr));
     height: var(--sd-tabs-h); padding-bottom: env(safe-area-inset-bottom, 0px);
-    background: rgba(9, 9, 9, 0.97); border-top: 1px solid var(--sd-rule);
+    background: var(--sd-bar-bg, rgba(14, 48, 54, 0.97)); border-top: 1px solid var(--sd-rule);
   }
   .sd-tab {
     position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
