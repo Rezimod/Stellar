@@ -6,10 +6,11 @@ import { SET_001_CARD_BY_DESIGNATION } from '@/lib/sets/set-001';
 import { glowFor } from '@/lib/stellar/plate';
 import { TIERS } from '@/lib/stellar/tiers';
 import CardThumb from './CardThumb';
+import Sunburst from './Sunburst';
 import TierCapsule from './TierCapsule';
 
 /**
- * The vault beside the headline: the sealed capsule lit by its two blades, a
+ * The vault beside the headline: the sealed capsule on the poster's sunburst, a
  * hand of cards fanned behind it on a pedestal. Each card has a seat on the
  * stage (x, y in percent), a lean and a size. The first three also carry
  * `side`; the rest stay hidden on a phone. Any card can be pulled out and moved.
@@ -63,7 +64,7 @@ export default function HomeFan() {
   return (
     <div className="sd-herofan" aria-label="The sealed capsule and cards from First Light">
       <span className="sd-herofan__light" aria-hidden="true" />
-      <span className="sd-herofan__plate" aria-hidden="true">Founding set · First Light</span>
+      <Sunburst className="sd-herofan__burst" />
       <div className="sd-herofan__deck">
         {HAND.map((f, i) => {
           const c = SET_001_CARD_BY_DESIGNATION.get(f.designation);

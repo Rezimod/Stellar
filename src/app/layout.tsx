@@ -8,6 +8,7 @@ import '../styles/stellar-pages.css';
 import '../styles/stellar-reveal.css';
 import '../styles/stellar-supernova.css';
 import '../styles/stellar-type.css';
+import '../styles/stellar-home.css';
 import '../styles/stellar-mobile.css';
 import { AnalyticsBoot } from '@/components/providers/AnalyticsBoot';
 import JsonLd from '@/components/shared/JsonLd';

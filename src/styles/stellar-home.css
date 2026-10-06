@@ -1,0 +1,154 @@
+/* STELLAR — the home page, printed like a mid-century space poster.
+   Loaded after stellar-type.css. One rule for colour: cream for words, one flat
+   orange for the accent line, gold for small labels and rays, vermilion only on
+   the button you press. Display lines sit on a hard printed shadow, never a glow
+   or a gradient. The hero stands on a red world's horizon under a sunburst. */
+
+.stellar {
+  --sd-orange: #ef9b4c;   /* the accent line — one ink, readable on the teal */
+  --sd-print: #0a2a2e;    /* the shadow every display line is printed over */
+  --sd-ray: #e2b86a;      /* sunburst and orbit lines */
+}
+
+/* ── Display type: cream on a hard offset, the accent in flat orange ── */
+.stellar :is(.sd-hero2__title, .sd-home-sec__title, .sd-closer2__title, .sd-flight__title) {
+  color: var(--sd-ink); text-shadow: 0.05em 0.055em 0 var(--sd-print);
+}
+.stellar :is(.sd-hero2__title, .sd-closer2__title) em {
+  color: var(--sd-orange); background: none; -webkit-background-clip: border-box; background-clip: border-box;
+  font-size: 1em; line-height: inherit;
+}
+.stellar :is(.sd-hero2__title span:has(em), .sd-closer2__title:has(em)) { filter: none; }
+
+/* Small labels: gold, tracked, led in by a rule and a sparkle. */
+.stellar .sd-kicker { display: inline-flex; align-items: center; gap: 10px; color: var(--sd-gold); }
+.stellar .sd-kicker::before {
+  content: '\2726'; padding-left: 32px; font-size: 10px; letter-spacing: 0; line-height: 1;
+  background: linear-gradient(90deg, transparent, currentColor) 0 50% / 24px 1px no-repeat;
+}
+.stellar .sd-home-sec__lede { color: rgba(244, 232, 204, 0.82); }
+
+/* ── Hero ─────────────────────────────────────────────────────── */
+.stellar .sd-hero2 {
+  isolation: isolate; border-bottom: 0;
+  padding-bottom: calc(clamp(40px, 6vw, 80px) + clamp(90px, 11vw, 170px));
+}
+.stellar .sd-hero2__grid { position: relative; z-index: 1; }
+/* The red world the vault stands on: full bleed, its limb lit, its foot dissolving into the page. */
+.sd-hero2__horizon {
+  position: absolute; z-index: 0; left: 50%; bottom: 0; width: max(100%, 1100px); aspect-ratio: 2880 / 560; translate: -50% 0;
+  background: url('/stellar/home/horizon.webp') center top / 100% auto no-repeat; pointer-events: none; filter: saturate(0.88) brightness(0.9);
+  -webkit-mask-image: linear-gradient(180deg, #000 52%, transparent 100%); mask-image: linear-gradient(180deg, #000 52%, transparent 100%);
+}
+.stellar .sd-hero2__kicker { margin-bottom: 20px; }
+.stellar .sd-hero2__title { font-size: clamp(32px, 4.05vw, 60px); }
+.stellar .sd-hero2__sub { margin-top: 22px; max-width: 44ch; color: rgba(244, 232, 204, 0.84); font-size: 18px; }
+.stellar .sd-hero2__cta { align-items: center; gap: 14px 26px; }
+.sd-hero2__more {
+  display: inline-flex; align-items: center; gap: 10px; min-height: 44px;
+  font: 500 14px var(--sd-spaced); letter-spacing: 0.16em; text-transform: uppercase; color: var(--sd-ink); text-decoration: none;
+}
+.sd-hero2__more::after { content: ''; width: 18px; height: 1px; background: currentColor; transition: width var(--sd-dur-base) var(--sd-ease); }
+.sd-hero2__more:hover { color: var(--sd-gold); }
+.sd-hero2__more:hover::after { width: 30px; }
+.stellar .sd-hero2__stats { margin-top: 40px; border-top-color: rgba(244, 232, 204, 0.16); }
+.stellar .sd-hero2__stats dd { color: var(--sd-ink); text-shadow: 0.05em 0.06em 0 var(--sd-print); }
+.stellar .sd-hero2__stats dt { color: rgba(244, 232, 204, 0.6); }
+
+/* The vault: the capsule on the sunburst instead of crossed blades, a warm light behind. */
+.sd-burst { display: block; stroke: var(--sd-ray); fill: none; pointer-events: none; }
+.stellar .sd-herofan__burst {
+  position: absolute; z-index: 0; left: 50%; top: 56%; width: 165%; translate: -50% -50%;
+  -webkit-mask-image: radial-gradient(closest-side, #000 38%, transparent 96%); mask-image: radial-gradient(closest-side, #000 38%, transparent 96%);
+  opacity: 0.8;
+}
+.stellar .sd-herofan__light { background: radial-gradient(34% 32% at 50% 56%, rgba(244, 196, 120, 0.2), transparent 72%); }
+.stellar .sd-herofan__capsule .sd-tier__saber { display: none; }
+.stellar .sd-herofan__pedestal { background: radial-gradient(50% 50% at 50% 50%, rgba(10, 42, 46, 0.55), rgba(10, 42, 46, 0.2) 60%, transparent 74%); box-shadow: none; }
+.stellar .sd-herofan__pedestal::after { border-color: rgba(226, 184, 106, 0.28); }
+@media (prefers-reduced-motion: no-preference) {
+  .stellar .sd-herofan__burst { animation: sd-burst-turn 140s linear infinite; }
+}
+@keyframes sd-burst-turn { to { rotate: 360deg; } }
+
+/* ── Partners and recognition: one quiet band, every mark in the same cream ink ── */
+.stellar .sd-trust { padding-top: 64px; }
+.stellar .sd-trust__label { color: rgba(244, 232, 204, 0.55); }
+.stellar .sd-partners { margin-bottom: 36px; }
+.stellar .sd-partners li { height: 80px; }
+.stellar .sd-partners img { filter: brightness(0) invert(0.93) sepia(0.28) !important; opacity: 0.62; max-height: 30px; }
+.stellar .sd-partners li:hover img { opacity: 0.95; }
+.stellar .sd-recog__item { flex-direction: row; gap: 14px; justify-content: center; }
+.stellar .sd-recog__item img, .stellar .sd-recog__item:hover img { filter: brightness(0) invert(0.93) sepia(0.28); }
+.stellar .sd-recog__item img { opacity: 0.62; height: 24px; }
+.stellar .sd-recog__item img[src$='.webp'], .stellar .sd-recog__item:hover img[src$='.webp'] { height: 30px; filter: grayscale(1) sepia(0.3) brightness(1.5); }
+.stellar .sd-recog__item:hover img { opacity: 0.95; }
+.stellar .sd-recog__cap { font: 500 12px var(--sd-spaced); letter-spacing: 0.16em; text-transform: uppercase; color: rgba(244, 232, 204, 0.62); }
+.stellar .sd-recog__cap b { color: var(--sd-gold); font-weight: 500; }
+
+/* ── What a card opens: four stops on one dotted orbit ────────── */
+.stellar .sd-flight { position: relative; background: none; padding-top: 0; counter-reset: sd-step; }
+.stellar .sd-flight::before {
+  content: ''; position: absolute; left: 0; right: 0; top: 0; height: 1px;
+  background: repeating-linear-gradient(90deg, rgba(226, 184, 106, 0.6) 0 6px, transparent 6px 13px);
+}
+.stellar .sd-flight > li { position: relative; }
+.stellar .sd-flight__icon { color: var(--sd-gold); }
+.stellar .sd-flight__step:not(.sd-flight__step--live) .sd-flight__icon { color: rgba(244, 232, 204, 0.45); }
+.stellar .sd-flight__text { color: rgba(244, 232, 204, 0.8); }
+@media (hover: hover) { .stellar .sd-flight__step:hover .sd-flight__title { color: var(--sd-orange); } }
+@media (min-width: 860px) {
+  .stellar .sd-flight > li::before {
+    content: ''; position: absolute; z-index: 1; top: 0; left: 50%; width: 11px; height: 11px; translate: -50% -50%; border-radius: 50%;
+    background: var(--sd-canvas); box-shadow: inset 0 0 0 1.5px var(--sd-ray);
+  }
+  .stellar .sd-flight > li:has(.sd-flight__step--live)::before { background: var(--sd-ray); box-shadow: 0 0 0 4px rgba(226, 184, 106, 0.16); }
+  .stellar .sd-flight__step { padding-top: 40px; }
+  .stellar .sd-flight__step::before {
+    counter-increment: sd-step; content: counter(sd-step, decimal-leading-zero);
+    font: 500 12px var(--sd-spaced); letter-spacing: 0.3em; color: rgba(244, 232, 204, 0.5);
+  }
+}
+
+/* ── The odds: a cream-ruled panel on the teal, not a black box ── */
+.stellar .sd-pub__panel {
+  background:
+    linear-gradient(180deg, #123b41, #0d3237) padding-box,
+    linear-gradient(180deg, rgba(244, 232, 204, 0.32), rgba(244, 232, 204, 0.08)) border-box;
+  box-shadow: 0 34px 60px -34px rgba(4, 22, 24, 0.85), inset 0 1px 0 rgba(244, 232, 204, 0.08);
+}
+.stellar .sd-pub__tabs { background: rgba(4, 26, 29, 0.5); }
+.stellar .sd-pub__tile { background: rgba(244, 232, 204, 0.035); }
+.stellar .sd-pub__icon { color: var(--sd-gold); background: rgba(226, 184, 106, 0.1); box-shadow: inset 0 0 0 1px rgba(226, 184, 106, 0.36); }
+.stellar .sd-pub__d { color: rgba(244, 232, 204, 0.68); }
+
+/* ── First Light and the orbit ────────────────────────────────── */
+.stellar .sd-families li { color: rgba(244, 232, 204, 0.84); }
+.stellar .sd-families__n { color: var(--sd-gold); }
+.stellar .sd-orbit__path { border-color: rgba(226, 184, 106, 0.22); box-shadow: none; }
+
+/* ── The closing line, on its own sunburst ────────────────────── */
+.stellar .sd-closer2 { isolation: isolate; padding-bottom: 24px; overflow-x: clip; }
+.stellar .sd-closer2::before { display: none; }
+.stellar .sd-closer2__burst {
+  position: absolute; z-index: -1; left: 50%; top: 42%; width: min(1100px, 170%); translate: -50% -50%;
+  -webkit-mask-image: radial-gradient(closest-side, #000 26%, transparent 90%); mask-image: radial-gradient(closest-side, #000 26%, transparent 90%);
+  opacity: 0.55;
+}
+.stellar .sd-closer2 .sd-home-sec__lede { color: rgba(244, 232, 204, 0.82); }
+
+/* ── Phones ───────────────────────────────────────────────────── */
+@media (max-width: 559px) {
+  .stellar .sd-hero2 { padding-bottom: 120px; }
+  .stellar .sd-hero2__title { font-size: min(9.4vw, 42px); }
+  .stellar .sd-hero2__kicker { order: 0; margin: 4px 0 14px; font-size: 11px; }
+  .sd-hero2__horizon { width: 1100px; }
+  .stellar .sd-hero2__sub { font-size: 16px; }
+  .stellar .sd-hero2__cta { justify-content: center; }
+  .stellar .sd-trust { padding-top: 44px; }
+  .stellar .sd-partners img { max-height: 22px; }
+  .stellar .sd-recog__item { flex-direction: column; gap: 8px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .stellar .sd-herofan__burst { animation: none; }
+}

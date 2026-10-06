@@ -6,6 +6,7 @@ import FlightPlan, { type FlightStep } from '@/components/stellar/FlightPlan';
 import HomeFan from '@/components/stellar/HomeFan';
 import OddsBoard from '@/components/stellar/OddsBoard';
 import OrbitRing from '@/components/stellar/OrbitRing';
+import Sunburst from '@/components/stellar/Sunburst';
 import StellarShell from '@/components/stellar/StellarShell';
 import StellarView from '@/components/stellar/StellarView';
 import { getDb } from '@/lib/db';
@@ -119,9 +120,11 @@ export default async function HomePage() {
       <StellarView step="landing" />
 
       <section className="sd-hero2">
+        <span className="sd-hero2__horizon" aria-hidden="true" />
         <div className="sd-container sd-hero2__grid">
           <HomeFan />
           <div className="sd-hero2__copy">
+            <p className="sd-kicker sd-hero2__kicker">Founding set · First Light</p>
             <h1 className="sd-hero2__title">
               <span>Hold a piece of</span>{' '}
               <span>
@@ -134,6 +137,9 @@ export default async function HomePage() {
             <div className="sd-hero2__cta">
               <Link href="/set/001" className="sd-btn sd-btn--light">
                 Open a capsule — from ${FROM_USD}
+              </Link>
+              <Link href="/set/001" className="sd-hero2__more">
+                See the {SET_001_CARDS.length} cards
               </Link>
             </div>
             <dl className="sd-hero2__stats">
@@ -260,6 +266,7 @@ export default async function HomePage() {
       </section>
 
       <section className="sd-container sd-home-sec sd-closer2" aria-labelledby="close-title">
+        <Sunburst className="sd-closer2__burst" />
         <h2 className="sd-closer2__title" id="close-title">
           The night sky, <em>issued in editions</em>.
         </h2>
