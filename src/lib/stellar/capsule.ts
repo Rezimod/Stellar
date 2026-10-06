@@ -21,8 +21,8 @@ import { isSealed } from './almanac';
 import type { Db } from './attach';
 import type { LogRow } from './audit';
 import { CAPSULE_PRICE_USD, CARDS_PER_CAPSULE, RARITY_ODDS_BPS } from './economics';
-import type { Tier } from './tiers';
-import { CAPSULE_PRODUCT_ID, findPayment, markPaid, orderExpiry, simulatedPayments, type OrderRow, type PaymentCheck } from './orders';
+import { tierByKey, type Tier } from './tiers';
+import { CAPSULE_PRODUCT_ID, findPayment, markPaid, orderExpiry, reportExtraTransfers, simulatedPayments, type OrderRow, type PaymentCheck } from './orders';
 import {
   SoldOutError,
   commitmentOf,
@@ -289,7 +289,7 @@ async function readOrder(db: Db, orderId: string): Promise<OrderRow | null> {
 
 export type PurchaseResult =
   | { ok: true; orderId: string; sequence: number; message: string; purchaseHash: string; priceUsd: number; expiresAt: string }
-  | { ok: false; reason: 'not_found' | 'not_listed' | 'commitment_mismatch' };
+  | { ok: false; reason: 'not_found' | 'not_listed' | 'commitment_mismatch' | 'too_many_unpaid' };
 
 /**
  * Takes a listed capsule for a buyer, with their nonce, and opens its order.
@@ -300,6 +300,10 @@ export type PurchaseResult =
  * its payment window closes unpaid — released, and each is in the log. The
  * window's close is logged with the purchase, so a release can be checked
  * against it.
+ *
+ * The account may hold at most `maxUnpaid` capsules unpaid at once. The count
+ * is taken inside the batch, behind a lock on the account, so requests sent at
+ * the same moment cannot each see room for one more.
  */
 export async function purchaseCapsule(
   db: Db,
@@ -312,6 +316,7 @@ export async function purchaseCapsule(
     privyId: string;
     amountSol: number;
     paymentReference: string;
+    maxUnpaid: number;
   },
 ): Promise<PurchaseResult> {
   const capsuleRow = await readCapsule(db, input.capsuleId);
@@ -327,12 +332,15 @@ export async function purchaseCapsule(
   const priceUsd = Number(capsuleRow.price_usd);
   const expiresAt = orderExpiry().toISOString();
 
-  const [claimed, order] = await runBatch(db, [
+  const [, claimed, order] = await runBatch(db, [
+    db.execute(sql`SELECT pg_advisory_xact_lock(hashtext(${'capsule-buyer:' + input.privyId}))`),
     db.execute(sql`
       WITH c AS (
         UPDATE capsule SET state = 'purchased', buyer_wallet = ${input.wallet}, buyer_nonce = ${input.nonce},
           buyer_signature = ${input.signature}, purchase_hash = ${hash}, order_id = ${orderId}::uuid, purchased_at = now()
         WHERE id = ${capsuleId}::uuid AND state = 'listed' AND commitment = ${input.commitment}
+          AND (SELECT count(*) FROM orders WHERE privy_id = ${input.privyId} AND product_id = ${CAPSULE_PRODUCT_ID}
+               AND status = 'pending' AND expires_at > now()) < ${input.maxUnpaid}
         RETURNING id, sequence, commitment, buyer_wallet, buyer_nonce, purchase_hash
       )
       INSERT INTO capsule_log (capsule_id, capsule_sequence, event, commitment, buyer_wallet, buyer_nonce, purchase_hash, outcome)
@@ -351,7 +359,9 @@ export async function purchaseCapsule(
     `),
   ]);
 
-  if (claimed.rows.length === 0 || order.rows.length === 0) return { ok: false, reason: 'not_listed' };
+  if (claimed.rows.length === 0 || order.rows.length === 0) {
+    return { ok: false, reason: (await unpaidCapsules(db, input.privyId)) >= input.maxUnpaid ? 'too_many_unpaid' : 'not_listed' };
+  }
   return { ok: true, orderId, sequence, message: purchaseMessage(terms), purchaseHash: hash, priceUsd, expiresAt };
 }
 
@@ -545,7 +555,8 @@ export async function openCapsule(db: Db, capsuleId: string): Promise<OpenResult
 
 // ─── Closing: void, release, refund ─────────────────────────────────────────
 
-type LatePayment = { signature: string; paidAt: Date };
+/** A transfer the order cannot keep: late, or short of the amount. */
+type LatePayment = { signature: string; paidAt: Date; short?: boolean };
 
 /**
  * The refund entry for a closed capsule whose order ended refund_due. Written
@@ -595,7 +606,7 @@ async function closeCapsule(
     lapsed: sql`EXISTS (SELECT 1 FROM orders o WHERE o.id = capsule.order_id AND o.status = 'pending' AND o.expires_at < now())`,
   }[input.when];
   const late = input.late ?? null;
-  const reason = late ? 'paid after its payment window closed' : input.refundReason;
+  const reason = late?.short ? 'paid less than the quote' : late ? 'paid after its payment window closed' : input.refundReason;
 
   const statements = [
     db.execute(sql`
@@ -635,10 +646,13 @@ async function paymentBeforeClosing(
 ): Promise<{ late: LatePayment | null } | { refuse: 'paid' | 'payment_unknown' }> {
   const payment = known ?? (await findPayment(order));
   if (payment.paid && !payment.late) {
-    await markPaid(db, order.id, payment.signature, payment.paidAt);
+    const row = await markPaid(db, order.id, payment.signature, payment.paidAt);
+    if (order.status === 'pending' && row.status === 'paid') await reportExtraTransfers(order.id, payment.extra);
     return { refuse: 'paid' };
   }
   if (payment.paid) return { late: { signature: payment.signature, paidAt: payment.paidAt } };
+  // SOL that arrived short of the quote is owed back when the order closes.
+  if (payment.partial) return { late: { ...payment.partial, short: true } };
   if (payment.error) return { refuse: 'payment_unknown' };
   return { late: null };
 }
@@ -728,7 +742,26 @@ export async function releaseCapsule(
     refundReason: 'paid while the capsule was being released',
     late: checked.late,
   });
-  return closed ? { ok: true } : { ok: false, reason: 'not_voidable' };
+  if (!closed) return { ok: false, reason: 'not_voidable' };
+  await relist(db, c);
+  return { ok: true };
+}
+
+/**
+ * A released capsule's place on the shelf, taken again by a new capsule of
+ * the same tier and price under a fresh secret and commitment — the released
+ * one's secret is public now, so it can never be sold again itself. Taking a
+ * capsule and leaving it unpaid then costs the shelf nothing for long. A set
+ * with no editions to spare lists nothing.
+ */
+async function relist(db: Db, c: CapsuleRow): Promise<void> {
+  if (c.demo) return;
+  const tier = tierByKey(c.tier);
+  try {
+    await listCapsules(db, { setId: c.set_id, count: 1, ...(tier ? { tier } : { priceUsd: Number(c.price_usd) }) });
+  } catch (err) {
+    console.error('[stellar/capsules] relist after release', c.id, err instanceof Error ? err.message : err);
+  }
 }
 
 /** Releases every capsule whose payment window has closed unpaid, a bounded number at a time. */

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { simulatedPayments } from '@/lib/stellar/rehearsal';
 import Link from 'next/link';
 import { usePrivySafe as usePrivy } from './usePrivySafe';
 import { useStellarHolder } from './useStellarHolder';
@@ -21,7 +22,7 @@ const StellarPay = dynamic(() => import('./StellarPay'), { ssr: false });
 const StellarReveal = dynamic(() => import('./StellarReveal'), { ssr: false });
 
 /** A deployment that rehearses instead of selling. Set at build, not by the page. */
-const REHEARSAL = process.env.NEXT_PUBLIC_STELLAR_SIMULATED_PAYMENT === '1';
+const REHEARSAL = simulatedPayments();
 const STEPS = ['Buy', 'Pay', 'Open'] as const;
 
 /**

@@ -1,11 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
 import { getDb } from '@/lib/db';
 import { verifyPrivy } from '@/lib/api-auth';
 import { paused } from '@/lib/kill-switch';
 import { stellarBuyRateLimit } from '@/lib/rate-limit';
 import { isRarity } from '@/lib/rarity';
 import { DIRECT_CARD_PRICE_USD } from '@/lib/stellar/economics';
-import { cardAvailability, createCardOrder, usdToSol, merchantWallet, newPaymentReference, paymentUrl, paymentNetworkMisconfig } from '@/lib/stellar/orders';
+import { cardAvailability, createCardOrder, settleCardOrders, usdToSol, merchantWallet, newPaymentReference, paymentUrl, paymentNetworkMisconfig } from '@/lib/stellar/orders';
 import { holderWallet, limited, NO_LINKED_WALLET } from '@/lib/stellar/route-guards';
 import { SolPriceUnavailableError } from '@/lib/sol-price';
 
@@ -44,6 +44,8 @@ export async function POST(req: NextRequest) {
   const db = getDb();
   if (!db) return NextResponse.json({ error: 'Database not configured' }, { status: 503 });
 
+  // Orders left pending past their window are settled from the chain now, not only at the nightly sweep.
+  after(() => settleCardOrders(db, 10).catch((err) => console.error('[stellar/cards/buy] settle sweep', err)));
   const c = await cardAvailability(db, designation);
   if (!c || !isRarity(c.rarity)) return NextResponse.json({ error: 'Card not found' }, { status: 404 });
   if (!c.released) return NextResponse.json({ error: 'This set is not on sale yet' }, { status: 409 });

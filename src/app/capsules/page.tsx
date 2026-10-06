@@ -11,7 +11,7 @@ import { RARITIES } from '@/lib/rarity';
 import { CARDS_PER_CAPSULE, ORDER_WINDOW_MINUTES, RARITY_ODDS_BPS } from '@/lib/stellar/economics';
 import { TIERS, formatOdds, tierByKey } from '@/lib/stellar/tiers';
 import { capsulesOnSale } from '@/lib/stellar/capsule';
-import { simulatedPayments } from '@/lib/stellar/orders';
+import { simulatedPayments } from '@/lib/stellar/rehearsal';
 
 export const dynamic = 'force-dynamic';
 

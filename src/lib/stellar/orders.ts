@@ -14,34 +14,24 @@
 import { createHash } from 'node:crypto';
 import { NextResponse } from 'next/server';
 import { Connection, Keypair, PublicKey } from '@solana/web3.js';
-import { encodeURL, validateTransfer } from '@solana/pay';
+import { encodeURL } from '@solana/pay';
 import { sendTelegram } from '@/lib/telegram';
 import BigNumber from 'bignumber.js';
-import { and, eq, inArray, sql } from 'drizzle-orm';
+import { and, eq, inArray, like, lt, sql } from 'drizzle-orm';
 import { card, edition, orders } from '@/lib/schema';
 import { priceToSol } from '@/lib/dealers';
 import { fetchSolPriceRates } from '@/lib/sol-price';
 import { isSealed } from './almanac';
 import type { Db } from './attach';
 import { ORDER_WINDOW_MINUTES } from './economics';
+import { simulatedPayments } from './rehearsal';
+
+export { simulatedPayments };
 
 export type OrderRow = typeof orders.$inferSelect;
 
 export const CAPSULE_PRODUCT_ID = 'stellar-capsule';
 export const CARD_PRODUCT_PREFIX = 'stellar-card:';
-
-/**
- * Whether this deployment is rehearsing rather than selling.
- *
- * With it on, no Solana transfer is looked for and no money moves: an order is
- * treated as paid the moment its buyer asks, and the signature recorded says
- * so. It is a deployment setting, never a request parameter, and the rehearsal
- * is marked in the capsule log at purchase, so a rehearsal sale can never be
- * read back as a real one.
- */
-export function simulatedPayments(): boolean {
-  return process.env.NEXT_PUBLIC_STELLAR_SIMULATED_PAYMENT === '1';
-}
 
 const REHEARSAL_PREFIX = 'simulated-no-payment:';
 
@@ -59,7 +49,8 @@ export function unpaidRehearsal(order: { signature: string | null }): boolean {
   return !simulatedPayments() && !!order.signature?.startsWith(REHEARSAL_PREFIX);
 }
 
-const PAYMENT_RPC = () => process.env.SOLANA_RPC_URL ?? 'https://api.mainnet-beta.solana.com';
+// An empty variable counts as unset: Vercel keeps a cleared value as "".
+const PAYMENT_RPC = () => process.env.SOLANA_RPC_URL || process.env.NEXT_PUBLIC_SOLANA_RPC_URL || 'https://api.mainnet-beta.solana.com';
 const networkOf = (s: string) => (/devnet/i.test(s) ? 'devnet' : /testnet/i.test(s) ? 'testnet' : /mainnet/i.test(s) ? 'mainnet-beta' : 'unknown');
 
 /**
@@ -70,7 +61,7 @@ const networkOf = (s: string) => (/devnet/i.test(s) ? 'devnet' : /testnet/i.test
  */
 export function paymentNetworkProblem(): string | null {
   if (simulatedPayments()) return null;
-  const cluster = process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? 'mainnet-beta';
+  const cluster = process.env.NEXT_PUBLIC_SOLANA_CLUSTER || 'mainnet-beta';
   const rpc = networkOf(PAYMENT_RPC());
   if (process.env.VERCEL_ENV === 'production' && (cluster !== 'mainnet-beta' || rpc !== 'mainnet-beta')) return 'production must take payments on mainnet';
   if (rpc !== 'unknown' && rpc !== cluster) return `SOLANA_RPC_URL is ${rpc} but the wallets pay on ${cluster}`;
@@ -156,14 +147,42 @@ export async function createCardOrder(
   return row;
 }
 
+/** A transfer that reached the merchant: its signature and when it landed. */
+export type Transfer = { signature: string; paidAt: Date };
+
 /**
- * A transfer found on chain: when it landed, and whether that was after the
- * order's window closed. `paid: false` with no error means no transfer yet;
- * with an error, the chain could not be asked and nothing may be concluded.
+ * What the chain shows for an order. `paid: true` once the transfers carrying
+ * its reference add up to the amount; `late` when the one that completed it
+ * landed after the window closed. `paid: false` with no error means nothing
+ * has arrived; with an error, the chain could not be asked and nothing may be
+ * concluded. `partial` is SOL that arrived but falls short of the amount: it
+ * is owed back if the order closes unpaid. `extra` are transfers after the
+ * one that completed the order, owed back too.
  */
 export type PaymentCheck =
-  | { paid: true; signature: string; paidAt: Date; late: boolean }
-  | { paid: false; error?: string; status?: number };
+  | { paid: true; signature: string; paidAt: Date; late: boolean; extra?: string[] }
+  | { paid: false; error?: string; status?: number; partial?: Transfer };
+
+/** At most this many transactions carrying a reference are read, so dust cannot slow a confirmation down. */
+const MAX_SCANNED = 25;
+
+const lamportsOf = (sol: number) => BigInt(new BigNumber(sol).shiftedBy(9).integerValue(BigNumber.ROUND_CEIL).toFixed(0));
+
+/**
+ * Lamports the recipient gained in one finalized transaction that carries the
+ * reference, or null when it failed, is not final yet or does not carry it.
+ * Read from balances rather than from the instruction list, so a wallet that
+ * adds its own instruction after the transfer (Phantom's guard does) still pays.
+ */
+async function received(connection: Connection, signature: string, recipient: PublicKey, reference: PublicKey) {
+  const tx = await connection.getTransaction(signature, { commitment: 'finalized', maxSupportedTransactionVersion: 0 });
+  if (!tx?.meta || tx.meta.err) return null;
+  const keys = tx.transaction.message.getAccountKeys({ accountKeysFromLookups: tx.meta.loadedAddresses }).keySegments().flat();
+  if (!keys.some((k) => k.equals(reference))) return null;
+  const i = keys.findIndex((k) => k.equals(recipient));
+  const lamports = i < 0 ? BigInt(0) : BigInt(tx.meta.postBalances[i] - tx.meta.preBalances[i]);
+  return { lamports, blockTime: tx.blockTime ?? null };
+}
 
 /** Looks for the order's payment on chain. Does not write. */
 export async function findPayment(order: OrderRow): Promise<PaymentCheck> {
@@ -181,45 +200,52 @@ export async function findPayment(order: OrderRow): Promise<PaymentCheck> {
   }
 
   if (paymentNetworkProblem()) return { paid: false, error: 'Payments are not available right now', status: 503 };
-  const connection = new Connection(PAYMENT_RPC(), 'confirmed');
+  const connection = new Connection(PAYMENT_RPC(), 'finalized');
+  const due = lamportsOf(order.amountSol);
 
-  // Every transaction that carried the key, oldest first. A failed one, or one
-  // that paid the wrong amount, is passed over rather than allowed to hide a
-  // valid transfer that came after it.
-  let found: { signature: string; blockTime?: number | null; err: unknown }[];
+  // Every final transaction that carried the key, oldest first. A failed one
+  // pays nothing and is passed over; a short one counts towards the amount, so
+  // a buyer who tops up has paid once the two add up.
+  let total = BigInt(0);
+  let first: Transfer | null = null;
+  let done: { signature: string; blockTime: number | null } | null = null;
+  const extra: string[] = [];
   try {
-    found = (await connection.getSignaturesForAddress(reference, { limit: 1000 }, 'confirmed')).reverse();
+    const found = (await connection.getSignaturesForAddress(reference, { limit: MAX_SCANNED }, 'finalized')).reverse();
+    for (const f of found) {
+      if (f.err) continue;
+      const r = await received(connection, f.signature, recipient, reference);
+      if (!r || r.lamports <= BigInt(0)) continue;
+      const blockTime = r.blockTime ?? f.blockTime ?? null;
+      if (done) {
+        extra.push(f.signature);
+        continue;
+      }
+      first ??= { signature: f.signature, paidAt: blockTime ? new Date(blockTime * 1000) : new Date() };
+      total += r.lamports;
+      if (total >= due) done = { signature: f.signature, blockTime };
+    }
   } catch {
     return { paid: false, error: 'The Solana network could not be reached', status: 503 };
   }
-  const valid: { signature: string; blockTime: number | null }[] = [];
-  let mismatched = false;
-  for (const f of found) {
-    if (f.err) continue;
-    try {
-      const tx = await validateTransfer(connection, f.signature, { recipient, amount: new BigNumber(order.amountSol), reference }, { commitment: 'confirmed' });
-      valid.push({ signature: f.signature, blockTime: f.blockTime ?? tx.blockTime ?? null });
-    } catch (err) {
-      mismatched = true;
-      console.warn('[stellar/confirm] transfer validation failed:', f.signature, err instanceof Error ? err.message : err);
-    }
-  }
-  if (!valid.length) return mismatched ? { paid: false, error: 'Payment amount does not match order', status: 400 } : { paid: false };
-
-  // The order takes one transfer. Any other one for it is owed back; it is
-  // reported where an operator will see it, since the order row holds one signature.
-  if (valid.length > 1) {
-    const extra = valid.slice(1).map((v) => v.signature);
-    console.error('[stellar/confirm] REFUND DUE: extra transfers for order', order.id, extra);
-    await sendTelegram(`Stellar refund due: order ${order.id} received ${valid.length} transfers. Extra: ${extra.join(', ')}`).catch(() => {});
-  }
+  if (!done) return first ? { paid: false, error: 'Payment amount does not match order', status: 400, partial: first } : { paid: false };
 
   // A transfer with no block time cannot be shown to be inside the window; it
   // is treated as late, which refunds it rather than keeps it.
-  const { signature, blockTime } = valid[0];
-  const paidAt = blockTime ? new Date(blockTime * 1000) : new Date();
-  const late = !blockTime || !order.expiresAt || paidAt.getTime() > order.expiresAt.getTime();
-  return { paid: true, signature, paidAt, late };
+  const paidAt = done.blockTime ? new Date(done.blockTime * 1000) : new Date();
+  const late = !done.blockTime || !order.expiresAt || paidAt.getTime() > order.expiresAt.getTime();
+  return { paid: true, signature: done.signature, paidAt, late, ...(extra.length ? { extra } : {}) };
+}
+
+/**
+ * Transfers an order received beyond the one that paid it, owed back. Said
+ * where an operator will see it, once: callers report only when the order
+ * has just changed state, never on a repeated check.
+ */
+export async function reportExtraTransfers(orderId: string, extra: string[] | undefined): Promise<void> {
+  if (!extra?.length) return;
+  console.error('[stellar/payments] REFUND DUE: extra transfers for order', orderId, extra);
+  await sendTelegram(`Stellar refund due: order ${orderId} received ${extra.length} extra transfer(s): ${extra.join(', ')}`).catch(() => {});
 }
 
 /** pending → paid, once. Returns the row either way. */
@@ -289,7 +315,8 @@ export async function cardAvailability(db: Db, designation: string) {
  * entry — one statement, so neither exists without the other. Refused (null)
  * when the card is sold out or the set's remaining editions are owed to
  * capsules. The entry names the card, the edition and SHA-256 of the order id;
- * not the wallet.
+ * not the wallet. Runs as one neon-http batch, a single transaction, behind a
+ * lock on the set.
  */
 async function allocateCardSale(
   db: Db,
@@ -297,7 +324,11 @@ async function allocateCardSale(
 ): Promise<{ editionNumber: number } | null> {
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
-      const { rows } = (await db.execute(sql`
+      // One sale per set at a time: two sales of different cards would each see
+      // the same spare edition, and between them dig into what capsules are owed.
+      const [, { rows }] = (await db.batch([
+        db.execute(sql`SELECT pg_advisory_xact_lock(hashtext('card-set:' || (SELECT set_id::text FROM card WHERE id = ${input.cardId}::uuid)))`),
+        db.execute(sql`
         WITH e AS (
           INSERT INTO edition (card_id, edition_number, owner_wallet, order_id, observation_capture_id)
           SELECT ${input.cardId}::uuid, COALESCE(MAX(x.edition_number), 0) + 1, ${input.wallet}, ${input.orderId}::uuid,
@@ -324,7 +355,8 @@ async function allocateCardSale(
           RETURNING seq
         )
         SELECT e.edition_number FROM e
-      `)) as Rows<{ edition_number: number }>;
+      `),
+      ])) as unknown as [unknown, Rows<{ edition_number: number }>];
       return rows[0] ? { editionNumber: Number(rows[0].edition_number) } : null;
     } catch (err) {
       const { code, cause } = err as { code?: string; cause?: { code?: string } };
@@ -373,4 +405,42 @@ export async function fulfilCardOrder(db: Db, order: OrderRow): Promise<CardFulf
     if (again) return { ok: true, editionNumber: again.editionNumber, editionSize: c.editionSize, designation };
     throw err;
   }
+}
+
+/**
+ * Single-card orders whose window has closed while still pending — the buyer
+ * paid and left, or never paid. Each is settled from the chain as the confirm
+ * route would: paid inside the window, its edition is allocated; paid late or
+ * short, it is owed back; nothing paid, it is cancelled (a payment that lands
+ * after that is still found and owed back). A chain that cannot be asked
+ * leaves the order for the next sweep.
+ */
+export async function settleCardOrders(db: Db, limit = 25): Promise<Array<{ orderId: string; status: string }>> {
+  const lapsed = await db
+    .select()
+    .from(orders)
+    .where(and(eq(orders.status, 'pending'), like(orders.productId, `${CARD_PRODUCT_PREFIX}%`), lt(orders.expiresAt, new Date())))
+    .orderBy(orders.createdAt)
+    .limit(limit);
+  const out: Array<{ orderId: string; status: string }> = [];
+  for (const order of lapsed) {
+    const payment = await findPayment(order);
+    let row: OrderRow = order;
+    if (payment.paid && !payment.late) {
+      row = await markPaid(db, order.id, payment.signature, payment.paidAt);
+      if (row.status === 'paid') {
+        await reportExtraTransfers(order.id, payment.extra);
+        await fulfilCardOrder(db, row);
+      }
+    } else if (payment.paid) {
+      row = await markRefundDue(db, order.id, payment.signature, payment.paidAt);
+    } else if (payment.partial) {
+      row = await markRefundDue(db, order.id, payment.partial.signature, payment.partial.paidAt);
+    } else if (!payment.error) {
+      await db.update(orders).set({ status: 'cancelled' }).where(and(eq(orders.id, order.id), eq(orders.status, 'pending')));
+      row = { ...order, status: 'cancelled' };
+    }
+    out.push({ orderId: order.id, status: row.status });
+  }
+  return out;
 }

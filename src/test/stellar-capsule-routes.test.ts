@@ -49,6 +49,8 @@ vi.mock('@/lib/stellar/orders', () => ({
   findPayment: mocks.findPayment,
   markPaid: mocks.markPaid,
   markRefundDue: mocks.markRefundDue,
+  reportExtraTransfers: vi.fn(),
+  settleCardOrders: vi.fn(async () => []),
   fulfilCardOrder: vi.fn(),
   cardAvailability: mocks.cardAvailability,
   createCardOrder: mocks.createCardOrder,
@@ -148,10 +150,11 @@ describe('buying a capsule', () => {
   const body = { walletAddress: HOLDER, capsuleId: CAPSULE, commitment: HEX, nonce: HEX };
 
   it('holds no more than two unpaid capsules for one account', async () => {
-    mocks.unpaidCapsules.mockResolvedValue(2);
+    mocks.purchaseCapsule.mockResolvedValue({ ok: false, reason: 'too_many_unpaid' });
     const res = await buy(post('/api/stellar/capsules/buy', body));
     expect(res.status).toBe(429);
-    expect(mocks.purchaseCapsule).not.toHaveBeenCalled();
+    // The limit is enforced inside the purchase itself, where concurrent requests cannot each see room.
+    expect(mocks.purchaseCapsule).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ maxUnpaid: 2 }));
   });
 
   it('sells no capsule from a set still in draft', async () => {

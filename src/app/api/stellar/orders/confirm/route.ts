@@ -13,6 +13,7 @@ import {
   fulfilCardOrder,
   markPaid,
   markRefundDue,
+  reportExtraTransfers,
   unpaidRehearsal,
   type OrderRow,
   paymentNetworkMisconfig,
@@ -67,6 +68,7 @@ export async function POST(req: NextRequest) {
     } else {
       order = await markPaid(db, order.id, payment.signature, payment.paidAt);
     }
+    if (found.status === 'pending' && order.status === 'paid') await reportExtraTransfers(order.id, payment.extra);
   }
   if (order.status === 'refund_due') {
     return NextResponse.json(

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
 import { paused } from '@/lib/kill-switch';
 import { releaseCapsule, releaseLapsed } from '@/lib/stellar/capsule';
+import { settleCardOrders } from '@/lib/stellar/orders';
 import { isStellarAdmin, isUuid } from '@/lib/stellar/route-guards';
 
 export const runtime = 'nodejs';
@@ -9,7 +10,8 @@ export const runtime = 'nodejs';
 /**
  * Releases capsules bought and left unpaid past their payment window. Cron
  * (GET, CRON_SECRET) sweeps every lapsed capsule; an admin can POST one
- * `capsuleId`. Each release looks for the payment on chain first, and the
+ * `capsuleId`. The cron also settles single-card orders left pending past
+ * their window. Each release looks for the payment on chain first, and the
  * public log records it as 'released', with the nonce kept and the secret
  * revealed — never as a void.
  */
@@ -19,7 +21,7 @@ export async function GET(req: NextRequest) {
   if (!(await isStellarAdmin(req))) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const db = getDb();
   if (!db) return NextResponse.json({ error: 'Database not configured' }, { status: 503 });
-  return NextResponse.json({ released: await releaseLapsed(db) });
+  return NextResponse.json({ released: await releaseLapsed(db), cards: await settleCardOrders(db) });
 }
 
 export async function POST(req: NextRequest) {

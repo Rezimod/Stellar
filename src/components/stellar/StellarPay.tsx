@@ -7,6 +7,7 @@ import { usePrivySafe } from './usePrivySafe';
 import { Connection, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
 import { createTransfer, parseURL, type TransferRequestURL } from '@solana/pay';
 import bs58 from 'bs58';
+import { simulatedPayments } from '@/lib/stellar/rehearsal';
 import Caption from './ui/Caption';
 import DataRow from './ui/DataRow';
 
@@ -32,7 +33,7 @@ function minutesLeft(expiresAt: string | null): number | null {
 }
 
 /** A deployment that rehearses instead of selling. Set at build, not by the page. */
-const REHEARSAL = process.env.NEXT_PUBLIC_STELLAR_SIMULATED_PAYMENT === '1';
+const REHEARSAL = simulatedPayments();
 const DEVNET = process.env.NEXT_PUBLIC_SOLANA_CLUSTER === 'devnet';
 const RPC = process.env.NEXT_PUBLIC_SOLANA_RPC_URL ?? process.env.NEXT_PUBLIC_HELIUS_RPC_URL ?? (DEVNET ? 'https://api.devnet.solana.com' : 'https://api.mainnet-beta.solana.com');
 const explorer = (sig: string) => `https://explorer.solana.com/tx/${sig}${DEVNET ? '?cluster=devnet' : ''}`;
@@ -121,7 +122,7 @@ export default function StellarPay({
       });
       setSent(bs58.encode(signature));
       setNote('Sent. Waiting for the network to confirm it.');
-      for (let i = 0; i < 12; i++) {
+      for (let i = 0; i < 20; i++) {
         await wait(2500);
         if (await check(true)) return;
       }

@@ -7,6 +7,7 @@ import { verifyCronSecret } from '@/lib/cron-auth';
 import { getSessionWalletAddresses, verifyPrivy } from '@/lib/api-auth';
 import { isValidPublicKey } from '@/lib/validate';
 import { checkRateLimit } from '@/lib/rate-limit';
+import { simulatedPayments } from './rehearsal';
 
 /** A lowercase RFC 4122 UUID, exactly: what every capsule and order id is. */
 export const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
@@ -19,11 +20,16 @@ type Limiter = { limit: (id: string) => Promise<{ success: boolean; remaining: n
 
 /**
  * A 429 when the caller is over the limit, a 503 when the limiter cannot be
- * reached; null to proceed. A deployment with no Redis configured at all has
- * no limiter to reach, and proceeds.
+ * reached; null to proceed. A deployment with no Redis configured has no
+ * limiter: outside production, or while production rehearses, it proceeds;
+ * production taking real payments refuses rather than run unlimited.
  */
 export async function limited(limiter: Limiter, id: string): Promise<NextResponse | null> {
-  if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) return null;
+  if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
+    if (process.env.VERCEL_ENV !== 'production' || simulatedPayments()) return null;
+    console.error('[stellar] refusing: no rate limiter configured in production');
+    return NextResponse.json({ error: 'Service temporarily unavailable' }, { status: 503 });
+  }
   try {
     const { success, reset } = await checkRateLimit(limiter, id);
     if (success) return null;

@@ -522,9 +522,14 @@ describe('closing a capsule without taking a payment silently', () => {
     expect(await releaseCapsule(db, c.id)).toEqual({ ok: true });
     expect(state.capsules[0].state).toBe('released');
     expect(state.orders![0].status).toBe('cancelled');
-    expect(events(state)).toEqual(['released']);
+    // Its place on the shelf is taken by a new capsule, under a new commitment.
+    expect(events(state)).toEqual(['released', 'listed']);
+    const relisted = state.capsules[1];
+    expect(relisted).toMatchObject({ state: 'listed', set_id: c.set_id, price_usd: c.price_usd });
+    expect(relisted.commitment).not.toBe(c.commitment);
     expect(state.log[0].buyerNonce).toBe(c.buyer_nonce);
-    const purchasedEntry = earlierEntries(state.capsules).map((r) => (r.event === 'purchased'
+    // The released capsule's own history; the new one has only its listing so far.
+    const purchasedEntry = earlierEntries([state.capsules[0]]).map((r) => (r.event === 'purchased'
       ? { ...r, outcome: { expiresAt: state.orders![0].expiresAt!.toISOString() } } : r));
     const a = auditLog([...purchasedEntry, ...state.log.map((r) => ({ ...r, at: new Date().toISOString() }))]);
     expect(a.flags).toEqual([]);
@@ -548,7 +553,7 @@ describe('closing a capsule without taking a payment silently', () => {
     payments.findPayment.mockResolvedValue({ paid: true, signature: 'late-sig', paidAt, late: true });
     expect(await releaseCapsule(db, c.id)).toEqual({ ok: true });
     expect(state.orders![0]).toMatchObject({ status: 'refund_due', signature: 'late-sig' });
-    expect(events(state)).toEqual(['released', 'refund_due']);
+    expect(events(state)).toEqual(['released', 'refund_due', 'listed']);
     expect(state.log[1].outcome).toMatchObject({ reason: 'paid after its payment window closed', paidAt: paidAt.toISOString() });
   });
 });

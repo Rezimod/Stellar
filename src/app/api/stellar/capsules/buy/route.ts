@@ -3,7 +3,7 @@ import { getDb } from '@/lib/db';
 import { verifyPrivy } from '@/lib/api-auth';
 import { paused } from '@/lib/kill-switch';
 import { stellarBuyRateLimit } from '@/lib/rate-limit';
-import { purchaseCapsule, readCapsule, releaseLapsed, unpaidCapsules } from '@/lib/stellar/capsule';
+import { purchaseCapsule, readCapsule, releaseLapsed } from '@/lib/stellar/capsule';
 import { usdToSol, merchantWallet, newPaymentReference, paymentUrl, paymentNetworkMisconfig } from '@/lib/stellar/orders';
 import { isHex32, verifyPurchaseSignature } from '@/lib/stellar/randomness';
 import { isUuid, holderWallet, limited, NO_LINKED_WALLET } from '@/lib/stellar/route-guards';
@@ -54,11 +54,8 @@ export async function POST(req: NextRequest) {
   if (!db) return NextResponse.json({ error: 'Database not configured' }, { status: 503 });
 
   // Capsules left unpaid go back on the shelf as soon as their window closes,
-  // not only at the nightly sweep; and one account holds few unpaid at a time.
+  // not only at the nightly sweep. One account holds few unpaid at a time; purchaseCapsule enforces it.
   after(() => releaseLapsed(db, 10).catch((err) => console.error('[stellar/capsules/buy] release sweep', err)));
-  if ((await unpaidCapsules(db, privyId)) >= MAX_UNPAID) {
-    return NextResponse.json({ error: 'Pay for the capsule you are holding, or let its quote lapse, before taking another.' }, { status: 429 });
-  }
 
   const listed = await readCapsule(db, capsuleId);
   if (!listed || listed.demo) return NextResponse.json({ error: 'Capsule not found' }, { status: 404 });
@@ -89,10 +86,12 @@ export async function POST(req: NextRequest) {
       privyId,
       amountSol,
       paymentReference: reference,
+      maxUnpaid: MAX_UNPAID,
     });
     if (!result.ok) {
-      const status = result.reason === 'not_found' ? 404 : 409;
+      const status = result.reason === 'not_found' ? 404 : result.reason === 'too_many_unpaid' ? 429 : 409;
       const error = {
+        too_many_unpaid: 'Pay for the capsule you are holding, or let its quote lapse, before taking another.',
         not_found: 'Capsule not found',
         commitment_mismatch: 'That commitment is not this capsule’s',
         not_listed: 'This capsule is no longer on sale',

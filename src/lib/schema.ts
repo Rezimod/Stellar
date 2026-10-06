@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm'
-import { pgTable, uuid, text, integer, bigint, bigserial, timestamp, doublePrecision, boolean, uniqueIndex, index, date, jsonb } from 'drizzle-orm/pg-core'
+import { pgTable, uuid, text, integer, bigint, bigserial, timestamp, doublePrecision, boolean, uniqueIndex, index, date, jsonb, check } from 'drizzle-orm/pg-core'
 
 // Run in Neon SQL editor if migrating an existing DB:
 //   ALTER TABLE public.users ADD COLUMN IF NOT EXISTS avatar text;
@@ -184,6 +184,9 @@ export const orders = pgTable('orders', {
   expiresAt: timestamp('expires_at', { withTimezone: true }),
 }, (table) => [
   uniqueIndex('orders_payment_reference_unique').on(table.paymentReference),
+  // One transaction pays one order.
+  uniqueIndex('orders_signature_unique').on(table.signature).where(sql`signature IS NOT NULL`),
+  check('orders_status_check', sql`status IN ('pending', 'paid', 'cancelled', 'refund_due', 'refunded')`),
   index('orders_wallet_idx').on(table.walletAddress),
   index('orders_privy_idx').on(table.privyId),
   index('orders_created_at_idx').on(table.createdAt),
@@ -987,6 +990,7 @@ export const capsule = pgTable('capsule', {
   releasedAt: timestamp('released_at', { withTimezone: true }),
 }, (t) => [
   index('capsule_state_idx').on(t.state, t.sequence),
+  check('capsule_state_check', sql`state IN ('listed', 'purchased', 'opened', 'void', 'released')`),
   index('capsule_buyer_idx').on(t.buyerWallet),
   index('capsule_tier_idx').on(t.tier, t.state, t.sequence),
 ])
