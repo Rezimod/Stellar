@@ -4,30 +4,28 @@ import Link from 'next/link';
 import { useRef, type CSSProperties, type PointerEvent } from 'react';
 import { SET_001_CARD_BY_DESIGNATION } from '@/lib/sets/set-001';
 import { glowFor } from '@/lib/stellar/plate';
+import { TIERS } from '@/lib/stellar/tiers';
 import CardThumb from './CardThumb';
+import TierCapsule from './TierCapsule';
 
 /**
- * Eight cards of the set in a ring around the headline. Each has a seat on the
- * ring as a fraction of its two radii (ax, ay), a lean and a size; the radii
- * grow from the copy's own footprint (stellar-pages.css), so the cards always
- * clear the words. The first three also carry `side`, the fan they fold into
- * on a phone, where the rest stay hidden. Any card can be picked up and dragged.
+ * The vault beside the headline: the sealed capsule lit by its two blades, a
+ * hand of cards fanned behind it on a pedestal. Each card has a seat on the
+ * stage (x, y in percent), a lean and a size. The first three also carry
+ * `side`; the rest stay hidden on a phone. Any card can be pulled out and moved.
  */
-const RING = [
-  { designation: 'SATURN', ax: -1, ay: 0, rot: -10, s: 1, side: -1 },
-  { designation: 'M1', ax: 1, ay: 0, rot: 10, s: 1, side: 1 },
-  { designation: 'HALLEY', ax: 0, ay: -1, rot: 2, s: 0.64, side: 0 },
-  { designation: 'JUPITER', ax: -0.9, ay: -0.8, rot: -7, s: 0.8 },
-  { designation: 'M31', ax: 0.9, ay: -0.8, rot: 7, s: 0.8 },
-  { designation: 'GREAT-ECLIPSE', ax: -0.9, ay: 0.8, rot: 6, s: 0.8 },
-  { designation: 'M42', ax: 0.9, ay: 0.8, rot: -6, s: 0.8 },
-  { designation: 'VOYAGER-1', ax: 0, ay: 1, rot: -3, s: 0.64 },
+const HAND = [
+  { designation: 'HALLEY', x: 50, y: 30, rot: 0, s: 0.9, side: 0 },
+  { designation: 'JUPITER', x: 34, y: 35, rot: -9, s: 0.9 },
+  { designation: 'M31', x: 66, y: 35, rot: 9, s: 0.9 },
+  { designation: 'SATURN', x: 20, y: 46, rot: -17, s: 0.92, side: -1 },
+  { designation: 'M1', x: 80, y: 46, rot: 17, s: 0.92, side: 1 },
 ];
 
 const DRAG_START = 5;
 
 export default function HomeFan() {
-  const top = useRef(10);
+  const top = useRef(20);
 
   function onPointerDown(e: PointerEvent<HTMLAnchorElement>) {
     if (e.button !== 0) return;
@@ -63,10 +61,11 @@ export default function HomeFan() {
   }
 
   return (
-    <div className="sd-herofan" aria-label="Cards from First Light">
+    <div className="sd-herofan" aria-label="The sealed capsule and cards from First Light">
       <span className="sd-herofan__light" aria-hidden="true" />
+      <span className="sd-herofan__plate" aria-hidden="true">Founding set · First Light</span>
       <div className="sd-herofan__deck">
-        {RING.map((f, i) => {
+        {HAND.map((f, i) => {
           const c = SET_001_CARD_BY_DESIGNATION.get(f.designation);
           if (!c) return null;
           return (
@@ -82,17 +81,21 @@ export default function HomeFan() {
               onDragStart={(e) => e.preventDefault()}
               style={
                 {
-                  '--ax': f.ax, '--ay': f.ay, '--rot': `${f.rot}deg`, '--s': f.s, '--i': i,
+                  '--x': f.x, '--y': f.y, '--rot': `${f.rot}deg`, '--s': f.s, '--i': i,
                   '--side': f.side ?? 0, '--off': Math.abs(f.side ?? 0),
                   '--tile-glow': glowFor(f.designation),
                 } as CSSProperties
               }
             >
-              <CardThumb designation={f.designation} eager={i < 3} />
+              <CardThumb designation={f.designation} eager />
             </Link>
           );
         })}
       </div>
+      <span className="sd-herofan__capsule" aria-hidden="true">
+        <TierCapsule tier={TIERS[0]} />
+      </span>
+      <span className="sd-herofan__pedestal" aria-hidden="true" />
     </div>
   );
 }

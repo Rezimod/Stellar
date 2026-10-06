@@ -120,6 +120,7 @@ export default async function HomePage() {
 
       <section className="sd-hero2">
         <div className="sd-container sd-hero2__grid">
+          <HomeFan />
           <div className="sd-hero2__copy">
             <h1 className="sd-hero2__title">
               <span>Hold a piece of</span>{' '}
@@ -150,7 +151,6 @@ export default async function HomePage() {
               </div>
             </dl>
           </div>
-          <HomeFan />
         </div>
       </section>
 

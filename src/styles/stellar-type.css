@@ -25,8 +25,12 @@
 .stellar .sd-counter__foot { font: 500 12px var(--sd-spaced); letter-spacing: 0.1em; white-space: nowrap; }
 .stellar .sd-counter__foot .sd-counter__fair { font: 600 12px var(--sd-spaced); letter-spacing: 0.06em; }
 .stellar .sd-hero2__copy { position: relative; z-index: 2; min-width: 0; }
-.stellar .sd-hero2__stats { display: grid; grid-template-columns: repeat(3, minmax(0, max-content)); justify-content: start; column-gap: clamp(20px, 2.6vw, 40px); }
-.stellar .sd-hero2__stats div { justify-content: flex-end; }
+/* The figures: three columns of equal width, a hairline between each, number over its label. */
+.stellar .sd-hero2__stats { display: grid; grid-template-columns: repeat(3, auto); justify-content: start; column-gap: 0; }
+.stellar .sd-hero2__stats dt { white-space: nowrap; }
+.stellar .sd-hero2__stats div { justify-content: flex-end; padding-inline: clamp(16px, 2.2vw, 28px); }
+.stellar .sd-hero2__stats div:first-child { padding-left: 0; }
+.stellar .sd-hero2__stats div + div { border-left: 1px solid var(--sd-rule); }
 .stellar .sd-hero2__stats dt { font-size: 12px; letter-spacing: 0.14em; color: var(--sd-ink-3); line-height: 1.35; }
 .stellar .sd-hero2__stats dd { font-family: var(--sd-title); font-weight: 400; font-size: clamp(28px, 2.5vw, 38px); letter-spacing: 0.01em; color: var(--sd-gold); }
 
