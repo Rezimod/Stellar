@@ -8,6 +8,7 @@ import { DIRECT_CARD_PRICE_USD, cardPriceUsd } from '@/lib/stellar/economics';
 import { CARDS_PER_TIER, TIERS, formatOdds, rarityAt, tierByKey, type Tier } from '@/lib/stellar/tiers';
 import type { Draw } from './StellarReveal';
 import StarPulse from './StarPulse';
+import { SESSION_MINUTES } from '@/lib/stellar/perks';
 
 // The sheet carries the wallet and payment code; it is fetched on first
 // intent (a pointer over the button, a touch) rather than with the page.
@@ -44,6 +45,14 @@ function drawFrom(tier: Tier, cards: TierCard[]): Draw {
  * opens the sheet with the next capsule of that tier; the preview draws its
  * card here in the browser — no account, no payment, nothing recorded.
  */
+/** What a card of each tier gives, in a few words. */
+const TIER_GIFT: Record<Rarity, string> = {
+  legendary: 'A real meteorite in hand',
+  epic: `A ${SESSION_MINUTES}-minute telescope session`,
+  rare: 'A seat in the visitor draw',
+  common: 'Votes on the night, ×1 to ×3',
+};
+
 /** What a rarity's cards cost on their own: one price, or the span when specimens are among them. */
 function worth(cards: TierCard[], r: Rarity) {
   const prices = cards.filter((c) => c.rarity === r).map((c) => cardPriceUsd(c.designation, r));
@@ -155,6 +164,7 @@ export default function CapsuleCounter({ cards, onSale }: { cards: TierCard[]; o
             </span>
             <span className="sd-counter__worth">{worth(cards, r)} cards</span>
             <span className="sd-counter__pct">{pct(tier.oddsBps[r])}</span>
+            <span className="sd-counter__perk">{TIER_GIFT[r]}</span>
             <span className="sd-counter__bar" aria-hidden="true" />
           </li>
         ))}

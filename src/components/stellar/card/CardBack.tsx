@@ -1,6 +1,7 @@
 import { memo } from 'react';
 import { editionLabel, type Plate } from '@/lib/stellar/plate';
 import { photoFor } from '@/lib/stellar/photos';
+import { TIER_PERKS, perkFor, votePower } from '@/lib/stellar/perks';
 import { CONDENSED, FOIL_OP, Glint, INK, LOGO_D, MONO, Paper, PosterDefs, SPACED, StripedTitle, fit, rr } from './frame';
 
 type Props = {
@@ -236,7 +237,7 @@ function Sealed({ u }: { u: string }) {
 /**
  * The back of a card: the real thing. The photograph of the object in a
  * viewfinder, its name on the red block, the two lines of its story, its
- * three figures as a ledger, and what the telescope will do for its holder.
+ * three figures as a ledger, and what the card gives its holder.
  */
 function CardBack({ plate: c, edition, commitment, sealed = false, u }: Props) {
   const b = `${u}b`;
@@ -261,15 +262,11 @@ function CardBack({ plate: c, edition, commitment, sealed = false, u }: Props) {
   const story = c.story.filter(Boolean);
   const storySize = Math.min(...story.map((l) => fit(l.length, 550, 'spaced', 26)));
 
-  const promise = c.solar
-    ? 'A daytime event. Live Telescope V1 does not point at the Sun; this card records the day.'
-    : c.section === 'almanac'
-      ? 'If the night is clear, every holder receives the capture.'
-      : c.family === 'sights'
-        ? 'When it comes, Live Telescope V1 records it for every holder.'
-        : c.noun && c.observable
-          ? `When Live Telescope V1 photographs ${c.noun}, every holder receives the image.`
-          : `One of ${c.of} editions, numbered and held.`;
+  const perk = perkFor(c.designation, r);
+  const promise = perk.line;
+  const boxTitle = (r === 'common' ? `A vote on the night · ×${votePower(c.designation, r)}` : TIER_PERKS.find((t) => t.rarity === r)!.title).toUpperCase();
+  const boxSize = fit(boxTitle.length, BOX.w - 110, 'condensed', 27);
+  const glintDx = (boxTitle.length * boxSize * 0.45) / 2 + 22;
   const promiseLines = halve(promise, 62);
   const pSize = Math.min(...promiseLines.map((l) => fit(l.length, BOX.w - 60, 'spaced', 21)));
 
@@ -357,11 +354,11 @@ function CardBack({ plate: c, edition, commitment, sealed = false, u }: Props) {
 
         <rect x={BOX.x} y={BOX.y} width={BOX.w} height={BOX.h} rx="6" fill="#1a1510" />
         <rect x={BOX.x + 4} y={BOX.y + 4} width={BOX.w - 8} height={BOX.h - 8} rx="4" fill="none" stroke={INK.cream} strokeOpacity=".07" />
-        <text x="315" y={BOX.y + 42} textAnchor="middle" fill={INK.cream} style={{ fontFamily: CONDENSED, fontSize: 27, letterSpacing: 0.8 }}>
-          LIVE TELESCOPE V1 · THE NIGHT SKY
+        <text x="315" y={BOX.y + 42} textAnchor="middle" fill={INK.cream} style={{ fontFamily: CONDENSED, fontSize: boxSize, letterSpacing: 0.8 }}>
+          {boxTitle}
         </text>
-        <Glint x={315 - 196} y={BOX.y + 33} r={10} o={0.9} />
-        <Glint x={315 + 196} y={BOX.y + 33} r={10} o={0.9} />
+        <Glint x={315 - glintDx} y={BOX.y + 33} r={10} o={0.9} />
+        <Glint x={315 + glintDx} y={BOX.y + 33} r={10} o={0.9} />
         {promiseLines.map((line, i) => (
           <text key={i} x="315" y={BOX.y + 72 + i * 25} textAnchor="middle" fill="rgba(243,230,204,.86)" style={{ fontFamily: SPACED, fontWeight: 400, fontSize: pSize, letterSpacing: 0.3 }}>
             {line}

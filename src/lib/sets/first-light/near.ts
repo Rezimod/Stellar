@@ -14,7 +14,7 @@ const near = { family: 'near' } as const;
 export const NEAR_CARDS: AuthoredCard[] = [
   authorKept(
     {
-      designation: 'SUN', name: 'The Sun', objectType: 'star', rarity: 'rare',
+      designation: 'SUN', name: 'The Sun', objectType: 'star', rarity: 'common',
       catalogRef: 'G2V',
       blurb: 'Its light took tens of thousands of years to climb out of the core.',
     },
@@ -29,7 +29,7 @@ export const NEAR_CARDS: AuthoredCard[] = [
   ),
   authorCard(
     {
-      designation: 'MERCURY', name: 'Mercury', objectType: 'planet', rarity: 'common',
+      designation: 'MERCURY', name: 'Mercury', objectType: 'planet', rarity: 'epic',
       targetId: 'mercury', catalogRef: 'JPL Horizons 199', ...NO_POSITION,
       blurb: 'Ice hides in polar craters that sunlight never reaches.',
     },
@@ -45,7 +45,7 @@ export const NEAR_CARDS: AuthoredCard[] = [
   ),
   authorCard(
     {
-      designation: 'VENUS', name: 'Venus', objectType: 'planet', rarity: 'common',
+      designation: 'VENUS', name: 'Venus', objectType: 'planet', rarity: 'epic',
       targetId: 'venus', catalogRef: 'JPL Horizons 299', ...NO_POSITION,
       blurb: 'It spins backwards: there the Sun rises in the west.',
     },
@@ -61,7 +61,7 @@ export const NEAR_CARDS: AuthoredCard[] = [
   ),
   authorCard(
     {
-      designation: 'MARS', name: 'Mars', objectType: 'planet', rarity: 'rare',
+      designation: 'MARS', name: 'Mars', objectType: 'planet', rarity: 'epic',
       targetId: 'mars', catalogRef: 'JPL Horizons 499', ...NO_POSITION,
       blurb: 'Two small moons, Phobos and Deimos, circle it.',
     },
@@ -77,7 +77,7 @@ export const NEAR_CARDS: AuthoredCard[] = [
   ),
   authorCard(
     {
-      designation: 'VALLES-MARINERIS', name: 'Valles Marineris', objectType: 'canyon on Mars', rarity: 'common',
+      designation: 'VALLES-MARINERIS', name: 'Valles Marineris', objectType: 'canyon on Mars', rarity: 'rare',
       targetId: 'mars', catalogRef: 'IAU gazetteer', ...NO_POSITION,
       blurb: 'Named for Mariner 9, the probe that found it in 1972.',
     },
@@ -93,7 +93,7 @@ export const NEAR_CARDS: AuthoredCard[] = [
   ),
   authorCard(
     {
-      designation: 'IO', name: 'Io', objectType: 'moon of Jupiter', rarity: 'rare',
+      designation: 'IO', name: 'Io', objectType: 'moon of Jupiter', rarity: 'common',
       targetId: 'jupiter', catalogRef: 'JPL Horizons 501', ...NO_POSITION,
       blurb: 'It circles its planet in less than two days.',
     },
@@ -123,7 +123,7 @@ export const NEAR_CARDS: AuthoredCard[] = [
   ),
   authorCard(
     {
-      designation: 'ENCELADUS', name: 'Enceladus', objectType: 'moon of Saturn', rarity: 'rare',
+      designation: 'ENCELADUS', name: 'Enceladus', objectType: 'moon of Saturn', rarity: 'common',
       targetId: 'saturn', catalogRef: 'JPL Horizons 602', ...NO_POSITION,
       blurb: 'Its spray feeds one of Saturn’s rings.',
     },
@@ -138,7 +138,7 @@ export const NEAR_CARDS: AuthoredCard[] = [
   ),
   authorCard(
     {
-      designation: 'URANUS', name: 'Uranus', objectType: 'planet', rarity: 'common',
+      designation: 'URANUS', name: 'Uranus', objectType: 'planet', rarity: 'epic',
       targetId: 'uranus', catalogRef: 'JPL Horizons 799', ...NO_POSITION,
       blurb: 'Herschel found it in 1781, the first planet found by telescope.',
     },
@@ -154,7 +154,7 @@ export const NEAR_CARDS: AuthoredCard[] = [
   ),
   authorCard(
     {
-      designation: 'NEPTUNE', name: 'Neptune', objectType: 'planet', rarity: 'rare',
+      designation: 'NEPTUNE', name: 'Neptune', objectType: 'planet', rarity: 'epic',
       targetId: 'neptune', catalogRef: 'JPL Horizons 899', ...NO_POSITION,
       blurb: 'Voyager 2 is the only craft to visit, in 1989.',
     },
@@ -170,7 +170,7 @@ export const NEAR_CARDS: AuthoredCard[] = [
   ),
   authorCard(
     {
-      designation: 'PLUTO', name: 'Pluto', objectType: 'dwarf planet', rarity: 'epic',
+      designation: 'PLUTO', name: 'Pluto', objectType: 'dwarf planet', rarity: 'common',
       targetId: 'pluto', catalogRef: '134340 Pluto', ...NO_POSITION,
       blurb: 'Its discoverer’s ashes flew past it on New Horizons.',
     },
@@ -185,7 +185,7 @@ export const NEAR_CARDS: AuthoredCard[] = [
   ),
   authorKept(
     {
-      designation: 'OUMUAMUA', name: 'ʻOumuamua', objectType: 'interstellar object', rarity: 'rare',
+      designation: 'OUMUAMUA', name: 'ʻOumuamua', objectType: 'interstellar object', rarity: 'common',
       catalogRef: '1I/2017 U1',
       blurb: 'Its name is Hawaiian for a scout from far away.',
     },

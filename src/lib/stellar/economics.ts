@@ -27,14 +27,16 @@ export const CARDS_PER_CAPSULE = 1;
 /**
  * PROVISIONAL (Gate 2). Chance of each rarity on a single draw, in parts per
  * ten thousand. Integers so the draw is exact arithmetic that any verifier,
- * in any language, reproduces bit for bit. Set to the first set's supply mix
- * (2,700 / 700 / 150 / 15 editions); First Light's is 12,600 / 3,400 / 480 / 40.
+ * in any language, reproduces bit for bit. Set to Genesis's supply mix since
+ * the perk tiers (2026-10-07): 21,600 common / 1,800 rare / 240 epic / 35
+ * ultra rare editions, nudged by a part in ten thousand so the fractions sum
+ * to exactly one in floating point.
  */
 export const RARITY_ODDS_BPS: Record<Rarity, number> = {
-  common: 7570,
-  rare: 1960,
-  epic: 420,
-  legendary: 50,
+  common: 9123,
+  rare: 760,
+  epic: 101,
+  legendary: 16,
 };
 
 /** The same odds as fractions of one. They sum to exactly 1. */
@@ -139,14 +141,3 @@ export function capsuleEconomics(costs: CapsuleCosts, price = CAPSULE_PRICE_USD)
   };
 }
 
-/**
- * PROVISIONAL (Gate 4). What one held edition adds to its holder's vote for
- * the night's card, by the edition's rarity. A holder's weight is the sum over
- * every edition they hold; holding nothing, they have no vote.
- */
-export const VOTE_WEIGHT: Record<Rarity, number> = {
-  common: 1,
-  rare: 2,
-  epic: 5,
-  legendary: 20,
-};

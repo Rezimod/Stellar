@@ -3,7 +3,7 @@ import CardThumb from './CardThumb';
 import type { Rarity } from '@/lib/rarity';
 import { glowFor, plateFor } from '@/lib/stellar/plate';
 import { rarityInfo } from '@/lib/rarity';
-import { SPECIMEN_PRICE_USD } from '@/lib/stellar/economics';
+import { perkFor } from '@/lib/stellar/perks';
 import type { CSSProperties, ReactNode } from 'react';
 
 export type ShopCardProps = {
@@ -43,7 +43,7 @@ export default function ShopCard({ designation, name, rarity, sub, price, tag }:
         <span className="sd-tile__name">{name}</span>
         <span className="sd-tile__price">{price}</span>
         <span className="sd-tile__sub">
-          {designation in SPECIMEN_PRICE_USD && <span className="sd-tile__specimen">Real specimen</span>}
+          <span className="sd-tile__perk">{perkFor(designation, rarity).short}</span>
           {sub}
         </span>
       </span>

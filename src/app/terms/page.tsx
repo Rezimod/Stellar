@@ -51,10 +51,16 @@ export default function TermsPage() {
         </section>
 
         <section className="sd-chapter-block">
-          <Chapter n="05" title="Physical items" />
+          <Chapter n="05" title="What each rarity gives" />
           <p>
-            A few cards are marked as carrying a physical item, such as a meteorite fragment. These items are planned, not yet
-            shipping. How to redeem one, and where it can be sent, will be published here before any item ships.
+            Ultra Rare cards carry a physical item: a piece of the meteorite, or of the Moon, that the card shows. These items are
+            planned, not yet shipping. How to redeem one, and where it can be sent, will be published here before any item ships.
+          </p>
+          <p>
+            Each edition of an Epic card is one 30-minute session on Live Telescope V1, and each edition of a Rare card is one entry
+            in the draw for a visitor&rsquo;s seat at a live session. Live Telescope V1 is commissioning; sessions and visitor
+            seats open with it, and how they are booked and drawn will be published here first. Every card votes on the night&rsquo;s
+            target, with the weight shown on the card.
           </p>
         </section>
 

@@ -26,7 +26,7 @@ const etaCar = fixed(10.7503, -59.6844, 4.5);
 export const STAR_CARDS: AuthoredCard[] = [
   authorCard(
     {
-      designation: 'ALPHA-CEN', name: 'Alpha Centauri', objectType: 'triple star', rarity: 'rare',
+      designation: 'ALPHA-CEN', name: 'Alpha Centauri', objectType: 'triple star', rarity: 'common',
       targetId: 'alpha-cen', catalogRef: 'α Cen A · B · Proxima',
       raHours: alphaCen.raHours, decDeg: alphaCen.decDeg, ...OFF_MOON,
       blurb: 'Seen only from the south, the third-brightest star at night.',
@@ -42,7 +42,7 @@ export const STAR_CARDS: AuthoredCard[] = [
   ),
   authorCard(
     {
-      designation: 'SIRIUS', name: 'Sirius', objectType: 'star', rarity: 'common',
+      designation: 'SIRIUS', name: 'Sirius', objectType: 'star', rarity: 'rare',
       targetId: 'sirius', catalogRef: 'α Canis Majoris',
       raHours: sirius.raHours, decDeg: sirius.decDeg, ...OFF_MOON,
       blurb: 'Just 8.6 light-years away, one of our nearest neighbours.',
@@ -107,7 +107,7 @@ export const STAR_CARDS: AuthoredCard[] = [
   ),
   authorCard(
     {
-      designation: 'POLARIS', name: 'Polaris', objectType: 'star', rarity: 'common',
+      designation: 'POLARIS', name: 'Polaris', objectType: 'star', rarity: 'rare',
       targetId: 'polaris', catalogRef: 'α Ursae Minoris',
       raHours: polaris.raHours, decDeg: polaris.decDeg, ...OFF_MOON,
       blurb: 'Really three stars, one of them a pulsing giant.',
@@ -140,7 +140,7 @@ export const STAR_CARDS: AuthoredCard[] = [
   ),
   authorCard(
     {
-      designation: 'BETELGEUSE', name: 'Betelgeuse', objectType: 'red supergiant', rarity: 'epic',
+      designation: 'BETELGEUSE', name: 'Betelgeuse', objectType: 'red supergiant', rarity: 'rare',
       targetId: 'betelgeuse', catalogRef: 'α Orionis',
       raHours: betelgeuse.raHours, decDeg: betelgeuse.decDeg, ...OFF_MOON,
       blurb: 'About 550 light-years away, near the end of its life.',
@@ -157,7 +157,7 @@ export const STAR_CARDS: AuthoredCard[] = [
   ),
   authorCard(
     {
-      designation: 'ANTARES', name: 'Antares', objectType: 'red supergiant', rarity: 'rare',
+      designation: 'ANTARES', name: 'Antares', objectType: 'red supergiant', rarity: 'common',
       targetId: 'antares', catalogRef: 'α Scorpii',
       raHours: antares.raHours, decDeg: antares.decDeg, ...OFF_MOON,
       blurb: 'Low in the south on summer evenings.',
@@ -189,7 +189,7 @@ export const STAR_CARDS: AuthoredCard[] = [
   ),
   authorCard(
     {
-      designation: 'ETA-CARINAE', name: 'Eta Carinae', objectType: 'hypergiant', rarity: 'epic',
+      designation: 'ETA-CARINAE', name: 'Eta Carinae', objectType: 'hypergiant', rarity: 'common',
       targetId: 'eta-carinae', catalogRef: 'η Carinae',
       raHours: etaCar.raHours, decDeg: etaCar.decDeg, ...OFF_MOON,
       blurb: '7,500 light-years away, and certain to explode one day.',
@@ -206,7 +206,7 @@ export const STAR_CARDS: AuthoredCard[] = [
   ),
   authorKept(
     {
-      designation: 'TRAPPIST-1', name: 'TRAPPIST-1', objectType: 'planetary system', rarity: 'rare',
+      designation: 'TRAPPIST-1', name: 'TRAPPIST-1', objectType: 'planetary system', rarity: 'common',
       catalogRef: '2MASS J23062928−0502285',
       blurb: 'A year on the innermost planet lasts a day and a half.',
     },

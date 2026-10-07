@@ -248,6 +248,7 @@
 .sd-counter__rarity i { width: 7px; height: 7px; border-radius: 50%; background: var(--r); }
 .sd-counter__worth { font: 500 12px var(--sd-mono); color: var(--sd-ink-3); }
 .sd-counter__pct { font: 500 13px var(--sd-mono); text-align: right; font-variant-numeric: tabular-nums; }
+.sd-counter__perk { grid-column: 1 / -1; margin-top: -3px; padding-left: 15px; font-size: 12px; color: var(--r); opacity: 0.85; }
 .sd-counter__bar { grid-column: 1 / -1; position: relative; height: 3px; overflow: hidden; border-radius: 3px; background: var(--sd-rule); }
 .sd-counter__bar::after {
   content: ''; position: absolute; inset: 0; border-radius: inherit; background: var(--r);
@@ -344,8 +345,8 @@
 .sd-tile__sub { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 12px; color: var(--sd-ink-3); }
 /* The rarity and the number, in the tile's top margin above the card, right-aligned: on the tile, never on the card. */
 .sd-tile__pills { position: relative; z-index: 2; display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; pointer-events: none; }
-.sd-tile__specimen { flex: none; color: var(--rarity); font: 600 11px var(--sd-mono); letter-spacing: 0.12em; text-transform: uppercase; }
-.sd-tile__specimen::after { content: ''; display: inline-block; width: 1px; height: 10px; margin-left: 8px; vertical-align: -1px; background: rgba(241, 230, 207, 0.2); }
+.sd-tile__perk { flex: none; color: var(--rarity); font: 600 11px var(--sd-mono); letter-spacing: 0.12em; text-transform: uppercase; }
+.sd-tile__perk::after { content: ''; display: inline-block; width: 1px; height: 10px; margin-left: 8px; vertical-align: -1px; background: rgba(241, 230, 207, 0.2); }
 .sd-pill {
   display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 8px;
   font: 700 12px/1 var(--sd-mono); letter-spacing: 0.14em; text-transform: uppercase; white-space: nowrap;
@@ -364,6 +365,34 @@
   li.is-view > .sd-tile[data-rarity='legendary'] .sd-pill--rarity, li.is-view > .sd-tile[data-rarity='epic'] .sd-pill--rarity { animation: sd-pill-glow 3.6s ease-in-out infinite; }
 }
 @keyframes sd-pill-glow { 50% { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55), inset 0 -1px 0 rgba(0, 0, 0, 0.25), 0 6px 16px -6px rgba(0, 0, 0, 0.9), 0 0 30px 0 color-mix(in srgb, var(--rarity) 85%, transparent); } }
+
+/* The four tiers above the shelf, scarcest first: what each one gives. */
+.sd-tiers { list-style: none; margin: 0 0 26px; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+@container (min-width: 760px) { .sd-tiers { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; } }
+.sd-tiers__tier {
+  position: relative; display: flex; flex-direction: column; gap: 8px; padding: 16px 16px 14px; overflow: hidden;
+  border-radius: 16px; border: 1px solid color-mix(in srgb, var(--rarity) 38%, transparent);
+  background: radial-gradient(120% 90% at 0% 0%, color-mix(in srgb, var(--rarity) 18%, transparent), transparent 60%), rgba(255, 255, 255, 0.02);
+  box-shadow: inset 0 1px 0 rgba(255, 246, 220, 0.06), 0 0 40px -24px color-mix(in srgb, var(--rarity) 80%, transparent);
+}
+.sd-tiers__name { align-self: flex-start; padding: 5px 9px; border-radius: 7px; font: 700 11px/1 var(--sd-mono); letter-spacing: 0.14em; text-transform: uppercase; color: #140d08;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--rarity) 55%, #fff) 0%, var(--rarity) 48%, color-mix(in srgb, var(--rarity) 78%, #000) 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55), 0 0 18px -4px color-mix(in srgb, var(--rarity) 75%, transparent); }
+.sd-tiers__gift { font: 500 19px/1.15 var(--sd-spaced); letter-spacing: 0.05em; text-transform: uppercase; color: var(--rarity); }
+.sd-tiers__line { margin: 0; font-size: 13px; line-height: 1.5; color: var(--sd-ink-2); }
+.sd-tiers__count { margin-top: auto; padding-top: 4px; font: 500 11px var(--sd-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--sd-ink-3); }
+
+/* What a card gives, on its page: the tier, the perk in a few words, and the sentence. */
+.sd-perk {
+  display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 8px 12px; margin: 18px 0 4px; padding: 14px 16px;
+  border-radius: 14px; border: 1px solid color-mix(in srgb, var(--rarity) 40%, transparent);
+  background: linear-gradient(120deg, color-mix(in srgb, var(--rarity) 14%, transparent), rgba(255, 255, 255, 0.02) 60%);
+  box-shadow: 0 0 36px -18px color-mix(in srgb, var(--rarity) 70%, transparent);
+}
+.sd-perk__tier { padding: 5px 9px; border-radius: 7px; font: 700 11.5px/1 var(--sd-mono); letter-spacing: 0.14em; text-transform: uppercase; color: #140d08;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--rarity) 55%, #fff) 0%, var(--rarity) 48%, color-mix(in srgb, var(--rarity) 78%, #000) 100%); }
+.sd-perk__short { font: 500 17px/1.1 var(--sd-spaced); letter-spacing: 0.08em; text-transform: uppercase; color: var(--rarity); }
+.sd-perk__line { grid-column: 1 / -1; margin: 0; font-size: 14.5px; line-height: 1.5; color: var(--sd-ink-2, var(--sd-ink)); }
 
 /* Scarcity on the shelf: the hotter the card, the warmer its frame. Common
    stays quiet; the edge, the price and (for legendary) a slow pass of foil

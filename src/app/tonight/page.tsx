@@ -173,7 +173,7 @@ export default async function TonightPage() {
             <p className="sd-note">Nothing in the set clears the horizon for Live Telescope V1 that night.</p>
           ) : (
             <>
-              <p className="sd-strip-note">One vote per holder · weighted by the rarity of every card held</p>
+              <p className="sd-strip-note">One vote per holder · every card held adds to it: commons ×1 to ×3, rares ×4, epics and ultra rares ×5</p>
               <ol className="sd-ballot">
                 {candidates.map((c, i) => {
                   const share = cast ? c.votes / cast : 0;

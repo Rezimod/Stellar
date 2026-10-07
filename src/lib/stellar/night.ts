@@ -16,8 +16,8 @@ import { CLOUD_LIMIT } from '@/lib/observatory/adapter'
 import { utcHourStamp } from '@/lib/observatory/site-time'
 import type { ObservatoryNode } from '@/lib/observatory/types'
 import { isRarity } from '@/lib/rarity'
+import { votePower } from './perks'
 import type { Db } from './attach'
-import { VOTE_WEIGHT } from './economics'
 import { decideNightlyTarget } from './repo'
 import { SIM_TARGET_BY_ID, targetAltAz } from '@/lib/observatory/sim-targets'
 import { observableTonight, siteDarkWindow, siteNightDate, standing, type Observable } from './target'
@@ -71,15 +71,15 @@ export async function votingNight(db: Db, node: ObservatoryNode, now: Date): Pro
   return (await nightRow(db, tonight)) ? addDays(tonight, 1) : tonight
 }
 
-/** A holder's vote weight: VOTE_WEIGHT summed over every edition they hold. */
+/** A holder's vote weight: the vote power of every edition they hold, summed (perks.ts). */
 export async function voteWeight(db: Db, wallet: string): Promise<number> {
   const rows = await db
-    .select({ rarity: card.rarity, n: sql<number>`count(*)::int` })
+    .select({ designation: card.designation, rarity: card.rarity, n: sql<number>`count(*)::int` })
     .from(edition)
     .innerJoin(card, eq(card.id, edition.cardId))
     .where(eq(edition.ownerWallet, wallet))
-    .groupBy(card.rarity)
-  return rows.reduce((sum, r) => sum + (isRarity(r.rarity) ? VOTE_WEIGHT[r.rarity] * Number(r.n) : 0), 0)
+    .groupBy(card.designation, card.rarity)
+  return rows.reduce((sum, r) => sum + (isRarity(r.rarity) ? votePower(r.designation, r.rarity) * Number(r.n) : 0), 0)
 }
 
 /** Weighted votes per card id for a night. */

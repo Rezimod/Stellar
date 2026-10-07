@@ -20,7 +20,7 @@ function deep(facts: Facts, at: Place, extras: Omit<Extras, 'family' | 'line'>):
 
 export const DEEP_CARDS: AuthoredCard[] = [
   deep(
-    { designation: 'M16', name: 'Pillars of Creation', objectType: 'star-forming region', rarity: 'epic', catalogRef: 'M16 (Eagle Nebula)', blurb: 'Hubble’s 1995 picture made them famous.' },
+    { designation: 'M16', name: 'Pillars of Creation', objectType: 'star-forming region', rarity: 'rare', catalogRef: 'M16 (Eagle Nebula)', blurb: 'Hubble’s 1995 picture made them famous.' },
     deepSky('m16'),
     {
       stats: [['DISTANCE', '~6,500 ly'], ['TALLEST', '~4 ly'], ['PICTURED', '1995']],
@@ -30,7 +30,7 @@ export const DEEP_CARDS: AuthoredCard[] = [
     },
   ),
   deep(
-    { designation: 'HORSEHEAD', name: 'The Horsehead', objectType: 'dark nebula', rarity: 'rare', catalogRef: 'Barnard 33', blurb: 'It will wear away in about five million years.' },
+    { designation: 'HORSEHEAD', name: 'The Horsehead', objectType: 'dark nebula', rarity: 'common', catalogRef: 'Barnard 33', blurb: 'It will wear away in about five million years.' },
     fixed(5.6819, -2.4583, 11.0, [8, 6]),
     {
       stats: [['DISTANCE', '~1,400 ly'], ['HEIGHT', '~3.5 ly'], ['FOUND', '1888']],
@@ -39,7 +39,7 @@ export const DEEP_CARDS: AuthoredCard[] = [
     },
   ),
   deep(
-    { designation: 'M57', name: 'The Ring Nebula', objectType: 'planetary nebula', rarity: 'common', catalogRef: 'M57 (NGC 6720)', blurb: 'Found in 1779, between two stars of the Lyre.' },
+    { designation: 'M57', name: 'The Ring Nebula', objectType: 'planetary nebula', rarity: 'rare', catalogRef: 'M57 (NGC 6720)', blurb: 'Found in 1779, between two stars of the Lyre.' },
     deepSky('m57'),
     {
       stats: [['DISTANCE', '~2,300 ly'], ['SIZE', '~1.3 ly'], ['MAGNITUDE', '8.8']],
@@ -49,7 +49,7 @@ export const DEEP_CARDS: AuthoredCard[] = [
     },
   ),
   deep(
-    { designation: 'HELIX', name: 'The Helix', objectType: 'planetary nebula', rarity: 'rare', catalogRef: 'NGC 7293', blurb: 'About 650 light-years away, nearly as wide as the full Moon.' },
+    { designation: 'HELIX', name: 'The Helix', objectType: 'planetary nebula', rarity: 'common', catalogRef: 'NGC 7293', blurb: 'About 650 light-years away, nearly as wide as the full Moon.' },
     fixed(22.4939, -20.8372, 7.6, [25, 25]),
     {
       stats: [['DISTANCE', '~650 ly'], ['SIZE', '~2.5 ly'], ['AGE', '~10,000 yr']],
@@ -105,7 +105,7 @@ export const DEEP_CARDS: AuthoredCard[] = [
     },
   ),
   deep(
-    { designation: 'CARINA', name: 'The Carina Nebula', objectType: 'star-forming region', rarity: 'rare', catalogRef: 'NGC 3372', blurb: 'Too far south to rise for most of Europe.' },
+    { designation: 'CARINA', name: 'The Carina Nebula', objectType: 'star-forming region', rarity: 'common', catalogRef: 'NGC 3372', blurb: 'Too far south to rise for most of Europe.' },
     fixed(10.7508, -59.8667, 1.0, [120, 120]),
     {
       stats: [['DISTANCE', '~7,500 ly'], ['SIZE', '~300 ly'], ['MAGNITUDE', '1.0']],
@@ -115,7 +115,7 @@ export const DEEP_CARDS: AuthoredCard[] = [
     },
   ),
   deep(
-    { designation: 'TARANTULA', name: 'The Tarantula', objectType: 'emission nebula', rarity: 'rare', catalogRef: 'NGC 2070', blurb: 'As close as Orion’s nebula, it would cast shadows.' },
+    { designation: 'TARANTULA', name: 'The Tarantula', objectType: 'emission nebula', rarity: 'common', catalogRef: 'NGC 2070', blurb: 'As close as Orion’s nebula, it would cast shadows.' },
     fixed(5.6442, -69.1006, 8.0, [40, 25]),
     {
       stats: [['DISTANCE', '~160,000 ly'], ['SIZE', '~600 ly'], ['CORE', 'R136']],
@@ -126,7 +126,7 @@ export const DEEP_CARDS: AuthoredCard[] = [
 
   // The clusters.
   deep(
-    { designation: 'M13', name: 'The Hercules Cluster', objectType: 'globular cluster', rarity: 'common', catalogRef: 'M13 (NGC 6205)', blurb: 'Halley spotted it in 1714.' },
+    { designation: 'M13', name: 'The Hercules Cluster', objectType: 'globular cluster', rarity: 'rare', catalogRef: 'M13 (NGC 6205)', blurb: 'Halley spotted it in 1714.' },
     deepSky('m13'),
     {
       stats: [['DISTANCE', '~22,000 ly'], ['STARS', '~300,000'], ['MESSAGE', 'Sent 1974']],
@@ -136,7 +136,7 @@ export const DEEP_CARDS: AuthoredCard[] = [
     },
   ),
   deep(
-    { designation: 'OMEGA-CEN', name: 'Omega Centauri', objectType: 'globular cluster', rarity: 'rare', catalogRef: 'NGC 5139', blurb: 'Halley saw it was a cluster, in 1677.' },
+    { designation: 'OMEGA-CEN', name: 'Omega Centauri', objectType: 'globular cluster', rarity: 'common', catalogRef: 'NGC 5139', blurb: 'Halley saw it was a cluster, in 1677.' },
     fixed(13.4467, -47.4794, 3.9, [36, 36]),
     {
       stats: [['DISTANCE', '~17,000 ly'], ['STARS', '~10 million'], ['MAGNITUDE', '3.9']],

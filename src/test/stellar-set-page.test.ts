@@ -47,10 +47,10 @@ it('prints how many editions of a card are allocated', async () => {
   mocks.readSetSupply.mockResolvedValue({
     set: 'SET001',
     owedDraws: 0,
-    cards: [{ designation: 'JUPITER', rarity: 'rare', editionSize: 100, allocated: 7, remaining: 93 }],
+    cards: [{ designation: 'JUPITER', rarity: 'epic', editionSize: 30, allocated: 7, remaining: 23 }],
   });
   const html = await renderSet();
-  expect(html).toContain('93 of 100 left');
+  expect(html).toContain('23 of 30 left');
 });
 
 it('takes the set’s status from the database', async () => {

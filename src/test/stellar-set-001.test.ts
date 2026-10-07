@@ -42,38 +42,38 @@ describe('First Light', () => {
     }
   });
 
-  it('keeps the first twenty-four as authored', () => {
+  it('keeps the first twenty-four in the tiers the perks give them', () => {
     const statuses = Object.fromEntries(seeds.map((c) => [c.designation, `${c.rarity} ${c.observationStatus}`]));
     expect(statuses).toMatchObject({
-      'FIRST-LIGHT': 'legendary not_available',
+      'FIRST-LIGHT': 'common not_available',
       IMILAC: 'legendary not_available',
       'LUNAR-FRAGMENT': 'legendary not_available',
       TYCHO: 'rare eligible',
       'OLYMPUS-MONS': 'common not_available',
-      JUPITER: 'rare eligible',
+      JUPITER: 'epic eligible',
       EUROPA: 'common not_available',
       SATURN: 'epic eligible',
-      HALLEY: 'legendary not_available',
+      HALLEY: 'common not_available',
       'VOYAGER-1': 'common not_available',
       M45: 'rare eligible',
       M42: 'rare eligible',
-      M1: 'epic not_available',
+      M1: 'common not_available',
       'SGR-A': 'common not_available',
-      M31: 'rare not_available',
-      ORIONIDS: 'common not_available',
-      'HUNTERS-MOON': 'common not_available',
+      M31: 'common not_available',
+      ORIONIDS: 'rare not_available',
+      'HUNTERS-MOON': 'rare not_available',
       'PLEIADES-OCCULTATION': 'rare not_available',
       GEMINIDS: 'rare not_available',
       'CHRISTMAS-SUPERMOON': 'rare not_available',
-      'DOUBLE-OPPOSITION': 'epic not_available',
-      'SNOW-MOON-ECLIPSE': 'epic not_available',
-      'GREAT-ECLIPSE': 'legendary not_available',
+      'DOUBLE-OPPOSITION': 'rare not_available',
+      'SNOW-MOON-ECLIPSE': 'rare not_available',
+      'GREAT-ECLIPSE': 'common not_available',
     });
   });
 
-  it('counts the tiers as the table says: 13 legendary, 16 epic, 34 rare, 42 common', () => {
+  it('counts the tiers as the perks say: 7 ultra rare, 8 epic, 18 rare, 72 common', () => {
     const count = (r: string) => seeds.filter((c) => c.rarity === r).length;
-    expect([count('legendary'), count('epic'), count('rare'), count('common')]).toEqual([13, 16, 34, 42]);
+    expect([count('legendary'), count('epic'), count('rare'), count('common')]).toEqual([7, 8, 18, 72]);
   });
 
   it('never offers the telescope what it cannot point at, and says why', () => {
@@ -184,7 +184,7 @@ describe('sealing', () => {
 describe('rarity', () => {
   it('orders the four card tiers by scarcity', () => {
     expect(RARITIES.map((r) => rarityInfo(r).rank)).toEqual([0, 1, 2, 3]);
-    expect(rarityInfo('legendary')).toMatchObject({ label: 'Legendary', glyph: '✦' });
+    expect(rarityInfo('legendary')).toMatchObject({ label: 'Ultra Rare', glyph: '✦' });
     expect(isRarity('Stellar')).toBe(false);
   });
 

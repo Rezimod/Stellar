@@ -46,7 +46,7 @@ const FIRST_24: AuthoredCard[] = [
   // The Objects, outward from Earth.
   authorKept(
     {
-      designation: 'FIRST-LIGHT', name: 'First Light', objectType: 'first frame', rarity: 'legendary',
+      designation: 'FIRST-LIGHT', name: 'First Light', objectType: 'first frame', rarity: 'common',
       catalogRef: 'Live Telescope V1 · 000001',
       blurb: 'The observatory’s opening picture, kept for good.',
     },
@@ -92,7 +92,7 @@ const FIRST_24: AuthoredCard[] = [
   ),
   authorCard(
     {
-      designation: 'JUPITER', name: 'Jupiter', objectType: 'planet', rarity: 'rare',
+      designation: 'JUPITER', name: 'Jupiter', objectType: 'planet', rarity: 'epic',
       targetId: 'jupiter', catalogRef: 'JPL Horizons 599', ...NO_POSITION,
       blurb: 'The largest planet, and the brightest of winter evenings.',
     },
@@ -119,7 +119,7 @@ const FIRST_24: AuthoredCard[] = [
   ),
   authorCard(
     {
-      designation: 'HALLEY', name: 'Halley', objectType: 'comet', rarity: 'legendary',
+      designation: 'HALLEY', name: 'Halley', objectType: 'comet', rarity: 'common',
       targetId: 'halley', catalogRef: '1P/Halley', ...NO_POSITION,
       blurb: 'Its logbook stays open until it returns.',
     },
@@ -158,7 +158,7 @@ const FIRST_24: AuthoredCard[] = [
   ),
   authorCard(
     {
-      designation: 'M1', name: 'The Crab', objectType: 'supernova remnant', rarity: 'epic',
+      designation: 'M1', name: 'The Crab', objectType: 'supernova remnant', rarity: 'common',
       targetId: 'm1', catalogRef: 'M1 (NGC 1952)',
       raHours: m1.raHours, decDeg: m1.decDeg, ...OFF_MOON,
       blurb: 'Lord Rosse named it in 1844, after his own drawing.',
@@ -179,7 +179,7 @@ const FIRST_24: AuthoredCard[] = [
   ),
   authorCard(
     {
-      designation: 'M31', name: 'Andromeda', objectType: 'galaxy', rarity: 'rare',
+      designation: 'M31', name: 'Andromeda', objectType: 'galaxy', rarity: 'common',
       targetId: 'm31', catalogRef: 'M31 (NGC 224)',
       raHours: m31.raHours, decDeg: m31.decDeg, ...OFF_MOON,
       blurb: 'Its light set out 2.5 million years ago.',
@@ -191,7 +191,7 @@ const FIRST_24: AuthoredCard[] = [
   // The Almanac, in the order the sky does them. Sealed at the end of each window.
   authorAlmanac(
     {
-      designation: 'ORIONIDS', name: 'The Orionids', objectType: 'meteor shower', rarity: 'common',
+      designation: 'ORIONIDS', name: 'The Orionids', objectType: 'meteor shower', rarity: 'rare',
       catalogRef: 'IAU MDC 8 ORI',
       blurb: "They seem to fly out of Orion’s club.",
     },
@@ -200,7 +200,7 @@ const FIRST_24: AuthoredCard[] = [
   ),
   authorAlmanac(
     {
-      designation: 'HUNTERS-MOON', name: 'Hunter’s Moon', objectType: 'full moon', rarity: 'common',
+      designation: 'HUNTERS-MOON', name: 'Hunter’s Moon', objectType: 'full moon', rarity: 'rare',
       catalogRef: 'Full, 26 Oct 2026',
       blurb: 'It follows the Harvest Moon, a month later.',
     },
@@ -236,7 +236,7 @@ const FIRST_24: AuthoredCard[] = [
   ),
   authorAlmanac(
     {
-      designation: 'DOUBLE-OPPOSITION', name: 'The Double Opposition', objectType: 'opposition', rarity: 'epic',
+      designation: 'DOUBLE-OPPOSITION', name: 'The Double Opposition', objectType: 'opposition', rarity: 'rare',
       catalogRef: 'Feb 2027',
       blurb: 'Both rise at sunset and stay up all night.',
     },
@@ -245,7 +245,7 @@ const FIRST_24: AuthoredCard[] = [
   ),
   authorAlmanac(
     {
-      designation: 'SNOW-MOON-ECLIPSE', name: 'The Snow Moon Eclipse', objectType: 'lunar eclipse', rarity: 'epic',
+      designation: 'SNOW-MOON-ECLIPSE', name: 'The Snow Moon Eclipse', objectType: 'lunar eclipse', rarity: 'rare',
       catalogRef: 'Penumbral, 20 Feb 2027',
       blurb: "Named for the deepest month of winter.",
     },
@@ -254,7 +254,7 @@ const FIRST_24: AuthoredCard[] = [
   ),
   authorAlmanac(
     {
-      designation: 'GREAT-ECLIPSE', name: 'The Great Eclipse', objectType: 'solar eclipse', rarity: 'legendary',
+      designation: 'GREAT-ECLIPSE', name: 'The Great Eclipse', objectType: 'solar eclipse', rarity: 'common',
       catalogRef: 'Total, 2 Aug 2027',
       blurb: 'Luxor gets the longest totality on land until 2114.',
     },

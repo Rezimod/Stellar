@@ -17,7 +17,7 @@ const hdf = fixed(12.6139, 62.2161, 29.0, [2.6, 2.6]);
 export const EXTREME_CARDS: AuthoredCard[] = [
   authorCard(
     {
-      designation: 'TON-618', name: 'TON 618', objectType: 'quasar', rarity: 'legendary',
+      designation: 'TON-618', name: 'TON 618', objectType: 'quasar', rarity: 'common',
       targetId: 'ton-618', catalogRef: 'Tonantzintla 618',
       raHours: ton618.raHours, decDeg: ton618.decDeg, ...OFF_MOON,
       blurb: 'About eleven billion light-years away, blazing as a quasar.',
@@ -33,7 +33,7 @@ export const EXTREME_CARDS: AuthoredCard[] = [
   ),
   authorCard(
     {
-      designation: 'SN-1987A', name: 'Supernova 1987A', objectType: 'supernova', rarity: 'rare',
+      designation: 'SN-1987A', name: 'Supernova 1987A', objectType: 'supernova', rarity: 'common',
       targetId: 'sn-1987a', catalogRef: 'SN 1987A · LMC',
       raHours: sn1987a.raHours, decDeg: sn1987a.decDeg, ...OFF_MOON,
       blurb: 'It went off in a neighbour galaxy, the Large Magellanic Cloud.',
@@ -49,7 +49,7 @@ export const EXTREME_CARDS: AuthoredCard[] = [
   ),
   authorCard(
     {
-      designation: 'HUBBLE-DEEP-FIELD', name: 'The Deep Field', objectType: 'deep field', rarity: 'legendary',
+      designation: 'HUBBLE-DEEP-FIELD', name: 'The Deep Field', objectType: 'deep field', rarity: 'common',
       targetId: 'hubble-deep-field', catalogRef: 'HDF · Ursa Major',
       raHours: hdf.raHours, decDeg: hdf.decDeg, ...OFF_MOON,
       blurb: 'Some of its galaxies are 12 billion years old.',
@@ -65,7 +65,7 @@ export const EXTREME_CARDS: AuthoredCard[] = [
   ),
   authorKept(
     {
-      designation: 'CMB', name: 'The Oldest Light', objectType: 'cosmic microwave background', rarity: 'epic',
+      designation: 'CMB', name: 'The Oldest Light', objectType: 'cosmic microwave background', rarity: 'common',
       catalogRef: 'CMB',
       blurb: 'Found by accident in 1965 with a radio horn.',
     },

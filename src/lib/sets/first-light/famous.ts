@@ -26,7 +26,7 @@ const triangle = fixed(19.5, 30.0, null, [1800, 1500]);
 export const FAMOUS_CARDS: AuthoredCard[] = [
   // ── The Solar System
   authorKept(
-    { designation: 'EARTH', name: 'Earth', objectType: 'planet', rarity: 'common', catalogRef: 'Pale Blue Dot · Voyager 1, 1990', blurb: 'Taken on Valentine’s Day 1990, looking back.' },
+    { designation: 'EARTH', name: 'Earth', objectType: 'planet', rarity: 'epic', catalogRef: 'Pale Blue Dot · Voyager 1, 1990', blurb: 'Taken on Valentine’s Day 1990, looking back.' },
     'Live Telescope V1 stands on it.',
     {
       ...near,
@@ -37,7 +37,7 @@ export const FAMOUS_CARDS: AuthoredCard[] = [
     },
   ),
   authorKept(
-    { designation: 'EARTHRISE', name: 'Earthrise', objectType: 'photograph', rarity: 'epic', catalogRef: 'Apollo 8 · AS08-14-2383', blurb: 'Often called the picture that started the environmental movement.' },
+    { designation: 'EARTHRISE', name: 'Earthrise', objectType: 'photograph', rarity: 'common', catalogRef: 'Apollo 8 · AS08-14-2383', blurb: 'Often called the picture that started the environmental movement.' },
     HISTORY,
     {
       ...near,
@@ -48,7 +48,7 @@ export const FAMOUS_CARDS: AuthoredCard[] = [
     },
   ),
   authorKept(
-    { designation: 'CHICXULUB', name: 'The Dinosaur Asteroid', objectType: 'impact', rarity: 'rare', catalogRef: 'Chicxulub crater, Yucatán', blurb: 'Its crater, 180 km wide, lies buried under the Yucatán.' },
+    { designation: 'CHICXULUB', name: 'The Dinosaur Asteroid', objectType: 'impact', rarity: 'common', catalogRef: 'Chicxulub crater, Yucatán', blurb: 'Its crater, 180 km wide, lies buried under the Yucatán.' },
     HISTORY,
     {
       ...near,
@@ -103,7 +103,7 @@ export const FAMOUS_CARDS: AuthoredCard[] = [
     },
   ),
   authorKept(
-    { designation: 'JWST', name: 'The James Webb Space Telescope', objectType: 'space telescope', rarity: 'rare', catalogRef: '2021-130A', blurb: 'It works 1.5 million km away, colder than −230 °C.' },
+    { designation: 'JWST', name: 'The James Webb Space Telescope', objectType: 'space telescope', rarity: 'common', catalogRef: '2021-130A', blurb: 'It works 1.5 million km away, colder than −230 °C.' },
     'A million and a half kilometres away, and looking the other way.',
     {
       ...near,
@@ -131,7 +131,7 @@ export const FAMOUS_CARDS: AuthoredCard[] = [
   ),
   authorCard(
     {
-      designation: 'APOLLO-11', name: 'Apollo 11', objectType: 'Moon landing site', rarity: 'legendary',
+      designation: 'APOLLO-11', name: 'Apollo 11', objectType: 'Moon landing site', rarity: 'common',
       targetId: 'moon', catalogRef: 'Tranquility Base', raHours: null, decDeg: null, surfaceLat: 0.6741, surfaceLon: 23.473,
       blurb: 'Collins circled alone above while they walked.',
     },
@@ -146,7 +146,7 @@ export const FAMOUS_CARDS: AuthoredCard[] = [
     },
   ),
   authorKept(
-    { designation: 'SL9', name: 'Comet Shoemaker–Levy 9', objectType: 'comet impact on Jupiter', rarity: 'rare', catalogRef: 'D/1993 F2', blurb: 'Torn into pieces by a close pass two years before.' },
+    { designation: 'SL9', name: 'Comet Shoemaker–Levy 9', objectType: 'comet impact on Jupiter', rarity: 'common', catalogRef: 'D/1993 F2', blurb: 'Torn into pieces by a close pass two years before.' },
     HISTORY,
     {
       ...near,
@@ -237,7 +237,7 @@ export const FAMOUS_CARDS: AuthoredCard[] = [
 
   // ── The Rare Sights
   authorSight(
-    { designation: 'TOTAL-ECLIPSE', name: 'Total Solar Eclipse', objectType: 'solar eclipse', rarity: 'epic', catalogRef: 'Totality', blurb: 'Somewhere on Earth, one comes every year or two.' },
+    { designation: 'TOTAL-ECLIPSE', name: 'Total Solar Eclipse', objectType: 'solar eclipse', rarity: 'common', catalogRef: 'Totality', blurb: 'Somewhere on Earth, one comes every year or two.' },
     SOLAR_SIGHT,
     {
       stats: [['LONGEST', '7 min 32 s'], ['PATH', '~160 km wide'], ['SOMEWHERE', 'Every ~18 months']],
@@ -247,7 +247,7 @@ export const FAMOUS_CARDS: AuthoredCard[] = [
     },
   ),
   authorSight(
-    { designation: 'BLOOD-MOON', name: 'The Blood Moon', objectType: 'total lunar eclipse', rarity: 'rare', catalogRef: 'Totality', blurb: 'The longest last nearly two hours.' },
+    { designation: 'BLOOD-MOON', name: 'The Blood Moon', objectType: 'total lunar eclipse', rarity: 'common', catalogRef: 'Totality', blurb: 'The longest last nearly two hours.' },
     SIGHT,
     {
       stats: [['COLOUR', 'Copper red'], ['TOTALITY', 'Up to 1 h 47 m'], ['WHY', 'Earth’s sunsets']],
@@ -257,7 +257,7 @@ export const FAMOUS_CARDS: AuthoredCard[] = [
     },
   ),
   authorSight(
-    { designation: 'RING-OF-FIRE', name: 'Ring of Fire', objectType: 'annular eclipse', rarity: 'rare', catalogRef: 'Annularity', blurb: 'The light dims, but the day never turns to night.' },
+    { designation: 'RING-OF-FIRE', name: 'Ring of Fire', objectType: 'annular eclipse', rarity: 'common', catalogRef: 'Annularity', blurb: 'The light dims, but the day never turns to night.' },
     SOLAR_SIGHT,
     {
       stats: [['RING', 'Up to 12 min'], ['WHY', 'Moon too far'], ['WATCH', 'With a filter']],
@@ -267,7 +267,7 @@ export const FAMOUS_CARDS: AuthoredCard[] = [
     },
   ),
   authorSight(
-    { designation: 'AURORA', name: 'The Aurora', objectType: 'aurora', rarity: 'epic', catalogRef: 'Borealis · Australis', blurb: 'Strong storms push it far from the poles.' },
+    { designation: 'AURORA', name: 'The Aurora', objectType: 'aurora', rarity: 'common', catalogRef: 'Borealis · Australis', blurb: 'Strong storms push it far from the poles.' },
     SIGHT,
     {
       stats: [['HEIGHT', '100–300 km'], ['GREEN', 'Oxygen'], ['CAUSE', 'The solar wind']],
@@ -277,7 +277,7 @@ export const FAMOUS_CARDS: AuthoredCard[] = [
     },
   ),
   authorSight(
-    { designation: 'VENUS-TRANSIT', name: 'Transit of Venus', objectType: 'transit', rarity: 'epic', catalogRef: '2004 · 2012 · 2117', blurb: 'They come in pairs, eight years apart.' },
+    { designation: 'VENUS-TRANSIT', name: 'Transit of Venus', objectType: 'transit', rarity: 'common', catalogRef: '2004 · 2012 · 2117', blurb: 'They come in pairs, eight years apart.' },
     SOLAR_SIGHT,
     {
       stats: [['LAST', '6 Jun 2012'], ['NEXT', '11 Dec 2117'], ['LASTS', '~6 hours']],
@@ -287,7 +287,7 @@ export const FAMOUS_CARDS: AuthoredCard[] = [
     },
   ),
   authorSight(
-    { designation: 'HALE-BOPP', name: 'Comet Hale–Bopp', objectType: 'great comet', rarity: 'rare', catalogRef: 'C/1995 O1', blurb: 'Its core is about 60 km wide, huge for a comet.' },
+    { designation: 'HALE-BOPP', name: 'Comet Hale–Bopp', objectType: 'great comet', rarity: 'common', catalogRef: 'C/1995 O1', blurb: 'Its core is about 60 km wide, huge for a comet.' },
     SIGHT,
     {
       stats: [['TO THE EYE', '18 months'], ['NUCLEUS', '~60 km'], ['RETURNS', '~2,500 yr']],
@@ -297,7 +297,7 @@ export const FAMOUS_CARDS: AuthoredCard[] = [
     },
   ),
   authorSight(
-    { designation: 'LEONIDS', name: 'The Leonid Storm', objectType: 'meteor storm', rarity: 'rare', catalogRef: '55P/Tempel–Tuttle', blurb: 'Crumbs of Comet Tempel–Tuttle.' },
+    { designation: 'LEONIDS', name: 'The Leonid Storm', objectType: 'meteor storm', rarity: 'common', catalogRef: '55P/Tempel–Tuttle', blurb: 'Crumbs of Comet Tempel–Tuttle.' },
     SIGHT,
     {
       stats: [['STORMS', '1833 · 1966'], ['RATE', '~40 a second'], ['PARENT', '55P/Tempel–Tuttle']],

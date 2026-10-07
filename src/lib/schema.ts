@@ -818,7 +818,7 @@ export const nightlyTarget = pgTable('nightly_target', {
 // Stellar voting (Phase 8). Holders vote for the night's card among those Node
 // 01 can photograph that night. One vote per holder per night, changeable
 // until the night is decided; the weight is fixed when cast, from the
-// editions held then (VOTE_WEIGHT in economics.ts).
+// editions held then (votePower in perks.ts).
 //
 //   ALTER TABLE nightly_target ADD COLUMN IF NOT EXISTS planned_at timestamptz;
 //   ALTER TABLE nightly_target ADD COLUMN IF NOT EXISTS cloud_forecast integer;

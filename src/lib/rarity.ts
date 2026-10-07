@@ -34,7 +34,7 @@ const RARITY_MAP: Record<Rarity, Omit<RarityInfo, 'rarity' | 'rank'>> = {
   common: { color: '#D9C9A5', label: 'Common', glyph: '◇' },
   rare: { color: '#F6A63F', label: 'Rare', glyph: '◈' },
   epic: { color: '#EF5F33', label: 'Epic', glyph: '◆' },
-  legendary: { color: '#FFD36E', label: 'Legendary', glyph: '✦' },
+  legendary: { color: '#FFD36E', label: 'Ultra Rare', glyph: '✦' },
 };
 
 export function isRarity(value: string): value is Rarity {
