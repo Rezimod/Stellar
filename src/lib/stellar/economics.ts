@@ -73,7 +73,7 @@ export const DIRECT_CARD_PRICE_USD: Record<Rarity, number> = {
 export const SPECIMEN_PRICE_USD: Record<string, number> = {
   IMILAC: 125, // 4.6 g pallasite (FossilEra, 4.55 g)
   'LUNAR-FRAGMENT': 575, // 8.5 g lunar slice (FossilEra, Oued el Hamim 001, 8.47 g)
-  'SIKHOTE-ALIN': 42, // 6 g individual (FossilEra, 5.99 g)
+  'CANYON-DIABLO': 57, // 81 g individual (Meteorite Market, CD80-6, 80.6 g)
   GIBEON: 42, // 7.7 g piece (FossilEra, 7.69 g)
   'CAMPO-DEL-CIELO': 43, // 15 g specimen with certificate
   MUONIONALUSTA: 129, // 46 g etched slice (Galactic Stone)

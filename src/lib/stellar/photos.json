@@ -992,16 +992,6 @@
   "url": "https://commons.wikimedia.org/wiki/File:Perseid_Meteor_Shower_(201508130001HQ).jpg",
   "focus": "50% 30%"
  },
- "SIKHOTE-ALIN": {
-  "file": "/cards/photo/SIKHOTE-ALIN.webp",
-  "kind": "photo",
-  "credit": "Parent Géry",
-  "source": "Specimen photograph",
-  "year": "",
-  "license": "CC BY-SA 3.0",
-  "url": "https://commons.wikimedia.org/wiki/File:M%C3%A9t%C3%A9orite_Sikhote-Alin_(Russie).JPG",
-  "focus": "50% 50%"
- },
  "GIBEON": {
   "file": "/cards/photo/GIBEON.webp",
   "kind": "photo",
@@ -1040,6 +1030,16 @@
   "year": "",
   "license": "CC BY-SA 3.0",
   "url": "https://commons.wikimedia.org/wiki/File:AllendeMeteorite.jpg",
+  "focus": "50% 50%"
+ },
+ "CANYON-DIABLO": {
+  "file": "/cards/photo/CANYON-DIABLO.webp",
+  "kind": "photo",
+  "credit": "James St. John",
+  "source": "Specimen photograph",
+  "year": "",
+  "license": "CC BY 2.0",
+  "url": "https://commons.wikimedia.org/wiki/File:Canyon_Diablo_meteorite_(26186838044).jpg",
   "focus": "50% 50%"
  }
 }

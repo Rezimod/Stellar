@@ -34,10 +34,7 @@ export default function ShopCard({ designation, name, rarity, sub, price, tag }:
     >
       <span className="sd-tile__head" aria-hidden="true">
         {num && <span className="sd-tile__num">No. {num}</span>}
-        <span className="sd-chip">
-          <i>{rarityInfo(rarity).glyph}</i>
-          {rarityInfo(rarity).label}
-        </span>
+        <span className="sd-rtag">{rarityInfo(rarity).label}</span>
       </span>
       <span className="sd-tile__stage">
         <CardThumb designation={designation} />
@@ -46,10 +43,12 @@ export default function ShopCard({ designation, name, rarity, sub, price, tag }:
       <span className="sd-tile__foot">
         <span className="sd-tile__name">{name}</span>
         <span className="sd-tile__price">{price}</span>
-        <span className="sd-tile__sub">{sub}</span>
-        <span className="sd-tile__perk">
-          {perk.short}
-          {perk.soon && <em>Soon</em>}
+        <span className="sd-tile__meta">
+          <span className="sd-tile__perk">
+            {perk.tile}
+            {perk.soon && <em>Soon</em>}
+          </span>
+          <span className="sd-tile__sub">{sub}</span>
         </span>
       </span>
     </Link>

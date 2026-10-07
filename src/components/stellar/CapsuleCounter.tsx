@@ -165,10 +165,7 @@ export default function CapsuleCounter({ cards, onSale }: { cards: TierCard[]; o
       <ul className="sd-gives">
         {TIER_PERKS.map((t) => (
           <li key={t.rarity} data-rarity={t.rarity}>
-            <span className="sd-gives__tier">
-              <i aria-hidden="true">{rarityInfo(t.rarity).glyph}</i>
-              {rarityInfo(t.rarity).label}
-            </span>
+            <span className="sd-gives__tier">{rarityInfo(t.rarity).label}</span>
             <span className="sd-gives__what">
               {t.title}
               {t.soon && <em>Coming soon</em>}

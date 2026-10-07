@@ -130,7 +130,7 @@ describe('First Light', () => {
       expect(other, `${c.seed.designation} pairs with ${p}`).toBeDefined();
       expect(other!.record.pairsWith).toBe(c.seed.designation);
     }
-    expect(SET_001_CARDS.filter((c) => c.record.physical).map((c) => c.seed.designation)).toEqual(['IMILAC', 'LUNAR-FRAGMENT', 'SIKHOTE-ALIN', 'GIBEON', 'CAMPO-DEL-CIELO', 'MUONIONALUSTA', 'ALLENDE']);
+    expect(SET_001_CARDS.filter((c) => c.record.physical).map((c) => c.seed.designation)).toEqual(['IMILAC', 'LUNAR-FRAGMENT', 'CANYON-DIABLO', 'GIBEON', 'CAMPO-DEL-CIELO', 'MUONIONALUSTA', 'ALLENDE']);
   });
 
   it('prints three figures and a line on every card, in the logbook’s voice', () => {

@@ -64,7 +64,7 @@ const FIRST_24: AuthoredCard[] = [
   ),
   authorKept(
     {
-      designation: 'LUNAR-FRAGMENT', name: 'A Piece of the Moon', objectType: 'lunar meteorite', rarity: 'legendary',
+      designation: 'LUNAR-FRAGMENT', name: 'Moon Rock', objectType: 'lunar meteorite', rarity: 'legendary',
       catalogRef: 'Fallen to Earth',
       blurb: 'Found in a desert, matched to Apollo samples by its chemistry.',
     },
@@ -268,12 +268,12 @@ const FIRST_24: AuthoredCard[] = [
 const SPECIMENS: AuthoredCard[] = [
   authorKept(
     {
-      designation: 'SIKHOTE-ALIN', name: 'Sikhote-Alin', objectType: 'iron meteorite', rarity: 'legendary',
-      catalogRef: 'Primorye, Russia, 1947',
-      blurb: 'It fell in daylight in 1947, brighter than the Sun.',
+      designation: 'CANYON-DIABLO', name: 'Canyon Diablo', objectType: 'iron meteorite', rarity: 'legendary',
+      catalogRef: 'Meteor Crater, Arizona',
+      blurb: 'The iron that dug Meteor Crater, 1.2 km across.',
     },
     SPECIMEN,
-    { stats: [['TYPE', 'Iron, IIAB'], ['FELL', '12 Feb 1947'], ['SPECIMEN', '6 g']], line: 'It fell in daylight in 1947, brighter than the Sun.', physical: true },
+    { stats: [['TYPE', 'Iron, IAB'], ['FELL', '~50,000 yr ago'], ['SPECIMEN', '81 g']], line: 'The iron that dug Meteor Crater, 1.2 km across.', physical: true },
   ),
   authorKept(
     {
@@ -334,7 +334,7 @@ const ORDER = [
   // The Rare Sights
   'TOTAL-ECLIPSE', 'RING-OF-FIRE', 'BLOOD-MOON', 'AURORA', 'VENUS-TRANSIT', 'HALE-BOPP', 'LEONIDS', 'PERSEIDS',
   // The Specimens, after the first ninety-two so every object card keeps its number
-  'SIKHOTE-ALIN', 'GIBEON', 'CAMPO-DEL-CIELO', 'MUONIONALUSTA', 'ALLENDE',
+  'CANYON-DIABLO', 'GIBEON', 'CAMPO-DEL-CIELO', 'MUONIONALUSTA', 'ALLENDE',
   // The Almanac
   'ORIONIDS', 'HUNTERS-MOON', 'PLEIADES-OCCULTATION', 'GEMINIDS', 'CHRISTMAS-SUPERMOON', 'DOUBLE-OPPOSITION',
   'SNOW-MOON-ECLIPSE', 'GREAT-ECLIPSE',

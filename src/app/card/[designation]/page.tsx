@@ -112,10 +112,7 @@ export default async function CardPage({ params }: { params: Promise<{ designati
             {/* The card beside it carries the epithet, quote and headline; the page adds what the card does not say. */}
             <p className="sd-cardhero__line">{record.line}</p>
             <div className="sd-perk" data-rarity={rarity}>
-              <span className="sd-perk__tier">
-                <i aria-hidden="true">{rarityInfo(rarity).glyph}</i>
-                {rarityInfo(rarity).label}
-              </span>
+              <span className="sd-perk__tier">{rarityInfo(rarity).label}</span>
               <span className="sd-perk__short">
                 {perk.short}
                 {perk.soon && <em>Coming soon</em>}

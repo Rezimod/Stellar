@@ -33,8 +33,10 @@ export function votePower(designation: string, rarity: Rarity): number {
 }
 
 export type Perk = {
-  /** A few words, for a tile or a list: "30-min session". */
+  /** A few words, for a list or the card page: "30-min session". */
   short: string;
+  /** Fewer still, for a shelf tile: "Session". */
+  tile: string;
   /** What it is, in one sentence. */
   line: string;
   /** Not open yet: the telescope perks wait for Live Telescope V1, which is commissioning. */
@@ -44,22 +46,22 @@ export type Perk = {
 export function perkFor(designation: string, rarity: Rarity): Perk {
   switch (rarity) {
     case 'legendary':
-      return { short: 'Real specimen', line: 'Carries a real piece of the meteorite it shows, sent to its holder.', soon: false };
+      return { short: 'Real specimen', tile: 'Real specimen', line: 'Carries a real piece of the meteorite it shows, sent to its holder.', soon: false };
     case 'epic':
-      return { short: `${SESSION_MINUTES}-min session`, line: `Each edition is a ${SESSION_MINUTES}-minute session on Live Telescope V1.`, soon: true };
+      return { short: `${SESSION_MINUTES}-min session`, tile: 'Session', line: `Each edition is a ${SESSION_MINUTES}-minute session on Live Telescope V1.`, soon: true };
     case 'rare':
-      return { short: 'Visitor seat', line: 'Each edition enters the draw for a visitor’s seat at a live session.', soon: true };
+      return { short: 'Visitor seat', tile: 'Visitor seat', line: 'Each edition enters the draw for a visitor’s seat at a live session.', soon: true };
     default: {
       const v = votePower(designation, rarity);
-      return { short: `Vote ×${v}`, line: `Each edition adds ${v} to its holder’s vote on the night’s target.`, soon: false };
+      return { short: `Vote ×${v}`, tile: `Vote ×${v}`, line: `Each edition adds ${v} to its holder’s vote on the night’s target.`, soon: false };
     }
   }
 }
 
-/** What each tier gives, for the guide under the odds, scarcest first. */
+/** What each tier gives, for the guide under the odds, from common up to legendary. */
 export const TIER_PERKS: { rarity: Rarity; title: string; line: string; soon: boolean }[] = [
-  { rarity: 'legendary', title: 'Real meteorite', line: 'The stone itself, sent to you.', soon: false },
-  { rarity: 'epic', title: `${SESSION_MINUTES}-min session`, line: 'Your time on the telescope.', soon: true },
-  { rarity: 'rare', title: 'Visitor seat', line: 'A draw to watch a live session.', soon: true },
   { rarity: 'common', title: 'Nightly vote', line: 'Pick the night’s target, ×1 to ×3.', soon: false },
+  { rarity: 'rare', title: 'Visitor seat', line: 'A draw to watch a live session.', soon: true },
+  { rarity: 'epic', title: `${SESSION_MINUTES}-min session`, line: 'Your time on the telescope.', soon: true },
+  { rarity: 'legendary', title: 'Real meteorite', line: 'The stone itself, sent to you.', soon: false },
 ];
