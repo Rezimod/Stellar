@@ -40,28 +40,22 @@
   background: url('/stellar/home/horizon.webp') center top / 100% auto no-repeat; pointer-events: none; filter: saturate(0.88) brightness(0.9);
   -webkit-mask-image: linear-gradient(180deg, #000 52%, transparent 100%); mask-image: linear-gradient(180deg, #000 52%, transparent 100%);
 }
-.stellar .sd-hero2__kicker { margin-bottom: 20px; }
 .stellar .sd-hero2__title { font-size: clamp(32px, 4.05vw, 60px); }
 .stellar .sd-hero2__sub { margin-top: 22px; max-width: 44ch; color: rgba(244, 232, 204, 0.84); font-size: 18px; }
 .stellar .sd-hero2__cta { align-items: center; gap: 14px 26px; }
-.sd-hero2__more {
-  display: inline-flex; align-items: center; gap: 10px; min-height: 44px;
-  font: 500 14px var(--sd-spaced); letter-spacing: 0.16em; text-transform: uppercase; color: var(--sd-ink); text-decoration: none;
-}
-.sd-hero2__more::after { content: ''; width: 18px; height: 1px; background: currentColor; transition: width var(--sd-dur-base) var(--sd-ease); }
-.sd-hero2__more:hover { color: var(--sd-gold); }
-.sd-hero2__more:hover::after { width: 30px; }
 .stellar .sd-hero2__stats { margin-top: 40px; border-top-color: rgba(244, 232, 204, 0.16); }
 .stellar .sd-hero2__stats dd { color: var(--sd-ink); text-shadow: 0.05em 0.06em 0 var(--sd-print); }
 .stellar .sd-hero2__stats dt { color: rgba(244, 232, 204, 0.6); }
 
 
-/* ── Partners and recognition: one quiet band, every mark in the same cream ink ── */
-.stellar .sd-trust { padding-top: 64px; }
-.stellar .sd-trust__label { color: rgba(244, 232, 204, 0.55); }
-.stellar .sd-partners { margin-bottom: 36px; }
-.stellar .sd-partners li { height: 80px; }
-.stellar .sd-partners img { filter: brightness(0) invert(0.93) sepia(0.28) !important; opacity: 0.62; max-height: 30px; }
+/* ── Partners and recognition, in the footer: one quiet band, every mark in the same cream ink ── */
+.stellar .sd-foot__trust { display: grid; gap: 18px; justify-items: center; }
+@media (min-width: 860px) { .stellar .sd-foot__trust { justify-items: end; } }
+.stellar .sd-foot .sd-partners { margin: 0; max-width: 680px; width: 100%; }
+.stellar .sd-foot .sd-partners li { height: 56px; padding: 0 14px; }
+.stellar .sd-foot .sd-recog { margin: 0; max-width: none; display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 28px; }
+.stellar .sd-foot .sd-recog__item { padding: 6px 0; }
+.stellar .sd-partners img { filter: brightness(0) invert(0.93) sepia(0.28); opacity: 0.62; max-height: 26px; }
 .stellar .sd-partners li:hover img { opacity: 0.95; }
 .stellar .sd-recog__item { flex-direction: row; gap: 14px; justify-content: center; }
 .stellar .sd-recog__item img, .stellar .sd-recog__item:hover img { filter: brightness(0) invert(0.93) sepia(0.28); }
@@ -72,7 +66,7 @@
 .stellar .sd-recog__cap b { color: var(--sd-gold); font-weight: 500; }
 
 /* ── What a card opens: four stops on one dotted orbit ────────── */
-.stellar .sd-flight { position: relative; background: none; padding-top: 0; counter-reset: sd-step; }
+.stellar .sd-flight { position: relative; background: none; padding-top: 0; }
 .stellar .sd-flight::before {
   content: ''; position: absolute; left: 0; right: 0; top: 0; height: 1px;
   background: repeating-linear-gradient(90deg, rgba(226, 184, 106, 0.6) 0 6px, transparent 6px 13px);
@@ -89,10 +83,6 @@
   }
   .stellar .sd-flight > li:has(.sd-flight__step--live)::before { background: var(--sd-ray); box-shadow: 0 0 0 4px rgba(226, 184, 106, 0.16); }
   .stellar .sd-flight__step { padding-top: 40px; }
-  .stellar .sd-flight__step::before {
-    counter-increment: sd-step; content: counter(sd-step, decimal-leading-zero);
-    font: 500 12px var(--sd-spaced); letter-spacing: 0.3em; color: rgba(244, 232, 204, 0.5);
-  }
 }
 
 /* ── The odds: a cream-ruled panel ── */
@@ -126,12 +116,11 @@
 @media (max-width: 559px) {
   .stellar .sd-hero2 { padding-bottom: 120px; }
   .stellar .sd-hero2__title { font-size: min(9.4vw, 42px); }
-  .stellar .sd-hero2__kicker { order: 0; margin: 4px 0 14px; font-size: 11px; }
   .sd-hero2__horizon { width: 1100px; }
   .stellar .sd-hero2__sub { font-size: 16px; }
   .stellar .sd-hero2__cta { justify-content: center; }
-  .stellar .sd-trust { padding-top: 44px; }
   .stellar .sd-partners img { max-height: 22px; }
+  .stellar .sd-foot .sd-partners li { height: 48px; }
   .stellar .sd-recog__item { flex-direction: column; gap: 8px; }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -182,7 +171,6 @@
 @media (max-width: 559px) {
   .stellar .sd-hero2 { padding-top: 0; }
   .stellar .sd-hero2__grid { text-align: center; }
-  .stellar .sd-hero2__kicker { display: none; }
 
   .stellar .sd-homeprint {
     /* The star takes whatever the first screen has left after the words and the button (~252px below it). */
@@ -204,7 +192,6 @@
   .stellar .sd-hero2__sub { order: 3; margin: 14px auto 0; max-width: 34ch; }
   .stellar .sd-hero2__cta { order: 4; flex-direction: column; align-items: stretch; margin-top: 22px; }
   .stellar .sd-hero2__cta .sd-btn { width: 100%; min-height: 54px; }
-  .stellar .sd-hero2__more { justify-content: center; margin-top: 34px; } /* below the fold, clear of the button */
   .stellar .sd-hero2__stats { text-align: left; }
 }
 

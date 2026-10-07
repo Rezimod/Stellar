@@ -16,8 +16,8 @@
 }
 
 .stellar .sd-btn { font-family: var(--sd-spaced); font-weight: 600; font-size: 14px; letter-spacing: 0.14em; text-transform: uppercase; }
-.stellar :is(.sd-eyebrow, .sd-kicker, .sd-label, .sd-hero2__stats dt, .sd-flight__status, .sd-trust__label, .sd-counter__label,
-  .sd-counter__price span, .sd-counter__foot, .sd-fl__meta, .sd-pub__per, .sd-foot__head, .sd-menu__big small) {
+.stellar :is(.sd-eyebrow, .sd-kicker, .sd-label, .sd-hero2__stats dt, .sd-counter__label,
+  .sd-counter__price span, .sd-counter__foot, .sd-fl__meta, .sd-pub__per, .sd-menu__big small) {
   font-family: var(--sd-spaced); font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase;
 }
 .stellar .sd-kicker, .stellar .sd-eyebrow { color: var(--sd-accent); }

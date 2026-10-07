@@ -3,8 +3,7 @@ import Link from 'next/link';
 type Step = {
   title: string;
   text: string;
-  status: string;
-  /** A state that is running now pulses; one being prepared stays dim. */
+  /** A step that is running now is lit; one being prepared stays dim. */
   live: boolean;
   href: string;
   icon: 'capsule' | 'reticle' | 'telescope' | 'meteorite';
@@ -46,7 +45,7 @@ const ICONS: Record<Step['icon'], React.ReactNode> = {
   ),
 };
 
-/** Four steps from capsule to object, each with its instrument, one line and where it stands, in four quiet columns. */
+/** Four steps from capsule to object, each with its instrument and one line, in four quiet columns. */
 export default function FlightPlan({ steps }: { steps: Step[] }) {
   return (
     <ol className="sd-flight">
@@ -60,7 +59,6 @@ export default function FlightPlan({ steps }: { steps: Step[] }) {
             </span>
             <span className="sd-flight__title">{s.title}</span>
             <span className="sd-flight__text">{s.text}</span>
-            <span className={`sd-flight__status${s.live ? ' sd-flight__status--live' : ''}`}>{s.status}</span>
           </Link>
         </li>
       ))}

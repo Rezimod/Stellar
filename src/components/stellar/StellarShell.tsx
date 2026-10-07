@@ -6,46 +6,34 @@ import StellarTabBar from './StellarTabBar';
 import StellarAccountGate from './StellarAccountGate';
 import StellarAuth from './StellarAuth';
 import StellarLiving, { LIVE_SCRIPT } from './StellarLiving';
-import { getNode } from '@/lib/observatory/nodes';
-import { LEGACY_HOST } from '@/lib/stellar/legacy';
 
-const FOOT = [
+const PARTNERS = [
+  { src: '/brand-partners/astroman.png', alt: 'Astroman', width: 640, height: 169 },
+  { src: '/brand-partners/bresser.svg', alt: 'Bresser', width: 290, height: 60 },
+  { src: '/brand-partners/celestron.png', alt: 'Celestron', width: 500, height: 76 },
+  { src: '/brand-partners/levenhuk.svg', alt: 'Levenhuk', width: 300, height: 60 },
+];
+
+const RECOGNITION = [
   {
-    title: 'Cards',
-    links: [
-      { href: '/set/001', label: 'Genesis' },
-      { href: '/collection', label: 'Collection' },
-      { href: '/capsules/log', label: 'Public log' },
-    ],
+    href: 'https://superteam.fun/earn/listing/tether-frontier-hackathon-track',
+    logo: '/brand-partners/qvac.svg', logoAlt: 'QVAC by Tether', logoWidth: 218, logoHeight: 24,
+    label: 'Tether Frontier', rank: '1st place',
+    linkLabel: 'View Tether Frontier Hackathon track on Superteam Earn',
   },
   {
-    title: 'Live Telescope V1',
-    links: [
-      { href: '/tonight', label: 'Tonight' },
-      { href: '/node', label: 'Live Telescope V1' },
-      { href: '/voyage', label: 'Voyage' },
-    ],
-  },
-  {
-    title: 'Stellar',
-    links: [
-      { href: `${LEGACY_HOST}/sky`, label: 'Sky tonight' },
-      { href: `${LEGACY_HOST}/marketplace`, label: 'Shop' },
-      { href: `${LEGACY_HOST}/learn`, label: 'Learn' },
-      { href: `${LEGACY_HOST}/missions`, label: 'Missions' },
-    ],
-  },
-  {
-    title: 'Contact',
-    links: [
-      { href: '/contact', label: 'Contact' },
-      { href: '/terms', label: 'Terms' },
-      { href: '/privacy', label: 'Privacy' },
-    ],
+    href: 'https://superteam.fun/earn/grants/solana-foundation-georgia-grants',
+    logo: '/brand-partners/superteam.webp', logoAlt: 'Superteam', logoWidth: 160, logoHeight: 48,
+    label: 'Superteam', rank: 'Grant',
+    linkLabel: 'View the Solana Foundation grant on Superteam Earn',
   },
 ];
 
-const node = getNode('tbilisi-01')!;
+const LEGAL = [
+  { href: '/contact', label: 'Contact' },
+  { href: '/terms', label: 'Terms' },
+  { href: '/privacy', label: 'Privacy' },
+];
 
 /**
  * The frame every Stellar page wraps itself in:
@@ -105,27 +93,37 @@ export default function StellarShell({
             <div className="sd-foot__top">
               <div className="sd-foot__brand">
                 <Wordmark href="/" />
-                <p>Real objects. Numbered editions.</p>
               </div>
-              <nav aria-label="Footer" className="sd-foot__cols">
-                {FOOT.map((col) => (
-                  <div key={col.title}>
-                    <p className="sd-foot__head">{col.title}</p>
-                    <ul>
-                      {col.links.map((l) => (
-                        <li key={l.label}>
-                          {l.href.startsWith('/') ? <Link href={l.href}>{l.label}</Link> : <a href={l.href}>{l.label}</a>}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+              <div className="sd-foot__trust" aria-label="Partner brands and recognition" role="group">
+                <ul className="sd-partners">
+                  {PARTNERS.map((p) => (
+                    <li key={p.alt}>
+                      <img src={p.src} alt={p.alt} width={p.width} height={p.height} loading="lazy" />
+                    </li>
+                  ))}
+                </ul>
+                <ul className="sd-recog">
+                  {RECOGNITION.map((r) => (
+                    <li key={r.label}>
+                      <a href={r.href} target="_blank" rel="noopener noreferrer" aria-label={r.linkLabel} className="sd-recog__item">
+                        <img src={r.logo} alt={r.logoAlt} width={r.logoWidth} height={r.logoHeight} loading="lazy" />
+                        <span className="sd-recog__cap">
+                          {r.label} · <b>{r.rank}</b>
+                        </span>
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+            <div className="sd-foot__base">
+              <nav aria-label="Footer" className="sd-foot__legal">
+                {LEGAL.map((l) => (
+                  <Link key={l.href} href={l.href}>
+                    {l.label}
+                  </Link>
                 ))}
               </nav>
-            </div>
-            <div className="sd-foot__base sd-data">
-              <span>
-                Live Telescope V1 · The night sky · {node.status}
-              </span>
               <span>© {new Date().getFullYear()} Stellar</span>
             </div>
           </div>

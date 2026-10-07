@@ -30,28 +30,6 @@ export const metadata: Metadata = {
 /** Six cards from across the set, one shelf of it. */
 const SHOWCASE = ['JUPITER', 'BETELGEUSE', 'M42', 'M31', 'SGR-A', 'VOYAGER-1'];
 
-const PARTNERS = [
-  { src: '/brand-partners/astroman.png', alt: 'Astroman', width: 640, height: 169, filter: 'invert(1) brightness(1.05)' },
-  { src: '/brand-partners/bresser.svg', alt: 'Bresser', width: 290, height: 60, filter: 'brightness(0) invert(0.85)' },
-  { src: '/brand-partners/celestron.png', alt: 'Celestron', width: 500, height: 76 },
-  { src: '/brand-partners/levenhuk.svg', alt: 'Levenhuk', width: 300, height: 60 },
-];
-
-const RECOGNITION = [
-  {
-    href: 'https://superteam.fun/earn/listing/tether-frontier-hackathon-track',
-    logo: '/brand-partners/qvac.svg', logoAlt: 'QVAC by Tether', logoWidth: 218, logoHeight: 24,
-    label: 'Tether Frontier', rank: '1st place',
-    linkLabel: 'View Tether Frontier Hackathon track on Superteam Earn',
-  },
-  {
-    href: 'https://superteam.fun/earn/grants/solana-foundation-georgia-grants',
-    logo: '/brand-partners/superteam.webp', logoAlt: 'Superteam', logoWidth: 160, logoHeight: 48,
-    label: 'Superteam', rank: 'Grant',
-    linkLabel: 'View the Solana Foundation grant on Superteam Earn',
-  },
-];
-
 /** The cards turning round the sun in the orbit section. */
 const ORBIT = ['FIRST-LIGHT', 'SATURN', 'M42', 'M1', 'SGR-A', 'HALLEY', 'M45', 'TYCHO', 'EUROPA', 'APOLLO-11', 'GREAT-ECLIPSE', 'IMILAC'];
 
@@ -65,13 +43,12 @@ const SUPPLY = Object.fromEntries(
 const FROM_USD = Math.min(...TIERS.map((t) => t.priceUsd));
 
 const PLAN: FlightStep[] = [
-  { title: 'Open', text: `${CARDS_PER_TIER === 1 ? 'One sealed card' : `${CARDS_PER_TIER} sealed cards`} to a capsule, from $${FROM_USD}.`, status: 'On sale', live: true, href: '/set/001', icon: 'capsule' },
-  { title: 'Vote', text: 'Holders choose where Live Telescope V1 points each night.', status: 'Nightly', live: true, href: '/tonight', icon: 'reticle' },
-  { title: 'Watch', text: 'Holders of the chosen card watch the observation live.', status: 'Commissioning', live: false, href: '/node', icon: 'telescope' },
+  { title: 'Open', text: `${CARDS_PER_TIER === 1 ? 'One sealed card' : `${CARDS_PER_TIER} sealed cards`} to a capsule, from $${FROM_USD}.`, live: true, href: '/set/001', icon: 'capsule' },
+  { title: 'Vote', text: 'Holders choose where Live Telescope V1 points each night.', live: true, href: '/tonight', icon: 'reticle' },
+  { title: 'Watch', text: 'Holders of the chosen card watch the observation live.', live: false, href: '/node', icon: 'telescope' },
   {
     title: 'Claim',
     text: 'Two cards in Genesis carry a real meteorite fragment, redeemable later.',
-    status: 'In preparation',
     live: false,
     href: '/set/001',
     icon: 'meteorite',
@@ -124,7 +101,6 @@ export default async function HomePage() {
         <div className="sd-container sd-hero2__grid">
           <HomePrint />
           <div className="sd-hero2__copy">
-            <p className="sd-kicker sd-hero2__kicker">Founding set · Genesis</p>
             <h1 className="sd-hero2__title">
               <span>Hold a piece of</span>{' '}
               <span>
@@ -137,9 +113,6 @@ export default async function HomePage() {
             <div className="sd-hero2__cta">
               <Link href="/set/001" className="sd-btn sd-btn--light">
                 Blast a star — from ${FROM_USD}
-              </Link>
-              <Link href="/set/001" className="sd-hero2__more">
-                See the {SET_001_CARDS.length} cards
               </Link>
             </div>
             <dl className="sd-hero2__stats">
@@ -160,32 +133,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="sd-container sd-home-sec sd-trust" aria-label="Partner brands and recognition">
-        <p className="sd-trust__label">Partner brands</p>
-        <ul className="sd-partners">
-          {PARTNERS.map((p) => (
-            <li key={p.alt}>
-              <img src={p.src} alt={p.alt} width={p.width} height={p.height} loading="lazy" style={p.filter ? { filter: p.filter } : undefined} />
-            </li>
-          ))}
-        </ul>
-        <p className="sd-trust__label">Recognition</p>
-        <ul className="sd-recog">
-          {RECOGNITION.map((r) => (
-            <li key={r.label}>
-              <a href={r.href} target="_blank" rel="noopener noreferrer" aria-label={r.linkLabel} className="sd-recog__item">
-                <img src={r.logo} alt={r.logoAlt} width={r.logoWidth} height={r.logoHeight} loading="lazy" />
-                <span className="sd-recog__cap">
-                  {r.label} · <b>{r.rank}</b>
-                </span>
-              </a>
-            </li>
-          ))}
-        </ul>
-      </section>
-
       <section className="sd-container sd-home-sec" id="how" aria-labelledby="how-title">
-        <p className="sd-kicker">Flight plan</p>
         <h2 className="sd-home-sec__title" id="how-title">
           What a card opens
         </h2>
@@ -193,7 +141,6 @@ export default async function HomePage() {
       </section>
 
       <section className="sd-container sd-home-sec sd-pub" aria-labelledby="odds-title">
-        <p className="sd-kicker">Why it is fair</p>
         <h2 className="sd-home-sec__title" id="odds-title">
           The odds are published
         </h2>
@@ -224,7 +171,6 @@ export default async function HomePage() {
 
       <section className="sd-container sd-home-sec sd-showcase2" aria-labelledby="set-title">
         <div className="sd-showcase2__copy">
-          <p className="sd-kicker">Founding set</p>
           <h2 className="sd-home-sec__title" id="set-title">
             Genesis
           </h2>
@@ -254,7 +200,6 @@ export default async function HomePage() {
 
       <section className="sd-home-sec sd-orbit" aria-labelledby="orbit-title">
         <div className="sd-container sd-orbit__copy">
-          <p className="sd-kicker">In orbit</p>
           <h2 className="sd-home-sec__title" id="orbit-title">
             Every card turns with the sky
           </h2>
