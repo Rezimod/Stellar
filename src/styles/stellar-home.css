@@ -152,11 +152,15 @@
 }
 @keyframes sd-star-wait { 0%, 100% { scale: 1; opacity: 0.88; } 10% { scale: 1.16; opacity: 1; } 20% { scale: 1.02; } 28% { scale: 1.09; } 40% { scale: 1; } }
 
-/* The home print: the bare star on black, faint dots and a breath of nebula laid over the sky. */
+/* The home print: the bare star laid into the page sky — no box, its edges dissolve into the backdrop. */
 .sd-homeprint { display: block; width: min(100%, 520px); margin-inline: auto; color: inherit; text-decoration: none; cursor: pointer; transition: transform var(--sd-dur-slow) var(--sd-ease); }
 .sd-homeprint:focus-visible { outline: 2px solid var(--sd-focus); outline-offset: 6px; }
-@media (hover: hover) { .sd-homeprint:hover { transform: translateY(-6px) rotate(-0.4deg); } }
-.sd-homeprint__print { position: relative; display: block; overflow: hidden; aspect-ratio: 4 / 5; border-radius: 6px; background: #050505; box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.9); }
+.sd-homeprint__print {
+  position: relative; display: block; overflow: hidden; aspect-ratio: 4 / 5;
+  -webkit-mask-image: radial-gradient(closest-side, #000 55%, transparent 100%);
+  mask-image: radial-gradient(closest-side, #000 55%, transparent 100%);
+}
+.sd-homeprint .sd-starpulse { background: none; }
 .sd-homeprint__print::before, .sd-homeprint__print::after { content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none; mix-blend-mode: screen; }
 .sd-homeprint__print::before {
   background:

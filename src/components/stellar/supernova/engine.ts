@@ -33,6 +33,8 @@ export type SupernovaOptions = {
   onDone: () => void;
   /** The star before any press: it breathes on a slow heartbeat and waits. Used where no card is opened (the home print, the set page). */
   waiting?: boolean;
+  /** Draw with no sky: the canvas is transparent and the light lies straight on the page behind it (the home page). */
+  clear?: boolean;
   /** With `waiting`: instead of the heartbeat, one slow, even breath — the star grows and shrinks over a few seconds (the home page). */
   breathe?: boolean;
   /** Where the star sits, as a fraction of the box's height from the top. Defaults to the reveal's own placement. */
@@ -128,7 +130,7 @@ export function startSupernova(root: HTMLElement, opts: SupernovaOptions): Super
   let dead = false;
 
   // ---------- WebGL ----------
-  const gl = cv?.getContext('webgl', { antialias: false, alpha: false, premultipliedAlpha: false, powerPreference: 'high-performance' }) ?? null;
+  const gl = cv?.getContext('webgl', { antialias: false, alpha: !!opts.clear, premultipliedAlpha: !!opts.clear, powerPreference: 'high-performance' }) ?? null;
   type Prog = { p: WebGLProgram; u: Record<string, WebGLUniformLocation | null> };
   let SP: Prog | null = null, PP: Prog | null = null, DP: Prog | null = null, BP: Prog | null = null;
   let tex: WebGLTexture | null = null, noise: WebGLTexture | null = null, qa: WebGLTexture | null = null, qb: WebGLTexture | null = null;
@@ -199,7 +201,7 @@ export function startSupernova(root: HTMLElement, opts: SupernovaOptions): Super
       gl.deleteProgram(bake.p);
     }
     SP = program(SCENE, ['uN', 'uRes', 'uC', 'uPan', 'uTime', 'uSeed', 'uZoom', 'uStarDim', 'uStarR', 'uHeat', 'uStarI', 'uWob', 'uFA', 'uFI', 'uIn', 'uInI', 'uFlash', 'uFlare', 'uS1', 'uS1I', 'uS2', 'uS2I', 'uE', 'uNebI', 'uNebHot', 'uTeal', 'uDeb', 'uDebI', 'uCore', 'uTint']);
-    PP = program(FX, ['uTex', 'uBl', 'uRes', 'uC', 'uBlur', 'uRays', 'uCA', 'uTime', 'uVig', 'uWhite', 'uBloom', 'uDof']);
+    PP = program(FX, ['uTex', 'uBl', 'uRes', 'uC', 'uBlur', 'uRays', 'uCA', 'uTime', 'uVig', 'uWhite', 'uBloom', 'uDof', 'uClear']);
     DP = program(DOWN, ['uTex', 'uTx']);
     BP = program(BLUR, ['uTex', 'uTx', 'uDir']);
     tex = gl.createTexture();
@@ -436,6 +438,7 @@ export function startSupernova(root: HTMLElement, opts: SupernovaOptions): Super
     gl.uniform2f(PP.u.uRes, BW, BH);
     gl.uniform2f(PP.u.uC, BW / 2, cy);
     gl.uniform1f(PP.u.uBloom, S.bloom);
+    gl.uniform1f(PP.u.uClear, opts.clear ? 1 : 0);
     gl.uniform1f(PP.u.uDof, S.dof);
     gl.uniform1f(PP.u.uBlur, S.blur);
     gl.uniform1f(PP.u.uRays, S.rays);

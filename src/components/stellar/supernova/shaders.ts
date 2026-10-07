@@ -187,7 +187,7 @@ void main(){vec2 uv=gl_FragCoord.xy*uTx;
 `;
 
 export const FX = `precision highp float;
-uniform sampler2D uTex, uBl; uniform vec2 uRes; uniform vec2 uC; uniform float uBlur, uRays, uCA, uTime, uVig, uWhite, uBloom, uDof;
+uniform sampler2D uTex, uBl; uniform vec2 uRes; uniform vec2 uC; uniform float uBlur, uRays, uCA, uTime, uVig, uWhite, uBloom, uDof, uClear;
 float h21(vec2 p){p=fract(p*vec2(123.34,456.21));p+=dot(p,p+45.32);return fract(p.x*p.y);}
 void main(){
   vec2 uv=gl_FragCoord.xy/uRes, c=uC/uRes, d=uv-c;
@@ -218,6 +218,8 @@ void main(){
   col=mix(col,vec3(1.,.975,.93),uWhite);
   col*=1.-uVig*smoothstep(.2,1.05,length(d*vec2(1.,uRes.y/uRes.x*.75))*1.5);
   col+=(h21(gl_FragCoord.xy+fract(uTime*7.)*91.)-.5)*mix(.03,.012,L);
+  // clear: the black falls away so the star lies straight on the page (premultiplied, light only adds)
+  if(uClear>.5){ col=max(col-.035,0.); gl_FragColor=vec4(col,max(max(col.r,col.g),col.b)); return; }
   gl_FragColor=vec4(col,1.);
 }
 `;
