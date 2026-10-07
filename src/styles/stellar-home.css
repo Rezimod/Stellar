@@ -152,16 +152,21 @@
 }
 @keyframes sd-star-wait { 0%, 100% { scale: 1; opacity: 0.88; } 10% { scale: 1.16; opacity: 1; } 20% { scale: 1.02; } 28% { scale: 1.09; } 40% { scale: 1; } }
 
-/* The home print: the star in the cream frame, the whole print a way into the set. */
-.sd-homeprint { display: block; color: inherit; text-decoration: none; cursor: pointer; transition: transform var(--sd-dur-slow) var(--sd-ease); }
+/* The home print: the bare star on black, faint dots and a breath of nebula laid over the sky. */
+.sd-homeprint { display: block; width: min(100%, 520px); margin-inline: auto; color: inherit; text-decoration: none; cursor: pointer; transition: transform var(--sd-dur-slow) var(--sd-ease); }
 .sd-homeprint:focus-visible { outline: 2px solid var(--sd-focus); outline-offset: 6px; }
 @media (hover: hover) { .sd-homeprint:hover { transform: translateY(-6px) rotate(-0.4deg); } }
-.sd-homeprint__print { display: block; }
-.sd-homeprint__star { --sp-cy: 48%; }
-.sd-homeprint__note {
-  position: absolute; z-index: 2; left: 0; right: 0; bottom: 5%; text-align: center;
-  font: 500 2.4cqw var(--sd-spaced); letter-spacing: 0.34em; text-transform: uppercase; color: rgba(244, 232, 204, 0.62);
+.sd-homeprint__print { position: relative; display: block; overflow: hidden; aspect-ratio: 4 / 5; border-radius: 6px; background: #050505; box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.9); }
+.sd-homeprint__print::before, .sd-homeprint__print::after { content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none; mix-blend-mode: screen; }
+.sd-homeprint__print::before {
+  background:
+    radial-gradient(60% 45% at 22% 24%, rgba(150, 40, 60, 0.28), transparent 70%),
+    radial-gradient(55% 40% at 80% 78%, rgba(40, 60, 120, 0.26), transparent 70%),
+    radial-gradient(40% 30% at 70% 18%, rgba(120, 50, 40, 0.16), transparent 70%);
+  filter: blur(14px);
 }
+.sd-homeprint__print::after { background: var(--sd-stars) 0 0 / 340px 300px, var(--sd-stars) 170px 120px / 520px 460px; opacity: 0.55; }
+.sd-homeprint__star { --sp-cy: 48%; }
 
 /* The set page: the stage holds the same star, the tier's name over its foot. */
 .sd-counter__star { --sp-cy: 40%; border-radius: inherit; }
@@ -175,14 +180,14 @@
   .stellar .sd-hero2__grid { text-align: center; }
   .stellar .sd-hero2__kicker { display: none; }
 
-  .stellar .sd-herofan.sd-homeprint {
+  .stellar .sd-homeprint {
     /* The star takes whatever the first screen has left after the words and the button (~252px below it). */
     order: 0; display: flex; flex-direction: column;
     height: clamp(240px, calc(100svh - var(--sd-bar-h) - var(--sd-tabs-h) - 252px), 480px);
     width: auto; margin: 0 calc(-1 * var(--sd-gutter)); padding: 0;
     background: none; border-radius: 0; box-shadow: none;
   }
-  .stellar .sd-herofan.sd-homeprint:hover { transform: none; }
+  .stellar .sd-homeprint:hover { transform: none; }
   .stellar .sd-homeprint .sd-homeprint__print {
     flex: 1 1 auto; aspect-ratio: auto; border-radius: 0; box-shadow: none; background: none;
     -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 58%, transparent 100%);
@@ -190,8 +195,6 @@
   }
   .stellar .sd-homeprint .sd-starpulse { background: none; }
   .stellar .sd-homeprint .sd-homeprint__star { --sp-cy: 46%; }
-  .stellar .sd-homeprint .sd-homeprint__note,
-  .stellar .sd-homeprint .sd-herofan__caption { display: none; }
 
   .stellar .sd-hero2__title { order: 1; margin-top: -6px; }
   .stellar .sd-hero2__sub { order: 3; margin: 14px auto 0; max-width: 34ch; }
