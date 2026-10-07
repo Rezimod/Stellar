@@ -40,18 +40,18 @@ const m42 = deepSky('m42');
 const m1 = deepSky('m1');
 const m31 = deepSky('m31');
 
-const SPECIMEN = 'A specimen. It sits in a case, not in the sky; Live Telescope V1 has nothing to point at.';
+const SPECIMEN = 'A specimen. It sits in a case, not in the sky; the Live Telescope has nothing to point at.';
 
 const FIRST_24: AuthoredCard[] = [
   // The Objects, outward from Earth.
   authorKept(
     {
       designation: 'FIRST-LIGHT', name: 'First Light', objectType: 'first frame', rarity: 'common',
-      catalogRef: 'Live Telescope V1 · 000001',
+      catalogRef: 'Live Telescope · 000001',
       blurb: 'The observatory’s opening picture, kept for good.',
     },
-    'Whatever Live Telescope V1 points at first. Decided on the first clear night, not by vote.',
-    { stats: [['OBSERVATION', '000001'], ['BY', 'Live Telescope V1'], ['DATE', 'First clear night']], line: 'The observatory’s opening picture, kept for good.' },
+    'Whatever the Live Telescope points at first. Decided on the first clear night, not by vote.',
+    { stats: [['OBSERVATION', '000001'], ['BY', 'Live Telescope'], ['DATE', 'First clear night']], line: 'The observatory’s opening picture, kept for good.' },
   ),
   authorKept(
     {
@@ -260,7 +260,7 @@ const FIRST_24: AuthoredCard[] = [
     },
     { start: '2027-08-02T00:00:00Z', end: '2027-08-03T00:00:00Z' },
     { stats: [['DATE', '2 Aug 2027'], ['TOTALITY', '6+ min'], ['PATH', 'Spain to Arabia']], line: 'Luxor gets the longest totality on land until 2114.' },
-    'A daytime event at the Sun. Live Telescope V1 does not point at the Sun; this card records the day.',
+    'A daytime event at the Sun. The Live Telescope does not point at the Sun; this card records the day.',
   ),
 ];
 

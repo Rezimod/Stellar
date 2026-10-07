@@ -5,9 +5,7 @@ import { usePathname } from 'next/navigation';
 
 const LINKS = [
   { href: '/genesis', label: 'Genesis', match: ['/genesis', '/card', '/capsule'] },
-  { href: '/node', label: 'Live Telescope V1', match: ['/node'] },
   { href: '/tonight', label: 'Tonight', match: ['/tonight'] },
-  { href: '/voyage', label: 'Voyage', match: ['/voyage'] },
 ];
 
 /** The Stellar destinations. Client-side only to mark the current page. */

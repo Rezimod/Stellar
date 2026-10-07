@@ -48,7 +48,7 @@ export function perkFor(designation: string, rarity: Rarity): Perk {
     case 'legendary':
       return { short: 'Real specimen', tile: 'Real specimen', line: 'Carries a real piece of the meteorite it shows, sent to its holder.', soon: false };
     case 'epic':
-      return { short: `${SESSION_MINUTES}-min session`, tile: 'Session', line: `Each edition is a ${SESSION_MINUTES}-minute session on Live Telescope V1.`, soon: true };
+      return { short: `${SESSION_MINUTES}-min session`, tile: 'Session', line: `Each edition is a ${SESSION_MINUTES}-minute session on the Live Telescope.`, soon: true };
     case 'rare':
       return { short: 'Visitor seat', tile: 'Visitor seat', line: 'Each edition enters the draw for a visitor’s seat at a live session.', soon: true };
     default: {

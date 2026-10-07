@@ -29,6 +29,11 @@ const RECOGNITION = [
   },
 ];
 
+const EXPLORE = [
+  { href: '/node', label: 'Telescope — coming soon' },
+  { href: '/voyage', label: 'Voyage' },
+];
+
 const LEGAL = [
   { href: '/contact', label: 'Contact' },
   { href: '/terms', label: 'Terms' },
@@ -117,6 +122,13 @@ export default function StellarShell({
               </div>
             </div>
             <div className="sd-foot__base">
+              <nav aria-label="Explore" className="sd-foot__legal">
+                {EXPLORE.map((l) => (
+                  <Link key={l.href} href={l.href}>
+                    {l.label}
+                  </Link>
+                ))}
+              </nav>
               <nav aria-label="Footer" className="sd-foot__legal">
                 {LEGAL.map((l) => (
                   <Link key={l.href} href={l.href}>

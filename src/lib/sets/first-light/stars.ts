@@ -210,7 +210,7 @@ export const STAR_CARDS: AuthoredCard[] = [
       catalogRef: '2MASS J23062928−0502285',
       blurb: 'A year on the innermost planet lasts a day and a half.',
     },
-    `${EXOPLANET} Its star is magnitude 18.8, too faint for Live Telescope V1 under a city sky.`,
+    `${EXOPLANET} Its star is magnitude 18.8, too faint for the Live Telescope under a city sky.`,
     {
       ...stars,
       stats: [['DISTANCE', '40 ly'], ['PLANETS', '7'], ['TEMPERATE', '3']],

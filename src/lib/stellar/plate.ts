@@ -30,7 +30,7 @@ const NAME_SIZE: Record<string, number> = { SATURN: 44, 'PLEIADES-OCCULTATION': 
 
 /** Two lines on the back: what this is, said simply, and why it matters. */
 const STORY: Record<string, [string, string]> = {
-  'FIRST-LIGHT': ['The first frame Live Telescope V1 will keep.', 'No one knows yet what it will show.'],
+  'FIRST-LIGHT': ['The first frame the Live Telescope will keep.', 'No one knows yet what it will show.'],
   IMILAC: ['A world broke apart before Earth had oceans.', 'Its metal cooled slowly, over millions of years.'],
   'LUNAR-FRAGMENT': ['Only a few hundred stones like it are known.', 'It drifted through space for ages before it fell.'],
   TYCHO: ['Its central peak rises nearly 2 km from the floor.', 'At full Moon you can see it with your own eyes.'],

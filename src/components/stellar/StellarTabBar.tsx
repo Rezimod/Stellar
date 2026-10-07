@@ -2,13 +2,11 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Layers, Moon, Rocket, Telescope, Wallet } from 'lucide-react';
+import { Layers, Moon, Wallet } from 'lucide-react';
 
 const TABS = [
-  { href: '/genesis', label: 'Cards', icon: Layers, match: ['/genesis', '/card', '/capsule'] },
-  { href: '/node', label: 'Telescope', icon: Telescope, match: ['/node'] },
+  { href: '/genesis', label: 'Genesis', icon: Layers, match: ['/genesis', '/card', '/capsule'] },
   { href: '/tonight', label: 'Tonight', icon: Moon, match: ['/tonight'] },
-  { href: '/voyage', label: 'Voyage', icon: Rocket, match: ['/voyage'] },
   { href: '/collection', label: 'Collection', icon: Wallet, match: ['/collection'] },
 ];
 

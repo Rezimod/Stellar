@@ -17,8 +17,8 @@ import { addDays, tonightView, type TonightView } from '@/lib/stellar/night';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'Tonight — the card Live Telescope V1 will photograph',
-  description: 'One object a night, chosen by the holders among what Live Telescope V1 can photograph.',
+  title: 'Tonight — the card the Live Telescope will photograph',
+  description: 'One object a night, chosen by the holders among what the Live Telescope can photograph. First light in November.',
 };
 
 const RESULT: Record<TonightView['recent'][number]['result'], string> = {
@@ -64,7 +64,7 @@ export default async function TonightPage() {
     ? [
         { label: 'Planned', value: d.plannedAt ? localTime(d.plannedAt) : '—' },
         { label: 'Cloud', value: d.cloudForecast === null ? '—' : `${d.cloudForecast}%` },
-        { label: 'Live Telescope V1', value: node.status },
+        { label: 'Live Telescope', value: node.status === 'commissioning' ? 'Coming soon' : node.status },
       ]
     : leading
       ? [
@@ -94,14 +94,14 @@ export default async function TonightPage() {
                   </span>
                 </p>
               )}
-              <p className="sd-eyebrow">{d ? 'Tonight’s card' : leading ? (cast ? 'Leading the vote' : 'Highest tonight') : 'Live Telescope V1'}</p>
+              <p className="sd-eyebrow">{d ? 'Tonight’s card' : leading ? (cast ? 'Leading the vote' : 'Highest tonight') : 'Live Telescope'}</p>
               <p className="sd-lead">{lead ? lead.name : 'A quiet sky.'}</p>
               <p className="sd-poster__sub">
                 {d
                   ? d.basis
                   : lead
                     ? 'Holders’ votes lock tonight’s card at 13:00 UTC.'
-                    : 'Nothing in the set clears the horizon for Live Telescope V1.'}
+                    : 'Nothing in the set clears the horizon for the Live Telescope.'}
               </p>
               {facts.length > 0 && <DataRow className="sd-facts" items={facts} />}
               {d && !d.capture && d.cloudForecast !== null && d.cloudForecast > CLOUD_LIMIT && (
@@ -125,7 +125,7 @@ export default async function TonightPage() {
                   ]}
                 />
               ) : d && node.status === 'commissioning' ? (
-                <p className="sd-note">Live Telescope V1 is commissioning. No photograph is taken yet.</p>
+                <p className="sd-note">Live Telescope — coming soon, first light in November. No photograph is taken yet.</p>
               ) : null}
             </div>
 
@@ -170,7 +170,7 @@ export default async function TonightPage() {
               {view.voting.carried} takes this night, carried from a night lost to cloud. Votes count from the next.
             </p>
           ) : candidates.length === 0 ? (
-            <p className="sd-note">Nothing in the set clears the horizon for Live Telescope V1 that night.</p>
+            <p className="sd-note">Nothing in the set clears the horizon for the Live Telescope that night.</p>
           ) : (
             <>
               <p className="sd-strip-note">One vote per holder · every card held adds to it: commons ×1 to ×3, rares ×4, epics and legendaries ×5</p>

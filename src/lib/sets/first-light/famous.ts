@@ -13,10 +13,10 @@ import { NO_POSITION, OFF_MOON, body, fixed } from './shared';
 const near = { family: 'near' } as const;
 const stars = { family: 'stars' } as const;
 
-const MADE = 'A thing people made, moving too fast across the sky for Live Telescope V1 to follow.';
+const MADE = 'A thing people made, moving too fast across the sky for the Live Telescope to follow.';
 const HISTORY = 'A moment in history: there is nothing left in the sky to point at.';
-const SIGHT = 'A sight of the sky, not an object to point at. Live Telescope V1 records one when it comes, weather allowing.';
-const SOLAR_SIGHT = 'A daytime sight at the Sun. Live Telescope V1 does not point at the Sun; this card records the day.';
+const SIGHT = 'A sight of the sky, not an object to point at. The Live Telescope records one when it comes, weather allowing.';
+const SOLAR_SIGHT = 'A daytime sight at the Sun. The Live Telescope does not point at the Sun; this card records the day.';
 
 const dipper = fixed(12.25, 55.0, 1.8, [1500, 700]);
 const orion = fixed(5.58, 3.0, null, [1800, 1200]);
@@ -27,7 +27,7 @@ export const FAMOUS_CARDS: AuthoredCard[] = [
   // ── The Solar System
   authorKept(
     { designation: 'EARTH', name: 'Earth', objectType: 'planet', rarity: 'epic', catalogRef: 'Pale Blue Dot · Voyager 1, 1990', blurb: 'Taken on Valentine’s Day 1990, looking back.' },
-    'Live Telescope V1 stands on it.',
+    'The Live Telescope stands on it.',
     {
       ...near,
       stats: [['DIAMETER', '12,742 km'], ['AGE', '4.54 billion yr'], ['MOONS', '1']],

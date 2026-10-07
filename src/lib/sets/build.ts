@@ -157,7 +157,7 @@ export function authorAlmanac(
   facts: NoSky,
   event: { start: string; end: string },
   extras: Extras,
-  reason = 'A dated event. Live Telescope V1 records it on the night, weather allowing; no vote decides it.',
+  reason = 'A dated event. The Live Telescope records it on the night, weather allowing; no vote decides it.',
 ): AuthoredCard {
   return unpointable(
     facts,

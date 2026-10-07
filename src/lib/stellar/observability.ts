@@ -110,7 +110,7 @@ export function observability(subject: ObservabilitySubject, node: ObservatoryNo
     if (highest < LIMITS.minAltitudeDeg) {
       return {
         status: 'not_available',
-        reason: `Never climbs high enough in the sky: ${highest.toFixed(0)}° at best, and Live Telescope V1 needs ${LIMITS.minAltitudeDeg}°.`,
+        reason: `Never climbs high enough in the sky: ${highest.toFixed(0)}° at best, and the Live Telescope needs ${LIMITS.minAltitudeDeg}°.`,
       };
     }
   }
@@ -128,7 +128,7 @@ export function observability(subject: ObservabilitySubject, node: ObservatoryNo
     if (subject.magnitude > faintest) {
       return {
         status: 'not_available',
-        reason: `Too faint: magnitude ${subject.magnitude.toFixed(1)}, and Live Telescope V1 reaches ${faintest.toFixed(1)} under a city sky.`,
+        reason: `Too faint: magnitude ${subject.magnitude.toFixed(1)}, and the Live Telescope reaches ${faintest.toFixed(1)} under a city sky.`,
       };
     }
   }
@@ -149,14 +149,14 @@ export function observability(subject: ObservabilitySubject, node: ObservatoryNo
     if (subject.sizeArcmin.major > MAX_FIELDS_ACROSS * widest) {
       return {
         status: 'not_available',
-        reason: `Too big to fit: ${subject.sizeArcmin.major}′ across, more than ${MAX_FIELDS_ACROSS} times Live Telescope V1’s widest view.`,
+        reason: `Too big to fit: ${subject.sizeArcmin.major}′ across, more than ${MAX_FIELDS_ACROSS} times the Live Telescope’s widest view.`,
       };
     }
   }
 
   const target = SIM_TARGET_BY_ID.get(subject.targetId);
   if (!target) {
-    return { status: 'not_available', reason: `Not on Live Telescope V1’s list of targets yet.` };
+    return { status: 'not_available', reason: `Not on the Live Telescope’s list of targets yet.` };
   }
 
   if (
@@ -165,10 +165,10 @@ export function observability(subject: ObservabilitySubject, node: ObservatoryNo
     subject.resolveArcsec !== null &&
     subject.resolveArcsec >= DEDICATED_ELEMENTS * limit
   ) {
-    return { status: 'dedicated', reason: `A showcase: bright and large, Live Telescope V1 will photograph it often.` };
+    return { status: 'dedicated', reason: `A showcase: bright and large, the Live Telescope will photograph it often after first light in November.` };
   }
 
-  return { status: 'eligible', reason: 'Live Telescope V1 can photograph it in the night sky.' };
+  return { status: 'eligible', reason: 'The Live Telescope can photograph it after first light in November.' };
 }
 
 function formatArcsec(arcsec: number): string {

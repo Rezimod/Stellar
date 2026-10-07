@@ -19,8 +19,8 @@ export default function TermsPage() {
           <Chapter n="01" title="What Stellar is" />
           <p>
             Stellar is a set of collectible cards, each a numbered edition of a real object or a dated event in the sky. It is run
-            by Astroman (astroman.ge). Live Telescope V1, the telescope that photographs the night&rsquo;s card, is commissioning: until it is
-            operational, no photograph is promised.
+            by Astroman (astroman.ge). The Live Telescope, the telescope that will photograph the night&rsquo;s card, sees first light in November 2026: until it
+            is operational, no photograph is promised.
           </p>
         </section>
 
@@ -57,8 +57,8 @@ export default function TermsPage() {
             planned, not yet shipping. How to redeem one, and where it can be sent, will be published here before any item ships.
           </p>
           <p>
-            Each edition of an Epic card is one 30-minute session on Live Telescope V1, and each edition of a Rare card is one entry
-            in the draw for a visitor&rsquo;s seat at a live session. Live Telescope V1 is commissioning; sessions and visitor
+            Each edition of an Epic card is one 30-minute session on the Live Telescope, and each edition of a Rare card is one entry
+            in the draw for a visitor&rsquo;s seat at a live session. The Live Telescope sees first light in November 2026; sessions and visitor
             seats open with it, and how they are booked and drawn will be published here first. Every card votes on the night&rsquo;s
             target, with the weight shown on the card.
           </p>

@@ -4,7 +4,7 @@ import DataRow from '@/components/stellar/ui/DataRow';
 
 export const metadata: Metadata = {
   title: 'Contact — Stellar',
-  description: 'How to reach the people behind Stellar and Live Telescope V1.',
+  description: 'How to reach the people behind Stellar and the Live Telescope.',
   alternates: { canonical: '/contact' },
 };
 
@@ -22,7 +22,7 @@ export default function ContactPage() {
           items={[
             { label: 'Email', value: <a href="mailto:info@astroman.ge">info@astroman.ge</a> },
             { label: 'Store', value: <a href="https://astroman.ge" target="_blank" rel="noopener noreferrer">astroman.ge</a> },
-            { label: 'Live Telescope V1', value: 'Under the night sky · commissioning' },
+            { label: 'Live Telescope', value: 'Coming soon · first light in November' },
           ]}
         />
       </article>

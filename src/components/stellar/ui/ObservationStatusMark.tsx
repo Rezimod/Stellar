@@ -6,9 +6,9 @@ type ObservationStatusMarkProps = {
 };
 
 const LABEL: Record<ObservationStatus, { short: string; long: string }> = {
-  dedicated: { short: 'Dedicated', long: 'a dedicated Live Telescope V1 target' },
-  eligible: { short: 'Eligible', long: 'eligible for Live Telescope V1' },
-  not_available: { short: 'Not observable', long: 'not observable from Live Telescope V1' },
+  dedicated: { short: 'Dedicated', long: 'a dedicated Live Telescope target, after first light' },
+  eligible: { short: 'Eligible', long: 'eligible for the Live Telescope, after first light' },
+  not_available: { short: 'Not observable', long: 'not observable from the Live Telescope' },
 };
 
 /** Circles: filled, open, open and struck through. Never a diamond — that family belongs to rarity. */

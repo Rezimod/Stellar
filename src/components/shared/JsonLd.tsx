@@ -13,7 +13,7 @@ export default function JsonLd() {
         logo: 'https://stellarr.club/apple-touch-icon.png',
         sameAs: ['https://astroman.ge'],
         description:
-          'Stellar issues real astronomical objects as numbered card editions, sold in sealed capsules. Live Telescope V1, which will photograph the night’s card, is commissioning.',
+          'Stellar issues real astronomical objects as numbered card editions, sold in sealed capsules. The Live Telescope, which will photograph the night’s card, sees first light in November 2026.',
       },
       {
         '@type': 'WebSite',

@@ -533,3 +533,9 @@
   .sd-tile__stage { padding: 2px 2px 10px; }
   .sd-tile__foot { padding-inline: 4px; }
 }
+
+/* /node before first light: the telescope's coming-soon page. */
+.stellar .sd-hero2.sd-soon { min-height: 0; padding-block: clamp(40px, 9vw, 120px); }
+.sd-soon .sd-container { max-width: 760px; }
+.sd-soon__perks { margin-top: 36px; }
+.sd-soon__perks li { grid-template-columns: 96px minmax(0, 1fr); align-items: baseline; }

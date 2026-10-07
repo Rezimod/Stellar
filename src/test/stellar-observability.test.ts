@@ -54,7 +54,7 @@ describe('what Live Telescope V1 cannot record', () => {
     for (const decDeg of [-52.696, -47.4795]) {
       const verdict = observability(subject({ targetId: 'm42', decDeg }), node);
       expect(verdict.status).toBe('not_available');
-      expect(verdict.reason).toMatch(/Never climbs high enough in the sky: .*, and Live Telescope V1 needs 20°/);
+      expect(verdict.reason).toMatch(/Never climbs high enough in the sky: .*, and the Live Telescope needs 20°/);
     }
     // -28° culminates at about 20.3°, just inside.
     expect(observability(subject({ targetId: 'm42', decDeg: -28 }), node).status).toBe('eligible');
@@ -63,7 +63,7 @@ describe('what Live Telescope V1 cannot record', () => {
   it('cannot record a point fainter than its deepest unattended stack reaches', () => {
     const verdict = observability(subject({ targetId: 'm57', magnitude: 17.5 }), node);
     expect(verdict.status).toBe('not_available');
-    expect(verdict.reason).toMatch(/Too faint: magnitude 17\.5, and Live Telescope V1 reaches/);
+    expect(verdict.reason).toMatch(/Too faint: magnitude 17\.5, and the Live Telescope reaches/);
   });
 
   it('loses a low-surface-brightness galaxy to the city sky', () => {
@@ -95,7 +95,7 @@ describe('what Live Telescope V1 cannot record', () => {
   it('does not fake a target its capture path does not carry', () => {
     const verdict = observability(subject({ targetId: 'm51', decDeg: 47.195 }), node);
     expect(verdict.status).toBe('not_available');
-    expect(verdict.reason).toBe('Not on Live Telescope V1’s list of targets yet.');
+    expect(verdict.reason).toBe('Not on the Live Telescope’s list of targets yet.');
   });
 
   it('gives the physical reason before the missing target', () => {

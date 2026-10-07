@@ -18,7 +18,7 @@ export const NEAR_CARDS: AuthoredCard[] = [
       catalogRef: 'G2V',
       blurb: 'Its light took tens of thousands of years to climb out of the core.',
     },
-    'Live Telescope V1 never points at the Sun: without a solar filter it would burn the camera.',
+    'The Live Telescope never points at the Sun: without a solar filter it would burn the camera.',
     {
       ...near,
       stats: [['DIAMETER', '1.39M km'], ['SURFACE', '5,500 °C'], ['LIGHT', '8 min 20 s']],
