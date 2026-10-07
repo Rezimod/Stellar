@@ -1,7 +1,7 @@
 /**
  * What holding a card gives, by its rarity. One rule per tier:
  *
- * - Ultra Rare: the meteorites and the moon rock. The card carries the piece of
+ * - Legendary: the meteorites and the moon rock. The card carries the piece of
  *   it that it shows.
  * - Epic: the planets. Each edition is a 30-minute session on Live Telescope V1.
  * - Rare: everything else Live Telescope V1 will point at: the objects it can
@@ -33,31 +33,33 @@ export function votePower(designation: string, rarity: Rarity): number {
 }
 
 export type Perk = {
-  /** A few words, for a pill or a list: "30-min session". */
+  /** A few words, for a tile or a list: "30-min session". */
   short: string;
   /** What it is, in one sentence. */
   line: string;
+  /** Not open yet: the telescope perks wait for Live Telescope V1, which is commissioning. */
+  soon: boolean;
 };
 
 export function perkFor(designation: string, rarity: Rarity): Perk {
   switch (rarity) {
     case 'legendary':
-      return { short: 'Real specimen', line: 'The card carries a real piece of the meteorite it shows, sent to its holder.' };
+      return { short: 'Real specimen', line: 'Carries a real piece of the meteorite it shows, sent to its holder.', soon: false };
     case 'epic':
-      return { short: `${SESSION_MINUTES}-min session`, line: `Each edition is a ${SESSION_MINUTES}-minute session on Live Telescope V1, booked by its holder once the telescope opens.` };
+      return { short: `${SESSION_MINUTES}-min session`, line: `Each edition is a ${SESSION_MINUTES}-minute session on Live Telescope V1.`, soon: true };
     case 'rare':
-      return { short: 'Visitor draw', line: 'Each edition is an entry in the draw for a visitor’s seat at a live session on Live Telescope V1.' };
+      return { short: 'Visitor seat', line: 'Each edition enters the draw for a visitor’s seat at a live session.', soon: true };
     default: {
       const v = votePower(designation, rarity);
-      return { short: `Vote ×${v}`, line: `Each edition adds ${v} to its holder’s vote on what Live Telescope V1 photographs each night.` };
+      return { short: `Vote ×${v}`, line: `Each edition adds ${v} to its holder’s vote on the night’s target.`, soon: false };
     }
   }
 }
 
-/** What each tier gives, for the page that explains them, scarcest first. */
-export const TIER_PERKS: { rarity: Rarity; title: string; line: string }[] = [
-  { rarity: 'legendary', title: 'A real meteorite', line: 'Seven cards, each carrying a real piece of the stone it shows: five meteorites, a pallasite and a piece of the Moon.' },
-  { rarity: 'epic', title: `A ${SESSION_MINUTES}-minute session`, line: `The eight planets. Each edition is ${SESSION_MINUTES} minutes at the controls of Live Telescope V1.` },
-  { rarity: 'rare', title: 'A visitor’s seat', line: 'What the telescope can point at, and the night-sky events. Each edition enters the draw to watch a live session.' },
-  { rarity: 'common', title: 'A vote on the night', line: 'Every other card. Each edition votes on the night’s target, once, twice or three times.' },
+/** What each tier gives, for the guide under the odds, scarcest first. */
+export const TIER_PERKS: { rarity: Rarity; title: string; line: string; soon: boolean }[] = [
+  { rarity: 'legendary', title: 'Real meteorite', line: 'The stone itself, sent to you.', soon: false },
+  { rarity: 'epic', title: `${SESSION_MINUTES}-min session`, line: 'Your time on the telescope.', soon: true },
+  { rarity: 'rare', title: 'Visitor seat', line: 'A draw to watch a live session.', soon: true },
+  { rarity: 'common', title: 'Nightly vote', line: 'Pick the night’s target, ×1 to ×3.', soon: false },
 ];

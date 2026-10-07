@@ -4,12 +4,11 @@ import AlmanacDate from '@/components/stellar/AlmanacDate';
 import CapsuleCounter, { type TierCard } from '@/components/stellar/CapsuleCounter';
 import ShelfFilter from '@/components/stellar/ShelfFilter';
 import ShopCard from '@/components/stellar/ShopCard';
-import { TIER_PERKS } from '@/lib/stellar/perks';
 import StellarShell from '@/components/stellar/StellarShell';
 import StellarView from '@/components/stellar/StellarView';
 import { getDb } from '@/lib/db';
 import { getNode } from '@/lib/observatory/nodes';
-import { RARITIES, rarityInfo, type Rarity } from '@/lib/rarity';
+import { RARITIES, type Rarity } from '@/lib/rarity';
 import { card } from '@/lib/schema';
 import { SET_001, SET_001_CARDS } from '@/lib/sets/set-001';
 import { cardStatus } from '@/lib/stellar/almanac';
@@ -90,23 +89,6 @@ export default async function FirstLightPage() {
             </div>
             <ShelfFilter total={SET_001_CARDS.length} />
           </header>
-
-          <ul className="sd-tiers" aria-label="What each rarity gives">
-            {TIER_PERKS.map((t) => {
-              const cards = SET_001_CARDS.filter((c) => c.seed.rarity === t.rarity);
-              const each = cards[0]?.seed.editionSize ?? 0;
-              return (
-                <li key={t.rarity} className="sd-tiers__tier" data-rarity={t.rarity}>
-                  <span className="sd-tiers__name">{rarityInfo(t.rarity).label}</span>
-                  <strong className="sd-tiers__gift">{t.title}</strong>
-                  <p className="sd-tiers__line">{t.line}</p>
-                  <span className="sd-tiers__count">
-                    {cards.length} cards · {each} editions each
-                  </span>
-                </li>
-              );
-            })}
-          </ul>
 
           <ul className="sd-fl__grid">
             {sorted.map((c) => {

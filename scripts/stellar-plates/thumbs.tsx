@@ -38,7 +38,6 @@ async function main() {
   // tsx compiles the app's JSX with the classic runtime, which wants React in scope.
   Object.assign(globalThis, { React });
   const { default: CardFront } = await import('@/components/stellar/card/CardFront');
-  const { default: CardBack } = await import('@/components/stellar/card/CardBack');
   let html = '';
   const browser = await chromium.launch();
   const page = await browser.newPage({ viewport: { width: 600, height: 800 }, deviceScaleFactor: 2 });
@@ -53,21 +52,19 @@ async function main() {
   });
 
   for (const name of names) {
-    // SEALED: the face-down back every capsule shows before it is opened, for the capsule counter.
-    const sealed = name === 'SEALED';
-    const plate = plateFor(sealed ? 'M1' : name);
+    const plate = plateFor(name);
     if (!plate) {
       console.error(`${name}: not in the set`);
       continue;
     }
-    const face = renderToStaticMarkup(sealed ? React.createElement(CardBack, { plate, u: 't', sealed: true }) : React.createElement(CardFront, { plate, u: 't' }));
+    const face = renderToStaticMarkup(React.createElement(CardFront, { plate, u: 't' }));
     html = `<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="${FONTS}"><style>${style}</style></head><body><div class="wrap">${face}</div></body></html>`;
     await page.goto(`${ORIGIN}/`, { waitUntil: 'load' });
     await page.evaluate(() => document.fonts.ready);
     const card = page.locator('.sdc-card');
     await card.evaluate((el) => Promise.all([...el.querySelectorAll('img')].map((i) => i.decode().catch(() => {}))));
     const png = await card.screenshot({ omitBackground: true });
-    await sharp(png).resize(520).webp({ quality: 82, alphaQuality: 90, effort: 6 }).toFile(sealed ? path.join(PUBLIC, 'cards/sealed.webp') : path.join(PUBLIC, 'cards/plate', name, 'card.webp'));
+    await sharp(png).resize(520).webp({ quality: 82, alphaQuality: 90, effort: 6 }).toFile(path.join(PUBLIC, 'cards/plate', name, 'card.webp'));
     console.log(name);
   }
   await browser.close();

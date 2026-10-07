@@ -52,10 +52,10 @@
   --sd-teal: var(--sd-gold);
 
   /* Rarity — cream to orange to brick to gold, so scarcity reads as heat */
-  --sd-rarity-common: #d8c9a3;
-  --sd-rarity-rare: #e9b64a;
-  --sd-rarity-epic: #e8542f;
-  --sd-rarity-legendary: #ffd36e;
+  --sd-rarity-common: #d8ccb0;
+  --sd-rarity-rare: #ee8c3a;
+  --sd-rarity-epic: #e3482c;
+  --sd-rarity-legendary: #f2c45a;
   --rarity: var(--sd-rarity-common);
 
   /* Observation status — gold for what the node can reach, ink for the rest */

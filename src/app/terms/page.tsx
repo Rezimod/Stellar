@@ -53,7 +53,7 @@ export default function TermsPage() {
         <section className="sd-chapter-block">
           <Chapter n="05" title="What each rarity gives" />
           <p>
-            Ultra Rare cards carry a physical item: a piece of the meteorite, or of the Moon, that the card shows. These items are
+            Legendary cards carry a physical item: a piece of the meteorite, or of the Moon, that the card shows. These items are
             planned, not yet shipping. How to redeem one, and where it can be sent, will be published here before any item ships.
           </p>
           <p>

@@ -31,10 +31,10 @@ export type RarityInfo = {
 // the star) so a rarity never reads as an observation status, which uses
 // circles. Mirrors --sd-rarity-* in src/styles/stellar-theme.css.
 const RARITY_MAP: Record<Rarity, Omit<RarityInfo, 'rarity' | 'rank'>> = {
-  common: { color: '#D9C9A5', label: 'Common', glyph: '◇' },
-  rare: { color: '#F6A63F', label: 'Rare', glyph: '◈' },
-  epic: { color: '#EF5F33', label: 'Epic', glyph: '◆' },
-  legendary: { color: '#FFD36E', label: 'Ultra Rare', glyph: '✦' },
+  common: { color: '#D8CCB0', label: 'Common', glyph: '◇' },
+  rare: { color: '#EE8C3A', label: 'Rare', glyph: '◈' },
+  epic: { color: '#E3482C', label: 'Epic', glyph: '◆' },
+  legendary: { color: '#F2C45A', label: 'Legendary', glyph: '✦' },
 };
 
 export function isRarity(value: string): value is Rarity {

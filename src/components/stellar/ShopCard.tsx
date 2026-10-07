@@ -21,6 +21,7 @@ export type ShopCardProps = {
 /** A card on the shelf: the card on its object's own light, its rarity and number above it, its name and price, one line under. */
 export default function ShopCard({ designation, name, rarity, sub, price, tag }: ShopCardProps) {
   const num = plateFor(designation)?.num;
+  const perk = perkFor(designation, rarity);
   return (
     <Link
       href={`/card/${designation}`}
@@ -31,9 +32,12 @@ export default function ShopCard({ designation, name, rarity, sub, price, tag }:
       data-zoom-price={price}
       style={{ '--tile-glow': glowFor(designation) } as CSSProperties}
     >
-      <span className="sd-tile__pills" aria-hidden="true">
-        <span className="sd-pill sd-pill--rarity">{rarityInfo(rarity).label}</span>
-        {num && <span className="sd-pill sd-pill--line">No. {num}</span>}
+      <span className="sd-tile__head" aria-hidden="true">
+        {num && <span className="sd-tile__num">No. {num}</span>}
+        <span className="sd-chip">
+          <i>{rarityInfo(rarity).glyph}</i>
+          {rarityInfo(rarity).label}
+        </span>
       </span>
       <span className="sd-tile__stage">
         <CardThumb designation={designation} />
@@ -42,9 +46,10 @@ export default function ShopCard({ designation, name, rarity, sub, price, tag }:
       <span className="sd-tile__foot">
         <span className="sd-tile__name">{name}</span>
         <span className="sd-tile__price">{price}</span>
-        <span className="sd-tile__sub">
-          <span className="sd-tile__perk">{perkFor(designation, rarity).short}</span>
-          {sub}
+        <span className="sd-tile__sub">{sub}</span>
+        <span className="sd-tile__perk">
+          {perk.short}
+          {perk.soon && <em>Soon</em>}
         </span>
       </span>
     </Link>

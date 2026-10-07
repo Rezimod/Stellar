@@ -7,7 +7,7 @@ import { RARITIES, type Rarity } from '@/lib/rarity';
 const of = (r: Rarity) => SET_001_CARDS.filter((c) => c.seed.rarity === r).map((c) => c.seed.designation);
 
 describe('the perk tiers', () => {
-  it('makes the meteorites and the moon rock, and only they, ultra rare', () => {
+  it('makes the meteorites and the moon rock, and only they, legendary', () => {
     expect(of('legendary')).toEqual(SET_001_CARDS.filter((c) => c.record.physical).map((c) => c.seed.designation));
     expect(of('legendary')).toHaveLength(7);
   });

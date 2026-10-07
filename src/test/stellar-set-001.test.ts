@@ -71,7 +71,7 @@ describe('First Light', () => {
     });
   });
 
-  it('counts the tiers as the perks say: 7 ultra rare, 8 epic, 18 rare, 72 common', () => {
+  it('counts the tiers as the perks say: 7 legendary, 8 epic, 18 rare, 72 common', () => {
     const count = (r: string) => seeds.filter((c) => c.rarity === r).length;
     expect([count('legendary'), count('epic'), count('rare'), count('common')]).toEqual([7, 8, 18, 72]);
   });
@@ -184,7 +184,7 @@ describe('sealing', () => {
 describe('rarity', () => {
   it('orders the four card tiers by scarcity', () => {
     expect(RARITIES.map((r) => rarityInfo(r).rank)).toEqual([0, 1, 2, 3]);
-    expect(rarityInfo('legendary')).toMatchObject({ label: 'Ultra Rare', glyph: '✦' });
+    expect(rarityInfo('legendary')).toMatchObject({ label: 'Legendary', glyph: '✦' });
     expect(isRarity('Stellar')).toBe(false);
   });
 

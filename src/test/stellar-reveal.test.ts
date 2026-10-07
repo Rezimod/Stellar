@@ -41,7 +41,7 @@ it('keeps the other cards of an older two-card capsule beside it', () => {
 it('comes out face down, with the sealed back', () => {
   const html = render([card('SATURN', 'epic', 0)]);
   expect(html).toContain('sn-face--back');
-  expect(html).toContain('SEALED CARD');
+  expect(html).toContain('/cards/sealed.webp?v=lastlight');
 });
 
 it('shows a First Light card as the printed card, with its edition in plain text', () => {

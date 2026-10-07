@@ -27,24 +27,11 @@ export const INK = {
   cream: '#f3e6cc',
 };
 
-export const LOGO_D =
-  'M13.0922 3.36946V1.73961C13.0922 1.27436 12.5543 1.01542 12.1906 1.30569L2.8604 8.75177C-0.321404 11.5593 -0.474794 16.4692 2.52582 19.4698C5.5263 22.4704 10.4363 22.3171 13.2437 19.1351L20.6898 9.80489C20.9801 9.44124 20.7211 8.90346 20.256 8.90346H18.6262C18.211 8.90346 17.9428 8.4646 18.132 8.09517L21.7925 0.950365C22.0383 0.470724 21.5251 -0.0425023 21.0451 0.203175L13.9005 3.86349C13.531 4.05286 13.0922 3.78447 13.0922 3.36946ZM7.99167 18.4452C5.53886 18.4452 3.55044 16.4567 3.55044 14.004C3.55044 11.5512 5.53872 9.56274 7.99167 9.5626C10.4445 9.5626 12.4329 11.5512 12.4329 14.004C12.4329 16.4568 10.4445 18.4452 7.99167 18.4452Z';
-
 /** Average advance per character, in em, measured on the set's capitals. */
 const ADV = { title: 0.73, condensed: 0.45, spaced: 0.45, spacedBold: 0.49 };
 
 /** Font size at which a line of `len` characters fills no more than `max` units. */
 export const fit = (len: number, max: number, adv: keyof typeof ADV, cap: number) => Math.min(cap, max / (Math.max(1, len) * ADV[adv]));
-/** Bowlby One's advance per capital, in em, read from the font: an average undersizes M and W, and the title then gets squeezed to fit. */
-const BOWLBY: Record<string, number> = {
-  ' ': 0.35, A: 0.8, B: 0.767, C: 0.76, D: 0.805, E: 0.638, F: 0.618, G: 0.821, H: 0.808, I: 0.411, J: 0.675, K: 0.804, L: 0.618, M: 1.071,
-  N: 0.843, O: 0.803, P: 0.746, Q: 0.802, R: 0.762, S: 0.725, T: 0.644, U: 0.789, V: 0.759, W: 1.04, X: 0.781, Y: 0.744, Z: 0.681,
-  '0': 0.714, '1': 0.771, '2': 0.712, '3': 0.71, '4': 0.7, '5': 0.717, '6': 0.711, '7': 0.714, '8': 0.708, '9': 0.711,
-  '-': 0.419, '.': 0.378, ',': 0.359, "'": 0.392, '’': 0.354, '‘': 0.355, '*': 0.454, '&': 0.886,
-};
-/** A title line's width in em. */
-const titleEm = (line: string) => [...line].reduce((sum, ch) => sum + (BOWLBY[ch] ?? ADV.title), 0);
-
 /** The sunset the striped letters are cut from, cream at the top to brick at the foot. */
 export const SUNSET: Record<Rarity, string[]> = {
   common: ['#fff3d2', '#ffd36b', '#f7931f', '#e0481f', '#a81c14'],
@@ -116,60 +103,6 @@ export function Glint({ x, y, r, o = 1 }: { x: number; y: number; r: number; o?:
     <g transform={`translate(${x} ${y})`} opacity={o}>
       <path d={`M0 ${-r}L${t} ${-t}L${r * 0.62} 0L${t} ${t}L0 ${r}L${-t} ${t}L${-r * 0.62} 0L${-t} ${-t}Z`} fill="#fffaf0" />
       <circle r={r * 0.12} fill="#fff" />
-    </g>
-  );
-}
-
-/** Where each sunset colour sits down the letter: a long cream crown, then the heat comes on fast. */
-const STOPS = [0.1, 0.36, 0.55, 0.74, 1];
-
-/**
- * The title, in strong sunset letters, a dark
- * extrusion under them and a glint on the last letter. Lines run centred on x,
- * the last line's baseline at `base`.
- */
-export function StripedTitle({ u, rarity, lines, base, max = 540, cap = 84, glint = true }: { u: string; rarity: Rarity; lines: string[]; base: number; max?: number; cap?: number; glint?: boolean }) {
-  const widest = Math.max(...lines.map(titleEm));
-  const size = Math.min(lines.length > 1 ? Math.min(cap, 70) : cap, max / widest);
-  const lead = size * 0.98;
-  const capH = size * 0.74;
-  const s = SUNSET[rarity];
-  return (
-    <g>
-      {lines.map((line, i) => {
-        const y = base - (lines.length - 1 - i) * lead;
-        const natural = titleEm(line) * size;
-        // Short names spread out the way SATURN does on the poster; long ones keep their own spacing.
-        const w = line.length <= 7 ? Math.min(max, natural * (1 + (7 - line.length) * 0.06 + 0.08)) : Math.min(max, natural);
-        const id = `${u}t${i}`;
-        const common = {
-          x: 315,
-          y,
-          textAnchor: 'middle' as const,
-          textLength: w,
-          lengthAdjust: (w >= natural ? 'spacing' : 'spacingAndGlyphs') as 'spacing' | 'spacingAndGlyphs',
-          style: { fontFamily: TITLE, fontSize: size },
-        };
-        return (
-          <g key={i}>
-            <linearGradient id={`${id}g`} gradientUnits="userSpaceOnUse" x1="0" y1={y - capH} x2="0" y2={y}>
-              {STOPS.map((at, k) => (
-                <stop key={at} offset={at} stopColor={s[k]} />
-              ))}
-            </linearGradient>
-            <text {...common} dy={size * 0.09} fill="#0c0503" stroke="#0c0503" strokeWidth={size * 0.07} strokeLinejoin="round" opacity=".92">
-              {line}
-            </text>
-            <text {...common} fill="#140804" stroke="#140804" strokeWidth={size * 0.035} strokeLinejoin="round" opacity=".9">
-              {line}
-            </text>
-            <text {...common} fill={`url(#${id}g)`}>
-              {line}
-            </text>
-            {glint && i === lines.length - 1 && <Glint x={315 + w / 2 - size * 0.08} y={y - capH - size * 0.06} r={size * 0.5} />}
-          </g>
-        );
-      })}
     </g>
   );
 }

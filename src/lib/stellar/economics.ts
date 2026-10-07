@@ -29,7 +29,7 @@ export const CARDS_PER_CAPSULE = 1;
  * ten thousand. Integers so the draw is exact arithmetic that any verifier,
  * in any language, reproduces bit for bit. Set to Genesis's supply mix since
  * the perk tiers (2026-10-07): 21,600 common / 1,800 rare / 240 epic / 35
- * ultra rare editions, nudged by a part in ten thousand so the fractions sum
+ * legendary editions, nudged by a part in ten thousand so the fractions sum
  * to exactly one in floating point.
  */
 export const RARITY_ODDS_BPS: Record<Rarity, number> = {

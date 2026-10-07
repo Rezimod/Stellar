@@ -46,6 +46,7 @@ export default async function CardPage({ params }: { params: Promise<{ designati
   const { seed, record } = card;
   const rarity = seed.rarity as Rarity;
   const priceUsd = cardPriceUsd(seed.designation, rarity);
+  const perk = perkFor(seed.designation, rarity);
   const almanac = record.section === 'almanac';
   const sealed = cardStatus(card) === 'sealed';
   const pair = record.pairsWith ? SET_001_CARD_BY_DESIGNATION.get(record.pairsWith) : null;
@@ -111,9 +112,15 @@ export default async function CardPage({ params }: { params: Promise<{ designati
             {/* The card beside it carries the epithet, quote and headline; the page adds what the card does not say. */}
             <p className="sd-cardhero__line">{record.line}</p>
             <div className="sd-perk" data-rarity={rarity}>
-              <span className="sd-perk__tier">{rarityInfo(rarity).label}</span>
-              <span className="sd-perk__short">{perkFor(seed.designation, rarity).short}</span>
-              <p className="sd-perk__line">{perkFor(seed.designation, rarity).line}</p>
+              <span className="sd-perk__tier">
+                <i aria-hidden="true">{rarityInfo(rarity).glyph}</i>
+                {rarityInfo(rarity).label}
+              </span>
+              <span className="sd-perk__short">
+                {perk.short}
+                {perk.soon && <em>Coming soon</em>}
+              </span>
+              <p className="sd-perk__line">{perk.line}</p>
             </div>
             <DataRow
               className="sd-facts"
@@ -141,7 +148,6 @@ export default async function CardPage({ params }: { params: Promise<{ designati
             )}
             {almanac && !sealed && <p className="sd-note">If clouds cover the night, there is no capture; the card still seals when the event ends.</p>}
             {record.physical && <p className="sd-note">How to receive the specimen will be published before the first one ships.</p>}
-            {(rarity === 'epic' || rarity === 'rare') && <p className="sd-note">Live Telescope V1 is commissioning. Sessions and visitor seats open with it.</p>}
             {pair && (
               <div className="sd-cardhero__pair">
                 <span className="sd-label">Pairs with</span>
