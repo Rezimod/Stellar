@@ -1,25 +1,10 @@
 import { memo } from 'react';
 import { editionLabel, type Plate } from '@/lib/stellar/plate';
-import {
-  CONDENSED,
-  FOIL_OP,
-  GLIT_OP,
-  Glint,
-  INK,
-  Paper,
-  PosterDefs,
-  RarityBadge,
-  Rules,
-  SPACED,
-  StripedTitle,
-  fit,
-  rr,
-  width,
-} from './frame';
+import { CONDENSED, FOIL_OP, GLIT_OP, Glint, INK, Paper, PosterDefs, SPACED, fit, rr } from './frame';
 
 type Props = {
   plate: Plate;
-  /** The holder's edition number. Given, the corner prints it in place of the card's number in the set. */
+  /** The holder's edition number. Given, the roundel prints it in place of the card's number in the set. */
   edition?: number | null;
   /** A real capture from Live Telescope V1 in place of the drawn plate. */
   capture?: string | null;
@@ -28,32 +13,32 @@ type Props = {
   u: string;
 };
 
-/** The window: the poster's night, from the top margin down to the headline. */
-export const WIN = { x: 20, y: 20, w: 590, h: 690, r: 18 };
+/** The window: the night, set into the cream with an even margin, the name block under it. */
+export const WIN = { x: 30, y: 52, w: 570, h: 622, r: 10 };
 
-/** A fine line just inside the window, in the rarity's metal. */
-const EDGE: Record<Plate['rarity'], [string, number]> = { common: ['#cbb994', 0.28], rare: ['#e0703a', 0.45], epic: ['#ff8a3d', 0.6], legendary: ['#ffd36e', 0.85] };
+/** The red block the name prints on. */
+const BAND = { x: 56, y: 692, w: 518, h: 134 };
 
 /** The rainbow that slides over the face as it tilts: a faint sheen on a common, a full spectrum on a legendary. */
 const HOLO: Record<Plate['rarity'], number> = { common: 0.03, rare: 0.07, epic: 0.12, legendary: 0.22 };
 
-/** The art is taller than the window; showing more of its top lowers the object toward the rays' centre, clear of the quote. */
+/** The art is taller than the window; showing more of its top lowers the object toward the rays' centre. */
 const ART_POS = { objectPosition: '50% 20%' };
 
 /** Where the lens glints sit in the sky, as fractions of the window; the same on every card, a little off the grid. */
 const GLINTS: [number, number, number][] = [
-  [0.1, 0.24, 9],
-  [0.86, 0.13, 7],
-  [0.93, 0.47, 10],
-  [0.06, 0.61, 6],
-  [0.78, 0.71, 5],
+  [0.1, 0.3, 7],
+  [0.86, 0.19, 6],
+  [0.93, 0.5, 8],
+  [0.06, 0.66, 5],
+  [0.78, 0.76, 4],
 ];
 
 /**
- * The face of a card, as a space-opera poster: the drawing fills a tall dark
- * window under its quote, the name in striped sunset letters across its foot,
- * and below it the headline and the line under it. Nothing else: the figures
- * and the record are on the back; an owned card's edition sits in the corner.
+ * The face of a card: the drawing in a tall dark window on cream stock, the
+ * card's number in a roundel and its rarity in the window's top corners, and
+ * the name in a red block under it with one line beneath. The figures and the
+ * record are on the back; an owned card's edition takes the roundel.
  */
 function CardFront({ plate: c, edition, capture, lite = false, u }: Props) {
   const ext = lite ? 'webp' : 'svg';
@@ -62,23 +47,18 @@ function CardFront({ plate: c, edition, capture, lite = false, u }: Props) {
   const p = c.poster;
   const win = rr(WIN.x, WIN.y, WIN.w, WIN.h, WIN.r);
   const flat = p.title.replace('\n', ' ');
-  const lines = flat.length <= 14 ? [flat] : p.title.split('\n');
+  const lines = flat.length <= 11 ? [flat] : p.title.split('\n');
+  const two = lines.length > 1;
+  const size = two ? Math.min(...lines.map((l) => fit(l.length, BAND.w - 60, 'condensed', 38))) : fit(flat.length, BAND.w - 60, 'condensed', 84);
+  const titleBase = two ? 768 : 774;
+  const lead = size * 1.04;
 
-  const epithet = p.epithet.toUpperCase();
-  const epSize = 15;
-  const epTrack = Math.min(9, Math.max(3, (430 - epithet.length * epSize * 0.45) / Math.max(1, epithet.length)));
-  const epW = width(epithet.length, epSize, 'spaced', epTrack);
-  const titleBase = 632;
+  const sub = p.headline.toUpperCase();
+  const subSize = 17;
+  const subTrack = Math.min(5, Math.max(1.5, (BAND.w - 50 - sub.length * subSize * 0.49) / Math.max(1, sub.length)));
 
-  const quote = p.quote ? `“${p.quote.toUpperCase()}”` : null;
-  const qSize = quote ? fit(quote.length, 520, 'condensed', 24) : 0;
-
-  const [edge, edgeOp] = EDGE[r];
-  const head = p.headline.toUpperCase();
-  const hSize = fit(head.length, 520, 'condensed', 42);
-  const sub = p.sub.toUpperCase();
-  const subSize = 11.5;
-  const subTrack = Math.min(3.8, Math.max(0.6, (540 - sub.length * subSize * 0.49) / Math.max(1, sub.length)));
+  const number = edition != null ? editionLabel(edition) : c.num;
+  const numSize = number.length > 3 ? 24 : number.length > 2 ? 29 : 34;
 
   return (
     <div className="sdc-card">
@@ -93,7 +73,7 @@ function CardFront({ plate: c, edition, capture, lite = false, u }: Props) {
               <img src={`${c.art}/sky.${ext}`} alt="" loading="lazy" decoding="async" style={ART_POS} />
             </div>
             <div className="sdc-rays" />
-            <div className="sdc-breath" style={{ ['--sdc-breath' as string]: EDGE[r][0] }} />
+            <div className="sdc-breath" style={{ ['--sdc-breath' as string]: '#ffb070' }} />
             <div className="sdc-lay1 sdc-grade sdc-fringe">
               <img src={`${c.art}/object.${ext}`} alt="" loading="lazy" decoding="async" style={ART_POS} />
             </div>
@@ -109,43 +89,30 @@ function CardFront({ plate: c, edition, capture, lite = false, u }: Props) {
           <PosterDefs u={f} rarity={r} />
         </defs>
         <Paper u={f} hole={win} />
-        <path d={win} fill="none" stroke="#1a0d07" strokeWidth="2.5" />
-        <path d={rr(WIN.x + 1.5, WIN.y + 1.5, WIN.w - 3, WIN.h - 3, WIN.r - 1)} fill="none" stroke="#fff" strokeOpacity=".07" />
-        <path d={rr(WIN.x + 7, WIN.y + 7, WIN.w - 14, WIN.h - 14, WIN.r - 5)} fill="none" stroke={edge} strokeOpacity={edgeOp} strokeWidth="1.2" />
+        <path d={win} fill="none" stroke="#1a0d07" strokeWidth="2" />
+        <path d={rr(WIN.x + 1.5, WIN.y + 1.5, WIN.w - 3, WIN.h - 3, WIN.r - 1)} fill="none" stroke="#fff" strokeOpacity=".06" />
 
         {GLINTS.map(([gx, gy, gr]) => (
-          <Glint key={`${gx}-${gy}`} x={WIN.x + gx * WIN.w} y={WIN.y + gy * WIN.h} r={gr} o={0.75} />
+          <Glint key={`${gx}-${gy}`} x={WIN.x + gx * WIN.w} y={WIN.y + gy * WIN.h} r={gr} o={0.6} />
         ))}
 
-        <RarityBadge u={f} rarity={r} label={c.rname} />
-        <text x="584" y="62" textAnchor="end" fill="rgba(243,230,204,.62)" style={{ fontFamily: SPACED, fontWeight: 400, fontSize: 11, letterSpacing: 3 }}>
-          {edition != null ? `No. ${editionLabel(edition)} / ${c.of}` : `${c.num} / ${c.total}`}
+        <circle cx={WIN.x + 56} cy={WIN.y + 58} r="32" fill={INK.paperHi} />
+        <circle cx={WIN.x + 56} cy={WIN.y + 58} r="32" fill="#000" filter={`url(#${f}grain)`} />
+        <text x={WIN.x + 56} y={WIN.y + 58 + numSize * 0.36} textAnchor="middle" fill={INK.night} style={{ fontFamily: CONDENSED, fontSize: numSize, letterSpacing: 0.5 }}>
+          {number}
+        </text>
+        <text x={WIN.x + WIN.w - 32} y={WIN.y + 68} textAnchor="end" fill={INK.cream} fillOpacity=".9" style={{ fontFamily: SPACED, fontWeight: 500, fontSize: 14, letterSpacing: 4.5 }}>
+          {c.rname.toUpperCase()}
         </text>
 
-        {quote && (
-          <text x="315" y="122" textAnchor="middle" fill={INK.quote} stroke="#0e0806" strokeOpacity=".8" strokeWidth={qSize * 0.16} strokeLinejoin="round" paintOrder="stroke" style={{ fontFamily: CONDENSED, fontSize: qSize, letterSpacing: 0.6 }}>
-            {quote}
+        <rect x={BAND.x} y={BAND.y} width={BAND.w} height={BAND.h} fill="#c4282a" />
+        <rect x={BAND.x} y={BAND.y} width={BAND.w} height={BAND.h} fill="#000" filter={`url(#${f}grain)`} opacity=".6" />
+        {lines.map((line, i) => (
+          <text key={i} x="315" y={titleBase - (lines.length - 1 - i) * lead} textAnchor="middle" fill={INK.cream} style={{ fontFamily: CONDENSED, fontSize: size, letterSpacing: size * 0.02 }}>
+            {line}
           </text>
-        )}
-
-        <StripedTitle u={f} rarity={r} lines={lines} base={titleBase} />
-
-        {epithet && (
-          <g>
-            <rect x={315 - epW / 2 - 70} y={titleBase + 37} width="50" height="1.4" fill={INK.orange} opacity=".85" />
-            <rect x={315 + epW / 2 + 20} y={titleBase + 37} width="50" height="1.4" fill={INK.orange} opacity=".85" />
-            <text x="315" y={titleBase + 43} textAnchor="middle" fill={INK.cream} style={{ fontFamily: SPACED, fontWeight: 300, fontSize: epSize, letterSpacing: epTrack }}>
-              {epithet}
-            </text>
-          </g>
-        )}
-
-        <Rules u={f} y={WIN.y + WIN.h + 11} />
-
-        <text x="315" y="800" textAnchor="middle" fill={INK.text} style={{ fontFamily: CONDENSED, fontSize: hSize, letterSpacing: 0.5 }}>
-          {head}
-        </text>
-        <text x="315" y="830" textAnchor="middle" fill={INK.red} style={{ fontFamily: SPACED, fontWeight: 500, fontSize: subSize, letterSpacing: subTrack }}>
+        ))}
+        <text x="315" y="808" textAnchor="middle" fill={INK.cream} style={{ fontFamily: SPACED, fontWeight: 500, fontSize: subSize, letterSpacing: subTrack }}>
           {sub}
         </text>
       </svg>

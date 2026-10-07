@@ -189,43 +189,6 @@ export function StripedTitle({ u, rarity, lines, base, max = 540, cap = 84, glin
   );
 }
 
-const BADGE: Record<Rarity, { stroke: string; fill: [string, string]; glow: number }> = {
-  common: { stroke: '#a8987c', fill: ['#2a2018', '#14100b'], glow: 0 },
-  rare: { stroke: '#e0703a', fill: ['#2c150b', '#130804'], glow: 0 },
-  epic: { stroke: '#ff8a3d', fill: ['#3a170a', '#160804'], glow: 0.55 },
-  legendary: { stroke: '#ffd36e', fill: ['#3d260b', '#1a0f04'], glow: 0.8 },
-};
-
-/** The rarity, in striped letters on a dark enamel badge. */
-export function RarityBadge({ u, rarity, label, x = 38, y = 38 }: { u: string; rarity: Rarity; label: string; x?: number; y?: number }) {
-  const b = BADGE[rarity];
-  const text = label.toUpperCase();
-  const size = 20;
-  const w = titleEm(text) * size + 30;
-  const capH = size * 0.74;
-  return (
-    <g transform={`translate(${x} ${y})`}>
-      <defs>
-        <linearGradient id={`${u}bf`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor={b.fill[0]} />
-          <stop offset="1" stopColor={b.fill[1]} />
-        </linearGradient>
-        <linearGradient id={`${u}bg`} gradientUnits="userSpaceOnUse" x1="0" y1={27 - capH} x2="0" y2="27">
-          {SUNSET[rarity].map((c, i) => (
-            <stop key={i} offset={STOPS[i]} stopColor={c} />
-          ))}
-        </linearGradient>
-      </defs>
-      {b.glow > 0 && <rect x="-3" y="-3" width={w + 6} height="44" rx="11" fill="none" stroke={b.stroke} strokeWidth="5" opacity={b.glow * 0.35} />}
-      <rect width={w} height="38" rx="8" fill={`url(#${u}bf)`} stroke={b.stroke} strokeWidth="1.8" />
-      <rect x="3" y="3" width={w - 6} height="32" rx="6" fill="none" stroke="#fff" strokeOpacity=".08" />
-      <text x={w / 2} y="27" textAnchor="middle" fill={`url(#${u}bg)`} style={{ fontFamily: TITLE, fontSize: size, letterSpacing: 1 }}>
-        {text}
-      </text>
-    </g>
-  );
-}
-
 /** The panel's last line: the set on the left, the edition on the right, the set label between diamonds. */
 export function Footer({ y, right }: { y: number; right: string }) {
   const st = { fontFamily: SPACED, fontWeight: 500, fontSize: 10.5, letterSpacing: 3.4 };

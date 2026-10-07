@@ -43,7 +43,7 @@ it('renders an edition that has not been observed yet', async () => {
   const html = await render('holder-1');
   expect(mocks.holderView).toHaveBeenCalledWith({}, 'holder-1');
   expect(html).toContain('M31');
-  expect(html).toContain('>No. 001 / 100</text>');
+  expect(html).toContain('>001</text>');
   expect(html).toContain('Not yet photographed');
 });
 
