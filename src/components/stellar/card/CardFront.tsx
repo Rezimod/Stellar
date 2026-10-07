@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { editionLabel, type Plate } from '@/lib/stellar/plate';
 import { photoFor } from '@/lib/stellar/photos';
-import { CONDENSED, FOIL_OP, GLIT_OP, Glint, INK, Paper, PosterDefs, SPACED, fit, rr } from './frame';
+import { CONDENSED, CornerBadge, FOIL_OP, GLIT_OP, Glint, INK, Paper, PosterDefs, SPACED, fit, rr } from './frame';
 
 type Props = {
   plate: Plate;
@@ -52,18 +52,19 @@ function CardFront({ plate: c, edition, capture, lite = false, u }: Props) {
   const win = rr(WIN.x, WIN.y, WIN.w, WIN.h, WIN.r);
   const photo = DRAWN.has(c.designation) ? null : photoFor(c.designation);
   const flat = p.title.replace('\n', ' ');
-  const lines = flat.length <= 11 ? [flat] : p.title.split('\n');
+  const oneLine = fit(flat.length, BAND.w - 50, 'condensed', 84);
+  // One line wherever it stays big; only a name that would shrink below half the block's height breaks in two.
+  const lines = oneLine >= 48 || !p.title.includes('\n') ? [flat] : p.title.split('\n');
   const two = lines.length > 1;
-  const size = two ? Math.min(...lines.map((l) => fit(l.length, BAND.w - 60, 'condensed', 38))) : fit(flat.length, BAND.w - 60, 'condensed', 84);
-  const titleBase = two ? 768 : 774;
-  const lead = size * 1.04;
+  const size = two ? Math.min(...lines.map((l) => fit(l.length, BAND.w - 60, 'condensed', 36))) : oneLine;
+  const titleBase = two ? 766 : 774;
+  const lead = size * 1.02;
 
   const sub = p.headline.toUpperCase();
   const subSize = 17;
   const subTrack = Math.min(5, Math.max(1.5, (BAND.w - 50 - sub.length * subSize * 0.49) / Math.max(1, sub.length)));
 
   const number = edition != null ? editionLabel(edition) : c.num;
-  const numSize = number.length > 3 ? 24 : number.length > 2 ? 29 : 34;
 
   return (
     <div className="sdc-card">
@@ -108,14 +109,7 @@ function CardFront({ plate: c, edition, capture, lite = false, u }: Props) {
           <Glint key={`${gx}-${gy}`} x={WIN.x + gx * WIN.w} y={WIN.y + gy * WIN.h} r={gr} o={0.6} />
         ))}
 
-        <circle cx={WIN.x + 56} cy={WIN.y + 58} r="32" fill={INK.paperHi} />
-        <circle cx={WIN.x + 56} cy={WIN.y + 58} r="32" fill="#000" filter={`url(#${f}grain)`} />
-        <text x={WIN.x + 56} y={WIN.y + 58 + numSize * 0.36} textAnchor="middle" fill={INK.night} style={{ fontFamily: CONDENSED, fontSize: numSize, letterSpacing: 0.5 }}>
-          {number}
-        </text>
-        <text x={WIN.x + WIN.w - 32} y={WIN.y + 68} textAnchor="end" fill={INK.cream} stroke="#0e0806" strokeOpacity=".7" strokeWidth="3" strokeLinejoin="round" paintOrder="stroke" style={{ fontFamily: SPACED, fontWeight: 500, fontSize: 14, letterSpacing: 4.5 }}>
-          {c.rname.toUpperCase()}
-        </text>
+        <CornerBadge u={f} rarity={r} label={c.rname} number={number} />
 
         <rect x={BAND.x} y={BAND.y} width={BAND.w} height={BAND.h} fill="#c4282a" />
         <rect x={BAND.x} y={BAND.y} width={BAND.w} height={BAND.h} fill="#000" filter={`url(#${f}grain)`} opacity=".6" />

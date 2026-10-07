@@ -35,7 +35,10 @@ export default function ShopCard({ designation, name, rarity, sub, price, tag }:
       <span className="sd-tile__foot">
         <span className="sd-tile__name">{name}</span>
         <span className="sd-tile__price">{price}</span>
-        <span className="sd-tile__sub">{sub}</span>
+        <span className="sd-tile__sub">
+          <span className="sd-tile__rarity">{rarity}</span>
+          {sub}
+        </span>
       </span>
     </Link>
   );
