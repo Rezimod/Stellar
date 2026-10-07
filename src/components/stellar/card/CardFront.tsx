@@ -1,5 +1,6 @@
 import { memo } from 'react';
 import { editionLabel, type Plate } from '@/lib/stellar/plate';
+import { photoFor } from '@/lib/stellar/photos';
 import { CONDENSED, FOIL_OP, GLIT_OP, Glint, INK, Paper, PosterDefs, SPACED, fit, rr } from './frame';
 
 type Props = {
@@ -18,6 +19,9 @@ export const WIN = { x: 30, y: 52, w: 570, h: 622, r: 10 };
 
 /** The red block the name prints on. */
 const BAND = { x: 56, y: 692, w: 518, h: 134 };
+
+/** Cards whose photograph is a map, a workshop or a specimen on a table: the drawn plate stays on the front, the photograph on the back. */
+const DRAWN = new Set(['IMILAC', 'LUNAR-FRAGMENT', 'CHICXULUB', 'TUNGUSKA', 'JWST', 'SL9', 'VOYAGER-1', 'ARCTURUS', 'POLARIS', 'CMB']);
 
 /** The rainbow that slides over the face as it tilts: a faint sheen on a common, a full spectrum on a legendary. */
 const HOLO: Record<Plate['rarity'], number> = { common: 0.03, rare: 0.07, epic: 0.12, legendary: 0.22 };
@@ -46,6 +50,7 @@ function CardFront({ plate: c, edition, capture, lite = false, u }: Props) {
   const f = `${u}f`;
   const p = c.poster;
   const win = rr(WIN.x, WIN.y, WIN.w, WIN.h, WIN.r);
+  const photo = DRAWN.has(c.designation) ? null : photoFor(c.designation);
   const flat = p.title.replace('\n', ' ');
   const lines = flat.length <= 11 ? [flat] : p.title.split('\n');
   const two = lines.length > 1;
@@ -67,6 +72,13 @@ function CardFront({ plate: c, edition, capture, lite = false, u }: Props) {
           <div className="sdc-lay1">
             <img src={capture} alt="" loading="lazy" decoding="async" />
           </div>
+        ) : photo ? (
+          <>
+            <div className="sdc-lay1 sdc-photo">
+              <img src={photo.file} alt="" loading="lazy" decoding="async" style={{ objectPosition: photo.focus ?? '50% 50%' }} />
+            </div>
+            <div className="sdc-rays" />
+          </>
         ) : (
           <>
             <div className="sdc-lay0 sdc-grade">
@@ -101,7 +113,7 @@ function CardFront({ plate: c, edition, capture, lite = false, u }: Props) {
         <text x={WIN.x + 56} y={WIN.y + 58 + numSize * 0.36} textAnchor="middle" fill={INK.night} style={{ fontFamily: CONDENSED, fontSize: numSize, letterSpacing: 0.5 }}>
           {number}
         </text>
-        <text x={WIN.x + WIN.w - 32} y={WIN.y + 68} textAnchor="end" fill={INK.cream} fillOpacity=".9" style={{ fontFamily: SPACED, fontWeight: 500, fontSize: 14, letterSpacing: 4.5 }}>
+        <text x={WIN.x + WIN.w - 32} y={WIN.y + 68} textAnchor="end" fill={INK.cream} stroke="#0e0806" strokeOpacity=".7" strokeWidth="3" strokeLinejoin="round" paintOrder="stroke" style={{ fontFamily: SPACED, fontWeight: 500, fontSize: 14, letterSpacing: 4.5 }}>
           {c.rname.toUpperCase()}
         </text>
 
