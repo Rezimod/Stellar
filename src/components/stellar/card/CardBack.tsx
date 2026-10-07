@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { editionLabel, type Plate } from '@/lib/stellar/plate';
 import { photoFor } from '@/lib/stellar/photos';
-import { CONDENSED, FOIL_OP, Footer, Glint, INK, LOGO_D, MONO, Paper, PosterDefs, Rules, SANS, SPACED, StripedTitle, fit, rr, width } from './frame';
+import { CONDENSED, FOIL_OP, Glint, INK, LOGO_D, MONO, Paper, PosterDefs, SPACED, StripedTitle, fit, rr } from './frame';
 
 type Props = {
   plate: Plate;
@@ -40,8 +40,44 @@ const pct = (x: number, y: number, w: number, h: number, r: number) => ({
   borderRadius: `${(r / w) * 100}% / ${(r / h) * 100}%`,
 });
 
-/** The photograph's window on the back: wider than tall, the way the telescopes frame them. */
-const PW = { x: 22, y: 22, w: 586, h: 420, r: 16 };
+/** The photograph's window on the back, the red block under it, the ledger and the telescope's box. */
+const PW = { x: 30, y: 30, w: 570, h: 356, r: 10 };
+const BAND = { x: 30, y: 398, w: 570, h: 104 };
+const LEDGER = { y: 594, h: 94 };
+const BOX = { x: 30, y: 702, w: 570, h: 116 };
+
+/** Planets, moons and the Sun: the whole disc shown on black, never cropped by the window. */
+const WHOLE = new Set(['EARTH', 'MOON', 'SUN', 'MERCURY', 'VENUS', 'MARS', 'JUPITER', 'IO', 'EUROPA', 'GANYMEDE', 'SATURN', 'TITAN', 'ENCELADUS', 'URANUS', 'NEPTUNE', 'PLUTO', 'BLOOD-MOON', 'HUNTERS-MOON', 'CHRISTMAS-SUPERMOON', 'DOUBLE-OPPOSITION', 'SNOW-MOON-ECLIPSE']);
+
+/** A figure split into its number, set large, and its unit, set small after it: "3,475" and "KM". */
+function splitFigure(value: string): [string, string] {
+  const m = value.match(/^([~<>≈]?[\d][\d.,:/]*)\s+([^\d\s][^\d]*[A-Za-z].*)$/);
+  return m ? [m[1], m[2]] : [value, ''];
+}
+
+/** A line broken at the space nearest its middle, when it is too long for one. */
+function halve(line: string, max: number): string[] {
+  if (line.length <= max) return [line];
+  const mid = Math.ceil(line.length / 2);
+  const after = line.indexOf(' ', mid);
+  const before = line.lastIndexOf(' ', mid);
+  const cut = after < 0 ? before : before < 0 ? after : mid - before <= after - mid ? before : after;
+  return cut > 0 ? [line.slice(0, cut), line.slice(cut + 1)] : [line];
+}
+
+/** Viewfinder corners just inside the photograph. */
+function Brackets() {
+  const x0 = PW.x + 14, y0 = PW.y + 14, x1 = PW.x + PW.w - 14, y1 = PW.y + PW.h - 14, k = 24;
+  return (
+    <g fill="none" stroke={INK.cream} strokeWidth="2" strokeOpacity=".85">
+      <path d={`M${x0} ${y0 + k}V${y0}H${x0 + k}`} />
+      <path d={`M${x1 - k} ${y0}H${x1}V${y0 + k}`} />
+      <path d={`M${x0} ${y1 - k}V${y1}H${x0 + k}`} />
+      <path d={`M${x1 - k} ${y1}H${x1}V${y1 - k}`} />
+      <rect x={x0 + 6} y={y0 + 6} width={x1 - x0 - 12} height={y1 - y0 - 12} strokeWidth=".7" strokeOpacity=".22" />
+    </g>
+  );
+}
 
 /** A crimped foil seam across the card: ridges pressed into it and a row of teeth along its inner edge. */
 function seam(top: boolean) {
@@ -198,9 +234,9 @@ function Sealed({ u }: { u: string }) {
 }
 
 /**
- * The back of a card: the real thing. A photograph of the object — Hubble's
- * where Hubble has one — with its credit, and under it what the object is, the
- * two lines of its story and its record as a ledger.
+ * The back of a card: the real thing. The photograph of the object in a
+ * viewfinder, its name on the red block, the two lines of its story, its
+ * three figures as a ledger, and what the telescope will do for its holder.
  */
 function CardBack({ plate: c, edition, commitment, sealed = false, u }: Props) {
   const b = `${u}b`;
@@ -211,22 +247,20 @@ function CardBack({ plate: c, edition, commitment, sealed = false, u }: Props) {
   const photo = photoFor(c.designation);
   const win = rr(PW.x, PW.y, PW.w, PW.h, PW.r);
 
-  const chip = photo
-    ? photo.kind === 'impression'
-      ? 'ARTIST’S IMPRESSION'
-      : [photo.source, photo.year].filter(Boolean).join(' · ').toUpperCase()
-    : c.designation === 'FIRST-LIGHT'
-        ? 'AWAITING THE FIRST FRAME'
-        : 'DRAWN PLATE';
-  const chipSize = 10;
-  const chipW = width(chip.length, chipSize, 'spacedBold', 2.2) + 26;
-  const credit = photo ? `IMAGE · ${photo.credit}`.toUpperCase() : '';
-  // A long credit runs to two lines, broken at the space nearest its middle.
-  const cut = credit.length > 96 ? credit.lastIndexOf(' ', Math.ceil(credit.length / 2) + 6) : -1;
-  const creditLines = cut > 0 ? [credit.slice(0, cut), credit.slice(cut + 1)] : [credit];
-  const creditSize = fit(Math.max(...creditLines.map((l) => l.length)), 540, 'spaced', 9.5);
+  const credit = photo ? `${photo.kind === 'impression' ? 'ARTIST’S IMPRESSION · ' : ''}${photo.credit}`.toUpperCase() : c.designation === 'FIRST-LIGHT' ? 'AWAITING THE FIRST FRAME' : '';
+  // The credit runs along the photograph's foot; a long one breaks in two and shrinks to stay inside the brackets.
+  const creditLines = halve(credit, 70);
+  const creditSize = Math.min(10, ...creditLines.map((l) => (PW.w - 110 - l.length * 1.2) / (Math.max(1, l.length) * 0.46)));
 
   const name = c.name.toUpperCase();
+  const nameSize = fit(name.length, BAND.w - 60, 'condensed', 70);
+  const kicker = c.kicker;
+  const kSize = 15;
+  const kTrack = Math.min(6, Math.max(1.2, (BAND.w - 60 - kicker.length * kSize * 0.45) / Math.max(1, kicker.length)));
+
+  const story = c.story.filter(Boolean);
+  const storySize = Math.min(...story.map((l) => fit(l.length, 550, 'spaced', 26)));
+
   const promise = c.solar
     ? 'A daytime event. Live Telescope V1 does not point at the Sun; this card records the day.'
     : c.section === 'almanac'
@@ -235,14 +269,19 @@ function CardBack({ plate: c, edition, commitment, sealed = false, u }: Props) {
         ? 'When it comes, Live Telescope V1 records it for every holder.'
         : c.noun && c.observable
           ? `When Live Telescope V1 photographs ${c.noun}, every holder receives the image.`
-          : `One of ${c.of} editions.`;
-  const ledger: [string, string][] = [...c.figures.map(([v, l]) => [l.toUpperCase(), v] as [string, string]), [c.section === 'almanac' ? 'WINDOW' : 'POSITION', c.back]];
+          : `One of ${c.of} editions, numbered and held.`;
+  const promiseLines = halve(promise, 62);
+  const pSize = Math.min(...promiseLines.map((l) => fit(l.length, BOX.w - 60, 'spaced', 21)));
+
+  const col = BAND.w / 3;
+  const figures = c.figures.slice(0, 3);
+  const foot = { fontFamily: SPACED, fontWeight: 500, fontSize: 14, letterSpacing: 5 };
 
   return (
     <div className="sdc-card">
       <div className="sdc-window" style={pct(PW.x, PW.y, PW.w, PW.h, PW.r)}>
         {photo ? (
-          <div className="sdc-photo">
+          <div className={`sdc-photo${WHOLE.has(c.designation) ? ' sdc-photo--whole' : ''}`}>
             <img src={photo.file} alt="" loading="lazy" decoding="async" style={{ objectPosition: photo.focus ?? '50% 50%' }} />
           </div>
         ) : (
@@ -263,71 +302,88 @@ function CardBack({ plate: c, edition, commitment, sealed = false, u }: Props) {
           <PosterDefs u={b} rarity={r} />
         </defs>
         <Paper u={b} hole={win} />
-        <path d={win} fill="none" stroke="#1a0d07" strokeWidth="2.5" />
-
-        <g transform="translate(38 38)">
-          <rect width={chipW} height="26" rx="6" fill="rgba(14,8,6,.78)" stroke={INK.orange} strokeWidth="1.2" />
-          <text x={chipW / 2} y="17.4" textAnchor="middle" fill={INK.cream} style={{ fontFamily: SPACED, fontWeight: 500, fontSize: chipSize, letterSpacing: 2.2 }}>
-            {chip}
-          </text>
-        </g>
-        <text x="586" y="56" textAnchor="end" fill="rgba(243,230,204,.7)" style={{ fontFamily: SPACED, fontWeight: 400, fontSize: 11, letterSpacing: 3 }}>
-          {c.num} / {c.total}
-        </text>
+        <path d={win} fill="none" stroke="#1a0d07" strokeWidth="2" />
+        <Brackets />
         {credit &&
           creditLines.map((line, i) => (
-            <text key={i} x="40" y={PW.y + PW.h - 16 - (creditLines.length - 1 - i) * 13} fill="rgba(243,230,204,.78)" style={{ fontFamily: SPACED, fontWeight: 400, fontSize: creditSize, letterSpacing: 1.2 }}>
+            <text key={i} x={PW.x + PW.w - 48} y={PW.y + PW.h - 26 - (creditLines.length - 1 - i) * (creditSize + 3)} textAnchor="end" fill="rgba(243,230,204,.62)" style={{ fontFamily: SPACED, fontWeight: 400, fontSize: creditSize, letterSpacing: 1.2 }}>
               {line}
             </text>
           ))}
 
-        <Rules u={b} y={PW.y + PW.h + 12} />
-
-        <text x="315" y="506" textAnchor="middle" fill={INK.text} style={{ fontFamily: CONDENSED, fontSize: fit(name.length, 520, 'condensed', 40), letterSpacing: 0.5 }}>
+        <rect x={BAND.x} y={BAND.y} width={BAND.w} height={BAND.h} rx="6" fill="#a8182a" />
+        <rect x={BAND.x} y={BAND.y} width={BAND.w} height={BAND.h} rx="6" fill="#000" filter={`url(#${b}grain)`} opacity=".6" />
+        <text x="315" y={BAND.y + 64} textAnchor="middle" fill={INK.cream} style={{ fontFamily: CONDENSED, fontSize: nameSize, letterSpacing: nameSize * 0.02 }}>
           {name}
         </text>
-        <text x="315" y="528" textAnchor="middle" fill={INK.red} style={{ fontFamily: SPACED, fontWeight: 500, fontSize: 11, letterSpacing: Math.min(3.2, (520 - c.kicker.length * 5.4) / Math.max(1, c.kicker.length)) }}>
-          {c.kicker}
+        <text x="315" y={BAND.y + 90} textAnchor="middle" fill={INK.cream} style={{ fontFamily: SPACED, fontWeight: 500, fontSize: kSize, letterSpacing: kTrack }}>
+          {kicker}
         </text>
-        {c.story.filter(Boolean).map((line, i) => (
-          <text key={i} x="315" y={560 + i * 22} textAnchor="middle" fill="#3b2a1e" style={{ fontFamily: SANS, fontWeight: 500, fontSize: fit(line.length, 540, 'spaced', 15) }}>
+
+        {story.map((line, i) => (
+          <text key={i} x="315" y={BAND.y + BAND.h + 46 + i * 31} textAnchor="middle" fill="#241810" style={{ fontFamily: SPACED, fontWeight: 400, fontSize: storySize, letterSpacing: 0.2 }}>
             {line}
           </text>
         ))}
 
-        {ledger.map(([label, value], i) => {
-          const y = 622 + i * 25;
-          const vSize = fit(value.length, 330, 'condensed', 15);
-          const lw = width(label.length, 10, 'spacedBold', 2.4);
-          const vw = width(value.length, vSize, 'condensed', 0.4);
+        <line x1={BAND.x} y1={LEDGER.y} x2={BAND.x + BAND.w} y2={LEDGER.y} stroke="#241810" strokeWidth="1.6" />
+        <line x1={BAND.x} y1={LEDGER.y + LEDGER.h} x2={BAND.x + BAND.w} y2={LEDGER.y + LEDGER.h} stroke="#241810" strokeWidth="1.6" />
+        {[1, 2].map((i) => (
+          <line key={i} x1={BAND.x + col * i} y1={LEDGER.y + 1} x2={BAND.x + col * i} y2={LEDGER.y + LEDGER.h - 1} stroke="#241810" strokeOpacity=".22" />
+        ))}
+        {figures.map(([value, label], i) => {
+          const cx = BAND.x + col * i + col / 2;
+          const [big, unit] = splitFigure(value);
+          const room = col - 26;
+          // Width in em: Anton figures run about .5 em, the unit in Oswald at .42 of the size about .2 em a letter.
+          const bigSize = Math.min(46, room / Math.max(1, big.length * 0.5 + (unit ? unit.length * 0.25 + 0.3 : 0)));
+          const unitSize = Math.max(12, Math.min(18, bigSize * 0.42));
           return (
             <g key={label}>
-              <text x="58" y={y} fill={INK.muted} style={{ fontFamily: SPACED, fontWeight: 500, fontSize: 10, letterSpacing: 2.4 }}>
-                {label}
+              <text x={cx} y={LEDGER.y + 24} textAnchor="middle" fill="#5a4636" style={{ fontFamily: SPACED, fontWeight: 500, fontSize: 13, letterSpacing: 4 }}>
+                {label.toUpperCase()}
               </text>
-              <line x1={58 + lw + 10} y1={y - 3} x2={572 - vw - 10} y2={y - 3} stroke={INK.text} strokeOpacity=".35" strokeDasharray="1 4" strokeLinecap="round" />
-              <text x="572" y={y} textAnchor="end" fill={INK.text} style={{ fontFamily: CONDENSED, fontSize: vSize, letterSpacing: 0.4 }}>
-                {value}
+              <text x={cx} y={LEDGER.y + 78} textAnchor="middle" fill="#160e08" style={{ fontFamily: CONDENSED, fontSize: bigSize, letterSpacing: 0.3 }}>
+                {big}
+                {unit && (
+                  <tspan dx={bigSize * 0.18} style={{ fontFamily: SPACED, fontWeight: 500, fontSize: unitSize, letterSpacing: 1.6 }}>
+                    {unit}
+                  </tspan>
+                )}
               </text>
             </g>
           );
         })}
 
-        <text x="315" y="740" textAnchor="middle" fill={INK.muted} style={{ fontFamily: SANS, fontStyle: 'italic', fontWeight: 500, fontSize: fit(promise.length, 540, 'spaced', 12.5) }}>
-          {promise}
+        <rect x={BOX.x} y={BOX.y} width={BOX.w} height={BOX.h} rx="6" fill="#1a1510" />
+        <rect x={BOX.x + 4} y={BOX.y + 4} width={BOX.w - 8} height={BOX.h - 8} rx="4" fill="none" stroke={INK.cream} strokeOpacity=".07" />
+        <text x="315" y={BOX.y + 42} textAnchor="middle" fill={INK.cream} style={{ fontFamily: CONDENSED, fontSize: 27, letterSpacing: 0.8 }}>
+          LIVE TELESCOPE V1 · THE NIGHT SKY
         </text>
-        <line x1="50" y1="756" x2="580" y2="756" stroke={INK.text} strokeOpacity=".22" />
-        <text x="58" y="780" fill={INK.muted} style={{ fontFamily: SPACED, fontWeight: 500, fontSize: 9.5, letterSpacing: 2.4 }}>
-          COMMITMENT
+        <Glint x={315 - 196} y={BOX.y + 33} r={10} o={0.9} />
+        <Glint x={315 + 196} y={BOX.y + 33} r={10} o={0.9} />
+        {promiseLines.map((line, i) => (
+          <text key={i} x="315" y={BOX.y + 72 + i * 25} textAnchor="middle" fill="rgba(243,230,204,.86)" style={{ fontFamily: SPACED, fontWeight: 400, fontSize: pSize, letterSpacing: 0.3 }}>
+            {line}
+          </text>
+        ))}
+        {commitment && (
+          <text x={BOX.x + BOX.w - 14} y={BOX.y + 16} textAnchor="end" fill="rgba(243,230,204,.4)" style={{ fontFamily: MONO, fontSize: 9, letterSpacing: 1 }}>
+            {short(commitment)}
+          </text>
+        )}
+
+        <text x={BOX.x} y="852" fill={INK.text} style={foot}>
+          GENESIS
         </text>
-        <text x="572" y="780" textAnchor="end" fill={INK.text} style={{ fontFamily: MONO, fontSize: 10, letterSpacing: 1 }}>
-          {commitment ? short(commitment) : '—'}
+        <text x="315" y="852" textAnchor="middle" fill={INK.text} style={foot}>
+          <tspan fill={INK.red}>◆</tspan>
+          {'  FOUNDING SET  '}
+          <tspan fill={INK.red}>◆</tspan>
         </text>
-        <text x="58" y="802" fill={INK.muted} style={{ fontFamily: SPACED, fontWeight: 500, fontSize: 9.5, letterSpacing: 2.4 }}>
-          LIVE TELESCOPE V1 · THE NIGHT SKY · COMMISSIONING
+        <text x={BOX.x + BOX.w} y="852" textAnchor="end" fill={INK.text} style={foot}>
+          {ed} / {c.of}
         </text>
-        <line x1="50" y1="824" x2="580" y2="824" stroke={INK.text} strokeOpacity=".22" />
-        <Footer y={850} right={`${ed} / ${c.of}`} />
       </svg>
       {FOIL_OP[r] > 0 && <div className="sdc-foil" style={{ opacity: FOIL_OP[r] * 0.6 }} />}
       <div className="sdc-glare" />

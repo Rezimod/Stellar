@@ -9,7 +9,6 @@ export const FOIL_OP: Record<Rarity, number> = { common: 0, rare: 0.05, epic: 0.
 export const GLIT_OP: Record<Rarity, number> = { common: 0, rare: 0, epic: 0.12, legendary: 0.28 };
 
 export const MONO = 'var(--font-mono), ui-monospace, monospace';
-export const SANS = 'var(--font-geist), system-ui, sans-serif';
 export const TITLE = 'var(--font-bowlby), Impact, sans-serif';
 export const CONDENSED = 'var(--font-anton), Impact, sans-serif';
 export const SPACED = 'var(--font-oswald), sans-serif';
@@ -45,9 +44,6 @@ const BOWLBY: Record<string, number> = {
 };
 /** A title line's width in em. */
 const titleEm = (line: string) => [...line].reduce((sum, ch) => sum + (BOWLBY[ch] ?? ADV.title), 0);
-
-/** Width a line will take at that size, plus its tracking. */
-export const width = (len: number, size: number, adv: keyof typeof ADV, track = 0) => len * (size * ADV[adv] + track);
 
 /** The sunset the striped letters are cut from, cream at the top to brick at the foot. */
 export const SUNSET: Record<Rarity, string[]> = {
@@ -110,17 +106,6 @@ export function Paper({ u, hole }: { u: string; hole?: string }) {
       <path d={d} fill="#000" fillRule="evenodd" filter={`url(#${u}grain)`} />
       <path d={rr(1, 1, 628, 878, 29)} fill="none" stroke="#b9a37c" strokeWidth="2" opacity=".7" />
     </>
-  );
-}
-
-/** Three warm hairlines under the window, fading at both ends. */
-export function Rules({ u, y }: { u: string; y: number }) {
-  return (
-    <g>
-      <rect x="30" y={y} width="570" height="1.4" fill={`url(#${u}ry)`} />
-      <rect x="30" y={y + 4} width="570" height="2" fill={`url(#${u}ro)`} />
-      <rect x="30" y={y + 9} width="570" height="1.4" fill={`url(#${u}rr)`} />
-    </g>
   );
 }
 
@@ -247,26 +232,6 @@ export function CornerBadge({ u, rarity, label, number }: { u: string; rarity: R
       </text>
       <text x={x + 66} y={y + h / 2 + 6} fill={`url(#${u}cbm)`} style={{ fontFamily: SPACED, fontWeight: 500, fontSize: 17, letterSpacing: 4.2 }}>
         {text}
-      </text>
-    </g>
-  );
-}
-
-/** The panel's last line: the set on the left, the edition on the right, the set label between diamonds. */
-export function Footer({ y, right }: { y: number; right: string }) {
-  const st = { fontFamily: SPACED, fontWeight: 500, fontSize: 10.5, letterSpacing: 3.4 };
-  return (
-    <g>
-      <text x="58" y={y} fill={INK.muted} style={st}>
-        GENESIS
-      </text>
-      <text x="315" y={y} textAnchor="middle" fill={INK.muted} style={st}>
-        <tspan fill={INK.red}>◆</tspan>
-        {'  FOUNDING SET  '}
-        <tspan fill={INK.red}>◆</tspan>
-      </text>
-      <text x="572" y={y} textAnchor="end" fill={INK.muted} style={st}>
-        {right}
       </text>
     </g>
   );

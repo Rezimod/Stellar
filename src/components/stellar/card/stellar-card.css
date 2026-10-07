@@ -24,6 +24,8 @@
 
 /* The poster treatment over the drawing: warmed into the sunset, a burst of rays behind the object,
    a colour fringe at its edges, a halftone screen and the dark the title stands on. */
+.sdc-photo--whole { background: #000; }
+.sdc-photo--whole img { object-fit: contain !important; padding: 5% 0; box-sizing: border-box; }
 .sdc-photo img { filter: sepia(.18) saturate(1.3) contrast(1.12) brightness(1.04); }
 .sdc-grade img { filter: sepia(.28) saturate(1.3) contrast(1.08) brightness(1.02); }
 .sdc-fringe img { filter: sepia(.22) saturate(1.35) contrast(1.12) drop-shadow(1.6px 0 0 rgba(255, 40, 70, .32)) drop-shadow(-1.6px 0 0 rgba(40, 200, 255, .26)) drop-shadow(0 0 22px rgba(255, 168, 92, .32)); }
