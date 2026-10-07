@@ -55,6 +55,10 @@ const nextConfig: NextConfig = {
   },
   // stellarr.club is the card product; the legacy app lives on its own project. Its APIs and
   // /m/* stay reachable here because minted metadata, webhooks and old links point at this domain.
+  // The set's page moved from /set/001 to /genesis; old links and search results follow it.
+  async redirects() {
+    return [{ source: '/set/001', destination: '/genesis', permanent: true }];
+  },
   async rewrites() {
     return {
       beforeFiles: [

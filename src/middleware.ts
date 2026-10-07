@@ -6,7 +6,7 @@ import { LEGACY_HOST } from '@/lib/stellar/legacy';
 const RETIRED_CARD = /^\/card\/(TRANQUILITY-BASE|TWIN-SUN|TIDE-WORLD|RING-HABITAT|UNIT-7|SENTINEL|BLACK-SLAB)\/?$/i;
 
 /** The pages the card product serves. Every other page is the legacy Stellar app, which now lives on its own domain. */
-const CARD_PAGES = /^\/($|(set|card|collection|capsules?|tonight|node|voyage|invite|terms|privacy|contact)(\/|$))/;
+const CARD_PAGES = /^\/($|(genesis|set|card|collection|capsules?|tonight|node|voyage|invite|terms|privacy|contact)(\/|$))/;
 
 /**
  * The closed beta. While STELLAR_INVITE_CODES names any code, a page opens only
@@ -17,7 +17,7 @@ const CARD_PAGES = /^\/($|(set|card|collection|capsules?|tonight|node|voyage|inv
 
 export function middleware(req: NextRequest) {
   const { pathname, search } = req.nextUrl;
-  if (RETIRED_CARD.test(pathname)) return NextResponse.redirect(new URL('/set/001', req.url), 307);
+  if (RETIRED_CARD.test(pathname)) return NextResponse.redirect(new URL('/genesis', req.url), 307);
   if (!CARD_PAGES.test(pathname)) return NextResponse.redirect(`${LEGACY_HOST}${pathname}${search}`, 307);
 
   const codes = inviteCodes();

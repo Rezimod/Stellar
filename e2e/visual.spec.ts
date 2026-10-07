@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 const ROUTES = [
   ['home', '/'],
-  ['set-001', '/set/001'],
+  ['set-001', '/genesis'],
   ['card-saturn', '/card/SATURN'],
   ['card-halley', '/card/HALLEY'],
   ['capsules', '/capsules'],

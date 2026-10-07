@@ -24,12 +24,12 @@ function rewrittenTo(res: Response): string | null {
 describe('the invite gate', () => {
   it('is not there when no code is set', () => {
     delete process.env.STELLAR_INVITE_CODES;
-    expect(rewrittenTo(middleware(request('/set/001')))).toBeNull();
+    expect(rewrittenTo(middleware(request('/genesis')))).toBeNull();
   });
 
   it('turns a visitor without a code to the closed door', () => {
     process.env.STELLAR_INVITE_CODES = 'orion, lyra';
-    expect(rewrittenTo(middleware(request('/set/001')))).toBe('/invite');
+    expect(rewrittenTo(middleware(request('/genesis')))).toBe('/invite');
     expect(rewrittenTo(middleware(request('/', 'stellar_invite=wrong')))).toBe('/invite');
   });
 
@@ -39,7 +39,7 @@ describe('the invite gate', () => {
   });
 
   it('gates pages and nothing else', () => {
-    for (const url of ['/', '/set/001', '/card/TYCHO', '/capsules', '/collection', '/tonight']) {
+    for (const url of ['/', '/genesis', '/card/TYCHO', '/capsules', '/collection', '/tonight']) {
       expect(unstable_doesMiddlewareMatch({ config, url }), url).toBe(true);
     }
     for (const url of [
@@ -90,7 +90,7 @@ describe('the retired card pages', () => {
     for (const path of ['/card/UNIT-7', '/card/tranquility-base', '/card/TWIN-SUN/']) {
       const res = middleware(request(path));
       expect(res.status, path).toBe(307);
-      expect(new URL(res.headers.get('location')!).pathname).toBe('/set/001');
+      expect(new URL(res.headers.get('location')!).pathname).toBe('/genesis');
     }
     for (const live of ['/card/HALLEY', '/card/M87', '/card/APOLLO-11', '/card/MOON', '/card/BETELGEUSE']) expect(middleware(request(live)).status, live).toBe(200);
   });
@@ -108,7 +108,7 @@ describe('the legacy Stellar pages', () => {
 
   it('leave the card pages alone', () => {
     delete process.env.STELLAR_INVITE_CODES;
-    for (const path of ['/', '/set/001', '/card/HALLEY', '/collection', '/capsules', '/capsules/log', '/capsule/x', '/tonight', '/node', '/node/simulator', '/voyage', '/terms', '/privacy', '/contact']) {
+    for (const path of ['/', '/genesis', '/card/HALLEY', '/collection', '/capsules', '/capsules/log', '/capsule/x', '/tonight', '/node', '/node/simulator', '/voyage', '/terms', '/privacy', '/contact']) {
       expect(middleware(request(path)).status, path).toBe(200);
     }
   });

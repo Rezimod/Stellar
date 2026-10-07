@@ -14,7 +14,7 @@ import { formatDec, formatRa } from '@/lib/observatory/telescope-targets';
 import { rarityInfo, type Rarity } from '@/lib/rarity';
 import { SET_001_CARD_BY_DESIGNATION } from '@/lib/sets/set-001';
 import { cardStatus } from '@/lib/stellar/almanac';
-import { DIRECT_CARD_PRICE_USD } from '@/lib/stellar/economics';
+import { cardPriceUsd } from '@/lib/stellar/economics';
 import type { ObservationStatus } from '@/lib/stellar/observability';
 import { cardAvailability } from '@/lib/stellar/orders';
 import { photoFor } from '@/lib/stellar/photos';
@@ -44,7 +44,7 @@ export default async function CardPage({ params }: { params: Promise<{ designati
 
   const { seed, record } = card;
   const rarity = seed.rarity as Rarity;
-  const priceUsd = DIRECT_CARD_PRICE_USD[rarity];
+  const priceUsd = cardPriceUsd(seed.designation, rarity);
   const almanac = record.section === 'almanac';
   const sealed = cardStatus(card) === 'sealed';
   const pair = record.pairsWith ? SET_001_CARD_BY_DESIGNATION.get(record.pairsWith) : null;
@@ -89,7 +89,7 @@ export default async function CardPage({ params }: { params: Promise<{ designati
       <StellarView step="card" />
       <section className="sd-container sd-top">
         <nav aria-label="Breadcrumb" className="sd-crumb sd-data">
-          <Link href="/set/001">Genesis</Link>
+          <Link href="/genesis">Genesis</Link>
           <span aria-hidden="true">/</span>
           <strong>{seed.designation}</strong>
         </nav>

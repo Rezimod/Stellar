@@ -22,7 +22,7 @@ test.describe('smoke — golden routes', () => {
     await expect(nav.getByRole('link', { name: 'First Light', exact: true })).toBeVisible();
     await expect(nav.getByRole('link', { name: 'Tonight', exact: true })).toBeVisible();
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Hold a piece of the night sky');
-    await expect(page.getByRole('link', { name: /Open a capsule/ }).first()).toHaveAttribute('href', '/set/001');
+    await expect(page.getByRole('link', { name: /Open a capsule/ }).first()).toHaveAttribute('href', '/genesis');
 
     expect(errors, `pageerrors on /: ${errors.join('\n')}`).toEqual([]);
   });

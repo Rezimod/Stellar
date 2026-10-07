@@ -16,7 +16,7 @@ vi.mock('@/components/stellar/CapsuleCounter', () => ({
   default: ({ cards }: { cards: Array<{ designation: string }> }) => createElement('p', null, `pool:${cards.map((c) => c.designation).join(',')}`),
 }));
 
-import Set001Page from '@/app/set/001/page';
+import Set001Page from '@/app/genesis/page';
 import CardPage from '@/app/card/[designation]/page';
 import { SET_001_CARD_BY_DESIGNATION } from '@/lib/sets/set-001';
 import { readSupply } from '@/lib/stellar/capsule';
@@ -58,7 +58,7 @@ describe('once the Orionids have passed', () => {
   it('the capsule preview pool leaves it out', async () => {
     const html = renderToStaticMarkup(await Set001Page());
     const pool = html.match(/pool:([A-Z0-9,-]+)/)![1].split(',');
-    expect(pool).toHaveLength(99);
+    expect(pool).toHaveLength(104);
     expect(pool).not.toContain('ORIONIDS');
     expect(pool).toContain('GEMINIDS');
   });

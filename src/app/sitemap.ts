@@ -8,7 +8,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
   const routes: Array<{ path: string; changeFrequency: MetadataRoute.Sitemap[number]['changeFrequency']; priority: number }> = [
     { path: '/', changeFrequency: 'daily', priority: 1.0 },
-    { path: '/set/001', changeFrequency: 'weekly', priority: 0.9 },
+    { path: '/genesis', changeFrequency: 'weekly', priority: 0.9 },
     ...SET_001_CARDS.map((c) => ({ path: `/card/${c.seed.designation}`, changeFrequency: 'weekly' as const, priority: 0.8 })),
     { path: '/capsules', changeFrequency: 'daily', priority: 0.8 },
     { path: '/tonight', changeFrequency: 'daily', priority: 0.8 },

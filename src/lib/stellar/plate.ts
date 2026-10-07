@@ -53,6 +53,11 @@ const STORY: Record<string, [string, string]> = {
   'DOUBLE-OPPOSITION': ['Opposition puts the Earth between a planet and the Sun.', 'Mars looks red, Jupiter cream-white.'],
   'SNOW-MOON-ECLIPSE': ['A penumbral eclipse: the Moon misses the dark core.', 'It needs no filter and no telescope.'],
   'GREAT-ECLIPSE': ['Along the path, birds roost and the air turns cold.', 'Its shadow races over the ground faster than sound.'],
+  'SIKHOTE-ALIN': ['It broke apart over the Russian Far East.', 'Its pieces still carry thumbprints from melting.'],
+  GIBEON: ['The Nama people made tools from its iron.', 'Etched with acid, it shows the Widmanstätten pattern.'],
+  'CAMPO-DEL-CIELO': ['It fell four to five thousand years ago.', 'It left a field of small craters in Argentina.'],
+  MUONIONALUSTA: ['It fell in northern Sweden about a million years ago.', 'Its crystals show it cooled inside a small world.'],
+  ALLENDE: ['More than two tonnes of stones fell over Chihuahua.', 'Its white inclusions are the oldest solids known.'],
 };
 
 export type Plate = {
@@ -154,7 +159,8 @@ export function plateFor(designation: string): Plate | null {
 
 /** Each object's own light, for the glow a tile sits on. Where an object has none — a crater, a stone — the family's stands in. */
 const GLOW: Record<string, string> = {
-  'FIRST-LIGHT': '#e8e2d4', IMILAC: '#d9b26f', 'LUNAR-FRAGMENT': '#c9d6ff', TYCHO: '#bacbff', 'OLYMPUS-MONS': '#ff9a63',
+  'FIRST-LIGHT': '#e8e2d4', IMILAC: '#d9b26f', 'LUNAR-FRAGMENT': '#c9d6ff',
+  'SIKHOTE-ALIN': '#e0a070', GIBEON: '#dfe6f0', 'CAMPO-DEL-CIELO': '#c8ccd4', MUONIONALUSTA: '#e8d6d0', ALLENDE: '#b9b2a6', TYCHO: '#bacbff', 'OLYMPUS-MONS': '#ff9a63',
   JUPITER: '#ffbd8a', EUROPA: '#d8ecff', SATURN: '#ffe3a3', HALLEY: '#7fc8ff', 'VOYAGER-1': '#bfc8d8',
   M45: '#6fb6ff', M42: '#ff9ec7', M1: '#9fd0ff', 'SGR-A': '#ff8a2a', M31: '#b8c6ff',
   ORIONIDS: '#9fcaff', 'HUNTERS-MOON': '#ffd79a', 'PLEIADES-OCCULTATION': '#c9d6ff', GEMINIDS: '#a9c4ff',

@@ -13,7 +13,7 @@ import { card } from '@/lib/schema';
 import { SET_001, SET_001_CARDS } from '@/lib/sets/set-001';
 import { cardStatus } from '@/lib/stellar/almanac';
 import { capsulesOnSale, readSetSupply } from '@/lib/stellar/capsule';
-import { DIRECT_CARD_PRICE_USD } from '@/lib/stellar/economics';
+import { cardPriceUsd } from '@/lib/stellar/economics';
 import { nightRow } from '@/lib/stellar/night';
 import { siteNightDate } from '@/lib/stellar/target';
 
@@ -22,7 +22,7 @@ export const revalidate = 60;
 export const metadata: Metadata = {
   title: 'Genesis — capsules and cards',
   description:
-    'A hundred cards, numbered outward from Earth: the Solar System, the Stars, the Deep Sky, the Galaxies, the Extremes, the Rare Sights and the Meteors & Moons. Opened from four capsules, from $5.',
+    'A hundred and five cards, numbered outward from Earth: the Solar System, the Stars, the Deep Sky, the Galaxies, the Extremes, the Rare Sights, the Meteors & Moons and five more meteorites you can hold. Opened from four capsules, from $5.',
 };
 
 export default async function FirstLightPage() {
@@ -108,7 +108,7 @@ export default async function FirstLightPage() {
                         `${remaining.get(seed.designation) ?? seed.editionSize} of ${seed.editionSize} left`
                       )
                     }
-                    price={sealed ? 'Sealed' : `$${DIRECT_CARD_PRICE_USD[rarity]}`}
+                    price={sealed ? 'Sealed' : `$${cardPriceUsd(seed.designation, rarity)}`}
                     tag={seed.designation === tonight ? 'Tonight' : undefined}
                   />
                 </li>

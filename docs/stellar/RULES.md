@@ -43,7 +43,7 @@ Quiet, institutional, an observatory logbook. Never exclamation marks, never
 rocket emoji, never "wen"/"LFG"/"GM"/"floor". Never claim the observatory is
 operational — Live Telescope V1 is `commissioning`.
 Vocabulary: capsule (not pack/box), card (not NFT/token), set (not drop),
-observation (not shoot/session), Live Telescope V1 — the telescope in Tbilisi (not "Node 01", not "Live Telescope V1", not "our telescope"), Founding set for First Light's set label (not "Set 001"; the code SET001 and the /set/001 URL stay), Collection
+observation (not shoot/session), Live Telescope V1 — the telescope in Tbilisi (not "Node 01", not "Live Telescope V1", not "our telescope"), Founding set for First Light’s set label (not "Set 001"; the code SET001 stays; the page lives at /genesis, and /set/001 redirects there), Collection
 (not portfolio/bag), holder (not user/degen), edition number (not mint number).
 Banned outright in new user-facing copy: NFT, mint, drop, payload, manifest,
 registry, airdrop.

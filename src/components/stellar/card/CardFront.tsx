@@ -1,12 +1,10 @@
 import { memo } from 'react';
-import { editionLabel, type Plate } from '@/lib/stellar/plate';
+import type { Plate } from '@/lib/stellar/plate';
 import { photoFor } from '@/lib/stellar/photos';
-import { CONDENSED, CornerBadge, FOIL_OP, GLIT_OP, Glint, INK, Paper, PosterDefs, SPACED, fit, rr } from './frame';
+import { CONDENSED, FOIL_OP, GLIT_OP, Glint, INK, Paper, PosterDefs, SPACED, fit, rr } from './frame';
 
 type Props = {
   plate: Plate;
-  /** The holder's edition number. Given, the roundel prints it in place of the card's number in the set. */
-  edition?: number | null;
   /** A real capture from Live Telescope V1 in place of the drawn plate. */
   capture?: string | null;
   /** Small cards draw from the pre-rendered WebP layers: the same picture, none of the filter work. */
@@ -39,12 +37,12 @@ const GLINTS: [number, number, number][] = [
 ];
 
 /**
- * The face of a card: the drawing in a tall dark window on cream stock, the
- * card's number in a roundel and its rarity in the window's top corners, and
- * the name in a red block under it with one line beneath. The figures and the
- * record are on the back; an owned card's edition takes the roundel.
+ * The face of a card: the picture in a tall dark window on cream stock and
+ * the name in a red block under it with one line beneath. The rarity and the
+ * number ride on the tile outside the card; the figures and the record are on
+ * the back.
  */
-function CardFront({ plate: c, edition, capture, lite = false, u }: Props) {
+function CardFront({ plate: c, capture, lite = false, u }: Props) {
   const ext = lite ? 'webp' : 'svg';
   const r = c.rarity;
   const f = `${u}f`;
@@ -64,7 +62,6 @@ function CardFront({ plate: c, edition, capture, lite = false, u }: Props) {
   const subSize = 17;
   const subTrack = Math.min(5, Math.max(1.5, (BAND.w - 50 - sub.length * subSize * 0.49) / Math.max(1, sub.length)));
 
-  const number = edition != null ? editionLabel(edition) : c.num;
 
   return (
     <div className="sdc-card">
@@ -108,8 +105,6 @@ function CardFront({ plate: c, edition, capture, lite = false, u }: Props) {
         {GLINTS.map(([gx, gy, gr]) => (
           <Glint key={`${gx}-${gy}`} x={WIN.x + gx * WIN.w} y={WIN.y + gy * WIN.h} r={gr} o={0.6} />
         ))}
-
-        <CornerBadge u={f} rarity={r} label={c.rname} number={number} />
 
         <rect x={BAND.x} y={BAND.y} width={BAND.w} height={BAND.h} fill="#c4282a" />
         <rect x={BAND.x} y={BAND.y} width={BAND.w} height={BAND.h} fill="#000" filter={`url(#${f}grain)`} opacity=".6" />

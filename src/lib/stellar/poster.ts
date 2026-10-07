@@ -118,6 +118,11 @@ const ROWS: Record<string, Row> = {
   'DOUBLE-OPPOSITION': ['DOUBLE\nOPPOSITION', 'Two worlds, one week', 'Jupiter, then Mars, at their closest to Earth.', 'Eight days apart', 'The next pair is years away'],
   'SNOW-MOON-ECLIPSE': ['SNOW MOON\nECLIPSE', 'February’s full Moon', 'It slips into the faint edge of Earth’s shadow.', 'One limb goes dusky', 'Subtle: you have to look for it'],
   'GREAT-ECLIPSE': ['GREAT\nECLIPSE', 'The long shadow', 'Stars will come out at noon.', 'Over six minutes of dark', 'Its path runs from Spain to Arabia'],
+  'SIKHOTE-ALIN': ['SIKHOTE-ALIN', 'The great iron rain', 'In 1947 it fell in daylight, brighter than the Sun.', 'Witnessed as it fell', 'About 23 tonnes were gathered from the taiga'],
+  GIBEON: ['GIBEON', 'Crystal in the iron', 'No forge can make this pattern; only slow cooling can.', 'Crystals grown in space', 'Its pieces lie across a strewn field in Namibia'],
+  'CAMPO-DEL-CIELO': ['CAMPO DEL CIELO', 'Field of the sky', 'Thousands of years ago, iron rained on the Chaco.', 'A shower of iron', 'Its largest pieces weigh around thirty tonnes'],
+  MUONIONALUSTA: ['MUONIONALUSTA', 'The ancient iron', 'It lay under the ice through several ice ages.', 'Older than the Earth', 'Found in Swedish Lapland in 1906'],
+  ALLENDE: ['ALLENDE', 'The oldest grains', 'Its white flecks formed before any planet did.', 'The most studied stone', 'It fell over Mexico in 1969, as labs prepared for Apollo'],
 };
 
 const FIGURES: Record<string, Poster['figures']> = {

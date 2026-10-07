@@ -21,15 +21,15 @@ const pointable = objects.filter((c) => c.seed.targetId !== 'kept' && c.seed.tar
 const MOVING = new Set(['moon', 'mercury', 'venus', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto', 'halley']);
 
 describe('First Light', () => {
-  it('is a hundred cards in seven families, the Almanac last, each filed under its own designation', () => {
+  it('is a hundred and five cards in seven families, the Almanac last, each filed under its own designation', () => {
     expect(SET_001.name).toBe('Genesis');
-    expect(seeds.length).toBe(100);
-    expect(objects).toHaveLength(92);
+    expect(seeds.length).toBe(105);
+    expect(objects).toHaveLength(97);
     expect(almanac).toHaveLength(8);
-    expect(SET_001_CARDS.slice(0, 92)).toEqual(objects);
+    expect(SET_001_CARDS.slice(0, 97)).toEqual(objects);
     const families = SET_GROUPS.map((g) => groupCards(SET_001_CARDS, g.key).length);
-    expect(families).toEqual([34, 16, 17, 12, 5, 8, 8]);
-    expect(SET_GROUPS.flatMap((g) => groupCards(SET_001_CARDS, g.key))).toHaveLength(100);
+    expect(families).toEqual([39, 16, 17, 12, 5, 8, 8]);
+    expect(SET_GROUPS.flatMap((g) => groupCards(SET_001_CARDS, g.key))).toHaveLength(105);
     expect(new Set(seeds.map((c) => c.designation)).size).toBe(seeds.length);
     for (const c of seeds) expect(c.designation).toMatch(/^[A-Z0-9-]+$/);
   });
@@ -71,9 +71,9 @@ describe('First Light', () => {
     });
   });
 
-  it('counts the tiers as the table says: 8 legendary, 16 epic, 34 rare, 42 common', () => {
+  it('counts the tiers as the table says: 13 legendary, 16 epic, 34 rare, 42 common', () => {
     const count = (r: string) => seeds.filter((c) => c.rarity === r).length;
-    expect([count('legendary'), count('epic'), count('rare'), count('common')]).toEqual([8, 16, 34, 42]);
+    expect([count('legendary'), count('epic'), count('rare'), count('common')]).toEqual([13, 16, 34, 42]);
   });
 
   it('never offers the telescope what it cannot point at, and says why', () => {
@@ -130,7 +130,7 @@ describe('First Light', () => {
       expect(other, `${c.seed.designation} pairs with ${p}`).toBeDefined();
       expect(other!.record.pairsWith).toBe(c.seed.designation);
     }
-    expect(SET_001_CARDS.filter((c) => c.record.physical).map((c) => c.seed.designation)).toEqual(['IMILAC', 'LUNAR-FRAGMENT']);
+    expect(SET_001_CARDS.filter((c) => c.record.physical).map((c) => c.seed.designation)).toEqual(['IMILAC', 'LUNAR-FRAGMENT', 'SIKHOTE-ALIN', 'GIBEON', 'CAMPO-DEL-CIELO', 'MUONIONALUSTA', 'ALLENDE']);
   });
 
   it('prints three figures and a line on every card, in the logbook’s voice', () => {

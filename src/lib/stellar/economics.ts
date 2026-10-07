@@ -63,6 +63,26 @@ export const DIRECT_CARD_PRICE_USD: Record<Rarity, number> = {
   legendary: 95,
 };
 
+/**
+ * Cards that carry a real meteorite cost what that piece sells for. Each is
+ * the retail price of a dealer listing for a comparable specimen (October
+ * 2026), at the weight printed on the card.
+ */
+export const SPECIMEN_PRICE_USD: Record<string, number> = {
+  IMILAC: 125, // 4.6 g pallasite (FossilEra, 4.55 g)
+  'LUNAR-FRAGMENT': 575, // 8.5 g lunar slice (FossilEra, Oued el Hamim 001, 8.47 g)
+  'SIKHOTE-ALIN': 42, // 6 g individual (FossilEra, 5.99 g)
+  GIBEON: 42, // 7.7 g piece (FossilEra, 7.69 g)
+  'CAMPO-DEL-CIELO': 43, // 15 g specimen with certificate
+  MUONIONALUSTA: 129, // 46 g etched slice (Galactic Stone)
+  ALLENDE: 85, // 1.5 g crusted fragment (1.48 g listing)
+};
+
+/** What one card costs bought on its own: its specimen's price, or its rarity's. */
+export function cardPriceUsd(designation: string, rarity: Rarity): number {
+  return SPECIMEN_PRICE_USD[designation] ?? DIRECT_CARD_PRICE_USD[rarity];
+}
+
 /** The cost base Gate 2 needs, per capsule sold, in US dollars. Unknowns are zero until supplied. */
 export type CapsuleCosts = {
   /** Payment processing, as a fraction of the price (0.029 for 2.9%). */

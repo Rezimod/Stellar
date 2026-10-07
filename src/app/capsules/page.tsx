@@ -129,7 +129,7 @@ export default async function CapsulesPage() {
           <Link href="/capsules/log" className="sd-btn">
             Public log
           </Link>
-          <Link href="/set/001" className="sd-btn">
+          <Link href="/genesis" className="sd-btn">
             Every card you can pull
           </Link>
         </div>

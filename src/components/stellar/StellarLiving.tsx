@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { SET_001_CARD_BY_DESIGNATION } from '@/lib/sets/set-001';
 import { cardStatus } from '@/lib/stellar/almanac';
-import { DIRECT_CARD_PRICE_USD } from '@/lib/stellar/economics';
+import { cardPriceUsd } from '@/lib/stellar/economics';
 import { plateFor } from '@/lib/stellar/plate';
 import StellarCard from './card/StellarCard';
 
@@ -39,7 +39,7 @@ export default function StellarLiving() {
       if (!seed || !plate) return;
       e.preventDefault();
       e.stopPropagation();
-      const price = a.dataset.zoomPrice ?? (cardStatus(seed) === 'sealed' ? 'Sealed' : `$${DIRECT_CARD_PRICE_USD[plate.rarity]}`);
+      const price = a.dataset.zoomPrice ?? (cardStatus(seed) === 'sealed' ? 'Sealed' : `$${cardPriceUsd(plate.designation, plate.rarity)}`);
       setZoom({ designation, price, from: a });
     };
     document.addEventListener('click', onClick, true);

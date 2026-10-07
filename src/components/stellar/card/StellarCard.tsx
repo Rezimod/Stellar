@@ -64,7 +64,7 @@ function StellarCard({ designation, edition, capture, commitment, hero = false, 
         <div className="sdc-tilt">
           <div className={`sdc-flip${over ? ' is-over' : ''}`}>
             <div className="sdc-face" role="img" aria-label={`${plate.name}, ${plate.rname}, Genesis number ${plate.num}${edition != null ? `, edition ${ed} of ${plate.of}` : ''}`}>
-              <CardFront plate={plate} edition={edition} capture={capture} lite={lite} u={u} />
+              <CardFront plate={plate} capture={capture} lite={lite} u={u} />
             </div>
             {hero && (
               <div className="sdc-face sdc-face--back" aria-hidden={!over}>

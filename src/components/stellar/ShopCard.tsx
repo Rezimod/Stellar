@@ -1,7 +1,9 @@
 import Link from 'next/link';
 import CardThumb from './CardThumb';
 import type { Rarity } from '@/lib/rarity';
-import { glowFor } from '@/lib/stellar/plate';
+import { glowFor, plateFor } from '@/lib/stellar/plate';
+import { rarityInfo } from '@/lib/rarity';
+import { SPECIMEN_PRICE_USD } from '@/lib/stellar/economics';
 import type { CSSProperties, ReactNode } from 'react';
 
 export type ShopCardProps = {
@@ -16,8 +18,9 @@ export type ShopCardProps = {
   tag?: string;
 };
 
-/** A card on the shelf: the card on its object's own light, its name and price, one line under. */
+/** A card on the shelf: the card on its object's own light, its rarity and number above it, its name and price, one line under. */
 export default function ShopCard({ designation, name, rarity, sub, price, tag }: ShopCardProps) {
+  const num = plateFor(designation)?.num;
   return (
     <Link
       href={`/card/${designation}`}
@@ -28,6 +31,10 @@ export default function ShopCard({ designation, name, rarity, sub, price, tag }:
       data-zoom-price={price}
       style={{ '--tile-glow': glowFor(designation) } as CSSProperties}
     >
+      <span className="sd-tile__pills" aria-hidden="true">
+        <span className="sd-pill sd-pill--rarity">{rarityInfo(rarity).label}</span>
+        {num && <span className="sd-pill sd-pill--line">No. {num}</span>}
+      </span>
       <span className="sd-tile__stage">
         <CardThumb designation={designation} />
         {tag && <span className="sd-tile__tag">{tag}</span>}
@@ -36,7 +43,7 @@ export default function ShopCard({ designation, name, rarity, sub, price, tag }:
         <span className="sd-tile__name">{name}</span>
         <span className="sd-tile__price">{price}</span>
         <span className="sd-tile__sub">
-          <span className="sd-tile__rarity">{rarity}</span>
+          {designation in SPECIMEN_PRICE_USD && <span className="sd-tile__specimen">Real specimen</span>}
           {sub}
         </span>
       </span>

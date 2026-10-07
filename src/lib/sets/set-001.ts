@@ -1,7 +1,7 @@
 /**
  * First Light.
  *
- * A hundred cards in seven families, numbered outward from Earth: the Solar
+ * A hundred and five cards in seven families, numbered outward from Earth: the Solar
  * System (from the observatory's own first frame and two fragments held in
  * the hand, out to a visitor from another star), the Stars, the Deep Sky, the
  * Galaxies and the Extremes are real things, every one of them well known;
@@ -60,7 +60,7 @@ const FIRST_24: AuthoredCard[] = [
       blurb: 'A pallasite: metal and crystal from deep inside an asteroid.',
     },
     SPECIMEN,
-    { stats: [['TYPE', 'Pallasite'], ['FOUND', '1822'], ['ORIGIN', 'Atacama']], line: 'A pallasite: metal and crystal from deep inside an asteroid.', physical: true },
+    { stats: [['TYPE', 'Pallasite'], ['FOUND', '1822'], ['SPECIMEN', '4.6 g']], line: 'A pallasite: metal and crystal from deep inside an asteroid.', physical: true },
   ),
   authorKept(
     {
@@ -69,7 +69,7 @@ const FIRST_24: AuthoredCard[] = [
       blurb: 'Found in a desert, matched to Apollo samples by its chemistry.',
     },
     SPECIMEN,
-    { stats: [['TYPE', 'Lunar meteorite'], ['ORIGIN', 'The Moon'], ['FROM', '384,400 km']], line: 'Found in a desert, matched to Apollo samples by its chemistry.', pairsWith: 'TYCHO', physical: true },
+    { stats: [['TYPE', 'Lunar meteorite'], ['ORIGIN', 'The Moon'], ['SPECIMEN', '8.5 g']], line: 'Found in a desert, matched to Apollo samples by its chemistry.', pairsWith: 'TYCHO', physical: true },
   ),
   authorCard(
     {
@@ -264,7 +264,56 @@ const FIRST_24: AuthoredCard[] = [
   ),
 ];
 
-/** The set's order: each family outward from Earth, then the Rare Sights, then the Almanac by date. */
+/** Five more stones that fell from the sky, each card carrying a real piece of it. */
+const SPECIMENS: AuthoredCard[] = [
+  authorKept(
+    {
+      designation: 'SIKHOTE-ALIN', name: 'Sikhote-Alin', objectType: 'iron meteorite', rarity: 'legendary',
+      catalogRef: 'Primorye, Russia, 1947',
+      blurb: 'It fell in daylight in 1947, brighter than the Sun.',
+    },
+    SPECIMEN,
+    { stats: [['TYPE', 'Iron, IIAB'], ['FELL', '12 Feb 1947'], ['SPECIMEN', '6 g']], line: 'It fell in daylight in 1947, brighter than the Sun.', physical: true },
+  ),
+  authorKept(
+    {
+      designation: 'GIBEON', name: 'Gibeon', objectType: 'iron meteorite', rarity: 'legendary',
+      catalogRef: 'Namibia',
+      blurb: 'Etched with acid, its metal shows crystals grown over millions of years.',
+    },
+    SPECIMEN,
+    { stats: [['TYPE', 'Iron, IVA'], ['FOUND', 'Namibia'], ['SPECIMEN', '7.7 g']], line: 'Etched with acid, its metal shows crystals grown over millions of years.', physical: true },
+  ),
+  authorKept(
+    {
+      designation: 'CAMPO-DEL-CIELO', name: 'Campo del Cielo', objectType: 'iron meteorite', rarity: 'legendary',
+      catalogRef: 'Chaco, Argentina',
+      blurb: 'A shower of iron that left a field of craters in Argentina.',
+    },
+    SPECIMEN,
+    { stats: [['TYPE', 'Iron, IAB'], ['FELL', '4,000+ yr ago'], ['SPECIMEN', '15 g']], line: 'A shower of iron that left a field of craters in Argentina.', physical: true },
+  ),
+  authorKept(
+    {
+      designation: 'MUONIONALUSTA', name: 'Muonionalusta', objectType: 'iron meteorite', rarity: 'legendary',
+      catalogRef: 'Norrbotten, Sweden, 1906',
+      blurb: 'Among the oldest iron ever found, 4.565 billion years old.',
+    },
+    SPECIMEN,
+    { stats: [['TYPE', 'Iron, IVA'], ['FOUND', '1906'], ['SPECIMEN', '46 g']], line: 'Among the oldest iron ever found, 4.565 billion years old.', physical: true },
+  ),
+  authorKept(
+    {
+      designation: 'ALLENDE', name: 'Allende', objectType: 'carbonaceous chondrite', rarity: 'legendary',
+      catalogRef: 'Chihuahua, Mexico, 1969',
+      blurb: 'Its white flecks are the oldest solids in the Solar System.',
+    },
+    SPECIMEN,
+    { stats: [['TYPE', 'CV3 chondrite'], ['FELL', '8 Feb 1969'], ['SPECIMEN', '1.5 g']], line: 'Its white flecks are the oldest solids in the Solar System.', physical: true },
+  ),
+];
+
+/** The set's order: each family outward from Earth, then the Rare Sights, then the Specimens, then the Almanac by date. */
 const ORDER = [
   // The Solar System
   'FIRST-LIGHT', 'IMILAC', 'LUNAR-FRAGMENT', 'EARTH', 'EARTHRISE', 'CHICXULUB', 'TUNGUSKA', 'SPUTNIK-1', 'ISS', 'HUBBLE', 'JWST',
@@ -284,13 +333,15 @@ const ORDER = [
   'SGR-A', 'SN-1987A', 'TON-618', 'HUBBLE-DEEP-FIELD', 'CMB',
   // The Rare Sights
   'TOTAL-ECLIPSE', 'RING-OF-FIRE', 'BLOOD-MOON', 'AURORA', 'VENUS-TRANSIT', 'HALE-BOPP', 'LEONIDS', 'PERSEIDS',
+  // The Specimens, after the first ninety-two so every object card keeps its number
+  'SIKHOTE-ALIN', 'GIBEON', 'CAMPO-DEL-CIELO', 'MUONIONALUSTA', 'ALLENDE',
   // The Almanac
   'ORIONIDS', 'HUNTERS-MOON', 'PLEIADES-OCCULTATION', 'GEMINIDS', 'CHRISTMAS-SUPERMOON', 'DOUBLE-OPPOSITION',
   'SNOW-MOON-ECLIPSE', 'GREAT-ECLIPSE',
 ];
 
 const AUTHORED = new Map(
-  [...FIRST_24, ...NEAR_CARDS, ...STAR_CARDS, ...DEEP_CARDS, ...GALAXY_CARDS, ...EXTREME_CARDS, ...FAMOUS_CARDS].map((c) => [c.seed.designation, c]),
+  [...FIRST_24, ...NEAR_CARDS, ...STAR_CARDS, ...DEEP_CARDS, ...GALAXY_CARDS, ...EXTREME_CARDS, ...FAMOUS_CARDS, ...SPECIMENS].map((c) => [c.seed.designation, c]),
 );
 if (AUTHORED.size !== ORDER.length || ORDER.some((d) => !AUTHORED.has(d))) {
   throw new Error('First Light: ORDER and the authored cards disagree');

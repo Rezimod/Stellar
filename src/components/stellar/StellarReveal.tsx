@@ -224,7 +224,7 @@ export default function StellarReveal({
       <a className="sd-btn sd-btn--primary" href="/collection">
         {outright ? 'See it in your Collection' : 'Add to Collection'}
       </a>
-      <a className="sd-btn" href="/set/001">
+      <a className="sd-btn" href="/genesis">
         {outright ? 'Back to the set' : 'Blast another'}
       </a>
     </div>

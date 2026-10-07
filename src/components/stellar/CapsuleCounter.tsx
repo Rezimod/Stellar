@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState, type CSSProperties } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { RARITIES, rarityInfo, type Rarity } from '@/lib/rarity';
-import { DIRECT_CARD_PRICE_USD } from '@/lib/stellar/economics';
+import { DIRECT_CARD_PRICE_USD, cardPriceUsd } from '@/lib/stellar/economics';
 import { CARDS_PER_TIER, TIERS, formatOdds, rarityAt, tierByKey, type Tier } from '@/lib/stellar/tiers';
 import type { Draw } from './StellarReveal';
 import StarPulse from './StarPulse';
@@ -44,6 +44,14 @@ function drawFrom(tier: Tier, cards: TierCard[]): Draw {
  * opens the sheet with the next capsule of that tier; the preview draws its
  * card here in the browser — no account, no payment, nothing recorded.
  */
+/** What a rarity's cards cost on their own: one price, or the span when specimens are among them. */
+function worth(cards: TierCard[], r: Rarity) {
+  const prices = cards.filter((c) => c.rarity === r).map((c) => cardPriceUsd(c.designation, r));
+  if (prices.length === 0) return `$${DIRECT_CARD_PRICE_USD[r]}`;
+  const lo = Math.min(...prices), hi = Math.max(...prices);
+  return lo === hi ? `$${lo}` : `$${lo}–${hi}`;
+}
+
 export default function CapsuleCounter({ cards, onSale }: { cards: TierCard[]; onSale: Record<string, number> | null }) {
   const [tier, setTier] = useState<Tier>(TIERS[0]);
   const [sheet, setSheetState] = useState(false);
@@ -88,7 +96,7 @@ export default function CapsuleCounter({ cards, onSale }: { cards: TierCard[]; o
       </div>
 
       <div className="sd-counter__stage">
-        <StarPulse className="sd-counter__star" centre={0.4} />
+        <StarPulse className="sd-counter__star" centre={0.4} breathe />
         <div className="sd-counter__over">
           <div>
             <span className="sd-counter__label">You are blasting</span>
@@ -145,7 +153,7 @@ export default function CapsuleCounter({ cards, onSale }: { cards: TierCard[]; o
               <i aria-hidden="true" />
               {rarityInfo(r).label}
             </span>
-            <span className="sd-counter__worth">${DIRECT_CARD_PRICE_USD[r]} cards</span>
+            <span className="sd-counter__worth">{worth(cards, r)} cards</span>
             <span className="sd-counter__pct">{pct(tier.oddsBps[r])}</span>
             <span className="sd-counter__bar" aria-hidden="true" />
           </li>

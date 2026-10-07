@@ -991,5 +991,55 @@
   "license": "Public domain",
   "url": "https://commons.wikimedia.org/wiki/File:Perseid_Meteor_Shower_(201508130001HQ).jpg",
   "focus": "50% 30%"
+ },
+ "SIKHOTE-ALIN": {
+  "file": "/cards/photo/SIKHOTE-ALIN.webp",
+  "kind": "photo",
+  "credit": "Parent Géry",
+  "source": "Specimen photograph",
+  "year": "",
+  "license": "CC BY-SA 3.0",
+  "url": "https://commons.wikimedia.org/wiki/File:M%C3%A9t%C3%A9orite_Sikhote-Alin_(Russie).JPG",
+  "focus": "50% 50%"
+ },
+ "GIBEON": {
+  "file": "/cards/photo/GIBEON.webp",
+  "kind": "photo",
+  "credit": "Kevin Walsh",
+  "source": "Etched slice",
+  "year": "",
+  "license": "CC BY 2.0",
+  "url": "https://commons.wikimedia.org/wiki/File:Gibeon_meteorite_slice.jpg",
+  "focus": "50% 50%"
+ },
+ "CAMPO-DEL-CIELO": {
+  "file": "/cards/photo/CAMPO-DEL-CIELO.webp",
+  "kind": "photo",
+  "credit": "Geo Lightspeed7",
+  "source": "Specimen photograph",
+  "year": "",
+  "license": "CC BY-SA 4.0",
+  "url": "https://commons.wikimedia.org/wiki/File:Campo_del_Cielo_Meteorite_17g.jpg",
+  "focus": "50% 50%"
+ },
+ "MUONIONALUSTA": {
+  "file": "/cards/photo/MUONIONALUSTA.webp",
+  "kind": "photo",
+  "credit": "Windell Oskay",
+  "source": "Etched slice",
+  "year": "",
+  "license": "CC BY 2.0",
+  "url": "https://commons.wikimedia.org/wiki/File:Muonionalusta_meteorite_2_(14414427400)_(2).jpg",
+  "focus": "50% 50%"
+ },
+ "ALLENDE": {
+  "file": "/cards/photo/ALLENDE.webp",
+  "kind": "photo",
+  "credit": "H. Raab",
+  "source": "Specimen photograph",
+  "year": "",
+  "license": "CC BY-SA 3.0",
+  "url": "https://commons.wikimedia.org/wiki/File:AllendeMeteorite.jpg",
+  "focus": "50% 50%"
  }
 }

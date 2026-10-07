@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import { Layers, Moon, Rocket, Telescope, Wallet } from 'lucide-react';
 
 const TABS = [
-  { href: '/set/001', label: 'Cards', icon: Layers, match: ['/set', '/card', '/capsule'] },
+  { href: '/genesis', label: 'Cards', icon: Layers, match: ['/genesis', '/card', '/capsule'] },
   { href: '/node', label: 'Telescope', icon: Telescope, match: ['/node'] },
   { href: '/tonight', label: 'Tonight', icon: Moon, match: ['/tonight'] },
   { href: '/voyage', label: 'Voyage', icon: Rocket, match: ['/voyage'] },

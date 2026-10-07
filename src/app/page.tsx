@@ -24,7 +24,7 @@ export const revalidate = 60;
 export const metadata: Metadata = {
   title: 'Stellar — the cosmos, issued in editions',
   description:
-    'Genesis: a hundred cards, each held as a numbered edition — planets, stars, nebulae, galaxies, the extremes of the universe, eight rare sights and eight dated events. Opened from sealed capsules, from $5.',
+    'Genesis: a hundred and five cards, each held as a numbered edition — planets, stars, nebulae, galaxies, the extremes of the universe, eight rare sights, eight dated events and seven real meteorites. Opened from sealed capsules, from $5.',
 };
 
 /** Six cards from across the set, one shelf of it. */
@@ -43,14 +43,14 @@ const SUPPLY = Object.fromEntries(
 const FROM_USD = Math.min(...TIERS.map((t) => t.priceUsd));
 
 const PLAN: FlightStep[] = [
-  { title: 'Open', text: `${CARDS_PER_TIER === 1 ? 'One sealed card' : `${CARDS_PER_TIER} sealed cards`} to a capsule, from $${FROM_USD}.`, live: true, href: '/set/001', icon: 'capsule' },
+  { title: 'Open', text: `${CARDS_PER_TIER === 1 ? 'One sealed card' : `${CARDS_PER_TIER} sealed cards`} to a capsule, from $${FROM_USD}.`, live: true, href: '/genesis', icon: 'capsule' },
   { title: 'Vote', text: 'Holders choose where Live Telescope V1 points each night.', live: true, href: '/tonight', icon: 'reticle' },
   { title: 'Watch', text: 'Holders of the chosen card watch the observation live.', live: false, href: '/node', icon: 'telescope' },
   {
     title: 'Claim',
     text: 'Two cards in Genesis carry a real meteorite fragment, redeemable later.',
     live: false,
-    href: '/set/001',
+    href: '/genesis',
     icon: 'meteorite',
   },
 ];
@@ -111,7 +111,7 @@ export default async function HomePage() {
               Real objects, numbered editions. A card is a seat at the telescope — and, for some, an object you can hold.
             </p>
             <div className="sd-hero2__cta">
-              <Link href="/set/001" className="sd-btn sd-btn--light">
+              <Link href="/genesis" className="sd-btn sd-btn--light">
                 Blast a star — from ${FROM_USD}
               </Link>
             </div>
@@ -183,7 +183,7 @@ export default async function HomePage() {
               </li>
             ))}
           </ul>
-          <Link href="/set/001" className="sd-btn">
+          <Link href="/genesis" className="sd-btn">
             See all {SET_001_CARDS.length} cards
           </Link>
         </div>
@@ -217,7 +217,7 @@ export default async function HomePage() {
         </h2>
         <p className="sd-home-sec__lede">Sealed before sale. Published after opening.</p>
         <div className="sd-hero2__cta">
-          <Link href="/set/001" className="sd-btn sd-btn--light">
+          <Link href="/genesis" className="sd-btn sd-btn--light">
             Blast a star
           </Link>
           <Link href="/capsules/log" className="sd-btn">

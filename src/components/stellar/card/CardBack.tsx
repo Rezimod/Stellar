@@ -47,7 +47,7 @@ const LEDGER = { y: 594, h: 94 };
 const BOX = { x: 30, y: 702, w: 570, h: 116 };
 
 /** Planets, moons and the Sun: the whole disc shown on black, never cropped by the window. */
-const WHOLE = new Set(['EARTH', 'MOON', 'SUN', 'MERCURY', 'VENUS', 'MARS', 'JUPITER', 'IO', 'EUROPA', 'GANYMEDE', 'SATURN', 'TITAN', 'ENCELADUS', 'URANUS', 'NEPTUNE', 'PLUTO', 'BLOOD-MOON', 'HUNTERS-MOON', 'CHRISTMAS-SUPERMOON', 'DOUBLE-OPPOSITION', 'SNOW-MOON-ECLIPSE']);
+const WHOLE = new Set(['SIKHOTE-ALIN', 'GIBEON', 'CAMPO-DEL-CIELO', 'MUONIONALUSTA', 'ALLENDE', 'EARTH', 'MOON', 'SUN', 'MERCURY', 'VENUS', 'MARS', 'JUPITER', 'IO', 'EUROPA', 'GANYMEDE', 'SATURN', 'TITAN', 'ENCELADUS', 'URANUS', 'NEPTUNE', 'PLUTO', 'BLOOD-MOON', 'HUNTERS-MOON', 'CHRISTMAS-SUPERMOON', 'DOUBLE-OPPOSITION', 'SNOW-MOON-ECLIPSE']);
 
 /** A figure split into its number, set large, and its unit, set small after it: "3,475" and "KM". */
 function splitFigure(value: string): [string, string] {

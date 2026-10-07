@@ -19,7 +19,7 @@ vi.mock('@/components/stellar/StellarBuyCard', () => ({
     createElement('p', null, !released ? 'Set not released' : available ? 'Buy this card' : 'Not for sale'),
 }));
 
-import Set001Page from '@/app/set/001/page';
+import Set001Page from '@/app/genesis/page';
 import CardPage from '@/app/card/[designation]/page';
 import { SET_001_CARDS } from '@/lib/sets/set-001';
 
