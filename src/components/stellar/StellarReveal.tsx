@@ -188,6 +188,29 @@ export default function StellarReveal({
     if (done && staged) close.current?.focus();
   }, [done, staged]);
 
+  /* Once it is down the card sits in the room left above its words, never under them. */
+  useEffect(() => {
+    const el = root.current;
+    if (!done || !el) return;
+    const fit = () => {
+      el.style.setProperty('--sn-fit-y', '0px');
+      el.style.setProperty('--sn-fit-s', '1');
+      const card = el.querySelector('.sn-center')?.getBoundingClientRect();
+      const top = el.querySelector('.sn-top')?.getBoundingClientRect().bottom ?? 0;
+      const hud = el.querySelector('.sn-hud')?.getBoundingClientRect().top;
+      if (!card || hud == null) return;
+      const lo = top + 12;
+      const hi = hud - 20;
+      if (card.top >= lo && card.bottom <= hi) return;
+      const s = Math.min(1, (hi - lo) / card.height);
+      el.style.setProperty('--sn-fit-s', s.toFixed(3));
+      el.style.setProperty('--sn-fit-y', `${((lo + hi) / 2 - (card.top + card.bottom) / 2).toFixed(1)}px`);
+    };
+    fit();
+    window.addEventListener('resize', fit);
+    return () => window.removeEventListener('resize', fit);
+  }, [done]);
+
   /* Once it is down the card leans toward the pointer, and a press turns it over. */
   const lay = useCallback((flipped: boolean) => {
     const { x, y } = lean.current;
@@ -278,22 +301,21 @@ export default function StellarReveal({
 
   const tag = (
     <p className="sn-tag" hidden={!done}>
-      <span className="sn-tag__rar" style={{ color: info.color }}>
-        {info.label}
-      </span>
-      <a className="sn-tag__name" href={`/card/${flown.designation}`}>
-        {flown.name}
+      <a className="sn-tag__line" href={`/card/${flown.designation}`} aria-label={`${flown.name}, ${info.label}, No. ${pad(flown.editionNumber)} of ${flown.editionSize}`}>
+        <span className="sn-tag__rar" style={{ color: info.color }}>
+          {info.label}
+        </span>
+        <span className="sn-tag__ed">
+          No. {pad(flown.editionNumber)} / {flown.editionSize}
+        </span>
       </a>
-      <span className="sn-tag__ed">
-        No. {pad(flown.editionNumber)} / {flown.editionSize}
-      </span>
       <span className="sn-tag__perk">{perkLine(rarity, flown.name)}</span>
     </p>
   );
 
   if (!staged) {
     return (
-      <div className="sn-inpage" data-rarity={rarity}>
+      <div className="sn-inpage" data-rarity={rarity} style={{ '--sn-tone': info.color } as CSSProperties}>
         <CardPlate designation={flown.designation} edition={flown.editionNumber} href={`/card/${flown.designation}`} />
         {tag}
         {after}
