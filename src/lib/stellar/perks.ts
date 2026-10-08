@@ -58,10 +58,27 @@ export function perkFor(designation: string, rarity: Rarity): Perk {
   }
 }
 
+/**
+ * What a card unlocks, in one line: under the card after the reveal, and on the
+ * Genesis tier tiles. The telescope perks always wait for first light.
+ */
+export function perkLine(rarity: Rarity, name = 'the stone it shows'): string {
+  switch (rarity) {
+    case 'legendary':
+      return `A real piece of ${name}. Redeemable — we’ll be in touch.`;
+    case 'epic':
+      return `A ${SESSION_MINUTES}-minute session at the telescope — yours to book after first light.`;
+    case 'rare':
+      return 'You’re in the draw for a seat at a live session — after first light.';
+    default:
+      return 'Your vote on the night — counts ×1 to ×3.';
+  }
+}
+
 /** What each tier gives, for the guide under the odds, from common up to legendary. */
 export const TIER_PERKS: { rarity: Rarity; title: string; line: string; soon: boolean }[] = [
-  { rarity: 'common', title: 'Nightly vote', line: 'Pick the night’s target, ×1 to ×3.', soon: false },
-  { rarity: 'rare', title: 'Visitor seat', line: 'A draw to watch a live session.', soon: true },
-  { rarity: 'epic', title: `${SESSION_MINUTES}-min session`, line: 'Your time on the telescope.', soon: true },
-  { rarity: 'legendary', title: 'Real meteorite', line: 'The stone itself, sent to you.', soon: false },
+  { rarity: 'common', title: 'Nightly vote', line: perkLine('common'), soon: false },
+  { rarity: 'rare', title: 'Visitor seat', line: perkLine('rare'), soon: true },
+  { rarity: 'epic', title: `${SESSION_MINUTES}-min session`, line: perkLine('epic'), soon: true },
+  { rarity: 'legendary', title: 'Real meteorite', line: perkLine('legendary'), soon: false },
 ];

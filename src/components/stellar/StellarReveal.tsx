@@ -9,6 +9,8 @@ import type { Rarity } from '@/lib/rarity';
 import { RARITIES, isRarity, rarityInfo } from '@/lib/rarity';
 import { plateFor } from '@/lib/stellar/plate';
 import Typed from './reveal/Typed';
+import ShareCard from './ShareCard';
+import { perkLine } from '@/lib/stellar/perks';
 import type { SupernovaHandle } from './supernova/engine';
 
 export type RevealedCard = {
@@ -68,13 +70,10 @@ function SealedBack({ designation, u }: { designation: string; u: string }) {
  */
 export default function StellarReveal({
   draw,
-  onAgain,
   onClose,
   autoLaunch = false,
 }: {
   draw: Draw;
-  /** Draws again; the preview's "Open another". */
-  onAgain?: () => void;
   /** Called on close instead of leaving the card in the page. */
   onClose?: () => void;
   /** Ignite as soon as it is shown, for a press that already said so. */
@@ -130,6 +129,8 @@ export default function StellarReveal({
         sound: SOUND && soundOn,
         onDone: () => setPhase('done'),
         waiting: true,
+        breathe: true,
+        remnant: true,
       });
       nova.current = handle;
       setReady(true);
@@ -210,10 +211,18 @@ export default function StellarReveal({
     return { ...p, at };
   });
 
+  /** The preview is over: back to the capsules, to open a real one. */
+  const real = () => {
+    onClose?.();
+    const picker = document.getElementById('capsules');
+    if (picker) picker.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    else window.location.href = '/genesis#capsules';
+  };
+
   const actions = preview ? (
     <div className="sd-pay__actions">
-      <button type="button" className="sd-btn sd-btn--primary" onClick={onAgain}>
-        Detonate another
+      <button type="button" className="sd-btn sd-btn--primary" onClick={real}>
+        Detonate a real one
       </button>
       <button type="button" className="sd-btn" onClick={onClose}>
         Back to the shelf
@@ -227,6 +236,11 @@ export default function StellarReveal({
       <a className="sd-btn" href="/genesis">
         {outright ? 'Back to the set' : 'Detonate another'}
       </a>
+      <ShareCard
+        title={`${flown.name} — Stellar`}
+        text={`I detonated a star and pulled ${flown.name} — No. ${pad(flown.editionNumber)} of ${flown.editionSize}.`}
+        url={`https://stellarr.club/card/${flown.designation}`}
+      />
     </div>
   );
 
@@ -273,6 +287,7 @@ export default function StellarReveal({
       <span className="sn-tag__ed">
         No. {pad(flown.editionNumber)} / {flown.editionSize}
       </span>
+      <span className="sn-tag__perk">{perkLine(rarity, flown.name)}</span>
     </p>
   );
 

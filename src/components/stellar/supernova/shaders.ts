@@ -32,6 +32,8 @@ uniform float uIn, uInI, uFlash, uFlare;
 uniform float uS1, uS1I, uS2, uS2I;
 uniform float uE, uNebI, uNebHot, uTeal, uDeb, uDebI, uCore;
 uniform vec3 uTint;
+uniform sampler2D uPh, uRm;
+uniform float uHasPh, uHasRm, uProm, uPromH, uRemI, uRemMix, uEmb;
 
 float h11(float n){return fract(sin(n*127.1+uSeed)*43758.5453);}
 float h21(vec2 p){p=fract(p*vec2(123.34,456.21));p+=dot(p,p+45.32);return fract(p.x*p.y);}
@@ -74,15 +76,47 @@ float streaks(float a,float r,float Nn,float head,float len,float w,float seed,f
   if(x<0.||x>1.) return 0.;
   return exp(-da*da/(w*w))*x*x*(.4+.6*h);
 }
+// Equirectangular coordinates on the sphere, pole along y.
+vec2 eq(vec3 v){return vec2(atan(v.x,v.z)/6.2831853+.5,acos(clamp(v.y,-1.,1.))/3.14159265);}
 float adiff(float a,float b){return mod(a-b+3.14159265,6.2831853)-3.14159265;}
 float flare(float a,float r,float R,float fa,float fi){
   if(fi<.001) return 0.;
-  float d=adiff(a,fa), o=(r-R)/R;
+  float o=(r-R)/R;
   if(o<-.05) return 0.;
-  float reach=.25+.9*fi;
+  float reach=.3+1.15*fi;
+  // The plume curls as it climbs, frays into strands, and throws a knot of plasma ahead of it.
+  float d=adiff(a,fa)-o*.32*sin(fa*3.1+1.3);
   float wob=N(vec2(o*.4-uTime*.12,fa*.2)).r-.5;
-  float w=.10+.18*o;
-  return exp(-pow((d+wob*.25)/w,2.))*exp(-max(o,0.)/reach*2.2)*fi*(1.+2.*N(vec2(d*1.5,o*.6-uTime*.2)).b);
+  float w=.05+.2*o;
+  float core=exp(-pow((d+wob*.3)/w,2.));
+  float strands=.3+1.4*pow(N(vec2(d*9.+fa,o*1.4-uTime*.32)).g,2.);
+  float knot=exp(-pow((o-reach*.6)/(.1+.08*fi),2.))*.7;
+  return core*(exp(-max(o,0.)/reach*2.2)+knot)*strands*fi*(1.+1.4*N(vec2(d*1.5,o*.6-uTime*.2)).b);
+}
+
+// Prominences: arches of plasma standing on the limb, rising and settling slowly, turbulent and stranded.
+float prom(float a,float r,float R){
+  float o=(r-R)/R;
+  if(o<-.03||o>.75*uPromH) return 0.;
+  float s=0.;
+  for(int i=0;i<6;i++){
+    float fi=float(i);
+    float site=h11(fi*3.7+1.)*6.2831853-3.14159265;
+    float life=.5+.5*sin(uTime*(.06+.05*h11(fi+9.))+fi*2.1);
+    float H=(.1+.32*h11(fi+5.))*uPromH*(.5+.5*life);
+    float w=.08+.15*h11(fi+2.);
+    float x=adiff(a,site)*r/R;
+    if(abs(x)>w*2.2) continue;
+    vec4 nn=N(vec2(x*1.3+fi*.17,o*1.1-uTime*.02*(1.+fi*.1)));
+    vec2 q=vec2(x/w,o/H)+(nn.ra-.5)*.4;
+    float e=length(q);
+    // A thick, fraying arch of plasma with a faint glow filling the space under it.
+    float tube=exp(-pow((e-1.)/(.24+.14*nn.b),2.));
+    float fill=exp(-e*e*1.4)*.32*smoothstep(0.,.25,q.y);
+    float strands=.25+1.2*pow(N(vec2(atan(q.y,q.x)*3.+fi,e*7.-uTime*.03)).g,2.)*(.6+.8*N(vec2(x*6.+fi,o*9.)).b);
+    s+=(tube+fill)*strands*(.35+.65*life)*smoothstep(-.03,.03,o)*.75;
+  }
+  return s;
 }
 
 // The remnant: soft gas lit from the core, ridged filaments on the shell, dark dust across it, oxygen-teal deep inside.
@@ -115,6 +149,23 @@ vec3 nebula(vec2 p,float r,vec2 dir){
   float dust=smoothstep(.5,.8,N(s*1.35-warp*.9+.61).r)*smoothstep(1.15,.25,e);
   c=mix(c,c*vec3(.55,.72,.9),dust*.5); c*=1.-dust*.7;
   c=mix(c,hot*dot(c,vec3(.45))*1.6,uNebHot);
+  // The photographed remnant over the drawn gas: the shock shell first, filling in to the nebula; it turns with the seed and breathes with the warp.
+  if(uHasRm>.5&&uRemI>.001){
+    float ra=uSeed*.37, ca=cos(ra), sa=sin(ra);
+    vec2 rq=mat2(ca,-sa,sa,ca)*(q+warp*.5);
+    vec2 uv=.5+rq*.44;
+    vec3 rm=vec3(0.);
+    if(abs(uv.x-.5)<.5&&abs(uv.y-.5)<.5){
+      vec3 shell=texture2D(uRm,vec2(clamp(uv.x,.002,.998)*.5,uv.y)).rgb;
+      vec2 cu=clamp(.5+(uv-.5)*1.1,.002,.998);
+      vec3 crab=texture2D(uRm,vec2(.5+cu.x*.5,cu.y)).rgb;
+      rm=mix(shell,crab,uRemMix);
+    }
+    rm=pow(rm,vec3(1.25))*2.4;
+    rm=mix(rm,rm*(.6+uTint),.18);
+    rm=mix(rm,hot*dot(rm,vec3(.42))*1.5,uNebHot*.85);
+    c=c*(1.-.5*uRemI)+rm*uRemI*(.85+.35/(1.+qr*qr*4.));
+  }
   return c;
 }
 
@@ -138,14 +189,34 @@ void main(){
       float ct=cos(uTime*.06),st=sin(uTime*.06); n.xz=mat2(ct,-st,st,ct)*n.xz;
       float g1=fbm3(n*4.5+vec3(0.,0.,uTime*(.12+uWob*3.)));
       float g2=fbm3(n*13.-vec3(uTime*(.25+uWob*4.)));
-      float k=uHeat+(g1-.5)*.4+(g2-.5)*.18;
-      col+=bb(clamp(k,0.,1.))*(.45+1.*g1)*pow(max(mu,.08),.5)*uStarI*(1.4+uHeat*2.6)*msk;
+      // The surface: a photographed granulation map wrapped on the sphere, two drifting layers so the cells boil.
+      float ph=g1;
+      if(uHasPh>.5){
+        // Near the poles the map pinches; there a second wrapping, its pole on the equator, takes over.
+        vec2 tuv=eq(n), tuv2=eq(n.yxz);
+        float wp=smoothstep(.5,.82,abs(n.y));
+        vec2 dA=vec2(uTime*.003,0.), dB=vec2(.37,.11)-vec2(uTime*.005,uTime*.0015);
+        float tA=mix(texture2D(uPh,tuv+dA).r,texture2D(uPh,tuv2+dA).r,wp);
+        float tB=mix(texture2D(uPh,tuv*1.7+dB).r,texture2D(uPh,tuv2*1.7+dB).r,wp);
+        ph=mix(tA,tB,.38+.18*sin(uTime*.3))*.8+g1*.2+(g2-.5)*.2;
+      }
+      float k=uHeat+(ph-.5)*.5+(g2-.5)*.12-.16*(1.-mu);
+      float ld=.32+.68*pow(max(mu,.02),.55);
+      col+=bb(clamp(k,0.,1.))*(.35+1.25*ph)*ld*uStarI*(1.4+uHeat*2.6)*msk;
     }
     float o=max(r-R,0.)/max(R,1e-3);
     float cor=exp(-o*7.)*.8+exp(-o*2.)*.22+exp(-o*.6)*.05;
     cor*=.75+.5*N(dir*.3+vec2(uTime*.01,0.)).r;
+    // Coronal streamers: faint rays reaching out from the limb.
+    cor+=exp(-o*1.6)*.12*pow(N(vec2(a*1.6,uTime*.004)).g,3.)*smoothstep(0.,.05,o);
     float fl=flare(a,r,R,uFA.x,uFI.x)+flare(a,r,R,uFA.y,uFI.y)+flare(a,r,R,uFA.z,uFI.z)+flare(a,r,R,uFA.w,uFI.w);
+    vec3 plasma=mix(vec3(1.,.36,.2),bb(clamp(uHeat+.2,0.,1.)),.45);
     col+=bb(clamp(uHeat+.08,0.,1.))*(cor+fl*.9)*uStarI*(1.-msk)*(1.+uHeat*2.5);
+    // The chromosphere: a thin rose rim, bristling with spicules.
+    float chrom=exp(-o*60.)*(.8+.4*N(vec2(a*6.,uTime*.05)).g);
+    float spic=smoothstep(0.,.03,o)*exp(-o*16.)*pow(N(vec2(a*42.,o*3.-uTime*.03)).g,3.)*1.5;
+    col+=plasma*(chrom*.85+spic)*uStarI*(1.-msk)*(1.+uHeat*1.5);
+    if(uProm>.001&&r<R*(1.+.8*uPromH)) col+=plasma*prom(a,r,R)*uProm*uStarI*(1.-msk)*(1.1+uHeat*2.);
   }
 
   if(uInI>.001){
@@ -157,6 +228,22 @@ void main(){
     col+=mix(vec3(1.,.92,.8),uTint,.35)*s*uDebI*.85;
   }
 
+  // Embers: sparks drifting out of the core around the card, in two layers.
+  if(uEmb>.001){
+    for(int L=0;L<2;L++){
+      float fL=float(L), na=L==0?48.:84.;
+      float rr=r*(14.+fL*10.)-uTime*(.22+.12*fL);
+      vec2 g=vec2((a/6.2831853+.5)*na,rr);
+      vec2 id=floor(g), f=fract(g)-.5;
+      float h=h21(id+fL*31.);
+      if(h>.86){
+        vec2 o2=vec2(h21(id+5.3),h21(id+9.1))-.5;
+        float d=length((f-o2*.5)*vec2(1.,1.6));
+        float tw=.55+.45*sin(uTime*(2.+h*5.)+h*40.);
+        col+=mix(vec3(1.,.62,.28),uTint,.3)*smoothstep(.14,0.,d)*(h-.86)/.14*tw*uEmb*smoothstep(.04,.14,r)*exp(-r*2.2)*(L==0?1.6:1.);
+      }
+    }
+  }
   col+=vec3(1.,.93,.82)*uCore*(.0007/(r*r+.0007));
   col+=mix(vec3(1.,.75,.45),uTint,.5)*uCore*exp(-r*6.)*.4;
   col+=vec3(1.,.82,.58)*uFlare*(exp(-abs(p.y)*170.)*exp(-abs(p.x)*1.6)+.45*exp(-abs(p.x)*190.)*exp(-abs(p.y)*4.));

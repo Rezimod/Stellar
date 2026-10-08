@@ -69,7 +69,17 @@ it('names the opening plainly, with no banned words and no exclamation marks', (
   const text = html.replace(/<[^>]+>/g, ' ');
   expect(text).not.toMatch(/\b(NFT|mint|drop|payload|manifest|registry|airdrop)\b/i);
   expect(text).not.toContain('!');
-  expect(html).toContain('Detonate another');
+  expect(html).toContain('Detonate a real one');
+});
+
+it('says what the card unlocks, and offers Share on a real pull only', () => {
+  const real = render([card('M31', 'rare', 0)]);
+  expect(real).toContain('You’re in the draw for a seat at a live session — after first light.');
+  expect(real).toContain('Share');
+  expect(real).toContain('Detonate another');
+  const preview = render([card('M31', 'rare', 0)], { preview: 'Iron', secret: undefined, nonce: undefined, sequence: undefined });
+  expect(preview).not.toContain('>Share<');
+  expect(preview).not.toContain('sn-share');
 });
 
 it('plays without sound for now, and offers no sound toggle', () => {

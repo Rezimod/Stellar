@@ -39,7 +39,14 @@ export type SupernovaOptions = {
   breathe?: boolean;
   /** Where the star sits, as a fraction of the box's height from the top. Defaults to the reveal's own placement. */
   centre?: number;
+  /** Load the photographed remnant the blast leaves (the reveal only; a waiting star never detonates). */
+  remnant?: boolean;
 };
+
+/** The photographed surface, seamless and grey: granulation, faculae, spots. The colour is the star's own. */
+const PHOTOSPHERE = '/supernova/photosphere.webp';
+/** Two remnants side by side: the young shock shell, then the filled nebula it becomes. */
+const REMNANT = '/supernova/remnant.webp';
 
 type Tier = {
   TI: number; hold: number; X: number; flash: number; white: number; flare: number; deb: number;
@@ -84,6 +91,7 @@ type Frame = {
   s1: number; s1i: number; s2: number; s2i: number; E: number; neb: number; nebHot: number; teal: number;
   deb: number; debI: number; core: number; blur: number; rays: number; ca: number; vig: number; white: number;
   shk: number; bloom: number; dof: number;
+  prom: number; promH: number; remI: number; remMix: number; emb: number;
 };
 
 function rgb(hex: string): [number, number, number] {
@@ -134,6 +142,7 @@ export function startSupernova(root: HTMLElement, opts: SupernovaOptions): Super
   type Prog = { p: WebGLProgram; u: Record<string, WebGLUniformLocation | null> };
   let SP: Prog | null = null, PP: Prog | null = null, DP: Prog | null = null, BP: Prog | null = null;
   let tex: WebGLTexture | null = null, noise: WebGLTexture | null = null, qa: WebGLTexture | null = null, qb: WebGLTexture | null = null;
+  let photo: WebGLTexture | null = null, rem: WebGLTexture | null = null;
   let fbo: WebGLFramebuffer | null = null, fa: WebGLFramebuffer | null = null, fb: WebGLFramebuffer | null = null;
   let W = 0, H = 0, CY = 0, BW = 0, BH = 0, QW = 0, QH = 0, Q = 0.75, frames = 0, acc = 0, last = 0;
 
@@ -200,7 +209,7 @@ export function startSupernova(root: HTMLElement, opts: SupernovaOptions): Super
       gl.deleteFramebuffer(bf);
       gl.deleteProgram(bake.p);
     }
-    SP = program(SCENE, ['uN', 'uRes', 'uC', 'uPan', 'uTime', 'uSeed', 'uZoom', 'uStarDim', 'uStarR', 'uHeat', 'uStarI', 'uWob', 'uFA', 'uFI', 'uIn', 'uInI', 'uFlash', 'uFlare', 'uS1', 'uS1I', 'uS2', 'uS2I', 'uE', 'uNebI', 'uNebHot', 'uTeal', 'uDeb', 'uDebI', 'uCore', 'uTint']);
+    SP = program(SCENE, ['uN', 'uPh', 'uRm', 'uHasPh', 'uHasRm', 'uProm', 'uPromH', 'uRemI', 'uRemMix', 'uEmb', 'uRes', 'uC', 'uPan', 'uTime', 'uSeed', 'uZoom', 'uStarDim', 'uStarR', 'uHeat', 'uStarI', 'uWob', 'uFA', 'uFI', 'uIn', 'uInI', 'uFlash', 'uFlare', 'uS1', 'uS1I', 'uS2', 'uS2I', 'uE', 'uNebI', 'uNebHot', 'uTeal', 'uDeb', 'uDebI', 'uCore', 'uTint']);
     PP = program(FX, ['uTex', 'uBl', 'uRes', 'uC', 'uBlur', 'uRays', 'uCA', 'uTime', 'uVig', 'uWhite', 'uBloom', 'uDof', 'uClear']);
     DP = program(DOWN, ['uTex', 'uTx']);
     BP = program(BLUR, ['uTex', 'uTx', 'uDir']);
@@ -213,6 +222,33 @@ export function startSupernova(root: HTMLElement, opts: SupernovaOptions): Super
   }
   const live = !!(gl && SP && PP && DP && BP && noise);
   root.dataset.nogl = live ? '0' : '1';
+
+  /** A picture into a texture unit once it has loaded; until then the shader draws without it. */
+  function picture(src: string, unit: number, wrap: number, onReady: (t: WebGLTexture) => void) {
+    if (!live || !gl) return;
+    const img = new Image();
+    img.decoding = 'async';
+    img.onload = () => {
+      if (dead || !gl) return;
+      const t = gl.createTexture();
+      if (!t) return;
+      gl.activeTexture(gl.TEXTURE0 + unit);
+      gl.bindTexture(gl.TEXTURE_2D, t);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+      gl.generateMipmap(gl.TEXTURE_2D);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, wrap);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, wrap);
+      gl.activeTexture(gl.TEXTURE0);
+      onReady(t);
+    };
+    img.src = src;
+  }
+  if (gl) {
+    picture(PHOTOSPHERE, 3, gl.REPEAT, (t) => (photo = t));
+    if (opts.remnant) picture(REMNANT, 4, gl.CLAMP_TO_EDGE, (t) => (rem = t));
+  }
 
   function size() {
     if (!cv) return;
@@ -250,6 +286,7 @@ export function startSupernova(root: HTMLElement, opts: SupernovaOptions): Super
       zoom: 1, pan: [0, 0], dim: 1, starR: R0 * (1 + 0.012 * Math.sin(now * 1.3)), heat: 0.16, starI: 1, wob: 0.025,
       fa: [0, 0, 0, 0], fi: [0, 0, 0, 0], inH: 0, inI: 0, flash: 0, flare: 0, s1: 0, s1i: 0, s2: 0, s2i: 0,
       E: 0.05, neb: 0, nebHot: 0, teal: 0, deb: 0, debI: 0, core: 0, blur: 0, rays: 0, ca: 0, vig: 0.35, white: 0, shk: 0, bloom: 0.4, dof: 0,
+      prom: 0.6, promH: 1, remI: 0, remMix: 0, emb: 0,
     };
     if (t < 0) {
       if (opts.waiting && opts.breathe && !opts.reducedMotion) {
@@ -261,6 +298,14 @@ export function startSupernova(root: HTMLElement, opts: SupernovaOptions): Super
         S.wob = 0.03;
         S.rays = 0.06 + 0.12 * sw;
         S.bloom = 0.4 + 0.35 * sw;
+        // The prominences stand taller on the swell, and each swell throws flares off the limb, one after another.
+        S.prom = 0.5 + 0.45 * sw;
+        S.promH = 0.85 + 0.35 * sw;
+        for (let j = 0; j < 4; j++) {
+          const off = 1.7 + j * 0.85, kk = (((now - off) % 6) + 6) % 6, cyc = Math.floor((now - off) / 6);
+          S.fa[j] = (((cyc * 4 + j) * 2.39996 + seed) % 6.283) - 3.14159;
+          S.fi[j] = [0.62, 0.42, 0.52, 0.34][j] * (0.6 + 0.4 * Math.abs(Math.sin(cyc * 12.9898 + j * 78.233))) * eout(kk / 0.35) * Math.exp(-kk / 1.5);
+        }
       } else if (opts.waiting && !opts.reducedMotion) {
         // Waiting: a slow double heartbeat, every 3.4 s; the star swells, warms and throws a little light off its limb.
         const ph = now % 3.4, b = Math.exp(-Math.pow((ph - 0.25) / 0.11, 2)) + 0.55 * Math.exp(-Math.pow((ph - 0.62) / 0.12, 2));
@@ -289,6 +334,8 @@ export function startSupernova(root: HTMLElement, opts: SupernovaOptions): Super
         S.fi[i] = b.s * eout(kk / 0.25) * Math.exp(-kk / 0.9);
       });
       S.shk = 0.25 * bt + 0.6 * k * k * k;
+      S.prom = 0.7 + 0.7 * k + 0.3 * bt;
+      S.promH = 1 + 0.5 * k;
       S.vig = 0.3 + 0.35 * k;
       S.rays = 0.22 * k * k;
       S.dim = 1 - 0.35 * k;
@@ -299,6 +346,8 @@ export function startSupernova(root: HTMLElement, opts: SupernovaOptions): Super
       S.heat = lerp(0.5, 0.92, ein2(c));
       S.wob = 0.15 * (1 - c);
       S.starI = 1.1 + 2.4 * e;
+      S.prom = 1.4 * (1 - e);
+      S.promH = 1.5 * (1 - e);
       S.inH = lerp(0.62, 0, eout(c));
       S.inI = Math.sin(Math.PI * clamp(c * 1.1));
       S.core = 0.6 * e;
@@ -311,6 +360,7 @@ export function startSupernova(root: HTMLElement, opts: SupernovaOptions): Super
       const h = (t - T.TC) / p.hold;
       S.zoom = p.push * 1.08 + 0.02 * h;
       S.starI = 0;
+      S.prom = 0;
       S.core = 0.35 + 0.2 * Math.sin(t * 70) * Math.sin(t * 23) + 0.25 * ein(h);
       S.vig = 0.9;
       S.dim = 0.12;
@@ -318,6 +368,7 @@ export function startSupernova(root: HTMLElement, opts: SupernovaOptions): Super
     } else {
       const k = t - T.TB, X = p.X;
       S.starI = 0;
+      S.prom = 0;
       // The camera: thrown back by the blast, then drifting slowly into the nebula.
       S.zoom = lerp(0.78, 1, eout(k / 2.4)) + (p.push * 1.1 - 0.78) * Math.exp(-k / 0.05) + 0.08 * sm(1.6, 9, k);
       S.pan = [0.018 * Math.sin(k * 0.21) * sm(1, 4, k), 0.012 * Math.sin(k * 0.17 + 1) * sm(1, 4, k)];
@@ -337,6 +388,9 @@ export function startSupernova(root: HTMLElement, opts: SupernovaOptions): Super
       S.neb = p.neb * sm(0, 0.12, k) * (1.3 * Math.exp(-k / 1) + 0.52);
       S.nebHot = Math.exp(-k / 0.7);
       S.teal = p.teal * sm(0.8, 2.8, k);
+      // The photographed remnant: the shock shell first, filling in to the nebula it becomes.
+      S.remI = sm(0.04, 0.9, k) * (0.9 + 0.1 * p.X);
+      S.remMix = sm(1.1, 4.8, k);
       S.deb = X * 1.1 * eout(k / 2);
       S.debI = p.deb * Math.exp(-k / 1.2) * Math.min(1, k / 0.05);
       S.blur = p.blur * Math.exp(-k / 0.55);
@@ -352,7 +406,9 @@ export function startSupernova(root: HTMLElement, opts: SupernovaOptions): Super
       // The birth: the core flares once more as the card leaves it.
       const born = Math.exp(-Math.pow(kt / 0.2, 2));
       S.core = 1.6 * Math.exp(-k / 0.35) + 0.4 + 0.05 * Math.sin(now * 8.2) + 0.9 * sm(-1.2, 0.3, kt) * (1 - sm(0.6, 2.2, kt)) + 1.9 * Math.exp(-Math.pow((kf - 0.45 * p.fl) / 0.14, 2)) + 1.2 * born;
-      S.dof = 0.82 * sm(T.TE + p.em * 0.55, T.TF + p.fl * 0.6, t);
+      S.dof = 0.6 * sm(T.TE + p.em * 0.55, T.TF + p.fl * 0.6, t);
+      // Embers drift out of the core once the card is born, and keep drifting while it is held.
+      S.emb = sm(-0.6, 0.8, kt) * (0.7 + 0.3 * X);
       S.bloom += 0.5 * burst;
       S.rays *= 1 - 0.6 * S.dof;
       S.rays += (0.25 + (0.35 * p.flash) / 1.9) * burst + 0.25 * sm(0, 1, kt) * (1 - sm(1.5, 2.6, kt)) + 0.45 * born;
@@ -406,6 +462,19 @@ export function startSupernova(root: HTMLElement, opts: SupernovaOptions): Super
     gl.uniform1f(u.uDebI, S.debI);
     gl.uniform1f(u.uCore, S.core);
     gl.uniform3f(u.uTint, tint[0], tint[1], tint[2]);
+    gl.activeTexture(gl.TEXTURE3);
+    gl.bindTexture(gl.TEXTURE_2D, photo);
+    gl.uniform1i(u.uPh, 3);
+    gl.activeTexture(gl.TEXTURE4);
+    gl.bindTexture(gl.TEXTURE_2D, rem);
+    gl.uniform1i(u.uRm, 4);
+    gl.uniform1f(u.uHasPh, photo ? 1 : 0);
+    gl.uniform1f(u.uHasRm, rem ? 1 : 0);
+    gl.uniform1f(u.uProm, S.prom);
+    gl.uniform1f(u.uPromH, S.promH);
+    gl.uniform1f(u.uRemI, S.remI);
+    gl.uniform1f(u.uRemMix, S.remMix);
+    gl.uniform1f(u.uEmb, S.emb);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
     // A quarter-size, blurred copy: the bloom and the depth of field come from it.
     gl.viewport(0, 0, QW, QH);

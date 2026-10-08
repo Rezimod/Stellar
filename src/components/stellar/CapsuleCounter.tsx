@@ -79,7 +79,7 @@ export default function CapsuleCounter({ cards, onSale }: { cards: TierCard[]; o
   const top = Math.max(...RARITIES.map((r) => tier.oddsBps[r]));
 
   return (
-    <aside className="sd-counter" aria-label="Capsules" style={{ '--tier': rarityInfo(tier.lit).color } as CSSProperties}>
+    <aside className="sd-counter" id="capsules" aria-label="Capsules" style={{ '--tier': rarityInfo(tier.lit).color } as CSSProperties}>
       <div className="sd-counter__tabs" role="group" aria-label="Choose a capsule">
         {TIERS.map((t) => (
           <button
@@ -192,7 +192,7 @@ export default function CapsuleCounter({ cards, onSale }: { cards: TierCard[]; o
           }}
         />
       )}
-      {open && <StellarReveal key={open.n} draw={open.draw} onAgain={() => start(open.tier)} onClose={() => setOpen(null)} />}
+      {open && <StellarReveal key={open.n} draw={open.draw} onClose={() => setOpen(null)} />}
     </aside>
   );
 }
