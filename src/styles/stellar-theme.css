@@ -1042,3 +1042,5 @@ html:has(.stellar) #stellar-main { padding-top: 0; padding-bottom: 0; }
 .sd-pay__minor a:hover, .sd-pay__minor button:hover:not(:disabled) { color: var(--sd-accent-ink); }
 .sd-pay__minor button:disabled { color: var(--sd-ink-4); cursor: default; }
 .sd-pay__note { grid-column: 1 / -1; margin: 0; font: 500 12px var(--sd-mono); color: var(--sd-ink-2); overflow-wrap: anywhere; }
+.sd-menu a.sd-menu__chain { min-height: 38px; margin-top: 2px; font-size: 13px; color: var(--sd-ink-3); }
+.sd-menu a.sd-menu__chain:hover { color: var(--sd-ink-2); }

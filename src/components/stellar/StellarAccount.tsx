@@ -119,12 +119,18 @@ export default function StellarAccount() {
   return (
     <div ref={wrapRef} className="sd-account">
       <Link href="/collection" className="sd-chip">
-        <strong>{cards ?? '—'}</strong> <span>Cards</span>
+        {cards !== null && (
+          <>
+            <strong>{cards}</strong> <span>Cards</span>
+          </>
+        )}
       </Link>
-      <span className="sd-chip sd-chip--wallet" title={address ?? undefined}>
-        <strong>{sol === null ? '—' : sol.toFixed(sol < 1 ? 3 : 2)}</strong> <span>SOL</span>
-        <i className={sol ? 'is-funded' : ''} aria-hidden="true" />
-      </span>
+      {sol !== null && (
+        <span className="sd-chip sd-chip--wallet" title={address ?? undefined}>
+          <strong>{sol.toFixed(sol < 1 ? 3 : 2)}</strong> <span>SOL</span>
+          <i className={sol ? 'is-funded' : ''} aria-hidden="true" />
+        </span>
+      )}
       <button
         ref={triggerRef}
         type="button"
@@ -143,7 +149,11 @@ export default function StellarAccount() {
           <div className="sd-menu__head">
             <span className="sd-label">Cards held</span>
             <span className="sd-menu__big">
-              {cards ?? '—'} <small>cards</small>
+              {cards !== null && (
+                <>
+                  {cards} <small>cards</small>
+                </>
+              )}
             </span>
           </div>
           <p className="sd-menu__note">Every card you own is a numbered edition, yours alone.</p>
@@ -161,14 +171,14 @@ export default function StellarAccount() {
           <Link role="menuitem" href="/tonight" onClick={() => setMenuOpen(false)}>
             Tonight’s vote <span aria-hidden="true">→</span>
           </Link>
-          {address && (
-            <a role="menuitem" href={`https://solscan.io/account/${address}${DEVNET ? '?cluster=devnet' : ''}`} target="_blank" rel="noreferrer">
-              Your transactions <span aria-hidden="true">↗</span>
-            </a>
-          )}
           <button role="menuitem" type="button" onClick={signOut}>
             Log out <span aria-hidden="true">⎋</span>
           </button>
+          {address && (
+            <a role="menuitem" className="sd-menu__chain" href={`https://solscan.io/account/${address}${DEVNET ? '?cluster=devnet' : ''}`} target="_blank" rel="noreferrer">
+              View on-chain record <span aria-hidden="true">↗</span>
+            </a>
+          )}
         </div>
       )}
     </div>

@@ -539,3 +539,7 @@
 .sd-soon .sd-container { max-width: 760px; }
 .sd-soon__perks { margin-top: 36px; }
 .sd-soon__perks li { grid-template-columns: 96px minmax(0, 1fr); align-items: baseline; }
+
+.sd-coll__head { margin-bottom: 24px; }
+.sd-coll__holder { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.sd-coll__holder span { font-family: var(--sd-mono); text-transform: none; letter-spacing: 0.04em; color: var(--sd-ink-2); }

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
 import CollectionWallet from '@/components/stellar/CollectionWallet'
+import CollectionHead from '@/components/stellar/CollectionHead'
 import HolderCollection from '@/components/stellar/HolderCollection'
 import StellarShell from '@/components/stellar/StellarShell'
 import StellarView from '@/components/stellar/StellarView'
@@ -48,7 +49,6 @@ export default async function CollectionPage({
         <DataRow
           className="sd-strip"
           items={[
-            { label: 'Holder', value: `${wallet.slice(0, 4)}…${wallet.slice(-4)}` },
             { label: 'Cards', value: editions.length },
             { label: 'Photographed', value: `${photographed} / ${editions.length}` },
           ]}
@@ -64,6 +64,7 @@ export default async function CollectionPage({
     <StellarShell title="Collection">
       <StellarView step="collection" />
       <section className="sd-container sd-top">
+        {wallet && <CollectionHead wallet={wallet} />}
         {summary}
         <div className={summary ? 'sd-chapter-block' : undefined} style={summary ? { marginTop: 32 } : undefined}>
           {body}
