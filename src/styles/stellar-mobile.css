@@ -15,7 +15,7 @@
   .sd-buybar__what { display: grid; gap: 3px; min-width: 0; flex: 1; }
   .sd-buybar__name { font: 600 15px/1.15 var(--sd-sans); color: var(--sd-ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .sd-buybar__meta { font: 500 12px/1 var(--sd-mono); color: var(--sd-ink-3); letter-spacing: 0.04em; }
-  .sd-buybar .sd-btn { flex: none; min-height: 46px; padding-inline: 22px; }
+  .sd-buybar .sd-btn { flex: none; padding-inline: 22px; }
 }
 @media (prefers-reduced-motion: reduce) { .sd-buybar { transition: none; } }
 
@@ -27,8 +27,9 @@
   /* The top bar: the mark and the account, nothing else. */
   .sd-bar__inner { grid-template-columns: 1fr auto; grid-template-areas: "mark account"; padding-top: 0; min-height: var(--sd-bar-h); }
   .sd-bar .sd-bar__links { display: none; }
-  .sd-bar .sd-chip--cta { height: 38px; padding: 0 16px; font-size: 14px; }
-  .sd-bar .sd-avatar { width: 38px; height: 38px; }
+  .sd-bar .sd-chip { height: 40px; }
+  .sd-bar .sd-chip--cta { padding: 0 16px; font-size: 14px; }
+  .sd-bar .sd-avatar { width: 40px; height: 40px; }
 
   /* The bottom bar. */
   .sd-tabs {
@@ -45,7 +46,7 @@
     transition: color var(--sd-dur-fast) var(--sd-ease);
   }
   .sd-tab span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .sd-tab[aria-current="page"] { color: var(--sd-ink); }
+  .sd-tab[aria-current="page"] { color: var(--sd-ink); background: linear-gradient(180deg, color-mix(in srgb, var(--sd-accent) 14%, transparent), transparent 85%); }
   .sd-tab[aria-current="page"] svg { color: var(--sd-accent); }
   .sd-tab[aria-current="page"]::before {
     content: ''; position: absolute; top: 0; left: 30%; right: 30%; height: 2px; border-radius: 0 0 2px 2px; background: var(--sd-accent);
@@ -70,7 +71,6 @@
 @media (max-width: 767px) {
   .sd-tab { font-size: 12px; }
   .sd-hero2__stats dt { font-size: 12px; letter-spacing: 0.12em; }
-  .sd-bar .sd-chip--cta { height: 40px; }
 
   .sd-filter__search { min-height: 48px; }
   .sd-filter__search input { min-height: 44px; }
@@ -82,7 +82,3 @@
 /* A full-screen telescope view owns the whole screen. */
 .stellar:has(.sdo-view.is-full) .sd-tabs { display: none; }
 
-@media (max-width: 767px) {
-  /* A card's name in the grid wraps to a second line rather than losing its end. */
-  .sd-tile__name { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.25; }
-}

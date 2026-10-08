@@ -55,13 +55,14 @@
 .stellar .sd-foot .sd-partners li { height: 56px; padding: 0 14px; }
 .stellar .sd-foot .sd-recog { margin: 0; max-width: none; display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 28px; }
 .stellar .sd-foot .sd-recog__item { padding: 6px 0; }
-.stellar .sd-partners img { filter: brightness(0) invert(0.93) sepia(0.28); opacity: 0.62; max-height: 26px; }
-.stellar .sd-partners li:hover img { opacity: 0.95; }
+.stellar .sd-partners img { filter: brightness(0) invert(0.93) sepia(0.28); opacity: 0.55; height: 24px; max-height: none; width: auto; object-fit: contain; }
+.stellar .sd-partners li:hover img { opacity: 0.85; }
 .stellar .sd-recog__item { flex-direction: row; gap: 14px; justify-content: center; }
 .stellar .sd-recog__item img, .stellar .sd-recog__item:hover img { filter: brightness(0) invert(0.93) sepia(0.28); }
-.stellar .sd-recog__item img { opacity: 0.62; height: 24px; }
-.stellar .sd-recog__item img[src$='.webp'], .stellar .sd-recog__item:hover img[src$='.webp'] { height: 30px; filter: grayscale(1) sepia(0.3) brightness(1.5); }
-.stellar .sd-recog__item:hover img { opacity: 0.95; }
+.stellar .sd-recog__item img { opacity: 0.55; height: 24px; }
+/* Superteam's mark is a picture on a tile: the cream filter would flatten it to a block, so it keeps a grey one at the same height. */
+.stellar .sd-recog__item img[src$='.webp'], .stellar .sd-recog__item:hover img[src$='.webp'] { height: 24px; filter: grayscale(1) sepia(0.3) brightness(1.5); }
+.stellar .sd-recog__item:hover img { opacity: 0.85; }
 .stellar .sd-recog__cap { font: 500 12px var(--sd-spaced); letter-spacing: 0.16em; text-transform: uppercase; color: rgba(244, 232, 204, 0.62); }
 .stellar .sd-recog__cap b { color: var(--sd-gold); font-weight: 500; }
 
@@ -119,7 +120,6 @@
   .sd-hero2__horizon { width: 1100px; }
   .stellar .sd-hero2__sub { font-size: 16px; }
   .stellar .sd-hero2__cta { justify-content: center; }
-  .stellar .sd-partners img { max-height: 22px; }
   .stellar .sd-foot .sd-partners li { height: 48px; }
   .stellar .sd-recog__item { flex-direction: column; gap: 8px; }
 }
@@ -191,7 +191,7 @@
   .stellar .sd-hero2__title { order: 1; margin-top: -6px; }
   .stellar .sd-hero2__sub { order: 3; margin: 14px auto 0; max-width: 34ch; }
   .stellar .sd-hero2__cta { order: 4; flex-direction: column; align-items: stretch; margin-top: 22px; }
-  .stellar .sd-hero2__cta .sd-btn { width: 100%; min-height: 54px; }
+  .stellar .sd-hero2__cta .sd-btn { width: 100%; }
   .stellar .sd-hero2__stats { text-align: left; }
 }
 

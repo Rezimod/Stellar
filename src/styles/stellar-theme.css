@@ -19,6 +19,8 @@
   --sd-ink-2: rgba(241, 230, 207, 0.72);
   --sd-ink-3: rgba(241, 230, 207, 0.5);
   --sd-ink-4: rgba(241, 230, 207, 0.3);
+  /* The floor for text under 14px on the dark ground. */
+  --sd-ink-small: rgba(241, 230, 207, 0.68);
 
   /* Borders — hairlines, and one stronger for panels */
   --sd-rule: rgba(241, 230, 207, 0.12);
@@ -279,7 +281,7 @@
 /* Buttons — one hot primary, everything else quiet */
 .sd-btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 10px;
-  min-height: 48px; padding: 13px 24px; border-radius: 10px;
+  min-height: 50px; padding: 13px 24px; border-radius: 10px;
   font-family: var(--sd-spaced); font-weight: 500; font-size: 14px; letter-spacing: 0.16em; text-transform: uppercase;
   color: var(--sd-ink); background: var(--sd-plate);
   border: 1px solid var(--sd-rule-strong); text-decoration: none; cursor: pointer;
@@ -334,7 +336,7 @@
 .sd-cardplate[data-size='lg'] { --sd-card-cap: 420px; }
 @media (max-width: 1023px) { .sd-cardplate[data-size='lg'] { --sd-card-cap: 320px; } }
 .sd-cardplate__link { display: block; text-decoration: none; color: inherit; border-radius: 4.76% / 3.41%; }
-.sd-cardplate__link:focus-visible { outline: 2px solid var(--sd-focus); outline-offset: 4px; }
+
 
 .sd-grid { display: grid; align-items: start; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; list-style: none; margin: 0; padding: 0; }
 .sd-grid.sd-section { margin-top: 40px; }
@@ -666,7 +668,7 @@ html:has(.stellar) #stellar-main { padding-top: 0; padding-bottom: 0; }
 @media (min-width: 560px) and (max-width: 1023px) { .sd-bar__links { justify-content: flex-start; gap: 28px; } }
 .sd-account { position: relative; display: flex; align-items: center; gap: 10px; }
 .sd-chip {
-  display: inline-flex; align-items: baseline; gap: 7px; height: 44px; padding: 0 18px; border-radius: 999px;
+  display: inline-flex; gap: 7px; height: 44px; padding: 0 18px; border-radius: 999px;
   border: 1px solid var(--sd-rule-strong); background: rgba(255, 255, 255, 0.03); color: var(--sd-ink);
   text-decoration: none; white-space: nowrap; align-items: center; cursor: pointer;
   transition: border-color var(--sd-dur-fast) var(--sd-ease), background var(--sd-dur-fast) var(--sd-ease);
@@ -1019,7 +1021,7 @@ html:has(.stellar) #stellar-main { padding-top: 0; padding-bottom: 0; }
 .sd-steps li.is-done .sd-steps__dot { border-color: var(--sd-rarity-rare); color: var(--sd-rarity-rare); }
 .sd-steps li.is-done::after { background: color-mix(in srgb, var(--sd-rarity-rare) 50%, transparent); }
 
-.sd-btn--block { width: 100%; min-height: 52px; font-size: 16px; font-weight: 700; }
+.sd-btn--block { width: 100%; }
 @keyframes sd-spin { to { transform: rotate(360deg); } }
 .sd-spin { width: 16px; height: 16px; border-radius: 50%; border: 2px solid currentColor; border-right-color: transparent; animation: sd-spin 700ms linear infinite; }
 .sd-buyflow__note { margin: 0; text-align: center; font: 500 12px var(--sd-mono); letter-spacing: 0.03em; color: var(--sd-ink-3); }

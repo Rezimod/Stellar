@@ -34,10 +34,16 @@ export default function HolderCollection({ editions }: { editions: HolderEdition
         {ordered.map((e) => (
           <li key={e.editionId}>
             <CardPlate designation={e.designation} edition={e.editionNumber} href={`/card/${e.designation}`} />
+            <div className="sd-coll__meta" data-rarity={e.rarity}>
+              <span className="sd-rtag">{rarityInfo(e.rarity as Rarity).label}</span>
+              <span className="sd-tile__num">
+                No. {String(e.editionNumber).padStart(3, '0')} of {e.editionSize}
+              </span>
+            </div>
             {e.latest ? (
               <Caption as="p" parts={captureParts(e.latest)} />
             ) : (
-              <Caption as="p">Not yet photographed</Caption>
+              <Caption as="p">Photograph after first light</Caption>
             )}
           </li>
         ))}

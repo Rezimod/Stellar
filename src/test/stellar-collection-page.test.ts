@@ -44,7 +44,8 @@ it('renders an edition that has not been observed yet', async () => {
   expect(mocks.holderView).toHaveBeenCalledWith({}, 'holder-1');
   expect(html).toContain('M31');
   expect(html).toContain('edition 001 of 300');
-  expect(html).toContain('Not yet photographed');
+  expect(html).toContain('Photograph after first light');
+  expect(html).toContain('No. 001 of 10');
 });
 
 it('keeps an edition whose card has left the set, by its number', async () => {
@@ -72,7 +73,7 @@ it('captions an observed card with the capture data', async () => {
   expect(html).toContain('Node tbilisi-01');
   expect(html).toContain('2026-09-20 16:17 UTC');
   expect(html).toContain('Simulated');
-  expect(html).not.toContain('Not yet photographed');
+  expect(html).not.toContain('Photograph after first light');
 });
 
 it('says the Collection cannot be read when there is no database', async () => {
