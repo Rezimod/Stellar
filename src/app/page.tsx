@@ -189,7 +189,7 @@ export default async function HomePage() {
           {SHOWCASE.map((d) => (
             <li key={d}>
               <Link href={`/card/${d}`} aria-label={SET_001_CARD_BY_DESIGNATION.get(d)?.seed.name ?? d} data-zoom={d}>
-                <CardThumb designation={d} />
+                <CardThumb designation={d} eager />
               </Link>
             </li>
           ))}

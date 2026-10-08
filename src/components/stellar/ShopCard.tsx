@@ -16,10 +16,12 @@ export type ShopCardProps = {
   price: string;
   /** A pill on the card: 'Tonight', an edition number. */
   tag?: string;
+  /** Near the top of the shelf: loads at once. */
+  eager?: boolean;
 };
 
 /** A card on the shelf: the card on its object's own light, its rarity and number above it, its name and price, one line under. */
-export default function ShopCard({ designation, name, rarity, sub, price, tag }: ShopCardProps) {
+export default function ShopCard({ designation, name, rarity, sub, price, tag, eager = false }: ShopCardProps) {
   const num = plateFor(designation)?.num;
   const perk = perkFor(designation, rarity);
   return (
@@ -37,7 +39,7 @@ export default function ShopCard({ designation, name, rarity, sub, price, tag }:
         <span className="sd-rtag">{rarityInfo(rarity).label}</span>
       </span>
       <span className="sd-tile__stage">
-        <CardThumb designation={designation} />
+        <CardThumb designation={designation} eager={eager} />
         {tag && <span className="sd-tile__tag">{tag}</span>}
       </span>
       <span className="sd-tile__foot">

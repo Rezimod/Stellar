@@ -97,7 +97,7 @@ export default async function CardPage({ params }: { params: Promise<{ designati
         </nav>
         <div className="sd-cardhero">
           <figure className="sd-cardhero__plate sd-figure">
-            <CardPlate size="lg" hero designation={seed.designation} />
+            <CardPlate size="lg" hero priority designation={seed.designation} />
           </figure>
 
           <div>

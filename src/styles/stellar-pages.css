@@ -16,7 +16,7 @@
 /* ── A card as a picture ──────────────────────────────────────── */
 .sd-thumb {
   position: relative; display: block; overflow: hidden; aspect-ratio: 520 / 726;
-  border-radius: 4.76% / 3.41%; background: var(--sd-deep);
+  border-radius: 4.76% / 3.41%; background: var(--sd-deep) url('/cards/sealed.webp?v=lastlight') center / cover no-repeat;
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--tile-glow, #ffd8bc) 24%, rgba(255, 255, 255, 0.06)), 0 22px 36px -18px rgba(0, 0, 0, 0.95);
 }
 .sd-thumb img { display: block; width: 100%; height: 100%; border-radius: inherit; }
@@ -543,3 +543,7 @@
 .sd-coll__head { margin-bottom: 24px; }
 .sd-coll__holder { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .sd-coll__holder span { font-family: var(--sd-mono); text-transform: none; letter-spacing: 0.04em; color: var(--sd-ink-2); }
+
+/* A card image fades in over the sealed back (thumbs) or the dark window (live cards) once it has loaded. */
+img[data-fade] { opacity: 0; transition: opacity 200ms ease-out; }
+img[data-fade][data-on] { opacity: 1; }

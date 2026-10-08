@@ -1,4 +1,5 @@
 import { plateFor } from '@/lib/stellar/plate';
+import FadeImg from './FadeImg';
 
 /**
  * A card as a picture: the face, frame and all, pre-rendered at rest
@@ -16,15 +17,7 @@ export default function CardThumb({ designation, eager = false }: { designation:
     );
   return (
     <span className="sd-thumb">
-      <img
-        src={`${plate.art}/card.webp?v=poster11`}
-        alt=""
-        width={520}
-        height={726}
-        loading={eager ? 'eager' : 'lazy'}
-        fetchPriority={eager ? 'high' : undefined}
-        decoding="async"
-      />
+      <FadeImg src={`${plate.art}/card.webp?v=poster11`} width={520} height={726} priority={eager} />
     </span>
   );
 }

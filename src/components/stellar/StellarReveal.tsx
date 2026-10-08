@@ -54,7 +54,7 @@ function split(cards: RevealedCard[]) {
 
 function SealedBack({ designation, u }: { designation: string; u: string }) {
   const plate = plateFor(designation);
-  return plate ? <CardBack plate={plate} sealed u={u} /> : null;
+  return plate ? <CardBack plate={plate} sealed priority u={u} /> : null;
 }
 
 /**
@@ -333,7 +333,7 @@ export default function StellarReveal({
                     if (done) setTurned((v) => !v);
                   }}
                 >
-                  <StellarCard designation={flown.designation} edition={flown.editionNumber} lite />
+                  <StellarCard designation={flown.designation} edition={flown.editionNumber} lite priority />
                   <div className="sn-burn" data-sn="burn" aria-hidden="true" />
                   <div className="sn-sheen" data-sn="sheen" aria-hidden="true" />
                 </div>

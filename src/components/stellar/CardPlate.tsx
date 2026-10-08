@@ -16,11 +16,13 @@ export type CardPlateProps = {
   size?: 'sm' | 'md' | 'lg';
   /** Floats, and turns over to show its back. */
   hero?: boolean;
+  /** Drawn on first paint: its pictures load at once, with high priority. */
+  priority?: boolean;
 };
 
 /** One First Light card, as it is printed: art window, metal frame, name, figures and edition. */
-export default function CardPlate({ designation, edition, capture, commitment, href, size = 'md', hero = false }: CardPlateProps) {
-  const card = <StellarCard designation={designation} edition={edition} capture={capture} commitment={commitment} hero={hero} lite={!hero} />;
+export default function CardPlate({ designation, edition, capture, commitment, href, size = 'md', hero = false, priority = false }: CardPlateProps) {
+  const card = <StellarCard designation={designation} edition={edition} capture={capture} commitment={commitment} hero={hero} lite={!hero} priority={priority} />;
   return (
     <div className="sd-cardplate" data-size={size} style={{ '--tile-glow': glowFor(designation) } as CSSProperties}>
       {href ? (

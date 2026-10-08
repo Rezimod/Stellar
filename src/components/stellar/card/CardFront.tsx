@@ -1,4 +1,5 @@
 import { memo } from 'react';
+import FadeImg from '../FadeImg';
 import type { Plate } from '@/lib/stellar/plate';
 import { photoFor } from '@/lib/stellar/photos';
 import { CONDENSED, FOIL_OP, GLIT_OP, Glint, INK, Paper, PosterDefs, SPACED, fit, rr } from './frame';
@@ -9,6 +10,8 @@ type Props = {
   capture?: string | null;
   /** Small cards draw from the pre-rendered WebP layers: the same picture, none of the filter work. */
   lite?: boolean;
+  /** The card the page is about: its pictures load at once, ahead of everything else. */
+  priority?: boolean;
   u: string;
 };
 
@@ -42,7 +45,7 @@ const GLINTS: [number, number, number][] = [
  * number ride on the tile outside the card; the figures and the record are on
  * the back.
  */
-function CardFront({ plate: c, capture, lite = false, u }: Props) {
+function CardFront({ plate: c, capture, lite = false, priority = false, u }: Props) {
   const ext = lite ? 'webp' : 'svg';
   const r = c.rarity;
   const f = `${u}f`;
@@ -68,24 +71,24 @@ function CardFront({ plate: c, capture, lite = false, u }: Props) {
       <div className="sdc-window" style={{ left: `${(WIN.x / 630) * 100}%`, top: `${(WIN.y / 880) * 100}%`, width: `${(WIN.w / 630) * 100}%`, height: `${(WIN.h / 880) * 100}%`, borderRadius: `${(WIN.r / WIN.w) * 100}% / ${(WIN.r / WIN.h) * 100}%` }}>
         {capture ? (
           <div className="sdc-lay1">
-            <img src={capture} alt="" loading="lazy" decoding="async" />
+            <FadeImg priority={priority} src={capture} alt="" />
           </div>
         ) : photo ? (
           <>
             <div className="sdc-lay1 sdc-photo">
-              <img src={photo.file} alt="" loading="lazy" decoding="async" style={{ objectPosition: photo.focus ?? '50% 50%' }} />
+              <FadeImg priority={priority} src={photo.file} alt="" style={{ objectPosition: photo.focus ?? '50% 50%' }} />
             </div>
             <div className="sdc-rays" />
           </>
         ) : (
           <>
             <div className="sdc-lay0 sdc-grade">
-              <img src={`${c.art}/sky.${ext}`} alt="" loading="lazy" decoding="async" style={ART_POS} />
+              <FadeImg priority={priority} src={`${c.art}/sky.${ext}`} alt="" style={ART_POS} />
             </div>
             <div className="sdc-rays" />
             <div className="sdc-breath" style={{ ['--sdc-breath' as string]: '#ffb070' }} />
             <div className="sdc-lay1 sdc-grade sdc-fringe">
-              <img src={`${c.art}/object.${ext}`} alt="" loading="lazy" decoding="async" style={ART_POS} />
+              <FadeImg priority={priority} src={`${c.art}/object.${ext}`} alt="" style={ART_POS} />
             </div>
           </>
         )}

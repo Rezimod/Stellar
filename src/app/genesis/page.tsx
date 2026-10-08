@@ -90,7 +90,7 @@ export default async function FirstLightPage() {
           </header>
 
           <ul className="sd-fl__grid">
-            {sorted.map((c) => {
+            {sorted.map((c, i) => {
               const { seed, record } = c;
               const rarity = seed.rarity as Rarity;
               const sealed = cardStatus(c, now) === 'sealed';
@@ -109,6 +109,7 @@ export default async function FirstLightPage() {
                     }
                     price={sealed ? 'Sealed' : `$${cardPriceUsd(seed.designation, rarity)}`}
                     tag={seed.designation === tonight ? 'Tonight' : undefined}
+                    eager={i < 8}
                   />
                 </li>
               );

@@ -15,13 +15,15 @@ type Props = {
   hero?: boolean;
   /** A small card: its drawing loads as pre-rendered WebP. */
   lite?: boolean;
+  /** Drawn on first paint: its pictures load at once, with high priority. */
+  priority?: boolean;
 };
 
 /**
  * A Stellar card you can hold. Move across it and it leans toward you; the sky
  * sinks behind the object, the labels float above it, the foil follows the light.
  */
-function StellarCard({ designation, edition, capture, commitment, hero = false, lite = false }: Props) {
+function StellarCard({ designation, edition, capture, commitment, hero = false, lite = false, priority = false }: Props) {
   const plate = plateFor(designation);
   const u = `sd${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
   const stage = useRef<HTMLDivElement>(null);
@@ -64,11 +66,11 @@ function StellarCard({ designation, edition, capture, commitment, hero = false, 
         <div className="sdc-tilt">
           <div className={`sdc-flip${over ? ' is-over' : ''}`}>
             <div className="sdc-face" role="img" aria-label={`${plate.name}, ${plate.rname}, Genesis number ${plate.num}${edition != null ? `, edition ${ed} of ${plate.of}` : ''}`}>
-              <CardFront plate={plate} capture={capture} lite={lite} u={u} />
+              <CardFront plate={plate} capture={capture} lite={lite} priority={priority} u={u} />
             </div>
             {hero && (
               <div className="sdc-face sdc-face--back" aria-hidden={!over}>
-                <CardBack plate={plate} edition={edition} commitment={commitment} u={u} />
+                <CardBack plate={plate} edition={edition} commitment={commitment} priority={priority} u={u} />
               </div>
             )}
           </div>

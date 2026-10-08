@@ -1,4 +1,5 @@
 import { memo } from 'react';
+import FadeImg from '../FadeImg';
 import { editionLabel, type Plate } from '@/lib/stellar/plate';
 import { photoFor } from '@/lib/stellar/photos';
 import { TIER_PERKS, perkFor, votePower } from '@/lib/stellar/perks';
@@ -11,6 +12,8 @@ type Props = {
   commitment?: string | null;
   /** Face down and not yet turned: nothing on it says which card it is. */
   sealed?: boolean;
+  /** The card the page is about: its pictures load at once, ahead of everything else. */
+  priority?: boolean;
   u: string;
 };
 
@@ -66,10 +69,10 @@ function Brackets() {
 /** The face-down card before the reveal: the star on its last night, nothing on it saying which card is inside. */
 export const SEALED_SRC = '/cards/sealed.webp?v=lastlight';
 
-function Sealed() {
+function Sealed({ priority }: { priority: boolean }) {
   return (
     <div className="sdc-card sdc-card--sealed">
-      <img className="sdc-sealed" src={SEALED_SRC} alt="" decoding="async" />
+      <img className="sdc-sealed" src={SEALED_SRC} alt="" decoding="async" fetchPriority={priority ? 'high' : undefined} />
       <div className="sdc-glare" />
     </div>
   );
@@ -80,9 +83,9 @@ function Sealed() {
  * viewfinder, its name on the red block, the two lines of its story, its
  * three figures as a ledger, and what the card gives its holder.
  */
-function CardBack({ plate: c, edition, commitment, sealed = false, u }: Props) {
+function CardBack({ plate: c, edition, commitment, sealed = false, priority = false, u }: Props) {
   const b = `${u}b`;
-  if (sealed) return <Sealed />;
+  if (sealed) return <Sealed priority={priority} />;
 
   const r = c.rarity;
   const ed = editionLabel(edition);
@@ -120,15 +123,15 @@ function CardBack({ plate: c, edition, commitment, sealed = false, u }: Props) {
       <div className="sdc-window" style={pct(PW.x, PW.y, PW.w, PW.h, PW.r)}>
         {photo ? (
           <div className={`sdc-photo${WHOLE.has(c.designation) ? ' sdc-photo--whole' : ''}`}>
-            <img src={photo.file} alt="" loading="lazy" decoding="async" style={{ objectPosition: photo.focus ?? '50% 50%' }} />
+            <FadeImg priority={priority} src={photo.file} alt="" style={{ objectPosition: photo.focus ?? '50% 50%' }} />
           </div>
         ) : (
           <>
             <div className="sdc-lay0 sdc-grade">
-              <img src={`${c.art}/sky.webp`} alt="" loading="lazy" decoding="async" />
+              <FadeImg priority={priority} src={`${c.art}/sky.webp`} alt="" />
             </div>
             <div className="sdc-lay1 sdc-grade">
-              <img src={`${c.art}/object.webp`} alt="" loading="lazy" decoding="async" />
+              <FadeImg priority={priority} src={`${c.art}/object.webp`} alt="" />
             </div>
           </>
         )}
