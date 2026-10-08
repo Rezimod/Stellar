@@ -53,7 +53,7 @@ export default async function Image() {
             </div>
           </div>
           <div style={{ fontSize: 24, fontWeight: 600, letterSpacing: 3, color: 'rgba(250, 224, 214, 0.7)' }}>
-            GENESIS · 100 CARDS · LIVE TELESCOPE V1
+            GENESIS · LIVE TELESCOPE
           </div>
         </div>
       </div>

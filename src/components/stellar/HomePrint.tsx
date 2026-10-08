@@ -7,7 +7,7 @@ import StarPulse from './StarPulse';
  */
 export default function HomePrint() {
   return (
-    <Link href="/genesis" className="sd-homeprint" aria-label="Genesis — blast a star">
+    <Link href="/genesis" className="sd-homeprint" aria-label="Genesis — detonate a star">
       <span className="sd-homeprint__print">
         <StarPulse className="sd-homeprint__star" centre={0.48} breathe clear />
       </span>

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { RARITIES, rarityInfo, type Rarity } from '@/lib/rarity';
 import { CARDS_PER_TIER, TIERS, formatOdds } from '@/lib/stellar/tiers';
+import { TIER_PERKS } from '@/lib/stellar/perks';
 
 type Supply = Record<Rarity, { cards: number; editions: number }>;
 
@@ -51,7 +52,7 @@ export default function OddsBoard({ supply }: { supply: Supply }) {
             <span className="sd-pub__pct">{pct(tier.oddsBps[r])}</span>
             <span className="sd-pub__rarity">{rarityInfo(r).label}</span>
             <span className="sd-pub__supply">
-              {supply[r].cards} cards · {supply[r].editions.toLocaleString('en-GB')} editions
+              {TIER_PERKS.find((p) => p.rarity === r)!.title}
             </span>
           </li>
         ))}

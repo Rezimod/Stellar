@@ -181,13 +181,13 @@ export default function StellarBuyCapsule({
           }}
           disabled={!!busy}
         >
-          {busy ? <Working label={busy} /> : 'Blast the star'}
+          {busy ? <Working label={busy} /> : 'Detonate the star'}
         </button>
       ) : order ? (
         <StellarPay order={order} onConfirmed={confirmed} compact />
       ) : ready && authenticated ? (
         <button type="button" className={`sd-btn sd-btn--primary sd-btn--block${busy ? ' is-loading' : ''}`} onClick={reserve} disabled={!!busy}>
-          {busy ? <Working label={busy} /> : `Buy & blast — $${priceUsd}`}
+          {busy ? <Working label={busy} /> : `Buy & detonate — $${priceUsd}`}
         </button>
       ) : (
         <button type="button" className="sd-btn sd-btn--primary sd-btn--block" onClick={() => login()}>

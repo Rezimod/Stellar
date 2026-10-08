@@ -216,7 +216,7 @@ function CardBack({ plate: c, edition, commitment, sealed = false, u }: Props) {
         </text>
         <text x="315" y="852" textAnchor="middle" fill={INK.text} style={foot}>
           <tspan fill={INK.red}>◆</tspan>
-          {'  FOUNDING SET  '}
+          {'  GENESIS  '}
           <tspan fill={INK.red}>◆</tspan>
         </text>
         <text x={BOX.x + BOX.w} y="852" textAnchor="end" fill={INK.text} style={foot}>

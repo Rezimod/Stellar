@@ -43,7 +43,7 @@ export default function ShelfFilter({ total }: { total: number }) {
         ))}
       </div>
       <p className="sd-filter__count" aria-live="polite">
-        {shown === total ? `${total} cards` : shown === 0 ? 'No card matches' : `${shown} of ${total} cards`}
+        {shown === 0 ? 'No card matches' : null}
       </p>
     </div>
   );

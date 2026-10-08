@@ -22,7 +22,7 @@ export const revalidate = 60;
 export const metadata: Metadata = {
   title: 'Genesis — capsules and cards',
   description:
-    'A hundred and five cards, numbered outward from Earth: the Solar System, the Stars, the Deep Sky, the Galaxies, the Extremes, the Rare Sights, the Meteors & Moons and five more meteorites you can hold. Opened from four capsules, from $5.',
+    'Genesis: real objects of the cosmos, each held as a numbered edition. Opened from sealed capsules, from $5.',
 };
 
 export default async function FirstLightPage() {
@@ -69,7 +69,6 @@ export default async function FirstLightPage() {
   const tierCards: TierCard[] = sorted
     .filter((c) => cardStatus(c, now) === 'open')
     .map(({ seed }) => ({ designation: seed.designation, name: seed.name, rarity: seed.rarity as Rarity, editionSize: seed.editionSize }));
-  const editions = SET_001_CARDS.reduce((sum, c) => sum + c.seed.editionSize, 0);
 
   return (
     <StellarShell>
@@ -84,7 +83,7 @@ export default async function FirstLightPage() {
                 Genesis
               </h1>
               <p className="sd-fl__meta">
-                Founding set · {editions.toLocaleString('en-GB')} editions · {status === 'released' ? 'Released' : 'Pre-release'}
+                Genesis · {status === 'released' ? 'Released' : 'Pre-release'}
               </p>
             </div>
             <ShelfFilter total={SET_001_CARDS.length} />

@@ -13,7 +13,7 @@ import { getDb } from '@/lib/db';
 import { getNode } from '@/lib/observatory/nodes';
 import { RARITIES } from '@/lib/rarity';
 import { card } from '@/lib/schema';
-import { SET_GROUPS, groupCards } from '@/lib/sets/groups';
+import { SET_GROUPS } from '@/lib/sets/groups';
 import { SET_001_CARDS, SET_001_CARD_BY_DESIGNATION } from '@/lib/sets/set-001';
 import { CARDS_PER_TIER, TIERS } from '@/lib/stellar/tiers';
 import { nightRow } from '@/lib/stellar/night';
@@ -24,7 +24,7 @@ export const revalidate = 60;
 export const metadata: Metadata = {
   title: 'Stellar — the cosmos, issued in editions',
   description:
-    'Genesis: a hundred and five cards, each held as a numbered edition — planets, stars, nebulae, galaxies, the extremes of the universe, eight rare sights, eight dated events and seven real meteorites. Opened from sealed capsules, from $5.',
+    'Genesis: real objects of the cosmos, each held as a numbered edition. Opened from sealed capsules, from $5.',
 };
 
 /** Six cards from across the set, one shelf of it. */
@@ -48,7 +48,7 @@ const PLAN: FlightStep[] = [
   { title: 'Watch', text: 'Live Telescope — coming soon. From first light in November, holders of the chosen card watch it live.', live: false, href: '/node', icon: 'telescope' },
   {
     title: 'Claim',
-    text: 'Two cards in Genesis carry a real meteorite fragment, redeemable later.',
+    text: 'Legendary cards carry a real meteorite, redeemable.',
     live: false,
     href: '/genesis',
     icon: 'meteorite',
@@ -63,7 +63,7 @@ const GUARANTEES = [
   },
   {
     title: 'Numbered editions',
-    text: `${SET_001_CARDS.length} cards, each a fixed run, never reissued.`,
+    text: 'Each card a fixed run, never reissued.',
     icon: <><path d="M5 9h14M5 15h14M10 4L8 20M16 4l-2 16" /></>,
   },
   {
@@ -90,7 +90,6 @@ export default async function HomePage() {
     }
   }
   const tonightCard = tonight ? SET_001_CARD_BY_DESIGNATION.get(tonight) : undefined;
-  const editions = SET_001_CARDS.reduce((sum, c) => sum + c.seed.editionSize, 0);
 
   return (
     <StellarShell>
@@ -112,21 +111,21 @@ export default async function HomePage() {
             </p>
             <div className="sd-hero2__cta">
               <Link href="/genesis" className="sd-btn sd-btn--light">
-                Blast a star — from ${FROM_USD}
+                Detonate a star — from ${FROM_USD}
               </Link>
             </div>
             <dl className="sd-hero2__stats">
               <div>
-                <dt>Cards in the set</dt>
-                <dd>{SET_001_CARDS.length}</dd>
+                <dt>From</dt>
+                <dd>${FROM_USD}</dd>
               </div>
               <div>
-                <dt>Numbered editions</dt>
-                <dd>{editions.toLocaleString('en-GB')}</dd>
+                <dt>Card per capsule</dt>
+                <dd>1</dd>
               </div>
               <div>
-                <dt>Cards per capsule</dt>
-                <dd>{CARDS_PER_TIER}</dd>
+                <dt>Published</dt>
+                <dd>Odds</dd>
               </div>
             </dl>
           </div>
@@ -174,17 +173,16 @@ export default async function HomePage() {
           <h2 className="sd-home-sec__title" id="set-title">
             Genesis
           </h2>
-          <p className="sd-home-sec__lede">{SET_001_CARDS.length} objects, numbered outward from Earth.</p>
+          <p className="sd-home-sec__lede">Real objects, numbered outward from Earth.</p>
           <ul className="sd-families">
             {SET_GROUPS.map((g) => (
               <li key={g.key}>
                 <span>{g.title}</span>
-                <span className="sd-families__n">{groupCards(SET_001_CARDS, g.key).length}</span>
               </li>
             ))}
           </ul>
           <Link href="/genesis" className="sd-btn">
-            See all {SET_001_CARDS.length} cards
+            See the set
           </Link>
         </div>
         <ul className="sd-showcase2__cards">
@@ -218,7 +216,7 @@ export default async function HomePage() {
         <p className="sd-home-sec__lede">Sealed before sale. Published after opening.</p>
         <div className="sd-hero2__cta">
           <Link href="/genesis" className="sd-btn sd-btn--light">
-            Blast a star
+            Detonate a star
           </Link>
           <Link href="/capsules/log" className="sd-btn">
             Public log
