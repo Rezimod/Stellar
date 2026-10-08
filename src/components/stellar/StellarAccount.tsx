@@ -9,7 +9,7 @@ import { useStellarHolder } from './useStellarHolder';
 const DEVNET = process.env.NEXT_PUBLIC_SOLANA_CLUSTER === 'devnet';
 const RPC = process.env.NEXT_PUBLIC_SOLANA_RPC_URL ?? process.env.NEXT_PUBLIC_HELIUS_RPC_URL ?? (DEVNET ? 'https://api.devnet.solana.com' : 'https://api.mainnet-beta.solana.com');
 
-/** A small world drawn from the wallet address: the same holder, the same planet. */
+/** A small world drawn from the wallet address: the same holder, the same planet, lit from the upper left. */
 function Avatar({ seed }: { seed: string }) {
   let h = 0;
   for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
@@ -18,20 +18,33 @@ function Avatar({ seed }: { seed: string }) {
   return (
     <svg viewBox="0 0 40 40" width="40" height="40" aria-hidden="true">
       <defs>
-        <radialGradient id={`av-${h}`} cx="35%" cy="30%" r="75%">
-          <stop offset="0%" stopColor={`hsl(${hue} 80% 78%)`} />
-          <stop offset="60%" stopColor={`hsl(${(hue + 30) % 360} 60% 42%)`} />
-          <stop offset="100%" stopColor={`hsl(${(hue + 50) % 360} 55% 16%)`} />
+        <radialGradient id={`av-${h}`} cx="34%" cy="30%" r="78%">
+          <stop offset="0%" stopColor={`hsl(${hue} 72% 80%)`} />
+          <stop offset="55%" stopColor={`hsl(${(hue + 28) % 360} 58% 42%)`} />
+          <stop offset="100%" stopColor={`hsl(${(hue + 48) % 360} 55% 12%)`} />
+        </radialGradient>
+        <radialGradient id={`av-${h}s`} cx="28%" cy="24%" r="60%">
+          <stop offset="0%" stopColor="#fff" stopOpacity="0.55" />
+          <stop offset="100%" stopColor="#fff" stopOpacity="0" />
         </radialGradient>
       </defs>
-      <rect width="40" height="40" fill="#121212" />
-      <circle cx="20" cy="20" r="11" fill={`url(#av-${h})`} />
-      {ringed && <ellipse cx="20" cy="20" rx="17" ry="4.5" fill="none" stroke={`hsl(${hue} 70% 80%)`} strokeOpacity="0.7" strokeWidth="1.2" transform="rotate(-20 20 20)" />}
+      <rect width="40" height="40" fill="#0d0b0a" />
+      <circle cx="20" cy="20" r="11.5" fill={`url(#av-${h})`} />
+      <circle cx="20" cy="20" r="11.5" fill={`url(#av-${h}s)`} />
+      {ringed && <ellipse cx="20" cy="20" rx="17" ry="4.5" fill="none" stroke={`hsl(${hue} 70% 82%)`} strokeOpacity="0.7" strokeWidth="1.2" transform="rotate(-20 20 20)" />}
       <circle cx="8" cy="9" r="0.8" fill="#fff" opacity="0.8" />
       <circle cx="33" cy="31" r="0.6" fill="#fff" opacity="0.6" />
     </svg>
   );
 }
+
+/** Two cards, one over the other. */
+const CardsGlyph = (
+  <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round">
+    <rect x="5" y="2" width="8.5" height="11.5" rx="1.6" />
+    <path d="M3.2 5.2v8.2A1.6 1.6 0 0 0 4.8 15h6.4" />
+  </svg>
+);
 
 /**
  * The account corner: how many cards the holder has, what the wallet holds,
@@ -87,7 +100,7 @@ export default function StellarAccount() {
     };
   }, [menuOpen]);
 
-  if (!ready) return <span className="sd-chip" aria-hidden="true" style={{ visibility: 'hidden' }}>Log in</span>;
+  if (!ready) return <span className="sd-chip sd-chip--cta" aria-hidden="true" style={{ visibility: 'hidden' }}>Log in</span>;
 
   if (!authenticated) {
     return (
@@ -118,19 +131,26 @@ export default function StellarAccount() {
 
   return (
     <div ref={wrapRef} className="sd-account">
-      <Link href="/collection" className="sd-chip">
-        {cards !== null && (
-          <>
-            <strong>{cards}</strong> <span>Cards</span>
-          </>
+      <div className="sd-acct">
+        <Link href="/collection" className="sd-acct__seg sd-acct__cards" aria-label={cards === null ? 'Your Collection' : `Your Collection, ${cards} cards`}>
+          {CardsGlyph}
+          {cards !== null && (
+            <span className="sd-acct__in">
+              <strong>{cards}</strong>
+              <span>{cards === 1 ? 'card' : 'cards'}</span>
+            </span>
+          )}
+        </Link>
+        {sol !== null && (
+          <span className="sd-acct__seg sd-acct__sol" title={address ?? undefined}>
+            <span className="sd-acct__in">
+              <strong>{sol.toFixed(sol < 1 ? 3 : 2)}</strong>
+              <span>SOL</span>
+            </span>
+            <i className={sol ? 'is-funded' : ''} aria-hidden="true" />
+          </span>
         )}
-      </Link>
-      {sol !== null && (
-        <span className="sd-chip sd-chip--wallet" title={address ?? undefined}>
-          <strong>{sol.toFixed(sol < 1 ? 3 : 2)}</strong> <span>SOL</span>
-          <i className={sol ? 'is-funded' : ''} aria-hidden="true" />
-        </span>
-      )}
+      </div>
       <button
         ref={triggerRef}
         type="button"

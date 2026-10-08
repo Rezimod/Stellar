@@ -666,27 +666,53 @@ html:has(.stellar) #stellar-main { padding-top: 0; padding-bottom: 0; }
   .sd-bar__links::-webkit-scrollbar { display: none; }
 }
 @media (min-width: 560px) and (max-width: 1023px) { .sd-bar__links { justify-content: flex-start; gap: 28px; } }
-.sd-account { position: relative; display: flex; align-items: center; gap: 10px; }
+.sd-account { position: relative; display: flex; align-items: center; gap: 8px; }
 .sd-chip {
   display: inline-flex; gap: 7px; height: 44px; padding: 0 18px; border-radius: 999px;
   border: 1px solid var(--sd-rule-strong); background: rgba(255, 255, 255, 0.03); color: var(--sd-ink);
   text-decoration: none; white-space: nowrap; align-items: center; cursor: pointer;
   transition: border-color var(--sd-dur-fast) var(--sd-ease), background var(--sd-dur-fast) var(--sd-ease);
 }
-.sd-chip strong { font: 700 16px/1 var(--sd-sans); }
-.sd-chip span { font: 600 12px/1 var(--sd-mono); letter-spacing: 0.16em; text-transform: uppercase; color: var(--sd-ink-3); }
-.sd-chip:hover { border-color: var(--sd-ink-3); background: rgba(255, 255, 255, 0.07); }
 .sd-chip--cta { font: 600 15px var(--sd-sans); background: var(--sd-accent); border-color: transparent; color: #ffffff; }
 .sd-chip--cta:hover { background: var(--sd-accent-hi); border-color: transparent; }
-.sd-chip--wallet { cursor: default; }
-.sd-chip--wallet i { width: 7px; height: 7px; border-radius: 50%; background: #ff5a4a; box-shadow: 0 0 8px #ff5a4a; }
-.sd-chip--wallet i.is-funded { background: var(--sd-teal); box-shadow: 0 0 8px var(--sd-teal); }
-.sd-avatar { width: 44px; height: 44px; padding: 0; border-radius: 50%; overflow: hidden; border: 1px solid var(--sd-rule-strong); background: none; cursor: pointer; transition: transform var(--sd-dur-fast) var(--sd-ease), border-color var(--sd-dur-fast) var(--sd-ease); }
-.sd-avatar:hover, .sd-avatar[aria-expanded='true'] { border-color: var(--sd-accent); transform: scale(1.05); }
-.sd-avatar svg { display: block; width: 100%; height: 100%; }
-@media (max-width: 1023px) {
-  .sd-account .sd-chip:not(.sd-chip--cta) { display: none; }
+/* The holder's standing, in one pill of two segments: the cards held, which opens the Collection, and what the wallet holds. */
+.sd-acct {
+  display: inline-flex; align-items: stretch; height: 40px; border-radius: 999px; overflow: hidden;
+  background: rgba(244, 232, 204, 0.035); box-shadow: inset 0 0 0 1px rgba(244, 232, 204, 0.14);
+  animation: sd-acct-in 420ms var(--sd-ease) both;
 }
+.sd-acct__seg { display: inline-flex; align-items: center; gap: 8px; padding: 0 14px; color: var(--sd-ink); text-decoration: none; white-space: nowrap; }
+.sd-acct__seg + .sd-acct__seg { box-shadow: inset 1px 0 0 rgba(244, 232, 204, 0.14); }
+.sd-acct__cards { color: var(--sd-ink-2); transition: background var(--sd-dur-fast) var(--sd-ease), color var(--sd-dur-fast) var(--sd-ease); }
+.sd-acct__cards > svg { flex: none; color: var(--sd-gold); }
+.sd-acct__cards:hover { background: rgba(244, 232, 204, 0.06); color: var(--sd-ink); }
+.sd-acct__in { display: inline-flex; align-items: baseline; gap: 6px; animation: sd-acct-in 360ms var(--sd-ease) both; }
+.sd-acct__in strong { font: 500 14px/1 var(--sd-mono); letter-spacing: 0.02em; color: var(--sd-ink); font-variant-numeric: tabular-nums; }
+.sd-acct__in span { font: 500 10.5px/1 var(--sd-spaced); letter-spacing: 0.16em; text-transform: uppercase; color: var(--sd-ink-3); }
+.sd-acct__sol { cursor: default; }
+.sd-acct__sol i { flex: none; width: 6px; height: 6px; border-radius: 50%; background: #ff5a4a; box-shadow: 0 0 0 3px rgba(255, 90, 74, 0.14); }
+.sd-acct__sol i.is-funded { background: var(--sd-teal); box-shadow: 0 0 0 3px color-mix(in srgb, var(--sd-teal) 16%, transparent); }
+@keyframes sd-acct-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: no-preference) {
+  .sd-acct__sol i.is-funded { animation: sd-acct-pulse 3.2s ease-in-out infinite; }
+}
+@keyframes sd-acct-pulse { 0%, 100% { box-shadow: 0 0 0 3px color-mix(in srgb, var(--sd-teal) 16%, transparent); } 50% { box-shadow: 0 0 0 5px color-mix(in srgb, var(--sd-teal) 8%, transparent); } }
+.sd-avatar {
+  width: 40px; height: 40px; padding: 0; border-radius: 50%; overflow: hidden; background: none; cursor: pointer;
+  box-shadow: inset 0 0 0 1px rgba(244, 232, 204, 0.22), 0 0 0 0 rgba(226, 184, 106, 0);
+  transition: transform var(--sd-dur-fast) var(--sd-ease), box-shadow var(--sd-dur-fast) var(--sd-ease);
+  border: 0;
+}
+.sd-avatar:hover, .sd-avatar[aria-expanded='true'] { transform: scale(1.05); box-shadow: inset 0 0 0 1px var(--sd-gold), 0 0 0 3px rgba(226, 184, 106, 0.16); }
+.sd-avatar svg { display: block; width: 100%; height: 100%; }
+/* Narrower: the wallet goes, the count stays beside the planet. */
+@media (max-width: 1023px) {
+  .sd-acct__sol { display: none; }
+  .sd-acct { height: 36px; }
+  .sd-acct__seg { padding: 0 12px; gap: 7px; }
+  .sd-avatar { width: 36px; height: 36px; }
+}
+@media (prefers-reduced-motion: reduce) { .sd-acct, .sd-acct__in, .sd-acct__sol i.is-funded { animation: none; } }
 @media (min-width: 1024px) and (max-width: 1279px) {
   .sd-bar__inner { column-gap: 24px; }
   .sd-bar__links { gap: 20px; }

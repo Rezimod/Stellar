@@ -200,15 +200,21 @@ export default function StellarReveal({
       const hud = el.querySelector('.sn-hud')?.getBoundingClientRect().top;
       if (!card || hud == null) return;
       const lo = top + 12;
-      const hi = hud - 20;
+      const hi = hud - 16;
       if (card.top >= lo && card.bottom <= hi) return;
-      const s = Math.min(1, (hi - lo) / card.height);
+      const s = Math.max(0.5, Math.min(1, (hi - lo) / card.height));
       el.style.setProperty('--sn-fit-s', s.toFixed(3));
       el.style.setProperty('--sn-fit-y', `${((lo + hi) / 2 - (card.top + card.bottom) / 2).toFixed(1)}px`);
     };
     fit();
+    const later = [60, 400, 1200].map((ms) => window.setTimeout(fit, ms));
     window.addEventListener('resize', fit);
-    return () => window.removeEventListener('resize', fit);
+    window.visualViewport?.addEventListener('resize', fit);
+    return () => {
+      later.forEach(clearTimeout);
+      window.removeEventListener('resize', fit);
+      window.visualViewport?.removeEventListener('resize', fit);
+    };
   }, [done]);
 
   /* Once it is down the card leans toward the pointer, and a press turns it over. */

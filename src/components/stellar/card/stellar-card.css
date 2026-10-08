@@ -22,62 +22,26 @@
 .sdc-card { position: relative; width: 100%; aspect-ratio: 630 / 880; border-radius: 4.76% / 3.41%; overflow: hidden; background: #e8dbbd; isolation: isolate; contain: layout paint; transform: translateZ(0); }
 .sdc-window { position: absolute; overflow: hidden; background: #0e0806; }
 
-/* The poster treatment over the drawing: warmed into the sunset, a burst of rays behind the object,
-   a colour fringe at its edges, a halftone screen and the dark the title stands on. */
+/* The poster treatment over the drawing: warmed into the sunset, a colour fringe at the object's edges,
+   a halftone screen and the dark the title stands on. */
 .sdc-photo--whole { background: #000; }
 .sdc-photo--whole img { object-fit: contain !important; padding: 5% 0; box-sizing: border-box; }
 .sdc-photo img { filter: sepia(.18) saturate(1.3) contrast(1.12) brightness(1.04); }
 .sdc-grade img { filter: sepia(.28) saturate(1.3) contrast(1.08) brightness(1.02); }
 .sdc-fringe img { filter: sepia(.22) saturate(1.35) contrast(1.12) drop-shadow(1.6px 0 0 rgba(255, 40, 70, .32)) drop-shadow(-1.6px 0 0 rgba(40, 200, 255, .26)) drop-shadow(0 0 22px rgba(255, 168, 92, .32)); }
-.sdc-rays {
-  position: absolute; inset: 0; overflow: hidden; pointer-events: none; mix-blend-mode: screen; opacity: .5;
-  background: radial-gradient(circle at 50% 44%, rgba(255, 196, 120, .32), rgba(255, 140, 60, .1) 30%, transparent 62%);
-  -webkit-mask-image: radial-gradient(circle at 50% 44%, #000 12%, transparent 72%);
-  mask-image: radial-gradient(circle at 50% 44%, #000 12%, transparent 72%);
-}
-/* The burst on a layer of its own, twice the window, centred on the object so it can turn. */
-.sdc-rays::before {
-  content: ''; position: absolute; inset: -50%; transform-origin: 50% 47%; will-change: transform;
-  background: repeating-conic-gradient(from 0deg at 50% 47%, rgba(255, 170, 90, .14) 0deg 2.2deg, transparent 2.2deg 9deg);
-}
-
-/* Living art: the sky drifts, the burst turns, the light behind the object breathes, stars catch. All at rest is the printed card. */
+/* Living art: the sky drifts and the light behind the object breathes. All at rest is the printed card. */
 .sdc-breath {
   position: absolute; inset: 0; pointer-events: none; mix-blend-mode: screen; opacity: 0;
   background: radial-gradient(circle at 50% 44%, color-mix(in srgb, var(--sdc-breath) 70%, #ffb070) 0%, transparent 34%);
   transform-origin: 50% 44%; will-change: transform, opacity;
 }
-.sdc-twinkle, .sdc-twinkle::before { position: absolute; inset: 0; pointer-events: none; opacity: 0; will-change: opacity; }
-.sdc-twinkle {
-  background:
-    radial-gradient(circle at 14% 9%, #fff6e0 0 1.2px, transparent 2.4px),
-    radial-gradient(circle at 71% 18%, #fff 0 1px, transparent 2px),
-    radial-gradient(circle at 88% 36%, #ffe2b8 0 1.3px, transparent 2.6px),
-    radial-gradient(circle at 24% 52%, #fff 0 .9px, transparent 1.9px),
-    radial-gradient(circle at 63% 61%, #fff3d6 0 1.1px, transparent 2.2px),
-    radial-gradient(circle at 9% 70%, #fff 0 1px, transparent 2px);
-}
-.sdc-twinkle::before {
-  content: '';
-  background:
-    radial-gradient(circle at 38% 13%, #fff 0 1px, transparent 2px),
-    radial-gradient(circle at 92% 12%, #ffeccc 0 1.2px, transparent 2.4px),
-    radial-gradient(circle at 6% 33%, #fff 0 1.1px, transparent 2.2px),
-    radial-gradient(circle at 79% 54%, #fff 0 .9px, transparent 1.9px),
-    radial-gradient(circle at 44% 66%, #ffe6c2 0 1.2px, transparent 2.4px),
-    radial-gradient(circle at 96% 68%, #fff 0 1px, transparent 2px);
-}
 @media (prefers-reduced-motion: no-preference) {
   .sdc-lay0, .sdc-lay1 { animation: sdc-drift 26s ease-in-out infinite alternate; }
   .sdc-lay0 { animation-duration: 34s; }
-  .sdc-rays::before { animation: sdc-spin 120s linear infinite; }
   .sdc-breath { animation: sdc-breath 7s ease-in-out infinite; }
-  .sdc-twinkle { animation: sdc-twinkle 3.8s ease-in-out infinite; }
-  .sdc-twinkle::before { animation: sdc-twinkle 5.2s ease-in-out 1.6s infinite; }
 }
 @keyframes sdc-drift { from { scale: 1; translate: 0 0; } to { scale: 1.06; translate: -1.2% -1.6%; } }
 @keyframes sdc-breath { 0%, 100% { opacity: 0; transform: scale(.92); } 50% { opacity: .42; transform: scale(1.08); } }
-@keyframes sdc-twinkle { 0%, 100% { opacity: 0; } 45%, 55% { opacity: .9; } }
 .sdc-halftone {
   position: absolute; inset: 0; pointer-events: none; mix-blend-mode: overlay; opacity: .32;
   background-image: radial-gradient(circle, rgba(255, 230, 190, .55) .7px, transparent 1.1px);
@@ -168,4 +132,3 @@
 }
 .sdc-card--sealed { background: transparent; }
 .sdc-sealed { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
-@keyframes sdc-spin { to { transform: rotate(360deg); } }

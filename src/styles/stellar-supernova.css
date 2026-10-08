@@ -7,6 +7,7 @@
   --sn-tone: #ffd36e;
   --sn-cw: 260px;
   --sn-cy: 42vh;
+  --sn-cy: 42svh;
   position: fixed; inset: 0; z-index: 80; overflow: hidden; overscroll-behavior: contain;
   background: #000; color: #fff; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent;
   animation: sn-in 500ms var(--sd-ease, ease) both;
@@ -116,15 +117,25 @@
 }
 .sn-tag[hidden], .sn-after[hidden], .sn-pre[hidden] { display: none; }
 .sn-tag__perk { max-width: 42ch; margin: 0; font: 400 14px/1.45 var(--sd-sans); color: rgba(255, 244, 228, 0.86); text-wrap: balance; text-shadow: 0 1px 12px rgba(0, 0, 0, 0.8); }
-.sn-share { position: relative; }
+.sn-share { display: contents; }
 .sn-share .sd-btn { display: inline-flex; align-items: center; gap: 8px; }
-.sn-share__pop {
-  position: absolute; bottom: calc(100% + 8px); left: 50%; translate: -50% 0; z-index: 5; display: grid; min-width: 160px; padding: 6px;
-  border: 1px solid rgba(255, 240, 220, 0.14); border-radius: 12px; background: rgba(16, 10, 8, 0.96); box-shadow: 0 18px 40px -12px rgba(0, 0, 0, 0.9);
-  animation: sn-rise 160ms ease-out both;
+.sn-share__x svg { flex: none; }
+
+/* Phones: the words under the card set tighter, the buttons in two columns, and never taller than the room below the card. */
+@media (max-width: 639px) {
+  .sn { --sn-cw: min(260px, 64vw); }
+  .sn-hud { gap: 10px; padding: 0 14px calc(14px + env(safe-area-inset-bottom, 0px)); max-height: 58svh; }
+  .sn-tag { gap: 7px; }
+  .sn-tag__line { padding: 7px 13px; gap: 10px; }
+  .sn-tag__rar, .sn-tag__ed { font-size: 11px; }
+  .sn-tag__perk { max-width: 34ch; font-size: 13px; line-height: 1.4; }
+  .sn-after { gap: 9px; }
+  .sn-provenance { font-size: 11px; }
+  .sn-after .sd-pay__actions { gap: 8px; }
+  .sn-after .sd-pay__actions .sd-btn { min-height: 44px; padding: 10px 8px; font-size: 11.5px; letter-spacing: 0.1em; }
+  .sn-pre__cap { font-size: 19px; }
 }
-.sn-share__pop a, .sn-share__pop button {
-  display: flex; align-items: center; min-height: 40px; padding: 0 12px; border: 0; border-radius: 8px; background: none;
-  color: #fff; font: 500 14px var(--sd-sans); text-decoration: none; text-align: left; cursor: pointer;
+@media (max-height: 700px) {
+  .sn-tag__perk { display: none; }
+  .sn-hud { gap: 8px; }
 }
-.sn-share__pop a:hover, .sn-share__pop button:hover, .sn-share__pop :focus-visible { background: rgba(255, 240, 220, 0.08); }

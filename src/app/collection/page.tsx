@@ -26,6 +26,7 @@ export default async function CollectionPage({
 
   let body: ReactNode
   let summary: ReactNode = null
+  let held = 0
 
   if (!wallet) {
     body = (
@@ -44,6 +45,7 @@ export default async function CollectionPage({
       }
     }
     if (editions) {
+      held = editions.length
       const photographed = editions.filter((e) => e.latest).length
       summary = (
         <DataRow
@@ -64,7 +66,7 @@ export default async function CollectionPage({
     <StellarShell title="Collection">
       <StellarView step="collection" />
       <section className="sd-container sd-top">
-        {wallet && <CollectionHead wallet={wallet} />}
+        {wallet && <CollectionHead wallet={wallet} cards={held} />}
         {summary}
         <div className={summary ? 'sd-chapter-block' : undefined} style={summary ? { marginTop: 32 } : undefined}>
           {body}

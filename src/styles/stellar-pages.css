@@ -131,29 +131,6 @@
 .sd-home-sec__title { margin: 0; font: 400 clamp(28px, 3.4vw, 46px)/1.04 var(--sd-display); letter-spacing: 0.01em; text-transform: uppercase; }
 .sd-home-sec__lede { margin: 18px 0 0; max-width: 52ch; color: var(--sd-ink-2); font-size: 17px; line-height: 1.6; }
 
-/* ── Home: the flight plan — four steps, set like the card's own panel ── */
-.sd-flight { list-style: none; margin: 44px 0 0; padding: 22px 0 0; display: grid; gap: 0;
-  background: linear-gradient(90deg, transparent, #f6c46a 10%, #f6c46a 90%, transparent) top / 100% 1px no-repeat,
-              linear-gradient(90deg, transparent, #ee8c3a 10%, #ee8c3a 90%, transparent) 0 4px / 100% 1.5px no-repeat,
-              linear-gradient(90deg, transparent, #c8402a 10%, #c8402a 90%, transparent) 0 9px / 100% 1px no-repeat; }
-.sd-flight > li { min-width: 0; border-top: 1px solid var(--sd-rule); }
-.sd-flight > li:first-child { border-top: 0; }
-@media (min-width: 860px) {
-  .sd-flight { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-  .sd-flight > li { border-top: 0; border-left: 1px solid var(--sd-rule); }
-  .sd-flight > li:first-child { border-left: 0; }
-}
-.sd-flight__step { display: grid; grid-template-columns: 40px 1fr; column-gap: 16px; row-gap: 6px; padding: 24px 4px; color: inherit; text-decoration: none; }
-@media (min-width: 860px) { .sd-flight__step { grid-template-columns: 1fr; justify-items: center; text-align: center; padding: 28px 26px 30px; row-gap: 10px; } }
-.sd-flight__step:focus-visible { outline: 2px solid var(--sd-focus); outline-offset: 4px; border-radius: var(--sd-radius-sm); }
-.sd-flight__icon { grid-row: span 3; width: 40px; height: 40px; color: var(--sd-accent-ink); }
-@media (min-width: 860px) { .sd-flight__icon { grid-row: auto; width: 44px; height: 44px; margin-bottom: 6px; } }
-.sd-flight__icon svg { display: block; width: 100%; height: 100%; }
-.sd-flight__step:not(.sd-flight__step--live) .sd-flight__icon { color: var(--sd-ink-3); }
-.sd-flight__title { font: 400 clamp(26px, 2.2vw, 32px)/1 var(--sd-display); letter-spacing: 0.02em; text-transform: uppercase; color: var(--sd-ink); transition: color var(--sd-dur-base) var(--sd-ease); }
-.sd-flight__text { max-width: 30ch; color: var(--sd-ink-2); font-size: 15px; line-height: 1.55; }
-@media (hover: hover) { .sd-flight__step:hover .sd-flight__title { color: var(--sd-accent-ink); } }
-
 .sd-showcase2 { display: grid; gap: 40px; align-items: center; }
 @media (min-width: 960px) { .sd-showcase2 { grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr); gap: 72px; } }
 .sd-families { list-style: none; margin: 28px 0 32px; padding: 0; max-width: 440px; border-top: 1px solid var(--sd-rule); }
@@ -380,7 +357,7 @@
   .sd-tile__price { font-size: 14px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .sd-tile .sd-thumb, .sd-thumb::after, .sd-herofan__card, .sd-showcase2__cards a, .sd-flight__step { transition: none; }
+  .sd-tile .sd-thumb, .sd-thumb::after, .sd-herofan__card, .sd-showcase2__cards a, .sd-flight__step, .sd-flight__icon { transition: none; }
 }
 
 /* ── Tonight: the object named like the home headline ─────────── */
@@ -513,8 +490,6 @@
   .sd-partners { margin-bottom: 28px; }
   .sd-partners li { height: 60px; padding: 0 10px; }
   .sd-partners img { max-height: 24px; }
-  .sd-flight { margin-top: 30px; }
-  .sd-flight__step { padding: 20px 2px; }
   .sd-showcase2 { gap: 28px; }
   .sd-showcase2__cards { gap: 10px; padding-bottom: 18px; }
   .sd-showcase2__cards li:nth-child(3n + 2) { translate: 0 18px; }
@@ -538,10 +513,18 @@
 .sd-coll__head { margin-bottom: 24px; }
 .sd-coll__holder { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .sd-coll__holder span { font-family: var(--sd-mono); text-transform: none; letter-spacing: 0.04em; color: var(--sd-ink-2); }
+/* Share a card or a collection: the post on X and the link, side by side, small. */
+.sd-coll__share, .sd-cardhero__share { display: flex; flex-wrap: wrap; gap: 10px; }
+.sd-coll__share { margin-top: 18px; }
+.sd-cardhero__share { margin-top: 18px; }
+.sd-coll__share .sd-btn, .sd-cardhero__share .sd-btn { min-height: 42px; padding: 10px 16px; font-size: 12px; letter-spacing: 0.12em; }
 
 /* A card image fades in over the sealed back (thumbs) or the dark window (live cards) once it has loaded. */
-img[data-fade] { opacity: 0; transition: opacity 200ms ease-out; }
-img[data-fade][data-on] { opacity: 1; }
+/* Hidden until it has loaded, then faded in; and shown regardless after a moment, so a picture whose load event
+   never reached the page (a cached image, a page that never hydrated) is never left invisible. */
+img[data-fade] { opacity: 0; transition: opacity 200ms ease-out; animation: sd-img-show 1ms linear 1.5s both; }
+img[data-fade][data-on] { opacity: 1; animation: none; }
+@keyframes sd-img-show { to { opacity: 1; } }
 
 /* Every clickable card: one lift on hover, one ring on focus. */
 .sd-tile .sd-thumb, .sd-showcase2__cards a, .sd-cardplate__link { transition: translate 150ms var(--sd-ease), filter 150ms var(--sd-ease); }

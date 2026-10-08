@@ -21,6 +21,7 @@ import { cardAvailability } from '@/lib/stellar/orders';
 import { photoFor } from '@/lib/stellar/photos';
 import { posterFor } from '@/lib/stellar/poster';
 import CardBuyBar from '@/components/stellar/CardBuyBar';
+import ShareCard from '@/components/stellar/ShareCard';
 
 export const dynamic = 'force-dynamic';
 
@@ -158,6 +159,9 @@ export default async function CardPage({ params }: { params: Promise<{ designati
               <Link href="/tonight" className="sd-link sd-data">
                 See tonight’s vote
               </Link>
+            </div>
+            <div className="sd-cardhero__share">
+              <ShareCard title={`${seed.name} — Stellar`} text={`${seed.name} — a Genesis card on Stellar. ${record.line}`} url={`https://stellarr.club/card/${seed.designation}`} />
             </div>
           </div>
         </div>

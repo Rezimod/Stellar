@@ -43,16 +43,10 @@ const SUPPLY = Object.fromEntries(
 const FROM_USD = Math.min(...TIERS.map((t) => t.priceUsd));
 
 const PLAN: FlightStep[] = [
-  { title: 'Open', text: `${CARDS_PER_TIER === 1 ? 'One sealed card' : `${CARDS_PER_TIER} sealed cards`} to a capsule, from $${FROM_USD}.`, live: true, href: '/genesis', icon: 'capsule' },
-  { title: 'Vote', text: 'Holders vote on the night’s target for the Live Telescope.', live: true, href: '/tonight', icon: 'reticle' },
-  { title: 'Watch', text: 'Live Telescope — coming soon. From first light in November, holders of the chosen card watch it live.', live: false, href: '/node', icon: 'telescope' },
-  {
-    title: 'Claim',
-    text: 'Legendary cards carry a real meteorite, redeemable.',
-    live: false,
-    href: '/genesis',
-    icon: 'meteorite',
-  },
+  { title: 'Open', text: `${CARDS_PER_TIER === 1 ? 'One sealed card' : `${CARDS_PER_TIER} sealed cards`} in every capsule.`, tag: `From $${FROM_USD}`, live: true, href: '/genesis', icon: 'capsule' },
+  { title: 'Vote', text: 'Holders choose what the telescope looks at tonight.', live: true, href: '/tonight', icon: 'reticle' },
+  { title: 'Watch', text: 'Holders of the chosen card watch the telescope live.', tag: 'From November', live: false, href: '/node', icon: 'telescope' },
+  { title: 'Claim', text: 'Legendary cards come with a real meteorite you can hold.', tag: 'Legendary cards', live: false, href: '/genesis', icon: 'meteorite' },
 ];
 
 const GUARANTEES = [
@@ -96,7 +90,6 @@ export default async function HomePage() {
       <StellarView step="landing" />
 
       <section className="sd-hero2">
-        <span className="sd-hero2__horizon" aria-hidden="true" />
         <div className="sd-container sd-hero2__grid">
           <HomePrint />
           <div className="sd-hero2__copy">
@@ -136,7 +129,7 @@ export default async function HomePage() {
         <h2 className="sd-home-sec__title" id="how-title">
           What a card opens
         </h2>
-        <FlightPlan steps={tonightCard ? PLAN.map((p) => (p.icon === 'reticle' ? { ...p, text: `${p.text} Tonight: ${tonightCard.seed.name}.` } : p)) : PLAN} />
+        <FlightPlan steps={tonightCard ? PLAN.map((p) => (p.icon === 'reticle' ? { ...p, tag: `Tonight: ${tonightCard.seed.name.replace(/^The /, '')}` } : p)) : PLAN} />
       </section>
 
       <section className="sd-container sd-home-sec sd-pub" aria-labelledby="odds-title">

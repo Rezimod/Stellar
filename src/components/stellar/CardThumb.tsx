@@ -17,7 +17,7 @@ export default function CardThumb({ designation, eager = false }: { designation:
     );
   return (
     <span className="sd-thumb">
-      <FadeImg src={`${plate.art}/card.webp?v=poster11`} width={520} height={726} priority={eager} />
+      <FadeImg src={`${plate.art}/card.webp?v=poster12`} width={520} height={726} priority={eager} />
     </span>
   );
 }

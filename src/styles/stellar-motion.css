@@ -23,13 +23,13 @@
     transition-duration: 220ms; transition-timing-function: var(--sd-ease);
   }
   @media (hover: hover) {
-    .sd-btn:hover:not(:disabled), .sd-chip:not(.sd-chip--wallet):hover { translate: 0 -1px; }
+    .sd-btn:hover:not(:disabled), .sd-chip:hover { translate: 0 -1px; }
     .sd-btn--primary:hover:not(:disabled)::after, .sd-chip--cta:hover::after {
       translate: 110% 0; transition: translate 800ms cubic-bezier(0.3, 0.6, 0.2, 1);
     }
     .sd-menu a:hover, .sd-menu > button:hover { translate: 2px 0; }
   }
-  .sd-btn:active:not(:disabled), .sd-chip:not(.sd-chip--wallet):active {
+  .sd-btn:active:not(:disabled), .sd-chip:active {
     translate: 0 0; scale: 0.97; transition-duration: 70ms;
   }
   /* While the chain is thought about, the pass of light keeps crossing. */
