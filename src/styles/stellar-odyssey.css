@@ -99,6 +99,16 @@
 .stellar .sd-badge[data-rarity='legendary'] { color: #1c1406; text-shadow: 0 1px 0 rgba(255, 240, 200, 0.4); }
 .stellar .sd-badge[data-rarity='epic'] { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55), inset 0 -1px 0 rgba(0, 0, 0, 0.35), 0 0.4em 1em -0.3em #000e, 0 0 0 1px rgba(0, 0, 0, 0.7), 0 0 1.4em -0.1em var(--sd-hal-glow); }
 
+/* ── The card's outer light: a halo in its rarity's colour ── */
+.stellar .sd-tile .sd-thumb { box-shadow: 0 0 0 1px #0009, 0 22px 40px -22px #000, 0 0 46px -18px color-mix(in srgb, var(--rarity) var(--halo, 45%), transparent); }
+.stellar .sd-tile[data-rarity='epic'] { --halo: 60%; } .stellar .sd-tile[data-rarity='legendary'] { --halo: 72%; }
+.stellar :is(.sd-zoom__card, .sd-cardhero__plate) { position: relative; isolation: isolate; }
+.stellar :is(.sd-zoom__card, .sd-cardhero__plate)::before {
+  content: ''; position: absolute; inset: -18% -26%; z-index: -1; pointer-events: none;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--rarity) 34%, transparent), transparent 80%);
+}
+.stellar :is(.sd-zoom, .sd-cardhero) .sdc--hero .sdc-card { box-shadow: inset 0 0 0 4px #0008, inset 0 0 26px -6px color-mix(in srgb, var(--card-accent) 30%, transparent), 0 40px 70px -30px #000, 0 0 60px -22px var(--card-accent); }
+
 /* ── The shelf ────────────────────────────────────────────────── */
 .stellar .sd-tile .sd-thumb { transition: box-shadow var(--sd-dur-base) var(--sd-ease); }
 .stellar .sd-tile:is(:hover, :focus-visible) .sd-thumb { box-shadow: 0 0 0 1px color-mix(in srgb, var(--rarity) 70%, transparent), 0 0 34px -8px color-mix(in srgb, var(--rarity) 70%, transparent), 0 20px 30px -18px #000; }

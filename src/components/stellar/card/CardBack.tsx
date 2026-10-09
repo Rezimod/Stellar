@@ -37,7 +37,7 @@ function CardBack({ plate, edition, commitment, sealed = false, priority = false
       <div className="sdc-notes">
         <header className="sdc-notes__head"><span>Field notes</span><span>{plate.num} / {plate.total}</span></header>
         <div className="sdc-notes__image"><FadeImg src={photo?.file ?? `${plate.art}/object.webp`} alt="" priority={priority} style={{ objectPosition: photo?.focus ?? '50% 40%' }} /></div>
-        <strong className="sdc-notes__name" style={{ fontSize: `${Math.max(4.6, Math.min(7.5, 86 / plate.name.length))}cqw` }}>{plate.name}</strong>
+        <strong className="sdc-notes__name" style={{ fontSize: `${Math.min(9, 160 / plate.name.length)}cqw` }}>{plate.name}</strong>
         <dl className="sdc-notes__data">{rows.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
         <p className="sdc-notes__story">{plate.story[0]}</p>
         {photo && <p className="sdc-notes__credit">{photo.kind === 'impression' ? 'Art' : 'Image'} · {photo.credit}</p>}

@@ -27,7 +27,7 @@ const style = `
   html, body { margin: 0; background: transparent; }
   .wrap { --px: 0.5; --py: 0.5; width: 520px; }
   ${fs.readFileSync('src/components/stellar/card/stellar-card.css', 'utf8')}
-  .sdc-card { box-shadow: none !important; }
+  .sdc-card { box-shadow: inset 0 0 0 max(3px, 1cqw) #0008, inset 0 0 6cqw -1cqw color-mix(in srgb, var(--card-accent) 30%, transparent) !important; }
   .sdc-foil, .sdc-holo, .sdc-breath { opacity: 0 !important; }
   *, *::before, *::after { animation: none !important; }
   .sdc-glitter { opacity: 0.25 !important; }
