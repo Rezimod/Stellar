@@ -36,6 +36,7 @@ function CardFront({ plate, capture, lite = false, priority = false }: Props) {
       <div className="sdc-atmosphere" aria-hidden="true" />
       <div className="sdc-caption">
         <strong className="sdc-name" style={{ '--card-name-size': `${Math.min(11.8, 175 / title.length)}cqw` } as CSSProperties}>{title}</strong>
+        <span className="sdc-headline">{plate.poster.headline}</span>
         <span className="sdc-number">{plate.num} / {plate.total}</span>
       </div>
       {!lite && <div className="sdc-glare" aria-hidden="true" />}

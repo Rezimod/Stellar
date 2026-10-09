@@ -113,8 +113,9 @@
 .stellar .sd-tile .sd-thumb { transition: box-shadow var(--sd-dur-base) var(--sd-ease); }
 .stellar .sd-tile:is(:hover, :focus-visible) .sd-thumb { box-shadow: 0 0 0 1px color-mix(in srgb, var(--rarity) 70%, transparent), 0 0 34px -8px color-mix(in srgb, var(--rarity) 70%, transparent), 0 20px 30px -18px #000; }
 .stellar .sd-tile__foot { align-items: center; margin-top: 12px; }
-.stellar .sd-tile__price { color: #fff; }
+.stellar .sd-tile__price { font: 700 19px/1.1 var(--sd-sans); letter-spacing: -0.01em; color: color-mix(in srgb, var(--rarity) 55%, #fff); text-shadow: 0 0 18px color-mix(in srgb, var(--rarity) 55%, transparent); }
 .stellar .sd-tile[data-rarity='epic'] .sd-tile__price, .stellar .sd-tile[data-rarity='legendary'] .sd-tile__price { color: var(--rarity); }
+@media (max-width: 767px) { .stellar .sd-tile__price { font-size: 16px; } }
 
 /* ── The filter: a navigation console over the shelf ─────────── */
 .stellar .sd-fl__head {
@@ -128,8 +129,9 @@
     var(--sd-glass);
   backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
 }
-@media (min-width: 768px) {
-  .stellar .sd-fl__head { position: sticky; top: calc(var(--sd-bar-h) + 10px); box-shadow: 0 18px 40px -24px #000; }
+/* The capsule counter stays put beside the shelf; the filter scrolls with the cards. */
+@media (min-width: 1024px) {
+  .stellar .sd-counter { position: sticky; top: calc(var(--sd-bar-h) + 16px); max-height: calc(100dvh - var(--sd-bar-h) - 32px); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: #ffffff22 transparent; }
 }
 .stellar .sd-fl__head::after {
   content: ''; position: absolute; left: 18px; right: 18px; bottom: 0; height: 1px; z-index: -1;

@@ -268,7 +268,6 @@
 .sd-fl__grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 30px 14px; }
 @container (min-width: 560px) { .sd-fl__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px 20px; } }
 @container (min-width: 860px) { .sd-fl__grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 36px 24px; } }
-.sd-fl__grid > li { content-visibility: auto; contain-intrinsic-size: auto 400px; }
 .sd-fl__grid > li[hidden] { display: none; }
 .sd-tile { position: relative; display: block; min-width: 0; text-decoration: none; color: var(--sd-ink); border-radius: 12px; }
 .sd-tile__stage { position: relative; display: block; }

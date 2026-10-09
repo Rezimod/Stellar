@@ -165,11 +165,11 @@
  "NEPTUNE": {
   "file": "/cards/photo/NEPTUNE.webp",
   "kind": "photo",
-  "credit": "NASA/JPL (Voyager 2); colour calibration by Ardenau4",
+  "credit": "NASA/JPL (Voyager 2)",
   "source": "Voyager 2",
   "year": "1989",
-  "license": "CC0",
-  "url": "https://commons.wikimedia.org/wiki/File:Neptune_Voyager2_color_calibrated.png",
+  "license": "Public domain",
+  "url": "https://commons.wikimedia.org/wiki/File:Neptune_Full.jpg",
   "focus": "50% 50%"
  },
  "PLUTO": {
