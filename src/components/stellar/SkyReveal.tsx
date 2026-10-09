@@ -173,12 +173,10 @@ export default function SkyReveal() {
       dirty = [];
 
       if (gain > 0.01) {
-        c.globalCompositeOperation = 'lighter';
         const lg = c.createRadialGradient(cur.x, cur.y, 0, cur.x, cur.y, R * 1.4);
         lg.addColorStop(0, `rgba(${CREAM},${0.07 * gain})`); lg.addColorStop(0.5, `rgba(${CREAM},${0.02 * gain})`); lg.addColorStop(1, 'rgba(0,0,0,0)');
         c.fillStyle = lg; c.fillRect(cur.x - R * 1.4, cur.y - R * 1.4, R * 2.8, R * 2.8);
         mark(cur.x - R * 1.4, cur.y - R * 1.4, R * 2.8, R * 2.8);
-        c.globalCompositeOperation = 'source-over';
       }
 
       let nearest: Live | null = null, nearestA = 0;
@@ -202,13 +200,14 @@ export default function SkyReveal() {
         mark(o.cx - w / 2, o.cy - h / 2, w, h);
         if (o.lit && t < 1) {
           // Ignition: a bloom of light and a moment of overexposure that settles.
-          c.globalCompositeOperation = 'lighter';
-          const fg = c.createRadialGradient(o.cx, o.cy, 0, o.cx, o.cy, o.r * (1.1 + t * 1.6));
+          const br = o.r * (0.9 + t * 1.1);
+          const fg = c.createRadialGradient(o.cx, o.cy, 0, o.cx, o.cy, br);
           fg.addColorStop(0, `rgba(255,240,214,${(1 - t) * 0.38 * a})`);
           fg.addColorStop(0.4, `rgba(255,214,160,${(1 - t) * 0.12 * a})`);
           fg.addColorStop(1, 'rgba(0,0,0,0)');
-          c.fillStyle = fg; c.fillRect(o.cx - o.r * 3, o.cy - o.r * 3, o.r * 6, o.r * 6);
-          mark(o.cx - o.r * 3, o.cy - o.r * 3, o.r * 6, o.r * 6);
+          c.fillStyle = fg; c.fillRect(o.cx - br, o.cy - br, br * 2, br * 2);
+          mark(o.cx - br, o.cy - br, br * 2, br * 2);
+          c.globalCompositeOperation = 'lighter';
           c.globalAlpha = (1 - t) * 0.7 * a;
           c.drawImage(o.bmp, o.cx - w / 2, o.cy - h / 2, w, h);
           c.globalCompositeOperation = 'source-over';
