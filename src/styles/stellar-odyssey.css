@@ -70,7 +70,7 @@
 .stellar .sd-counter__preview svg { color: var(--sd-hal); }
 
 /* ── Monolith panels ──────────────────────────────────────────── */
-.stellar :is(.sd-counter, .sd-pub__board, .sd-flight__step, .sd-cardhero .sd-perk, .sd-zoom__panel .sd-perk) {
+.stellar :is(.sd-counter, .sd-pub__board, .sd-cardhero .sd-perk, .sd-zoom__panel .sd-perk) {
   border: 1px solid var(--sd-line); border-radius: 12px;
   background: var(--sd-ticks), linear-gradient(180deg, rgba(18, 18, 24, 0.9), rgba(6, 6, 9, 0.94));
 }
@@ -169,6 +169,24 @@
   .stellar .sd-filter { flex-wrap: nowrap; }
   .stellar .sd-filter__count { position: absolute; left: 20px; bottom: 6px; flex-basis: auto; }
 }
+/* What a card opens: no frames, no numbers, no track. Four instruments lit in the login red, floating on the sky. */
+.stellar .sd-flight::before, .stellar .sd-flight::after, .stellar .sd-flight > li::before { display: none !important; content: none; }
+.stellar .sd-flight__step { border: 0 !important; background: none !important; box-shadow: none !important; }
+.stellar .sd-flight__icon {
+  position: relative; color: #fff; border: 0; background: radial-gradient(circle at 50% 38%, color-mix(in srgb, var(--sd-hal) 55%, #ffb199), var(--sd-hal) 45%, #7a160c 100%);
+  box-shadow: 0 0 0 1px rgba(255, 170, 140, 0.45), 0 0 0 7px rgba(227, 72, 44, 0.08), 0 0 36px -4px var(--sd-hal-glow), inset 0 1px 0 rgba(255, 230, 215, 0.55);
+  transition: box-shadow var(--sd-dur-base) var(--sd-ease), translate var(--sd-dur-base) var(--sd-ease);
+}
+.stellar .sd-flight__step:not(.sd-flight__step--live) .sd-flight__icon { color: rgba(255, 255, 255, 0.75); background: radial-gradient(circle at 50% 38%, #3a3a40, #17171b 70%); box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.14), 0 0 0 7px rgba(255, 255, 255, 0.025); }
+.stellar .sd-flight__step:hover .sd-flight__icon { box-shadow: 0 0 0 1px rgba(255, 190, 165, 0.7), 0 0 0 9px rgba(227, 72, 44, 0.12), 0 0 50px -2px var(--sd-hal-glow), inset 0 1px 0 rgba(255, 230, 215, 0.6); }
+.stellar .sd-flight__step:hover { translate: 0 -3px; }
+.stellar .sd-flight__step:hover .sd-flight__title { color: var(--sd-hal); }
+.stellar .sd-flight__title { font-family: var(--sd-display); text-shadow: none; }
+.stellar .sd-flight__tag { color: var(--sd-hal); box-shadow: inset 0 0 0 1px rgba(227, 72, 44, 0.4); background: rgba(227, 72, 44, 0.08); }
+.stellar .sd-flight__step:not(.sd-flight__step--live) .sd-flight__tag { color: rgba(255, 255, 255, 0.6); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14); background: none; }
+.stellar .sd-flight__tag::before { background: currentColor; box-shadow: 0 0 6px currentColor; }
+@media (max-width: 859px) { .stellar .sd-flight__tag { justify-self: start; width: fit-content; max-width: 100%; padding: 4px 9px 3px; border-radius: 7px; line-height: 1.35; } }
+
 /* The flight plan's tags, in the cockpit face, kept inside their pill. */
 .stellar .sd-flight__tag { font: 700 9.5px/1.3 var(--sd-spaced); letter-spacing: 0.12em; white-space: normal; border-radius: 8px; }
 

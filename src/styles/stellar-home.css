@@ -76,9 +76,6 @@
 }
 .stellar .sd-flight__icon svg { display: block; width: 24px; height: 24px; }
 .stellar .sd-flight__step:not(.sd-flight__step--live) .sd-flight__icon { color: rgba(244, 232, 204, 0.6); background: rgba(244, 232, 204, 0.04); box-shadow: inset 0 0 0 1px rgba(244, 232, 204, 0.18); }
-.stellar .sd-flight__head { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
-.stellar .sd-flight__n { font: 500 11px/1 var(--sd-mono); letter-spacing: 0.14em; color: var(--sd-gold); }
-.stellar .sd-flight__step:not(.sd-flight__step--live) .sd-flight__n { color: rgba(244, 232, 204, 0.5); }
 .stellar .sd-flight__title { font: 400 22px/1 var(--sd-display); letter-spacing: 0.02em; text-transform: uppercase; color: var(--sd-ink); text-shadow: 0.05em 0.055em 0 var(--sd-print); transition: color var(--sd-dur-base) var(--sd-ease); }
 .stellar .sd-flight__text { max-width: 26ch; color: rgba(244, 232, 204, 0.78); font-size: 13.5px; line-height: 1.5; }
 .stellar .sd-flight__tag {

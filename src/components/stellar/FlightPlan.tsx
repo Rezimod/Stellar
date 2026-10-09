@@ -49,7 +49,7 @@ const ICONS: Record<Step['icon'], React.ReactNode> = {
   ),
 };
 
-/** Four steps from capsule to object, each with its instrument, one line and a note, on one dotted orbit. */
+/** Four steps from capsule to object, each with its instrument, one line and a note. */
 export default function FlightPlan({ steps }: { steps: Step[] }) {
   return (
     <ol className="sd-flight">
@@ -61,12 +61,7 @@ export default function FlightPlan({ steps }: { steps: Step[] }) {
                 {ICONS[s.icon]}
               </svg>
             </span>
-            <span className="sd-flight__head">
-              <span className="sd-flight__n" aria-hidden="true">
-                0{i + 1}
-              </span>
-              <span className="sd-flight__title">{s.title}</span>
-            </span>
+            <span className="sd-flight__title">{s.title}</span>
             <span className="sd-flight__text">{s.text}</span>
             {s.tag && <span className="sd-flight__tag">{s.tag}</span>}
           </Link>

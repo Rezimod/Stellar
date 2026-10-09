@@ -59,6 +59,13 @@ function SealedBack({ designation, u }: { designation: string; u: string }) {
   return plate ? <CardBack plate={plate} sealed priority u={u} /> : null;
 }
 
+/** The capsule's fragments when it cracks: how far each flies (px), its spin and its size. */
+const SHARDS: [number, number, number, number][] = Array.from({ length: 14 }, (_, i) => {
+  const a = (i / 14) * Math.PI * 2 + (i % 2 ? 0.2 : -0.15);
+  const d = 150 + ((i * 53) % 90);
+  return [Math.round(Math.cos(a) * d), Math.round(Math.sin(a) * d * 0.8), ((i * 97) % 540) - 270, 7 + ((i * 7) % 9)];
+});
+
 /**
  * Ignite: a star goes supernova, and out of the nebula it leaves the card
  * comes forward face down and turns over on its own. One press starts it;
@@ -356,6 +363,20 @@ export default function StellarReveal({
         <canvas className="sn-sky" data-sn="sky" />
         <div className="sn-center">
           <div className="sn-halo" data-sn="halo" aria-hidden="true" />
+          <div className="sn-cap" data-sn="cap" aria-hidden="true">
+            <div className="sn-cap__glow" />
+            <div className="sn-cap__beam" />
+            <div className="sn-cap__half sn-cap__half--top"><div className="sn-cap__shell" /></div>
+            <div className="sn-cap__half sn-cap__half--bot"><div className="sn-cap__shell" /></div>
+            <svg className="sn-cap__cracks" viewBox="0 0 100 160" preserveAspectRatio="none">
+              <path pathLength={1} d="M50 80 L44 70 L47 58 L40 46 L43 33" />
+              <path pathLength={1} d="M50 80 L58 72 L55 61 L63 52 L60 40 L66 30" />
+              <path pathLength={1} d="M50 80 L41 89 L45 101 L38 113" />
+              <path pathLength={1} d="M50 80 L59 90 L56 104 L64 118 L61 128" />
+              <path pathLength={1} d="M4 80 L22 78 L34 82 L50 80 L66 78 L80 82 L96 80" />
+            </svg>
+            {SHARDS.map((s, i) => <i key={i} className="sn-cap__shard" style={{ '--dx': `${s[0]}px`, '--dy': `${s[1]}px`, '--r': `${s[2]}deg`, '--w': `${s[3]}px` } as CSSProperties} />)}
+          </div>
           <div className="sn-wrap" data-sn="wrap">
             <div className="sn-flip" data-sn="flip">
               <div className={`sn-tilt${turned ? ' is-turned' : ''}`} ref={tilt}>

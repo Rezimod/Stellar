@@ -114,6 +114,7 @@ export function startSupernova(root: HTMLElement, opts: SupernovaOptions): Super
   const burn = q('burn');
   const sheen = q('sheen');
   const halo = q('halo');
+  const cap = q('cap');
   const seed = Math.random() * 50;
 
   // The star's heartbeat: each beat closer to the last, each throwing a flare off the limb.
@@ -413,7 +414,12 @@ export function startSupernova(root: HTMLElement, opts: SupernovaOptions): Super
       S.rays *= 1 - 0.6 * S.dof;
       S.rays += (0.25 + (0.35 * p.flash) / 1.9) * burst + 0.25 * sm(0, 1, kt) * (1 - sm(1.5, 2.6, kt)) + 0.45 * born;
       S.white += 0.2 * X * burst * (opts.rarity === 'legendary' ? 1.6 : 1) + 0.1 * X * born;
-      S.shk += 0.9 * burst + 0.4 * born;
+      // The capsule splitting: a hard white flash and a jolt.
+      const split = Math.exp(-Math.pow((kt - p.em * (C_CRACK + 0.04)) / 0.09, 2));
+      S.white += 0.32 * split;
+      S.core += 1.4 * split;
+      S.rays += 0.5 * split;
+      S.shk += 0.9 * burst + 0.4 * born + 1.6 * split;
       if (kf > 0.4 * p.fl && p.rings > 1) {
         const k3 = kf - 0.4 * p.fl;
         S.s2 = 0.06 + 0.6 * eout(k3 / 1.4);
@@ -519,28 +525,58 @@ export function startSupernova(root: HTMLElement, opts: SupernovaOptions): Super
   }
 
   // The sealed card comes up out of the core: far, small, soft and lit by the gas; then near, sharp and its own colour. Then it turns.
+  // A capsule leaves the core first (the first 55% of the approach), cracks along its seam, splits, and the card comes out of it.
+  const C_ARRIVE = 0.55, C_CRACK = 0.7, C_OPEN = 0.9;
+  function capsule(t: number, now: number) {
+    if (!cap) return;
+    const k = (t - T.TE) / p.em;
+    if (k <= 0 || k >= 1.25) { cap.style.opacity = '0'; return; }
+    const a = eio(clamp(k / C_ARRIVE));
+    const sc = 1 / (1 + 16 * Math.pow(1 - a, 1.7));
+    const cr = sm(C_ARRIVE - 0.02, C_CRACK, k);
+    const co = eout(clamp((k - C_CRACK) / (C_OPEN - C_CRACK + 0.25)));
+    const cf = sm(C_OPEN - 0.05, 1.15, k);
+    const jit = cr * (1 - co) * 3.5;
+    cap.style.opacity = (sm(0, 0.08, k) * (1 - cf)).toFixed(3);
+    cap.style.setProperty('--cs', (sc * (1 + 0.06 * Math.sin(Math.PI * cr))).toFixed(4));
+    cap.style.setProperty('--cz', `${(-14 * (1 - a) * Math.cos(k * 5) + Math.sin(now * 60) * jit).toFixed(2)}deg`);
+    cap.style.setProperty('--cx', `${(Math.cos(now * 71) * jit).toFixed(2)}px`);
+    cap.style.setProperty('--cr', cr.toFixed(3));
+    cap.style.setProperty('--co', co.toFixed(3));
+    cap.style.setProperty('--cf', cf.toFixed(3));
+    cap.style.setProperty('--ch', (0.35 + 0.65 * a + 1.2 * cr * (1 - co)).toFixed(3));
+  }
+
   function card(t: number, now: number) {
     if (!wrap || !flip) return;
+    capsule(t, now);
     if (t < T.TE) {
       wrap.style.opacity = '0';
       if (halo) halo.style.opacity = '0';
       root.dataset.sealed = '1';
       return;
     }
-    const k = clamp((t - T.TE) / p.em), e = eio(k), kf = (t - T.TF) / p.fl;
-    const s = 1 / (1 + 14 * Math.pow(1 - e, 1.6));
+    // The card exists only once the capsule has split: it starts small inside it and comes forward.
+    const k = clamp(((t - T.TE) / p.em - C_CRACK) / (1 - C_CRACK)), e = eio(k), kf = (t - T.TF) / p.fl;
+    if ((t - T.TE) / p.em < C_CRACK) {
+      wrap.style.opacity = '0';
+      if (halo) halo.style.opacity = '0';
+      root.dataset.sealed = '1';
+      return;
+    }
+    const s = 0.32 + 0.68 / (1 + 3 * Math.pow(1 - e, 1.6)) - 0.17 * (1 - e);
     const sway = 1 - e;
     const ang = kf <= 0 ? 0 : 180 * eio(kf);
     const lift = kf > 0 && kf < 1 ? Math.sin(Math.PI * kf) * 0.05 : 0;
     const bob = Math.sin(now * 1.05) * 4 * sm(T.TD + 0.4, T.TD + 1.4, t);
-    const op = sm(0, 0.12, k);
+    const op = sm(0, 0.18, k);
     wrap.style.opacity = op >= 0.999 ? '1' : op.toFixed(3);
     wrap.style.transform = `translateY(${(bob + 20 * sway).toFixed(2)}px) scale(${(s * (1 + lift)).toFixed(4)}) rotateZ(${(-7 * sway * Math.cos(k * 2.2)).toFixed(2)}deg)`;
     flip.style.transform = `rotateY(${(ang + 16 * sway * Math.sin(k * 2.6)).toFixed(2)}deg) rotateX(${(10 * sway).toFixed(2)}deg)`;
     // Until it turns, only the sealed back is ever seen.
     root.dataset.sealed = ang < 90 ? '1' : '0';
-    if (back) back.style.filter = `blur(${(4.5 * Math.pow(1 - e, 1.3)).toFixed(2)}px) brightness(${(0.7 + 0.3 * e).toFixed(3)})`;
-    if (veil) veil.style.opacity = (0.95 * Math.pow(1 - e, 1.25)).toFixed(3);
+    if (back) back.style.filter = `blur(${(2 * Math.pow(1 - e, 1.3)).toFixed(2)}px) brightness(${(0.92 + 0.08 * e).toFixed(3)})`;
+    if (veil) veil.style.opacity = (0.35 * Math.pow(1 - e, 1.25)).toFixed(3);
     if (burn) burn.style.opacity = (kf > 0 ? Math.exp(-Math.max(0, kf - 0.5) / 0.25) : 0).toFixed(3);
     if (sheen) sheen.style.setProperty('--sn-sx', `${lerp(160, -60, sm(0.85, 1.9, kf)).toFixed(1)}%`);
     if (halo) halo.style.opacity = ((0.35 + 0.45 * e) * sm(0, 0.3, k) * (1 + 0.6 * Math.exp(-Math.pow((kf - 0.45) / 0.2, 2)))).toFixed(3);
@@ -769,6 +805,30 @@ export function startSupernova(root: HTMLElement, opts: SupernovaOptions): Super
     out(rgn, 0.5);
     rs.start(TE);
     tone(base / 2, TE, p.em + 0.3, 0.05, 0.5, 'sine', p.em * 0.8);
+    // The capsule: a creak as it cracks, a sharp metallic split.
+    const TK = TE + p.em * (C_CRACK + 0.04);
+    const ck = noiseSrc(0.3), ckf = filt('bandpass', 900, TK - 0.25, 4200, TK, 6);
+    const ckg = A.createGain();
+    ckg.gain.setValueAtTime(0, TK - 0.25);
+    ckg.gain.linearRampToValueAtTime(0.12, TK - 0.02);
+    ckg.gain.exponentialRampToValueAtTime(1e-4, TK + 0.05);
+    ck.connect(ckf);
+    ckf.connect(ckg);
+    out(ckg, 0.4);
+    ck.start(TK - 0.25);
+    const sp = noiseSrc(0.12), sph = A.createBiquadFilter();
+    sph.type = 'highpass';
+    sph.frequency.value = 3000;
+    const spg = A.createGain();
+    spg.gain.setValueAtTime(0.55, TK);
+    spg.gain.exponentialRampToValueAtTime(1e-4, TK + 0.12);
+    sp.connect(sph);
+    sph.connect(spg);
+    out(spg, 0.6);
+    sp.start(TK);
+    tone(base * 4, TK, 1.2, 0.03, 0.8);
+    tone(base * 5.4, TK, 0.8, 0.018, 0.8);
+    thump(TK, 0.25);
     // The turn: a struck bell, the floor under it, and on the rarest a chord left hanging.
     const TT = TF + p.fl * 0.45;
     const partials: [number, number, number][] = [[1, 0.15, 3.8], [2.01, 0.07, 2.8], [2.76, 0.05, 2], [4.07, 0.03, 1.4], [5.4, 0.016, 1]];
