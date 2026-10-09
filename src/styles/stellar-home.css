@@ -204,8 +204,8 @@
   .stellar .sd-hero3__copy > :nth-child(3) { animation-delay: 180ms; }
 }
 @media (max-width: 559px) {
-  .stellar .sd-hero3 { display: flex; flex-direction: column; min-height: 0; }
-  .stellar .sd-sky { position: relative; height: clamp(300px, 80vw, 460px); }
+  .stellar .sd-hero3 { display: flex; flex-direction: column; align-items: stretch; min-height: 0; }
+  .stellar .sd-sky { position: relative; width: 100%; height: clamp(300px, 80vw, 460px); }
   .stellar .sd-sky__hint { right: 16px; bottom: 14px; }
   .stellar .sd-hero3__copy { padding-block: 8px 40px; }
   .stellar .sd-hero3__cta .sd-btn { width: 100%; }
