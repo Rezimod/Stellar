@@ -83,7 +83,7 @@ export default async function FirstLightPage() {
                 In this set
               </h1>
               <p className="sd-fl__meta">
-                {SET_001_CARDS.length} cards · 4 rarities · sorted rarest first
+                {SET_001_CARDS.length} cards · rarest first
                 {status !== 'released' && ' · Pre-release'}
               </p>
             </div>

@@ -2,7 +2,6 @@ import Link from 'next/link';
 import CardThumb from './CardThumb';
 import type { Rarity } from '@/lib/rarity';
 import { glowFor } from '@/lib/stellar/plate';
-import { perkFor } from '@/lib/stellar/perks';
 import type { CSSProperties, ReactNode } from 'react';
 
 export type ShopCardProps = {
@@ -23,7 +22,6 @@ export type ShopCardProps = {
 
 /** A card on the shelf: the card on its object's own light, its rarity and number above it, its name and price, one line under. */
 export default function ShopCard({ designation, name, rarity, sub, price, tag, eager = false, remaining, editionSize }: ShopCardProps) {
-  const perk = perkFor(designation, rarity);
   return (
     <Link
       href={`/card/${designation}`}
@@ -40,10 +38,6 @@ export default function ShopCard({ designation, name, rarity, sub, price, tag, e
         {tag && <span className="sd-tile__tag">{tag}</span>}
       </span>
       <span className="sd-tile__foot">
-          <span className="sd-tile__perk">
-            Unlocks · {perk.short}
-            {perk.soon && <em>Soon</em>}
-          </span>
         <span className="sd-tile__price">{price}</span>
         <span className="sd-tile__sub">
           {remaining != null && editionSize != null && <span className="sd-stock" aria-hidden="true"><i style={{ width: `${Math.max(0, Math.min(100, remaining / editionSize * 100))}%` }} /></span>}

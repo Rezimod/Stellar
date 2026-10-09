@@ -9,6 +9,7 @@ import '../styles/stellar-reveal.css';
 import '../styles/stellar-supernova.css';
 import '../styles/stellar-type.css';
 import '../styles/stellar-home.css';
+import '../styles/stellar-odyssey.css';
 import '../styles/stellar-mobile.css';
 import { AnalyticsBoot } from '@/components/providers/AnalyticsBoot';
 import JsonLd from '@/components/shared/JsonLd';
@@ -18,7 +19,7 @@ import JsonLd from '@/components/shared/JsonLd';
 const orbitron = Orbitron({
   subsets: ['latin'],
   variable: '--font-orbitron',
-  weight: ['500', '600', '700'],
+  weight: ['500', '600', '700', '800', '900'],
   display: 'swap',
 });
 const geist = Geist({

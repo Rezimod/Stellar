@@ -1,0 +1,246 @@
+/* STELLAR — the Odyssey layer. 2001's wide Eurostile (Michroma) for every title, a Star Wars
+   cockpit for the labels and buttons (Orbitron, tracked caps), black monoliths with corner
+   brackets for the panels, HAL red (the login colour) for every call to action, a hyperspace
+   burst behind the hero. Loaded after the page styles, before the phone rules. */
+
+.stellar {
+  --sd-title: var(--font-michroma), 'Eurostile', var(--font-geist), sans-serif;
+  --sd-display: var(--font-michroma), 'Eurostile', var(--font-geist), sans-serif;
+  --sd-spaced: var(--font-orbitron), var(--font-geist), sans-serif;
+  --sd-hal: #e3482c;
+  --sd-hal-hi: #ff6a45;
+  --sd-hal-deep: #8f1f16;
+  --sd-hal-glow: rgba(227, 72, 44, 0.55);
+  --sd-line: rgba(255, 255, 255, 0.09);
+  --sd-line-hi: rgba(255, 255, 255, 0.22);
+  --sd-glass: rgba(8, 8, 12, 0.78);
+  --sd-bar-bg: rgba(5, 5, 8, 0.82);
+  /* corner brackets: a monolith's four ticks, drawn as backgrounds so any panel can wear them */
+  --sd-ticks:
+    linear-gradient(var(--tick, var(--sd-line-hi)), var(--tick, var(--sd-line-hi))) 0 0 / 14px 1px no-repeat,
+    linear-gradient(var(--tick, var(--sd-line-hi)), var(--tick, var(--sd-line-hi))) 0 0 / 1px 14px no-repeat,
+    linear-gradient(var(--tick, var(--sd-line-hi)), var(--tick, var(--sd-line-hi))) 100% 0 / 14px 1px no-repeat,
+    linear-gradient(var(--tick, var(--sd-line-hi)), var(--tick, var(--sd-line-hi))) 100% 0 / 1px 14px no-repeat,
+    linear-gradient(var(--tick, var(--sd-line-hi)), var(--tick, var(--sd-line-hi))) 0 100% / 14px 1px no-repeat,
+    linear-gradient(var(--tick, var(--sd-line-hi)), var(--tick, var(--sd-line-hi))) 0 100% / 1px 14px no-repeat,
+    linear-gradient(var(--tick, var(--sd-line-hi)), var(--tick, var(--sd-line-hi))) 100% 100% / 14px 1px no-repeat,
+    linear-gradient(var(--tick, var(--sd-line-hi)), var(--tick, var(--sd-line-hi))) 100% 100% / 1px 14px no-repeat;
+}
+
+/* ── Deep space behind every page ─────────────────────────────── */
+.stellar .sd-backdrop {
+  background:
+    var(--sd-stars) 0 0 / 340px 300px,
+    var(--sd-stars) 170px 120px / 520px 460px,
+    var(--sd-stars) 60px 40px / 820px 700px,
+    radial-gradient(70% 45% at 85% -5%, rgba(76, 141, 255, 0.10), transparent 70%),
+    radial-gradient(60% 40% at 5% 20%, rgba(166, 107, 255, 0.07), transparent 70%),
+    radial-gradient(120% 55% at 50% 112%, rgba(227, 72, 44, 0.20), transparent 62%),
+    #050507;
+}
+.stellar .sd-backdrop::before { opacity: 0.06; }
+
+/* ── Type ─────────────────────────────────────────────────────── */
+.stellar :is(h1, h2, .sd-hero3__title, .sd-home-sec__title, .sd-closer2__title, .sd-fl__title, .sd-cardhero__title, .sd-counter__name, .sd-hero2__title) {
+  font-family: var(--sd-title); font-weight: 400; letter-spacing: 0.04em; line-height: 1.12; text-transform: uppercase;
+  color: #f4f4f2; text-shadow: none; filter: none;
+}
+.stellar :is(.sd-hero3__title, .sd-home-sec__title, .sd-closer2__title, .sd-hero2__title) em {
+  font-family: inherit; font-style: normal; color: var(--sd-hal); text-shadow: 0 0 28px var(--sd-hal-glow);
+  -webkit-text-fill-color: currentColor; background: none;
+}
+.stellar .sd-hero3__title { font-size: clamp(23px, 4.4vw, 64px); white-space: normal; text-shadow: 0 0 40px rgba(0, 0, 0, 0.8); }
+.stellar .sd-hero3__title em { display: block; margin-top: 0.12em; }
+.stellar .sd-hero3__sub { color: rgba(236, 236, 240, 0.78); }
+.stellar .sd-home-sec__title { font-size: clamp(20px, 2.6vw, 36px); }
+.stellar .sd-closer2__title { font-size: clamp(22px, 3.8vw, 54px); max-width: 22ch; }
+.stellar .sd-fl__title { font-size: 20px; letter-spacing: 0.08em; }
+.stellar .sd-cardhero__title { font-size: clamp(26px, 4vw, 54px); overflow-wrap: anywhere; }
+.stellar .sd-counter__name { font-size: 18px; }
+.stellar .sd-hero2__stats dd, .stellar .sd-counter__price strong { font-family: var(--sd-title); letter-spacing: 0.02em; }
+
+.stellar :is(.sd-eyebrow, .sd-kicker, .sd-label, .sd-counter__label, .sd-counter__h, .sd-fl__meta, .sd-counter__price span, .sd-pub__per, .sd-hero2__stats dt, .sd-counter__foot) {
+  font-family: var(--sd-spaced); font-weight: 600; font-size: 10.5px; letter-spacing: 0.26em; text-transform: uppercase;
+}
+.stellar :is(.sd-eyebrow, .sd-kicker, .sd-counter__label) { color: var(--sd-hal); }
+.stellar .sd-counter__h { font-size: 11px; }
+
+/* The mark and the bar: a cockpit strip of black glass. */
+.stellar .sd-wordmark { font-family: var(--sd-spaced); font-weight: 900; letter-spacing: 0.16em; }
+.stellar .sd-bar { background: var(--sd-bar-bg); border-bottom-color: var(--sd-line); backdrop-filter: blur(14px) saturate(140%); -webkit-backdrop-filter: blur(14px) saturate(140%); }
+.stellar .sd-navlink { font-family: var(--sd-spaced); font-weight: 600; font-size: 12px; letter-spacing: 0.24em; }
+.stellar .sd-navlink[aria-current] { color: #fff; text-shadow: 0 0 14px rgba(255, 255, 255, 0.35); }
+
+/* ── Buttons: HAL red, square-shouldered, lit from inside ───────── */
+.stellar :is(.sd-btn--primary, .sd-btn--light, .sd-chip--cta, .sn-go),
+.stellar :is(.sd-counter, .sd-zoom, .sd-cardhero) .sd-btn--light,
+.stellar :is(.sd-cardhero, .sd-buybar) .sd-btn--primary {
+  font-family: var(--sd-spaced); font-weight: 700; font-size: 12.5px; letter-spacing: 0.2em; text-transform: uppercase;
+  color: #fff; text-shadow: 0 0 10px rgba(255, 200, 180, 0.35); border-radius: 6px;
+  background: linear-gradient(180deg, var(--sd-hal-hi), var(--sd-hal) 52%, #b8321f);
+  border: 1px solid rgba(255, 170, 140, 0.55);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6), 0 10px 34px -10px var(--sd-hal-glow), inset 0 1px 0 rgba(255, 220, 200, 0.45), inset 0 -10px 18px -10px rgba(80, 10, 0, 0.6);
+}
+.stellar :is(.sd-btn--primary, .sd-btn--light, .sd-chip--cta, .sn-go):hover:not(:disabled),
+.stellar :is(.sd-counter, .sd-zoom, .sd-cardhero) .sd-btn--light:hover:not(:disabled),
+.stellar :is(.sd-cardhero, .sd-buybar) .sd-btn--primary:hover:not(:disabled) {
+  color: #fff; background: linear-gradient(180deg, #ff8462, var(--sd-hal-hi) 50%, var(--sd-hal));
+  border-color: rgba(255, 200, 175, 0.8);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6), 0 0 0 4px rgba(227, 72, 44, 0.16), 0 14px 44px -8px var(--sd-hal-glow), inset 0 1px 0 rgba(255, 230, 215, 0.6);
+}
+.stellar .sd-chip--cta { font-size: 12px; letter-spacing: 0.22em; border-radius: 6px; }
+/* The quiet button: a lit outline on the dark. */
+.stellar .sd-btn:not(.sd-btn--primary, .sd-btn--light, .sdc-turn, .sd-counter__preview) {
+  font-family: var(--sd-spaced); font-weight: 600; font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase;
+  border-radius: 6px; border-color: var(--sd-line-hi); background: rgba(255, 255, 255, 0.025); color: #e8e8ea;
+}
+.stellar .sd-btn:not(.sd-btn--primary, .sd-btn--light, .sdc-turn, .sd-counter__preview):hover { border-color: rgba(255, 255, 255, 0.5); background: rgba(255, 255, 255, 0.06); }
+.stellar .sd-counter__preview { font-family: var(--sd-spaced); font-weight: 600; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; }
+.stellar .sd-counter__preview svg { color: var(--sd-hal); }
+
+/* ── Monolith panels ──────────────────────────────────────────── */
+.stellar :is(.sd-counter, .sd-pub__board, .sd-flight__step, .sd-cardhero .sd-perk, .sd-zoom__panel .sd-perk) {
+  border: 1px solid var(--sd-line); border-radius: 12px;
+  background: var(--sd-ticks), linear-gradient(180deg, rgba(18, 18, 24, 0.9), rgba(6, 6, 9, 0.94));
+}
+.stellar .sd-counter { --tick: color-mix(in srgb, var(--tier) 70%, #fff); box-shadow: 0 30px 80px -40px color-mix(in srgb, var(--tier) 40%, transparent); }
+.stellar .sd-counter__tab { border-radius: 8px; border-color: var(--sd-line); background: rgba(255, 255, 255, 0.02); }
+.stellar .sd-counter__tab[aria-pressed='true'] { border-color: var(--tier); background: color-mix(in srgb, var(--tier) 16%, transparent); box-shadow: 0 0 22px -8px var(--tier), inset 0 0 0 1px color-mix(in srgb, var(--tier) 40%, transparent); }
+.stellar .sd-counter__tabname { font: 700 11px var(--sd-spaced); letter-spacing: 0.16em; text-transform: uppercase; }
+.stellar .sd-counter__stage { border-color: var(--sd-line); border-radius: 10px; }
+
+/* ── The hero: a jump to lightspeed behind the words ──────────── */
+.stellar .sd-hero3::before {
+  content: ''; position: absolute; inset: -30%; z-index: 1; pointer-events: none; opacity: 0.55;
+  background: repeating-conic-gradient(from 0deg at 50% 50%, rgba(255, 255, 255, 0.11) 0deg 0.18deg, transparent 0.18deg 2.6deg);
+  -webkit-mask: radial-gradient(circle at 50% 50%, transparent 14%, #000 32%, #000 52%, transparent 72%);
+  mask: radial-gradient(circle at 50% 50%, transparent 14%, #000 32%, #000 52%, transparent 72%);
+}
+.stellar .sd-hero3::after {
+  content: ''; position: absolute; left: 50%; top: 50%; z-index: 1; width: 42vmin; height: 42vmin; translate: -50% -50%; pointer-events: none;
+  border-radius: 50%; background: radial-gradient(circle, rgba(227, 72, 44, 0.22), transparent 62%);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .stellar .sd-hero3::before { animation: sd-jump 14s var(--sd-ease-inout) infinite; }
+  .stellar .sd-hero3::after { animation: sd-hal 5s ease-in-out infinite; }
+}
+@keyframes sd-jump { 0%, 100% { scale: 1; opacity: 0.4; } 50% { scale: 1.12; opacity: 0.65; } }
+@keyframes sd-hal { 0%, 100% { opacity: 0.7; } 50% { opacity: 1; } }
+
+/* ── The rarity badge: a lit enamel tag in the rarity's own colour ── */
+.stellar .sd-badge {
+  font: 700 var(--badge)/1 var(--font-orbitron), var(--font-geist), sans-serif; letter-spacing: 0.16em;
+  color: #fff; text-shadow: 0 1px 0 rgba(0, 0, 0, 0.35);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--rarity) 62%, #fff), var(--rarity) 42%, color-mix(in srgb, var(--rarity) 68%, #000));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55), inset 0 -1px 0 rgba(0, 0, 0, 0.35), 0 0.4em 1em -0.3em #000e, 0 0 0 1px rgba(0, 0, 0, 0.7), 0 0 1.1em -0.3em color-mix(in srgb, var(--rarity) 75%, transparent);
+}
+.stellar .sd-badge[data-rarity='legendary'] { color: #1c1406; text-shadow: 0 1px 0 rgba(255, 240, 200, 0.4); }
+.stellar .sd-badge[data-rarity='epic'] { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55), inset 0 -1px 0 rgba(0, 0, 0, 0.35), 0 0.4em 1em -0.3em #000e, 0 0 0 1px rgba(0, 0, 0, 0.7), 0 0 1.4em -0.1em var(--sd-hal-glow); }
+
+/* ── The shelf ────────────────────────────────────────────────── */
+.stellar .sd-tile .sd-thumb { transition: box-shadow var(--sd-dur-base) var(--sd-ease); }
+.stellar .sd-tile:is(:hover, :focus-visible) .sd-thumb { box-shadow: 0 0 0 1px color-mix(in srgb, var(--rarity) 70%, transparent), 0 0 34px -8px color-mix(in srgb, var(--rarity) 70%, transparent), 0 20px 30px -18px #000; }
+.stellar .sd-tile__foot { align-items: center; margin-top: 12px; }
+.stellar .sd-tile__price { font: 400 14px/1.2 var(--sd-title); letter-spacing: 0.04em; color: #fff; }
+.stellar .sd-tile[data-rarity='epic'] .sd-tile__price, .stellar .sd-tile[data-rarity='legendary'] .sd-tile__price { color: var(--rarity); }
+
+/* ── The filter: a navigation console over the shelf ─────────── */
+.stellar .sd-fl__head {
+  position: relative; z-index: 20; align-items: center; padding: 16px 18px; margin-bottom: 26px;
+  border: 1px solid var(--sd-line); border-radius: 14px; overflow: hidden; isolation: isolate;
+  background:
+    var(--sd-ticks),
+    var(--sd-stars) 0 0 / 240px 160px,
+    radial-gradient(80% 140% at 100% 0%, rgba(227, 72, 44, 0.16), transparent 60%),
+    radial-gradient(70% 140% at 0% 100%, rgba(76, 141, 255, 0.10), transparent 60%),
+    var(--sd-glass);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+}
+@media (min-width: 768px) {
+  .stellar .sd-fl__head { position: sticky; top: calc(var(--sd-bar-h) + 10px); box-shadow: 0 18px 40px -24px #000; }
+}
+.stellar .sd-fl__head::after {
+  content: ''; position: absolute; left: 18px; right: 18px; bottom: 0; height: 1px; z-index: -1;
+  background: linear-gradient(90deg, transparent, var(--sd-hal), transparent); opacity: 0.6;
+}
+.stellar .sd-fl__meta { margin-top: 8px; color: var(--sd-ink-3); }
+.stellar .sd-filter { gap: 10px; align-items: center; max-width: none; }
+.stellar .sd-filter__search {
+  width: 210px; min-height: 42px; border-radius: 8px; border: 1px solid var(--sd-line-hi); background: rgba(0, 0, 0, 0.45); color: var(--sd-ink-3);
+  transition: border-color var(--sd-dur-fast), box-shadow var(--sd-dur-fast);
+}
+.stellar .sd-filter__search:focus-within { border-color: var(--sd-hal); box-shadow: 0 0 0 3px rgba(227, 72, 44, 0.18), 0 0 24px -6px var(--sd-hal-glow); color: var(--sd-hal); }
+.stellar .sd-filter__search input { font: 500 13px var(--sd-sans); letter-spacing: 0.02em; }
+.stellar .sd-filter__search input::placeholder { font: 600 10.5px var(--sd-spaced); letter-spacing: 0.22em; text-transform: uppercase; color: #8d8d95; }
+.stellar .sd-filter__chips { gap: 3px; padding: 3px; border: 1px solid var(--sd-line); border-radius: 10px; background: rgba(0, 0, 0, 0.45); flex-wrap: nowrap; }
+.stellar .sd-filter__chip {
+  min-height: 36px; padding: 6px 12px; border: 0; border-radius: 7px; gap: 7px;
+  font: 700 10.5px var(--sd-spaced); letter-spacing: 0.16em; text-transform: uppercase; color: #b4b4bb;
+  transition: color var(--sd-dur-fast), background var(--sd-dur-fast), box-shadow var(--sd-dur-fast);
+}
+.stellar .sd-filter__chip i { width: 6px; height: 6px; background: var(--rarity); box-shadow: 0 0 8px var(--rarity); }
+.stellar .sd-filter__chip:hover { color: #fff; background: rgba(255, 255, 255, 0.06); }
+.stellar .sd-filter__chip[aria-pressed='true'] {
+  color: #fff; background: linear-gradient(180deg, color-mix(in srgb, var(--rarity, #fff) 80%, #fff), var(--rarity, #fff) 55%, color-mix(in srgb, var(--rarity, #fff) 75%, #000));
+  box-shadow: 0 0 22px -4px color-mix(in srgb, var(--rarity, #fff) 70%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+.stellar .sd-filter__chip[aria-pressed='true'] i { background: #fff; box-shadow: 0 0 8px #fff; }
+.stellar .sd-filter__chip[data-rarity='all'][aria-pressed='true'] { color: #0b0b0d; background: #f2f2f0; box-shadow: 0 0 22px -6px rgba(255, 255, 255, 0.6); }
+.stellar .sd-filter__chip[data-rarity='legendary'][aria-pressed='true'] { color: #1c1406; }
+.stellar .sd-filter__count { font: 600 10.5px var(--sd-spaced); letter-spacing: 0.2em; text-transform: uppercase; color: var(--sd-hal); }
+
+/* One row on a wide screen: the title, then the search and the chips. */
+@media (min-width: 1180px) {
+  .stellar .sd-fl__head { padding: 12px 14px 12px 20px; }
+  .stellar .sd-filter { flex-wrap: nowrap; }
+  .stellar .sd-filter__count { position: absolute; left: 20px; bottom: 6px; flex-basis: auto; }
+}
+/* The flight plan's tags, in the cockpit face, kept inside their pill. */
+.stellar .sd-flight__tag { font: 700 9.5px/1.3 var(--sd-spaced); letter-spacing: 0.12em; white-space: normal; border-radius: 8px; }
+
+/* ── The card page ────────────────────────────────────────────── */
+.stellar .sd-cardhero .sd-eyebrow { font: 600 10.5px var(--sd-spaced); letter-spacing: 0.24em; }
+.stellar .sd-facts { border-color: var(--sd-line); border-radius: 10px; background: var(--sd-ticks), rgba(0, 0, 0, 0.35); }
+
+/* ── Phones and tablets ───────────────────────────────────────── */
+@media (max-width: 1023px) {
+  .stellar .sd-fl__head { flex-direction: column; align-items: stretch; gap: 14px; }
+  .stellar .sd-filter { flex-direction: column; align-items: stretch; }
+  .stellar .sd-filter__search { width: 100%; }
+  .stellar .sd-filter__chips { overflow-x: auto; scrollbar-width: none; -webkit-mask-image: none; mask-image: none; }
+  .stellar .sd-filter__chips::-webkit-scrollbar { display: none; }
+  .stellar .sd-filter__chip { flex: 1 0 auto; justify-content: center; }
+}
+@media (max-width: 767px) {
+  .stellar .sd-hero3__title { font-size: min(6.2vw, 30px); }
+  .stellar .sd-hero3__sub { font-size: 15px; }
+  .stellar .sd-home-sec__title { font-size: min(5.6vw, 24px); }
+  .stellar .sd-closer2__title { font-size: min(6.4vw, 30px); }
+  .stellar .sd-home-sec { padding-top: 64px; }
+
+  /* The capsule counter on a phone: what it is, what it costs, the button. The rarity guide lives on each card. */
+  .stellar .sd-counter { padding: 12px; gap: 12px; border-radius: 12px; }
+  .stellar .sd-counter__stage { height: 188px; }
+  .stellar .sd-counter__line, .stellar .sd-gives, .stellar .sd-counter__h:has(+ .sd-gives) { display: none; }
+  .stellar .sd-counter__odds { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 16px; }
+  .stellar .sd-counter__odds li { font-size: 13px; }
+  .stellar .sd-counter__worth { display: none; }
+
+  .stellar .sd-fl__head { padding: 14px; margin-bottom: 18px; }
+  .stellar .sd-fl__title { font-size: 17px; }
+  .stellar .sd-filter__chip { padding-inline: 10px; font-size: 10px; letter-spacing: 0.12em; }
+  .stellar .sd-filter__chips { -webkit-mask-image: linear-gradient(90deg, #000 86%, transparent); mask-image: linear-gradient(90deg, #000 86%, transparent); padding-right: 28px; }
+  .stellar .sd-fl__meta { display: none; }
+  .stellar .sd-fl__grid { gap: 22px 12px; }
+  .stellar .sd-tile__price { font-size: 12.5px; }
+
+  .stellar .sd-cardhero__title { font-size: min(8vw, 34px); }
+
+  /* The bottom bar: cockpit labels, the current one lit red. */
+  .stellar .sd-tabs { background: var(--sd-bar-bg); border-top-color: var(--sd-line); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+  .stellar .sd-tab { font: 700 9.5px var(--sd-spaced); letter-spacing: 0.18em; text-transform: uppercase; }
+  .stellar .sd-tab[aria-current='page'] svg { filter: drop-shadow(0 0 6px var(--sd-hal-glow)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .stellar .sd-hero3::before, .stellar .sd-hero3::after { animation: none; }
+}

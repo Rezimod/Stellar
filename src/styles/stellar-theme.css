@@ -53,10 +53,10 @@
   --sd-accent-dim: rgba(227, 72, 44, 0.14);
   --sd-teal: var(--sd-gold);
 
-  /* Rarity — cream to orange to brick to gold, so scarcity reads as heat */
-  --sd-rarity-common: #a3a3a3;
-  --sd-rarity-rare: #6b9ee8;
-  --sd-rarity-epic: #b783e8;
+  /* Rarity — blue, violet, the login red, gold */
+  --sd-rarity-common: #4c8dff;
+  --sd-rarity-rare: #a66bff;
+  --sd-rarity-epic: #e3482c;
   --sd-rarity-legendary: #d8b66f;
   --rarity: var(--sd-rarity-common);
 

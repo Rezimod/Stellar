@@ -27,9 +27,9 @@ export type RarityInfo = {
 };
 
 const RARITY_MAP: Record<Rarity, Omit<RarityInfo, 'rarity' | 'rank'>> = {
-  common: { color: '#A3A3A3', label: 'Common', glyph: '◇' },
-  rare: { color: '#6B9EE8', label: 'Rare', glyph: '◈' },
-  epic: { color: '#B783E8', label: 'Epic', glyph: '◆' },
+  common: { color: '#4C8DFF', label: 'Common', glyph: '◇' },
+  rare: { color: '#A66BFF', label: 'Rare', glyph: '◈' },
+  epic: { color: '#E3482C', label: 'Epic', glyph: '◆' },
   legendary: { color: '#D8B66F', label: 'Legendary', glyph: '✦' },
 };
 
