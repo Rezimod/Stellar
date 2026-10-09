@@ -42,7 +42,7 @@ function CardBack({ plate, edition, commitment, sealed = false, priority = false
         <p className="sdc-notes__story">{plate.story[0]}</p>
         {photo && <p className="sdc-notes__credit">{photo.kind === 'impression' ? 'Art' : 'Image'} · {photo.credit}</p>}
         {commitment && <p className="sdc-notes__credit">Record · {commitment.slice(0, 8)}…{commitment.slice(-6)}</p>}
-        <footer className="sdc-notes__foot"><span>Stellar · Genesis</span><span aria-label={plate.rname}>{'◆'.repeat(rarityInfo(plate.rarity).rank + 1)}</span></footer>
+        <footer className="sdc-notes__foot"><span>Stellar · Genesis</span><span>{plate.rname}</span></footer>
       </div>
       <div className="sdc-glare" aria-hidden="true" />
     </div>

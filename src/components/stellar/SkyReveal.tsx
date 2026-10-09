@@ -28,6 +28,12 @@ const OBJECTS: SkyObject[] = [
   { id: 'sgra', name: 'Sagittarius A*', des: 'SGR-A', x: 0.58, y: 0.86, s: 0.09, feather: 0.55 },
   { id: 'mercury', name: 'Mercury', des: 'MERCURY', x: 0.965, y: 0.42, s: 0.032, feather: 0.8 },
 ];
+/** On a phone the sky is a tall block above the words: the same objects, laid out for a portrait screen and drawn large. */
+const PORTRAIT: Record<string, [x: number, y: number, s: number]> = {
+  moon: [0.5, 0.36, 0.42], m42: [0.22, 0.2, 0.36], m31: [0.76, 0.18, 0.4], saturn: [0.26, 0.66, 0.38],
+  jupiter: [0.76, 0.62, 0.26], m57: [0.5, 0.84, 0.2], mars: [0.84, 0.86, 0.16], venus: [0.16, 0.88, 0.15],
+  neptune: [0.86, 0.38, 0.13], uranus: [0.12, 0.42, 0.13], sgra: [0.56, 0.58, 0.26], mercury: [0.4, 0.1, 0.11],
+};
 const TOUR = ['moon', 'm42', 'sgra', 'saturn', 'm31', 'jupiter', 'm57', 'venus', 'mars', 'neptune', 'uranus', 'mercury'];
 const CREAM = '244, 232, 204';
 
@@ -56,6 +62,7 @@ export default function SkyReveal() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const starsRef = useRef<HTMLCanvasElement>(null);
   const foundRef = useRef<HTMLElement>(null);
+  const verbRef = useRef<HTMLSpanElement>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -85,6 +92,7 @@ export default function SkyReveal() {
     let touring = false, tourIdx = 0, tourTimer = 0;
     let rectCache: DOMRect | null = null;
     let target = '';
+    let portrait = false, swallowClick = false;
 
     // Each photo feathered into the black once, kept as a bitmap.
     for (const o of objects) {
@@ -143,10 +151,16 @@ export default function SkyReveal() {
       dpr = Math.min(window.devicePixelRatio || 1, 2, Math.sqrt(3.2e6 / (W * H)));
       canvas!.width = W * dpr; canvas!.height = H * dpr;
       wasDirty = [0, 0, W, H];
-      labelFont = `300 24px ${getComputedStyle(root!).getPropertyValue('--sd-spaced').trim() || 'sans-serif'}`;
-      R = Math.max(80, Math.min(140, W * 0.085));
-      const base = Math.min(W, H * 1.6);
-      for (const o of objects) { o.cx = o.x * W; o.cy = o.y * H; o.r = (o.s * base) / 2; }
+      portrait = W < 560;
+      labelFont = `300 ${portrait ? 18 : 24}px ${getComputedStyle(root!).getPropertyValue('--sd-spaced').trim() || 'sans-serif'}`;
+      if (portrait) {
+        R = W * 0.3;
+        for (const o of objects) { const [x, y, sz] = PORTRAIT[o.id]; o.cx = x * W; o.cy = y * H; o.r = (sz * W) / 2; }
+      } else {
+        R = Math.max(80, Math.min(140, W * 0.085));
+        const base = Math.min(W, H * 1.6);
+        for (const o of objects) { o.cx = o.x * W; o.cy = o.y * H; o.r = (o.s * base) / 2; }
+      }
       buildStars();
       wake();
     }
@@ -253,14 +267,34 @@ export default function SkyReveal() {
     }
     function stopTour() { if (touring) { touring = false; clearTimeout(tourTimer); } }
 
-    const onMove = (e: PointerEvent) => { stopTour(); point(e); gainTgt = 1; wake(); };
-    const onEnter = (e: PointerEvent) => { rectCache = null; point(e); gainTgt = 1; wake(); };
-    const onLeave = () => { gainTgt = 0; wake(); if (hoverless) startTour(2200); };
-    const onClick = () => { if (target) router.push(`/card/${target}`); };
+    // A mouse explores by moving; a finger taps. A tap sends the light to the nearest object;
+    // a second tap on the lit one opens its card. Swipes still scroll the page.
+    const onMove = (e: PointerEvent) => { if (e.pointerType === 'touch') return; stopTour(); point(e); gainTgt = 1; wake(); };
+    const onEnter = (e: PointerEvent) => { if (e.pointerType === 'touch') return; rectCache = null; point(e); gainTgt = 1; wake(); };
+    const onLeave = (e: PointerEvent) => { if (e.pointerType === 'touch') return; gainTgt = 0; wake(); if (hoverless) startTour(2200); };
+    const onDown = (e: PointerEvent) => {
+      if (e.pointerType === 'mouse') return;
+      rectCache = null;
+      const r = root!.getBoundingClientRect();
+      const x = e.clientX - r.left, y = e.clientY - r.top;
+      let near: Live | null = null, best = Infinity;
+      for (const o of objects) { const d = Math.hypot(x - o.cx, y - o.cy) - o.r; if (d < best) { best = d; near = o; } }
+      if (!near) return;
+      if (target === near.des && Math.hypot(cur.x - near.cx, cur.y - near.cy) < near.r) { swallowClick = false; return; }
+      swallowClick = true;
+      stopTour();
+      tgt.x = near.cx; tgt.y = near.cy; gainTgt = 1; wake();
+      startTour(6000);
+    };
+    const onClick = () => {
+      if (swallowClick) { swallowClick = false; return; }
+      if (target) router.push(`/card/${target}`);
+    };
     const onScroll = () => { rectCache = null; };
     hero.addEventListener('pointermove', onMove, { passive: true });
     hero.addEventListener('pointerenter', onEnter);
     hero.addEventListener('pointerleave', onLeave);
+    root.addEventListener('pointerdown', onDown);
     root.addEventListener('click', onClick);
     addEventListener('scroll', onScroll, { passive: true });
 
@@ -281,6 +315,7 @@ export default function SkyReveal() {
     if (reduced) { cur.x = tgt.x; cur.y = tgt.y; }
     gainTgt = 1;
     document.fonts.ready.then(wake);
+    if (hoverless) verbRef.current!.textContent = 'Tap the sky';
     if (hoverless && !reduced) startTour(2400);
     wake();
 
@@ -292,6 +327,7 @@ export default function SkyReveal() {
       hero.removeEventListener('pointermove', onMove);
       hero.removeEventListener('pointerenter', onEnter);
       hero.removeEventListener('pointerleave', onLeave);
+      root.removeEventListener('pointerdown', onDown);
       root.removeEventListener('click', onClick);
       removeEventListener('scroll', onScroll);
       document.removeEventListener('visibilitychange', onVis);
@@ -301,11 +337,11 @@ export default function SkyReveal() {
   return (
     <div className="sd-sky" ref={rootRef}>
       <canvas ref={starsRef} aria-hidden="true" />
-      <canvas ref={canvasRef} role="img" aria-label="A night sky. Move the pointer to reveal the Moon, planets, nebulae, galaxies and a black hole hidden in it." />
+      <canvas ref={canvasRef} role="img" aria-label="A night sky. Move the pointer, or tap, to reveal the Moon, planets, nebulae, galaxies and a black hole hidden in it." />
       <div className="sd-sky__vignette" aria-hidden="true" />
       <div className="sd-sky__grain" aria-hidden="true" />
       <p className="sd-sky__hint" aria-live="polite">
-        Explore the sky<span>·</span><b ref={foundRef}>0</b><span>/</span><b>{OBJECTS.length}</b> found
+        <span ref={verbRef}>Explore the sky</span><span>·</span><b ref={foundRef}>0</b><span>/</span><b>{OBJECTS.length}</b> found
       </p>
     </div>
   );

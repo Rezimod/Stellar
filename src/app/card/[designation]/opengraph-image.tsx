@@ -2,17 +2,16 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { ImageResponse } from 'next/og';
 import sharp from 'sharp';
-import { SET_001_CARDS, SET_001_CARD_BY_DESIGNATION } from '@/lib/sets/set-001';
+import { SET_001_CARD_BY_DESIGNATION } from '@/lib/sets/set-001';
 import { isRarity, rarityInfo } from '@/lib/rarity';
 
 export const alt = 'A Stellar card from Genesis';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
-/** Drawn at build, one per card: the card faces are read from public/ then. */
-export function generateStaticParams() {
-  return SET_001_CARDS.map((c) => ({ designation: c.seed.designation }));
-}
+/** Drawn on first request and cached, not at build: 105 of them at build time ran past the
+    60-second page timeout on a busy machine. The card faces ship with the function. */
+export const revalidate = 86400;
 
 const read = (path: string) => readFile(join(process.cwd(), path));
 

@@ -168,9 +168,9 @@
   position: relative; isolation: isolate; overflow: clip; display: grid; place-items: center; background: var(--sd-canvas);
   min-height: clamp(560px, calc(100svh - var(--sd-bar-h)), 900px);
 }
-.stellar .sd-sky { position: absolute; inset: 0; z-index: 0; contain: strict; }
-.stellar .sd-sky canvas { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
-.stellar .sd-sky canvas + canvas { will-change: transform; }
+.stellar .sd-hero3 .sd-sky { position: absolute; inset: 0; z-index: 0; contain: strict; pointer-events: auto; }
+.stellar .sd-hero3 .sd-sky canvas { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+.stellar .sd-hero3 .sd-sky canvas + canvas { will-change: transform; }
 .stellar .sd-sky__vignette {
   position: absolute; inset: 0; pointer-events: none;
   background:
@@ -205,7 +205,7 @@
 }
 @media (max-width: 559px) {
   .stellar .sd-hero3 { display: flex; flex-direction: column; align-items: stretch; min-height: 0; }
-  .stellar .sd-sky { position: relative; width: 100%; height: clamp(300px, 80vw, 460px); }
+  .stellar .sd-hero3 .sd-sky { position: relative; width: 100%; height: clamp(380px, 112vw, 540px); touch-action: pan-y; -webkit-tap-highlight-color: transparent; }
   .stellar .sd-sky__hint { right: 16px; bottom: 14px; }
   .stellar .sd-hero3__copy { padding-block: 8px 40px; }
   .stellar .sd-hero3__cta .sd-btn { width: 100%; }
