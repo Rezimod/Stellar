@@ -54,16 +54,18 @@ const smooth = (t: number) => t * t * (3 - 2 * t);
 export default function SkyReveal() {
   const rootRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const starsRef = useRef<HTMLCanvasElement>(null);
   const foundRef = useRef<HTMLElement>(null);
   const router = useRouter();
 
   useEffect(() => {
     const root = rootRef.current;
     const canvas = canvasRef.current;
+    const starsCanvas = starsRef.current;
     const foundEl = foundRef.current;
     const hero = root?.parentElement;
-    if (!root || !canvas || !foundEl || !hero) return;
-    const ctx = canvas.getContext('2d');
+    if (!root || !canvas || !starsCanvas || !foundEl || !hero) return;
+    const ctx = canvas.getContext('2d', { desynchronized: true });
     if (!ctx) return;
 
     const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -71,7 +73,11 @@ export default function SkyReveal() {
     const objects: Live[] = OBJECTS.map((o) => ({ ...o, ar: 1, cx: 0, cy: 0, r: 0, h: 0, found: false, lit: false, litAt: 0 }));
 
     let W = 1, H = 1, dpr = 1, R = 120;
-    let stars: HTMLCanvasElement | null = null;
+    let labelFont = '300 24px sans-serif';
+    // The live layer only clears what it drew last frame.
+    let dirty: number[] = [];
+    let wasDirty: number[] = [];
+    const mark = (x: number, y: number, w: number, h: number) => { dirty.push(x, y, w, h); };
     const tgt = { x: 0, y: 0 }, cur = { x: 0, y: 0 };
     let gain = 0, gainTgt = 0;
     let found = 0;
@@ -109,11 +115,11 @@ export default function SkyReveal() {
     }
 
     function buildStars() {
-      stars = document.createElement('canvas');
-      stars.width = W * dpr; stars.height = H * dpr;
-      const g = stars.getContext('2d');
+      starsCanvas!.width = W * dpr; starsCanvas!.height = H * dpr;
+      const g = starsCanvas!.getContext('2d');
       if (!g) return;
-      g.scale(dpr, dpr);
+      g.setTransform(dpr, 0, 0, dpr, 0, 0);
+      g.clearRect(0, 0, W, H);
       let seed = 7;
       const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
       const n = Math.round((W * H) / 2100);
@@ -133,8 +139,11 @@ export default function SkyReveal() {
     function layout() {
       const rect = root!.getBoundingClientRect();
       W = Math.max(1, Math.round(rect.width)); H = Math.max(1, Math.round(rect.height));
-      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      // Never more than ~3.2 megapixels per layer, whatever the screen.
+      dpr = Math.min(window.devicePixelRatio || 1, 2, Math.sqrt(3.2e6 / (W * H)));
       canvas!.width = W * dpr; canvas!.height = H * dpr;
+      wasDirty = [0, 0, W, H];
+      labelFont = `300 24px ${getComputedStyle(root!).getPropertyValue('--sd-spaced').trim() || 'sans-serif'}`;
       R = Math.max(80, Math.min(140, W * 0.085));
       const base = Math.min(W, H * 1.6);
       for (const o of objects) { o.cx = o.x * W; o.cy = o.y * H; o.r = (o.s * base) / 2; }
@@ -149,9 +158,9 @@ export default function SkyReveal() {
     function frame(now: number) {
       raf = 0;
       const dt = Math.min(now - last, 48); last = now;
-      const k = reduced ? 1 : 1 - Math.exp(-dt / 85);
+      const k = reduced ? 1 : 1 - Math.exp(-dt / 45);
       cur.x += (tgt.x - cur.x) * k; cur.y += (tgt.y - cur.y) * k;
-      gain += (gainTgt - gain) * (reduced ? 1 : 1 - Math.exp(-dt / 160));
+      gain += (gainTgt - gain) * (reduced ? 1 : 1 - Math.exp(-dt / 90));
       draw(now);
       const moving = Math.abs(tgt.x - cur.x) + Math.abs(tgt.y - cur.y) > 0.25 || Math.abs(gainTgt - gain) > 0.004 || now < activeUntil;
       if (moving) raf = requestAnimationFrame(frame);
@@ -160,14 +169,15 @@ export default function SkyReveal() {
     function draw(now: number) {
       const c = ctx!;
       c.setTransform(dpr, 0, 0, dpr, 0, 0);
-      c.clearRect(0, 0, W, H);
-      if (stars) c.drawImage(stars, 0, 0, W, H);
+      for (let i = 0; i < wasDirty.length; i += 4) c.clearRect(wasDirty[i] - 2, wasDirty[i + 1] - 2, wasDirty[i + 2] + 4, wasDirty[i + 3] + 4);
+      dirty = [];
 
       if (gain > 0.01) {
         c.globalCompositeOperation = 'lighter';
         const lg = c.createRadialGradient(cur.x, cur.y, 0, cur.x, cur.y, R * 1.4);
         lg.addColorStop(0, `rgba(${CREAM},${0.07 * gain})`); lg.addColorStop(0.5, `rgba(${CREAM},${0.02 * gain})`); lg.addColorStop(1, 'rgba(0,0,0,0)');
         c.fillStyle = lg; c.fillRect(cur.x - R * 1.4, cur.y - R * 1.4, R * 2.8, R * 2.8);
+        mark(cur.x - R * 1.4, cur.y - R * 1.4, R * 2.8, R * 2.8);
         c.globalCompositeOperation = 'source-over';
       }
 
@@ -189,6 +199,7 @@ export default function SkyReveal() {
         const w = (o.ar >= 1 ? o.r * 2 : o.r * 2 * o.ar) * sc, h = (o.ar >= 1 ? (o.r * 2) / o.ar : o.r * 2) * sc;
         c.globalAlpha = alpha;
         c.drawImage(o.bmp, o.cx - w / 2, o.cy - h / 2, w, h);
+        mark(o.cx - w / 2, o.cy - h / 2, w, h);
         if (o.lit && t < 1) {
           // Ignition: a bloom of light and a moment of overexposure that settles.
           c.globalCompositeOperation = 'lighter';
@@ -197,6 +208,7 @@ export default function SkyReveal() {
           fg.addColorStop(0.4, `rgba(255,214,160,${(1 - t) * 0.12 * a})`);
           fg.addColorStop(1, 'rgba(0,0,0,0)');
           c.fillStyle = fg; c.fillRect(o.cx - o.r * 3, o.cy - o.r * 3, o.r * 6, o.r * 6);
+          mark(o.cx - o.r * 3, o.cy - o.r * 3, o.r * 6, o.r * 6);
           c.globalAlpha = (1 - t) * 0.7 * a;
           c.drawImage(o.bmp, o.cx - w / 2, o.cy - h / 2, w, h);
           c.globalCompositeOperation = 'source-over';
@@ -215,11 +227,15 @@ export default function SkyReveal() {
         const ty = below ? o.cy + o.h / 2 + 26 : o.cy - o.h / 2 - 22;
         c.textAlign = 'center'; c.textBaseline = 'middle';
         c.letterSpacing = '0.04em';
-        c.font = `300 24px ${getComputedStyle(root!).getPropertyValue('--sd-spaced').trim() || 'sans-serif'}`;
+        c.font = labelFont;
         c.fillStyle = `rgba(${CREAM},${0.96 * la})`;
-        c.fillText(o.name, Math.min(W - 80, Math.max(80, o.cx)), ty);
+        const lx = Math.min(W - 80, Math.max(80, o.cx));
+        c.fillText(o.name, lx, ty);
+        const tw = c.measureText(o.name).width;
+        mark(lx - tw / 2 - 8, ty - 18, tw + 16, 36);
         c.letterSpacing = '0px';
       }
+      wasDirty = dirty;
     }
 
     function point(e: PointerEvent) {
@@ -285,6 +301,7 @@ export default function SkyReveal() {
 
   return (
     <div className="sd-sky" ref={rootRef}>
+      <canvas ref={starsRef} aria-hidden="true" />
       <canvas ref={canvasRef} role="img" aria-label="A night sky. Move the pointer to reveal the Moon, planets, nebulae, galaxies and a black hole hidden in it." />
       <div className="sd-sky__vignette" aria-hidden="true" />
       <div className="sd-sky__grain" aria-hidden="true" />

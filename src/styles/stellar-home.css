@@ -168,8 +168,9 @@
   position: relative; isolation: isolate; overflow: clip; display: grid; place-items: center; background: var(--sd-canvas);
   min-height: clamp(560px, calc(100svh - var(--sd-bar-h)), 900px);
 }
-.stellar .sd-sky { position: absolute; inset: 0; z-index: 0; }
+.stellar .sd-sky { position: absolute; inset: 0; z-index: 0; contain: strict; }
 .stellar .sd-sky canvas { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+.stellar .sd-sky canvas + canvas { will-change: transform; }
 .stellar .sd-sky__vignette {
   position: absolute; inset: 0; pointer-events: none;
   background:
