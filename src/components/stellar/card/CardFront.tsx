@@ -34,7 +34,6 @@ function CardFront({ plate, capture, lite = false, priority = false }: Props) {
         )}
       </div>
       <div className="sdc-atmosphere" aria-hidden="true" />
-      <span className="sdc-rarity"><span className="sdc-rarity__marks" aria-hidden="true">{'◆'.repeat(rarityInfo(plate.rarity).rank + 1)}</span>{plate.rname}</span>
       <div className="sdc-caption">
         <strong className="sdc-name" style={{ '--card-name-size': `${Math.min(11.8, 175 / title.length)}cqw` } as CSSProperties}>{title}</strong>
         <span className="sdc-headline">{plate.poster.headline}</span>

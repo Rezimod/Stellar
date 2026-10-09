@@ -24,8 +24,6 @@
 .sdc-art__object { transform: scale(1.07) translateY(-2%); }
 .sdc-atmosphere { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, #0005, transparent 20%, transparent 48%, #08080855 63%, #080808ed 81%, #080808 100%); }
 .sdc-card[data-rarity='legendary'] .sdc-atmosphere { background: radial-gradient(ellipse at 50% 20%, #d6ae5816, transparent 65%), linear-gradient(180deg, #0003, transparent 25%, transparent 48%, #0c0b09b3 69%, #0c0b09 100%); }
-.sdc-rarity { position: absolute; top: 4.4%; left: 6%; z-index: 2; display: inline-flex; align-items: center; gap: 1.8cqw; padding: 1.6cqw 2.5cqw; border: 1px solid color-mix(in srgb, var(--card-accent) 25%, transparent); border-radius: 999px; background: #080808ba; color: var(--card-accent); font: 500 3.1cqw/1 var(--font-oswald), sans-serif; letter-spacing: .1em; text-transform: uppercase; }
-.sdc-rarity__marks { font-size: 2.65cqw; letter-spacing: .13em; }
 .sdc-caption { position: absolute; left: 6%; right: 6%; bottom: 4%; display: flex; flex-direction: column; }
 .sdc-name { font: 400 var(--card-name-size, 11.8cqw)/1.12 var(--font-anton), Impact, sans-serif; letter-spacing: .01em; text-transform: uppercase; text-wrap: balance; }
 .sdc-headline { margin-top: 2cqw; color: #b2b2b0; font: 400 4.2cqw/1.35 var(--font-geist), sans-serif; }

@@ -16,6 +16,8 @@ Reviewed browser captures at 1440px desktop and 390px mobile: the Genesis shelf,
 - Production build passes, including all 137 static pages. Some share-image exports needed an automatic retry.
 - Checkout behavior remains connected to the existing flow; no purchase or deployment was performed.
 
+- 2026-10-09 later: the counter is back beside the shelf (owner's old layout); the rarity is a badge on the card, not in the baked face; thumbs re-baked (`?v=badge1`).
+
 Screenshots: `qa/genesis-desktop.png`, `qa/genesis-mobile.png`, `qa/card-front-desktop.png`, `qa/card-back-desktop.png`, `qa/card-mobile.png`, `qa/card-saturn-desktop.png`, `qa/card-saturn-mobile.png`.
 
 Regression coverage: `e2e/card-design.spec.ts`.
