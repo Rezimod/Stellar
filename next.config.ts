@@ -21,7 +21,6 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     '/opengraph-image': ['./src/app/_og/**'],
     '/card/[designation]/opengraph-image': ['./src/app/_og/geist-600.ttf', './public/cards/plate/*/card.webp'],
-    '/api/first-light/poster': ['./src/app/_og/noto-sans-georgian-400.ttf'],
   },
   images: {
     formats: ['image/avif', 'image/webp'],
@@ -63,7 +62,7 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return {
       beforeFiles: [
-        { source: '/api/:path((?!stellar/|cron/|track|sky/).*)', destination: `${LEGACY_ORIGIN}/api/:path` },
+        { source: '/api/:path((?!stellar/|cron/|track|health).*)', destination: `${LEGACY_ORIGIN}/api/:path` },
         { source: '/m/:path*', destination: `${LEGACY_ORIGIN}/m/:path*` },
       ],
       afterFiles: [],
