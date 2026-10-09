@@ -7,6 +7,7 @@ import { cardStatus } from '@/lib/stellar/almanac';
 import { cardPriceUsd } from '@/lib/stellar/economics';
 import { plateFor } from '@/lib/stellar/plate';
 import StellarCard from './card/StellarCard';
+import { faceSources } from './card/CardFront';
 import { ArrowLeft, ArrowRight, Diamond, X } from 'lucide-react';
 import { perkFor } from '@/lib/stellar/perks';
 import { rarityInfo } from '@/lib/rarity';
@@ -16,6 +17,19 @@ type Zoom = { designation: string; price: string; from: HTMLAnchorElement };
 const DEALT = ':is(.sd-fl__grid, .sd-showcase2__cards) > li';
 
 const calm = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/** Fetches and decodes a card's full face while it is pointed at, so opening it shows the picture at once. */
+const warmed = new Set<string>();
+const warm = (designation: string) => {
+  const plate = plateFor(designation);
+  if (!plate || warmed.has(designation)) return;
+  warmed.add(designation);
+  for (const src of faceSources(plate)) {
+    const img = new Image();
+    img.src = src;
+    img.decode().catch(() => {});
+  }
+};
 
 /** Sets the class the deal waits on before the cards are painted, so they never flash in place first. */
 export const LIVE_SCRIPT = `if(!matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('sd-live')`;
@@ -60,7 +74,7 @@ export default function StellarLiving() {
         const shown = entries.filter((en) => en.isIntersecting).map((en) => en.target as HTMLElement);
         shown.sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top || a.getBoundingClientRect().left - b.getBoundingClientRect().left);
         shown.forEach((el, i) => {
-          el.style.setProperty('--d', `${Math.min(i, 9) * 70}ms`);
+          el.style.setProperty('--d', `${Math.min(i, 9) * 45}ms`);
           el.classList.add('is-in');
           deal.unobserve(el);
         });
@@ -133,6 +147,7 @@ export default function StellarLiving() {
           letGo();
           held = thumb;
           held?.classList.add('is-tilt');
+          if (held) warm(held.closest<HTMLElement>('[data-zoom]')!.dataset.zoom!);
         }
         at = { x: e.clientX, y: e.clientY };
         if (held && !raf) raf = requestAnimationFrame(lean);
@@ -199,6 +214,9 @@ function ZoomedCard({ zoom, onClosed }: { zoom: Zoom; onClosed: () => void }) {
     return [...shelf.querySelectorAll<HTMLAnchorElement>('a[data-zoom]')].filter((anchor) => !anchor.closest('[hidden]'));
   });
   const index = cards.indexOf(active);
+  useEffect(() => {
+    for (const near of [cards[index - 1], cards[index + 1]]) if (near) warm(near.dataset.zoom!);
+  }, [cards, index]);
   const move = (direction: number) => {
     const next = cards[index + direction];
     if (next) setActive(next);
@@ -252,10 +270,10 @@ function ZoomedCard({ zoom, onClosed }: { zoom: Zoom; onClosed: () => void }) {
             <button ref={closer} type="button" className="sd-zoom__dismiss" aria-label="Close" onClick={onClosed}><X size={17} /></button>
           </div>
         </header>
-        <div className="sd-zoom__card">
-          <StellarCard key={designation} designation={designation} hero priority />
+        <div key={designation} className="sd-zoom__card">
+          <StellarCard designation={designation} hero priority />
         </div>
-        <div className="sd-zoom__info">
+        <div key={`${designation}-info`} className="sd-zoom__info">
           <p className="sd-zoom__rarity">{plate.rname} · Genesis</p>
           <h2 className="sd-zoom__name" id="sd-zoom-name">{plate.poster.title.replaceAll('\n', ' ')}</h2>
           <p className="sd-zoom__line">{plate.poster.headline}</p>

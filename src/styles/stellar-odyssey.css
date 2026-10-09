@@ -110,7 +110,6 @@
 .stellar :is(.sd-zoom, .sd-cardhero) .sdc--hero .sdc-card { box-shadow: inset 0 0 0 4px #0008, inset 0 0 26px -6px color-mix(in srgb, var(--card-accent) 30%, transparent), 0 40px 70px -30px #000, 0 0 60px -22px var(--card-accent); }
 
 /* ── The shelf ────────────────────────────────────────────────── */
-.stellar .sd-tile .sd-thumb { transition: box-shadow var(--sd-dur-base) var(--sd-ease); }
 .stellar .sd-tile:is(:hover, :focus-visible) .sd-thumb { box-shadow: 0 0 0 1px color-mix(in srgb, var(--rarity) 70%, transparent), 0 0 34px -8px color-mix(in srgb, var(--rarity) 70%, transparent), 0 20px 30px -18px #000; }
 .stellar .sd-tile__foot { align-items: center; margin-top: 12px; }
 .stellar .sd-tile__price { font: 700 19px/1.1 var(--sd-sans); letter-spacing: -0.01em; color: color-mix(in srgb, var(--rarity) 55%, #fff); text-shadow: 0 0 18px color-mix(in srgb, var(--rarity) 55%, transparent); }

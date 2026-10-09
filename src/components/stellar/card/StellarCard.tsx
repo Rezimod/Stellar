@@ -29,6 +29,8 @@ function StellarCard({ designation, edition, capture, commitment, hero = false, 
   const plate = plateFor(designation);
   const u = `sd${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
   const stage = useRef<HTMLDivElement>(null);
+  const box = useRef<DOMRect | null>(null);
+  const frame = useRef(0);
   const [over, setOver] = useState(false);
   const ed = editionLabel(edition);
   useEffect(() => {
@@ -53,12 +55,16 @@ function StellarCard({ designation, edition, capture, commitment, hero = false, 
       </div>
     );
 
+  // One write per frame, against a box measured once per visit, so the lean never waits on layout.
   const set = (px: number, py: number, live: boolean) => {
-    const el = stage.current;
-    if (!el) return;
-    el.style.setProperty('--px', px.toFixed(3));
-    el.style.setProperty('--py', py.toFixed(3));
-    el.classList.toggle('is-live', live);
+    cancelAnimationFrame(frame.current);
+    frame.current = requestAnimationFrame(() => {
+      const el = stage.current;
+      if (!el) return;
+      el.style.setProperty('--px', px.toFixed(3));
+      el.style.setProperty('--py', py.toFixed(3));
+      el.classList.toggle('is-live', live);
+    });
   };
 
   return (
@@ -66,13 +72,19 @@ function StellarCard({ designation, edition, capture, commitment, hero = false, 
       <div
         ref={stage}
         className="sdc-stage"
+        onPointerEnter={(e) => {
+          box.current = e.currentTarget.getBoundingClientRect();
+        }}
         onPointerMove={(e) => {
-          const r = e.currentTarget.getBoundingClientRect();
+          const r = (box.current ??= e.currentTarget.getBoundingClientRect());
           const px = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width));
           const py = Math.min(1, Math.max(0, (e.clientY - r.top) / r.height));
           set(over ? 1 - px : px, py, true);
         }}
-        onPointerLeave={() => set(0.5, 0.5, false)}
+        onPointerLeave={() => {
+          box.current = null;
+          set(0.5, 0.5, false);
+        }}
         onClick={hero ? () => setOver((v) => !v) : undefined}
         style={hero ? { cursor: 'pointer' } : undefined}
       >

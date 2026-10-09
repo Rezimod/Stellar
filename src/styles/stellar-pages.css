@@ -107,7 +107,7 @@
   --place: translate(calc(-50% + var(--dx-px, 0px)), calc(-50% + var(--dy-px, 0px))) rotate(var(--rot)) scale(var(--s));
   position: absolute; left: calc(var(--x) * 1%); top: calc(var(--y) * 1%); width: var(--cw); aspect-ratio: 520 / 726;
   display: block; border-radius: 4.76% / 3.41%; transform: var(--place);
-  transition: transform 520ms cubic-bezier(0.2, 0.9, 0.25, 1.15);
+  transition: transform 380ms cubic-bezier(0.2, 0.9, 0.25, 1.1);
   cursor: grab; touch-action: none; user-select: none; -webkit-user-drag: none;
 }
 .sd-herofan__card .sd-thumb { box-shadow: 0 0 0 1px rgba(255, 240, 210, 0.1), 0 24px 50px -20px rgba(0, 0, 0, 0.95), 0 0 50px -16px color-mix(in srgb, var(--tile-glow) 55%, transparent); }
@@ -118,10 +118,10 @@
 @media (max-width: 559px) { .sd-herofan__card[data-phone='hide'] { display: none; } }
 .sd-herofan__caption { display: block; padding: 3.2cqw 0 3.6cqw; font: 400 11.5cqw/1 var(--sd-title); letter-spacing: 0.01em; text-transform: uppercase; text-align: center; color: #d9442a; }
 @media (prefers-reduced-motion: no-preference) {
-  .sd-herofan__card { animation: sd-deal 1100ms var(--sd-ease-out) calc(120ms + var(--i, 0) * 70ms) backwards; }
+  .sd-herofan__card { animation: sd-fan-deal 700ms var(--sd-ease-out) calc(80ms + var(--i, 0) * 50ms) backwards; }
   .sd-herofan__card .sd-thumb { animation: sd-bob 9s ease-in-out calc(var(--i, 0) * -1.3s) infinite; }
 }
-@keyframes sd-deal { from { opacity: 0; translate: 0 34px; } }
+@keyframes sd-fan-deal { from { opacity: 0; translate: 0 34px; } }
 @keyframes sd-bob { 0%, 100% { translate: 0 0; } 50% { translate: 0 -8px; } }
 
 /* ── Home: the sections under it ──────────────────────────────── */
@@ -510,9 +510,9 @@ img[data-fade][data-on] { opacity: 1; animation: none; }
 @keyframes sd-img-show { to { opacity: 1; } }
 
 /* Every clickable card: one lift on hover, one ring on focus. */
-.sd-tile .sd-thumb, .sd-showcase2__cards a, .sd-cardplate__link { transition: translate 150ms var(--sd-ease), filter 150ms var(--sd-ease); }
+.sd-cardplate__link { transition: translate 150ms var(--sd-ease); }
 @media (hover: hover) {
-  .sd-tile:hover .sd-thumb, .sd-showcase2__cards a:hover, .sd-cardplate__link:hover { translate: 0 -4px; filter: drop-shadow(0 14px 18px rgba(0, 0, 0, 0.55)); }
+  .sd-cardplate__link:hover { translate: 0 -4px; }
 }
 :is(.sd-tile, .sd-showcase2__cards a, .sd-cardplate__link):focus-visible { outline: 2px solid var(--sd-gold); outline-offset: 3px; }
 

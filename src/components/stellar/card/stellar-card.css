@@ -1,10 +1,13 @@
 .sdc { --px: .5; --py: .5; display: flex; flex-direction: column; align-items: center; gap: 24px; width: 100%; }
 .sdc-stage { --px: .5; --py: .5; width: 100%; perspective: 1700px; }
-.sdc-tilt { transform-style: preserve-3d; transition: transform .3s ease-out; }
-.sdc-stage.is-live .sdc-tilt { transform: rotateX(calc((.5 - var(--py)) * 12deg)) rotateY(calc((var(--px) - .5) * 16deg)); transition-duration: .1s; }
-.sdc-flip { position: relative; width: 100%; aspect-ratio: 630 / 880; transform-style: preserve-3d; transition: transform .7s cubic-bezier(.2,.7,.2,1); }
+/* The lean follows the pointer on a short ease and settles on a longer one; the float rides on
+   the separate rotate/translate properties so taking hold of the card never snaps it. The flip is
+   symmetric, so the faces swap exactly at its midpoint (90deg), never leaving the card blank. */
+.sdc-tilt { transform-style: preserve-3d; transition: transform .45s cubic-bezier(.2,.8,.2,1); }
+.sdc-stage.is-live .sdc-tilt { transform: rotateX(calc((.5 - var(--py)) * 10deg)) rotateY(calc((var(--px) - .5) * 14deg)); transition-duration: .12s; will-change: transform; }
+.sdc-flip { position: relative; width: 100%; aspect-ratio: 630 / 880; transform-style: preserve-3d; transition: transform .48s cubic-bezier(.65,0,.35,1); }
 .sdc-flip.is-over { transform: rotateY(180deg); }
-.sdc-face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; transition: visibility 0s linear .35s; }
+.sdc-face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; transition: visibility 0s linear .24s; }
 .sdc-face--back { transform: rotateY(180deg); visibility: hidden; }
 .sdc-flip.is-over .sdc-face { visibility: hidden; }
 .sdc-flip.is-over .sdc-face--back { visibility: visible; }
@@ -15,7 +18,7 @@
   color: #f5f5f3; box-shadow: inset 0 0 0 max(3px, 1cqw) #0008, inset 0 0 6cqw -1cqw color-mix(in srgb, var(--card-accent) 30%, transparent), 0 10px 30px #0007;
 }
 .sdc-card::after { content: ''; position: absolute; inset: 0; z-index: 5; pointer-events: none; border-radius: inherit; padding: max(2.5px, .95cqw); background: linear-gradient(150deg, var(--rim-hi) 0%, var(--card-accent) 18%, var(--rim-lo) 38%, var(--card-accent) 55%, var(--rim-hi) 70%, var(--rim-lo) 86%, var(--card-accent) 100%); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); }
-.sdc-card::before { content: ''; position: absolute; inset: 0; z-index: 4; pointer-events: none; border-radius: inherit; mix-blend-mode: screen; background: linear-gradient(112deg, transparent 38%, #ffffff12 46%, #ffffff05 52%, transparent 60%); translate: calc((var(--px, .5) - .5) * 30%) 0; transition: translate .3s ease-out; }
+.sdc-card::before { content: ''; position: absolute; inset: 0; z-index: 4; pointer-events: none; border-radius: inherit; background: linear-gradient(112deg, transparent 38%, #ffffff10 46%, #ffffff05 52%, transparent 60%); translate: calc((var(--px, .5) - .5) * 30%) 0; }
 .sdc-art { position: absolute; inset: 0; }
 .sdc-art img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; border-radius: 0; }
 .sdc-art--photo { bottom: 15%; }
@@ -28,7 +31,7 @@
 .sdc-name { font: 400 var(--card-name-size, 11.8cqw)/1.06 var(--font-anton), Impact, sans-serif; letter-spacing: .01em; text-transform: uppercase; text-wrap: balance; text-shadow: 0 2px 14px #000c; }
 .sdc-headline { margin-top: 1.8cqw; color: #c2c1bb; font: 400 4.3cqw/1.35 var(--font-geist), sans-serif; text-shadow: 0 1px 8px #000c; }
 .sdc-number { align-self: stretch; margin-top: 3.4cqw; padding-top: 2.8cqw; border-top: 1px solid color-mix(in srgb, var(--card-accent) 40%, transparent); color: #b4b3ae; font: 400 3.3cqw/1 var(--font-mono), monospace; letter-spacing: .14em; text-align: right; }
-.sdc-glare { position: absolute; inset: 0; pointer-events: none; opacity: .4; mix-blend-mode: screen; background: radial-gradient(ellipse at calc(var(--px, .5) * 100%) calc(var(--py, .5) * 100%), #ffffff15, transparent 65%); }
+.sdc-glare { position: absolute; inset: -50%; pointer-events: none; opacity: .4; background: radial-gradient(closest-side, #ffffff15, transparent); translate: calc((var(--px, .5) - .5) * 50%) calc((var(--py, .5) - .5) * 50%); }
 .sdc-card--back { background: linear-gradient(145deg, #1b1a17, #0c0c0b 65%); }
 .sdc-notes { position: absolute; inset: 6%; display: flex; flex-direction: column; }
 .sdc-notes__head, .sdc-notes__foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; font: 400 3.5cqw/1.3 var(--font-mono), monospace; text-transform: uppercase; letter-spacing: .08em; }
@@ -56,9 +59,10 @@
 .sdc-card--sealed::after { display: none; }
 .sdc-sealed { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
 @media (prefers-reduced-motion: no-preference) {
-  .sdc--hero .sdc-stage:not(.is-live) .sdc-tilt { animation: sdc-float 12s ease-in-out infinite; }
+  .sdc--hero .sdc-tilt { animation: sdc-float 10s ease-in-out infinite; }
+  .sdc--hero .sdc-stage.is-live .sdc-tilt { animation-play-state: paused; }
 }
-@keyframes sdc-float { 0%, 100% { transform: rotateY(-7deg) rotateZ(-2deg); } 50% { transform: rotateY(7deg) rotateZ(2deg) translateY(-5px); } }
+@keyframes sdc-float { 0%, 100% { rotate: y -6deg; translate: 0 0; } 50% { rotate: y 6deg; translate: 0 -5px; } }
 @media (prefers-reduced-motion: reduce) {
   .sdc-flip, .sdc-face, .sdc-tilt { transition: none; }
   .sdc-stage.is-live .sdc-tilt { transform: none; }

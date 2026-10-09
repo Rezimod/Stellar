@@ -15,6 +15,12 @@ type Props = {
 const DRAWN = new Set(['IMILAC', 'CHICXULUB', 'TUNGUSKA', 'JWST', 'SL9', 'VOYAGER-1', 'ARCTURUS', 'POLARIS', 'CMB']);
 const WHOLE = new Set(['SUN', 'EARTH', 'MOON', 'MERCURY', 'VENUS', 'MARS', 'JUPITER', 'SATURN', 'URANUS', 'NEPTUNE', 'PLUTO', 'IO', 'EUROPA', 'GANYMEDE', 'TITAN', 'ENCELADUS', 'BLOOD-MOON', 'HUNTERS-MOON', 'CHRISTMAS-SUPERMOON', 'SNOW-MOON-ECLIPSE']);
 
+/** The pictures a full-size card face loads, to fetch ahead of opening it. */
+export function faceSources(plate: Plate) {
+  const photo = DRAWN.has(plate.designation) ? null : photoFor(plate.designation);
+  return photo ? [photo.file] : [`${plate.art}/sky.svg`, `${plate.art}/object.svg`];
+}
+
 function CardFront({ plate, capture, lite = false, priority = false }: Props) {
   const photo = DRAWN.has(plate.designation) ? null : photoFor(plate.designation);
   const title = plate.poster.title.replaceAll('\n', ' ');
