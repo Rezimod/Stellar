@@ -80,10 +80,11 @@ export default async function FirstLightPage() {
           <header className="sd-fl__head">
             <div>
               <h1 className="sd-fl__title" id="fl-title">
-                Genesis
+                In this set
               </h1>
               <p className="sd-fl__meta">
-                Genesis · {status === 'released' ? 'Released' : 'Pre-release'}
+                {SET_001_CARDS.length} cards · 4 rarities · sorted rarest first
+                {status !== 'released' && ' · Pre-release'}
               </p>
             </div>
             <ShelfFilter total={SET_001_CARDS.length} />
@@ -95,11 +96,13 @@ export default async function FirstLightPage() {
               const rarity = seed.rarity as Rarity;
               const sealed = cardStatus(c, now) === 'sealed';
               return (
-                <li key={seed.designation} data-shelf-item data-section={record.family} data-name={`${seed.name} ${seed.designation}`.toLowerCase()}>
+                <li key={seed.designation} data-shelf-item data-section={record.family} data-rarity={rarity} data-name={`${seed.name} ${seed.designation}`.toLowerCase()}>
                   <ShopCard
                     designation={seed.designation}
                     name={seed.name}
                     rarity={rarity}
+                    remaining={remaining.get(seed.designation) ?? seed.editionSize}
+                    editionSize={seed.editionSize}
                     sub={
                       record.section === 'almanac' ? (
                         <AlmanacDate startUtc={record.eventStartUtc!} endUtc={record.eventEndUtc!} countdown short />

@@ -1,123 +1,46 @@
-import { memo } from 'react';
+import { memo, type CSSProperties } from 'react';
 import FadeImg from '../FadeImg';
 import type { Plate } from '@/lib/stellar/plate';
 import { photoFor } from '@/lib/stellar/photos';
-import { CONDENSED, FOIL_OP, GLIT_OP, INK, Paper, PosterDefs, SPACED, fit, rr } from './frame';
+import { rarityInfo } from '@/lib/rarity';
 
 type Props = {
   plate: Plate;
-  /** A real capture from Live Telescope V1 in place of the drawn plate. */
   capture?: string | null;
-  /** Small cards draw from the pre-rendered WebP layers: the same picture, none of the filter work. */
   lite?: boolean;
-  /** The card the page is about: its pictures load at once, ahead of everything else. */
   priority?: boolean;
   u: string;
 };
 
-/** The window: the night, set into the cream with the same 30-unit margin on every side, the name block under it. */
-export const WIN = { x: 30, y: 30, w: 570, h: 636, r: 10 };
-
-/** The red block the name prints on: as wide as the window, 24 under it, 50 above the foot. */
-const BAND = { x: 30, y: 690, w: 570, h: 140 };
-
-/** Cards whose photograph is a map, a workshop or a specimen on a table: the drawn plate stays on the front, the photograph on the back. */
 const DRAWN = new Set(['IMILAC', 'LUNAR-FRAGMENT', 'CHICXULUB', 'TUNGUSKA', 'JWST', 'SL9', 'VOYAGER-1', 'ARCTURUS', 'POLARIS', 'CMB']);
+const WHOLE = new Set(['SUN', 'EARTH', 'MOON', 'MERCURY', 'VENUS', 'MARS', 'JUPITER', 'SATURN', 'URANUS', 'NEPTUNE', 'PLUTO', 'IO', 'EUROPA', 'GANYMEDE', 'TITAN', 'ENCELADUS', 'BLOOD-MOON', 'HUNTERS-MOON', 'CHRISTMAS-SUPERMOON', 'SNOW-MOON-ECLIPSE']);
 
-/** The rainbow that slides over the face as it tilts: a faint sheen on a common, a full spectrum on a legendary. */
-const HOLO: Record<Plate['rarity'], number> = { common: 0.03, rare: 0.07, epic: 0.12, legendary: 0.22 };
-
-/** The art is taller than the window; showing more of its top keeps the object just above centre. */
-const ART_POS = { objectPosition: '50% 20%' };
-
-/**
- * The face of a card: the picture in a tall dark window on cream stock and
- * the name in a red block under it with one line beneath. The rarity and the
- * number ride on the tile outside the card; the figures and the record are on
- * the back.
- */
-function CardFront({ plate: c, capture, lite = false, priority = false, u }: Props) {
-  const ext = lite ? 'webp' : 'svg';
-  const r = c.rarity;
-  const f = `${u}f`;
-  const p = c.poster;
-  const win = rr(WIN.x, WIN.y, WIN.w, WIN.h, WIN.r);
-  const photo = DRAWN.has(c.designation) ? null : photoFor(c.designation);
-  const flat = p.title.replace('\n', ' ');
-  const oneLine = fit(flat.length, BAND.w - 60, 'condensed', 84);
-  // One line wherever it stays big; only a name that would shrink below half the block's height breaks in two.
-  const lines = oneLine >= 48 || !p.title.includes('\n') ? [flat] : p.title.split('\n');
-  const two = lines.length > 1;
-  const size = two ? Math.min(...lines.map((l) => fit(l.length, BAND.w - 60, 'condensed', 36))) : oneLine;
-  const titleBase = two ? 767 : 772;
-  const lead = size * 1.02;
-
-  const sub = p.headline.toUpperCase();
-  const subSize = 17;
-  const subTrack = Math.min(5, Math.max(1.5, (BAND.w - 60 - sub.length * subSize * 0.49) / Math.max(1, sub.length)));
+function CardFront({ plate, capture, lite = false, priority = false }: Props) {
+  const photo = DRAWN.has(plate.designation) ? null : photoFor(plate.designation);
+  const title = plate.poster.title.replaceAll('\n', ' ');
+  const source = capture ?? photo?.file;
+  const extension = lite ? 'webp' : 'svg';
 
   return (
-    <div className="sdc-card">
-      <div className="sdc-window" style={{ left: `${(WIN.x / 630) * 100}%`, top: `${(WIN.y / 880) * 100}%`, width: `${(WIN.w / 630) * 100}%`, height: `${(WIN.h / 880) * 100}%`, borderRadius: `${(WIN.r / WIN.w) * 100}% / ${(WIN.r / WIN.h) * 100}%` }}>
-        {capture ? (
-          <div className="sdc-lay1">
-            <FadeImg priority={priority} src={capture} alt="" />
-          </div>
-        ) : photo ? (
-          <>
-            <div className="sdc-lay1 sdc-photo">
-              <FadeImg priority={priority} src={photo.file} alt="" style={{ objectPosition: photo.focus ?? '50% 50%' }} />
-            </div>
-          </>
+    <div className="sdc-card sdc-card--front" data-rarity={plate.rarity} style={{ '--card-accent': rarityInfo(plate.rarity).color } as CSSProperties}>
+      <div className={`sdc-art${source ? ' sdc-art--photo' : ''}${!capture && WHOLE.has(plate.designation) ? ' sdc-art--whole' : ''}`}>
+        {source ? (
+          <FadeImg src={source} alt="" priority={priority} style={{ objectPosition: photo?.focus ?? '50% 50%' }} />
         ) : (
           <>
-            <div className="sdc-lay0 sdc-grade">
-              <FadeImg priority={priority} src={`${c.art}/sky.${ext}`} alt="" style={ART_POS} />
-            </div>
-            <div className="sdc-breath" style={{ ['--sdc-breath' as string]: '#ffb070' }} />
-            <div className="sdc-lay1 sdc-grade sdc-fringe">
-              <FadeImg priority={priority} src={`${c.art}/object.${ext}`} alt="" style={ART_POS} />
-            </div>
+            <FadeImg className="sdc-art__sky" src={`${plate.art}/sky.${extension}`} alt="" priority={priority} />
+            <FadeImg className="sdc-art__object" src={`${plate.art}/object.${extension}`} alt="" priority={priority} />
           </>
         )}
-        <div className="sdc-halftone" />
-        <div className="sdc-scrim" />
       </div>
-
-      <svg className="sdc-frame" viewBox="0 0 630 880" aria-hidden="true">
-        <defs>
-          <PosterDefs u={f} rarity={r} />
-        </defs>
-        <Paper u={f} hole={win} />
-        <path d={win} fill="none" stroke="#1a0d07" strokeWidth="2" />
-        <path d={rr(WIN.x + 1.5, WIN.y + 1.5, WIN.w - 3, WIN.h - 3, WIN.r - 1)} fill="none" stroke="#fff" strokeOpacity=".06" />
-
-        <rect x={BAND.x} y={BAND.y} width={BAND.w} height={BAND.h} fill="#c4282a" />
-        <rect x={BAND.x} y={BAND.y} width={BAND.w} height={BAND.h} fill="#000" filter={`url(#${f}grain)`} opacity=".6" />
-        {lines.map((line, i) => (
-          <text key={i} x="315" y={titleBase - (lines.length - 1 - i) * lead} textAnchor="middle" fill={INK.cream} style={{ fontFamily: CONDENSED, fontSize: size, letterSpacing: size * 0.02 }}>
-            {line}
-          </text>
-        ))}
-        <text x="315" y="812" textAnchor="middle" fill={INK.cream} style={{ fontFamily: SPACED, fontWeight: 500, fontSize: subSize, letterSpacing: subTrack }}>
-          {sub}
-        </text>
-      </svg>
-
-      {FOIL_OP[r] > 0 && <div className="sdc-foil" style={{ ['--sdc-foil' as string]: FOIL_OP[r] }} />}
-      <div className={`sdc-holo sdc-holo--${r}`} style={{ ['--sdc-holo' as string]: HOLO[r] }} />
-      {GLIT_OP[r] > 0 && (
-        <svg className="sdc-glitter" style={{ opacity: GLIT_OP[r] }} viewBox="0 0 630 880" preserveAspectRatio="none" aria-hidden="true">
-          <defs>
-            <filter id={`${u}gl`} x="0" y="0" width="100%" height="100%">
-              <feTurbulence type="fractalNoise" baseFrequency="1.6" numOctaves={1} seed={5} />
-              <feColorMatrix type="matrix" values="0 0 0 0 1  0 0 0 0 .9  0 0 0 0 .7  0 0 0 9 -6.2" />
-            </filter>
-          </defs>
-          <rect width="630" height="880" filter={`url(#${u}gl)`} />
-        </svg>
-      )}
-      <div className="sdc-glare" />
+      <div className="sdc-atmosphere" aria-hidden="true" />
+      <span className="sdc-rarity"><span className="sdc-rarity__marks" aria-hidden="true">{'◆'.repeat(rarityInfo(plate.rarity).rank + 1)}</span>{plate.rname}</span>
+      <div className="sdc-caption">
+        <strong className="sdc-name" style={{ '--card-name-size': `${Math.min(11.8, 175 / title.length)}cqw` } as CSSProperties}>{title}</strong>
+        <span className="sdc-headline">{plate.poster.headline}</span>
+        <div className="sdc-register"><span>Genesis</span><span>{plate.num} / {plate.total}</span></div>
+      </div>
+      {!lite && <div className="sdc-glare" aria-hidden="true" />}
     </div>
   );
 }

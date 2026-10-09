@@ -1,9 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { SET_GROUPS } from '@/lib/sets/groups';
+import { RARITIES, rarityInfo } from '@/lib/rarity';
+import { Search } from 'lucide-react';
 
-const FILTERS = [{ key: 'all', label: 'All' }, ...SET_GROUPS.map((g) => ({ key: g.key, label: g.short }))];
+const FILTERS = [{ key: 'all', label: 'All' }, ...[...RARITIES].reverse().map((rarity) => ({ key: rarity, label: rarityInfo(rarity).label }))];
 
 /**
  * Search and families over the shelf. Each tile on the page carries
@@ -19,7 +20,7 @@ export default function ShelfFilter({ total }: { total: number }) {
     const q = query.trim().toLowerCase();
     let n = 0;
     for (const t of document.querySelectorAll<HTMLElement>('[data-shelf-item]')) {
-      const show = (family === 'all' || t.dataset.section === family) && (!q || t.dataset.name!.includes(q));
+      const show = (family === 'all' || t.dataset.rarity === family) && (!q || t.dataset.name!.includes(q));
       t.hidden = !show;
       if (show) n++;
     }
@@ -29,21 +30,19 @@ export default function ShelfFilter({ total }: { total: number }) {
   return (
     <div className="sd-filter">
       <label className="sd-filter__search">
-        <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
-          <circle cx="7" cy="7" r="4.6" fill="none" stroke="currentColor" strokeWidth="1.6" />
-          <path d="M10.4 10.4L14 14" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-        </svg>
+        <Search size={14} aria-hidden="true" />
         <input type="search" placeholder="Search the set" aria-label="Search the set" value={query} onChange={(e) => setQuery(e.target.value)} />
       </label>
-      <div className="sd-filter__chips" role="group" aria-label="Family">
+      <div className="sd-filter__chips" role="group" aria-label="Rarity">
         {FILTERS.map((f) => (
-          <button key={f.key} type="button" className="sd-filter__chip" aria-pressed={family === f.key} onClick={() => setFamily(f.key)}>
+          <button key={f.key} type="button" className="sd-filter__chip" data-rarity={f.key} aria-pressed={family === f.key} onClick={() => setFamily(f.key)}>
+            {f.key !== 'all' && <i aria-hidden="true" />}
             {f.label}
           </button>
         ))}
       </div>
       <p className="sd-filter__count" aria-live="polite">
-        {shown === 0 ? 'No card matches' : null}
+        {shown === 0 ? 'No cards match. Try another name or rarity.' : shown < total ? `${shown} of ${total} cards` : null}
       </p>
     </div>
   );

@@ -4,7 +4,7 @@
    with cream letters. Loaded after the page styles, before the phone rules. */
 
 .stellar {
-  --sd-display: var(--font-bowlby), Impact, sans-serif;
+  --sd-display: var(--font-anton), Impact, sans-serif;
   --sd-title: var(--font-bowlby), Impact, sans-serif;
   --sd-spaced: var(--font-oswald), var(--font-geist), sans-serif;
 
@@ -92,3 +92,22 @@ body .stellar :is(
   .sd-buybar__meta, .sd-section__title, .sd-label, .sd-tab:not([aria-current])
 ) { color: var(--sd-ink-small); }
 body .stellar .sd-pub__price { opacity: 1; }
+
+.stellar :is(.sd-counter, .sd-zoom, .sd-cardhero) .sd-btn--light,
+.stellar :is(.sd-cardhero, .sd-buybar) .sd-btn--primary {
+  background: #f6f6f3; border-color: #d9d9d4; color: #161616; text-shadow: none;
+  box-shadow: 0 2px 9px #ffffff0d; font-family: var(--sd-sans); letter-spacing: 0; text-transform: none;
+}
+.stellar :is(.sd-counter, .sd-zoom, .sd-cardhero) .sd-btn--light:hover:not(:disabled),
+.stellar :is(.sd-cardhero, .sd-buybar) .sd-btn--primary:hover:not(:disabled) {
+  background: #fff; border-color: #fff; color: #080808; box-shadow: 0 0 20px #ffffff14;
+}
+.stellar :is(.sd-counter, .sd-zoom, .sd-cardhero) .sd-btn:disabled { opacity: .45; box-shadow: none; }
+.stellar .sd-cardhero__title { font-family: var(--sd-display); font-size: clamp(42px, 5vw, 68px); }
+.stellar .sd-cardhero__title span { color: var(--sd-ink); background: none; -webkit-text-fill-color: currentColor; }
+.stellar .sd-cardhero .sd-eyebrow { color: var(--rarity); font: 10px var(--sd-mono); letter-spacing: .12em; }
+.stellar .sd-cardhero__line { font-size: 15px; color: var(--sd-ink-2); }
+.stellar .sd-cardhero .sd-perk { border-radius: 10px; box-shadow: none; }
+.stellar .sd-cardhero .sd-perk__tier { background: none; color: var(--rarity); padding: 0; }
+.stellar .sd-cardhero .sd-perk__short { font: 500 15px var(--sd-sans); text-transform: none; letter-spacing: 0; color: var(--sd-ink); }
+.stellar .sd-cardhero .sd-perk__line { font-size: 12px; }

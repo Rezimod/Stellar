@@ -37,6 +37,8 @@ export type Perk = {
   short: string;
   /** Fewer still, for a shelf tile: "Session". */
   tile: string;
+  /** The reason band on the card's face, role then gift: "Pilot · 30-min session". */
+  reason: string;
   /** What it is, in one sentence. */
   line: string;
   /** Not open yet: the telescope perks wait for Live Telescope V1, which is commissioning. */
@@ -46,14 +48,14 @@ export type Perk = {
 export function perkFor(designation: string, rarity: Rarity): Perk {
   switch (rarity) {
     case 'legendary':
-      return { short: 'Real specimen', tile: 'Real specimen', line: 'Carries a real piece of the meteorite it shows, sent to its holder.', soon: false };
+      return { short: 'Real specimen', tile: 'Real specimen', reason: 'Redeem · Real specimen', line: 'Carries a real piece of the meteorite it shows, sent to its holder.', soon: false };
     case 'epic':
-      return { short: `${SESSION_MINUTES}-min session`, tile: 'Session', line: `Each edition is a ${SESSION_MINUTES}-minute session on the Live Telescope.`, soon: true };
+      return { short: `${SESSION_MINUTES}-min session`, tile: 'Session', reason: `Pilot · ${SESSION_MINUTES}-min session`, line: `Each edition is a ${SESSION_MINUTES}-minute session on the Live Telescope.`, soon: true };
     case 'rare':
-      return { short: 'Visitor seat', tile: 'Visitor seat', line: 'Each edition enters the draw for a visitor’s seat at a live session.', soon: true };
+      return { short: 'Visitor seat', tile: 'Visitor seat', reason: 'Visitor · Live seat', line: 'Each edition enters the draw for a visitor’s seat at a live session.', soon: true };
     default: {
       const v = votePower(designation, rarity);
-      return { short: `Vote ×${v}`, tile: `Vote ×${v}`, line: `Each edition adds ${v} to its holder’s vote on the night’s target.`, soon: false };
+      return { short: `Vote ×${v}`, tile: `Vote ×${v}`, reason: `Vote ×${v} · Tonight’s target`, line: `Each edition adds ${v} to its holder’s vote on the night’s target.`, soon: false };
     }
   }
 }

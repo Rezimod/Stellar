@@ -2,7 +2,9 @@
 
 The brief for every Stellar page. Read `docs/stellar/RULES.md` (tone and vocabulary) first.
 
-**Superseded again 2026-10-02, by the owner: the space-opera poster.** Every
+**Current card direction — 2026-10-09, owner’s Figma reference.** Dark, full-bleed astronomy artwork, fine rarity borders (grey, blue, violet, gold), condensed white titles, quiet monospace set numbers. A restrained reflection follows the pointer; field-note backs contain real object records and image attribution. `CardFront` is the source for both the live viewer and generated WebP shelf/share thumbnails. Regenerate all thumbnails with `npx tsx scripts/stellar-plates/thumbs.tsx` after changing its artwork or styling, and update the version in `CardThumb.tsx`. The capsule selector sits above the four-column shelf, which becomes two columns on phones. The viewer supports previous/next, F to turn, Escape to close, focus containment and reduced motion. Catalog size, odds, prices and inventory come from the product data, not the illustrative numbers in the reference.
+
+**Previous direction, 2026-10-02: the space-opera poster.** Every
 card copies the owner's Crab Nebula and Saturn references — cream stock, a dark
 window with the drawing (warmed, sun rays, halftone, colour fringe), a quote
 across the top, the name in Bowlby One sunset letters banded at the foot with a

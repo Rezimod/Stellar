@@ -4,11 +4,9 @@ import { useCallback, useEffect, useState, type CSSProperties } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { RARITIES, rarityInfo, type Rarity } from '@/lib/rarity';
-import { DIRECT_CARD_PRICE_USD, cardPriceUsd } from '@/lib/stellar/economics';
 import { CARDS_PER_TIER, TIERS, formatOdds, rarityAt, tierByKey, type Tier } from '@/lib/stellar/tiers';
 import type { Draw } from './StellarReveal';
-import StarPulse from './StarPulse';
-import { TIER_PERKS } from '@/lib/stellar/perks';
+import { SET_001_CARDS } from '@/lib/sets/set-001';
 
 // The sheet carries the wallet and payment code; it is fetched on first
 // intent (a pointer over the button, a touch) rather than with the page.
@@ -45,16 +43,8 @@ function drawFrom(tier: Tier, cards: TierCard[]): Draw {
  * opens the sheet with the next capsule of that tier; the preview draws its
  * card here in the browser — no account, no payment, nothing recorded.
  */
-/** What a rarity's cards cost on their own: one price, or the span when specimens are among them. */
-function worth(cards: TierCard[], r: Rarity) {
-  const prices = cards.filter((c) => c.rarity === r).map((c) => cardPriceUsd(c.designation, r));
-  if (prices.length === 0) return `$${DIRECT_CARD_PRICE_USD[r]}`;
-  const lo = Math.min(...prices), hi = Math.max(...prices);
-  return lo === hi ? `$${lo}` : `$${lo}–${hi}`;
-}
-
 export default function CapsuleCounter({ cards, onSale }: { cards: TierCard[]; onSale: Record<string, number> | null }) {
-  const [tier, setTier] = useState<Tier>(TIERS[0]);
+  const [tier, setTier] = useState<Tier>(TIERS[1]);
   const [sheet, setSheetState] = useState(false);
   const [open, setOpen] = useState<{ tier: Tier; draw: Draw; n: number } | null>(null);
   const start = useCallback((t: Tier) => setOpen((o) => ({ tier: t, draw: drawFrom(t, cards), n: (o?.n ?? 0) + 1 })), [cards]);
@@ -76,110 +66,44 @@ export default function CapsuleCounter({ cards, onSale }: { cards: TierCard[]; o
   }, []);
 
   const stock = onSale ? (onSale[tier.key] ?? 0) : null;
-  const top = Math.max(...RARITIES.map((r) => tier.oddsBps[r]));
 
   return (
     <aside className="sd-counter" id="capsules" aria-label="Capsules" style={{ '--tier': rarityInfo(tier.lit).color } as CSSProperties}>
-      <div className="sd-counter__tabs" role="group" aria-label="Choose a capsule">
-        {TIERS.map((t) => (
-          <button
-            key={t.key}
-            type="button"
-            className="sd-counter__tab"
-            aria-pressed={t.key === tier.key}
-            style={{ '--tier': rarityInfo(t.lit).color } as CSSProperties}
-            onClick={() => setTier(t)}
-          >
-            <span className="sd-counter__tabname">{t.name}</span>
-            <span className="sd-counter__tabprice">${t.priceUsd}</span>
-          </button>
-        ))}
+      <div className="sd-counter__visual">
+        <img src="/cards/photo/SUN.webp" alt="The Sun photographed by NASA’s Solar Dynamics Observatory" width={600} height={600} fetchPriority="high" />
+        <span>One capsule. One piece of the cosmos.</span>
       </div>
-
-      <div className="sd-counter__stage">
-        <StarPulse className="sd-counter__star" centre={0.4} breathe />
-        <div className="sd-counter__over">
-          <div>
-            <span className="sd-counter__label">Ready to detonate</span>
-            <h2 className="sd-counter__name">
-              {tier.name}
-              <span className="sr-only"> capsule</span>
-            </h2>
-          </div>
-          <div className="sd-counter__price">
-            <strong>${tier.priceUsd}</strong>
-            <span>{CARDS_PER_TIER === 1 ? 'One card' : `${CARDS_PER_TIER} cards`}</span>
-          </div>
+      <div className="sd-counter__content">
+        <p className="sd-counter__eyebrow">Genesis set · {SET_001_CARDS.length} cards</p>
+        <h2 className="sd-counter__headline">Pull a piece of the sky.</h2>
+        <p className="sd-counter__intro">Real objects. Numbered editions. Rarer cards unlock telescope time, a visitor seat, or a meteorite you can hold.</p>
+        <div className="sd-counter__tabs" role="group" aria-label="Choose a capsule">
+          {TIERS.map((option) => (
+            <button key={option.key} type="button" className="sd-counter__tab" aria-pressed={option.key === tier.key} onClick={() => setTier(option)}>
+              <span className="sd-counter__tabname">{option.name}</span>
+              <span className="sd-counter__tabprice">${option.priceUsd}</span>
+            </button>
+          ))}
         </div>
-      </div>
-
-      <p className="sd-counter__line">{tier.line}</p>
-
-      <div className="sd-counter__buy">
-        <button
-          type="button"
-          className="sd-btn sd-btn--light sd-btn--block"
-          disabled={stock === 0}
-          onPointerEnter={loadSheet}
-          onTouchStart={loadSheet}
-          onFocus={loadSheet}
-          onClick={() => setSheet(tier)}
-        >
-          {stock === 0 ? 'None on sale' : `Buy & detonate — $${tier.priceUsd}`}
-        </button>
-        <button
-          type="button"
-          className="sd-counter__preview"
-          onPointerEnter={loadReveal}
-          onTouchStart={loadReveal}
-          onFocus={loadReveal}
-          onClick={() => start(tier)}
-        >
-          <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true">
-            <path d="M5 3.5v9l7-4.5z" fill="currentColor" />
-          </svg>
-          Preview the supernova — nothing is bought
-        </button>
-      </div>
-
-      <h3 className="sd-counter__h">Odds per card</h3>
-      <ul className="sd-counter__odds">
-        {[...RARITIES].reverse().map((r) => (
-          <li
-            key={r}
-            data-zero={tier.oddsBps[r] === 0 || undefined}
-            style={{ '--r': rarityInfo(r).color, '--w': tier.oddsBps[r] / top } as CSSProperties}
-          >
-            <span className="sd-counter__rarity">
-              <i aria-hidden="true" />
-              {rarityInfo(r).label}
-            </span>
-            <span className="sd-counter__worth">{worth(cards, r)} cards</span>
-            <span className="sd-counter__pct">{pct(tier.oddsBps[r])}</span>
-            <span className="sd-counter__bar" aria-hidden="true" />
-          </li>
-        ))}
-      </ul>
-
-      <h3 className="sd-counter__h">What each rarity gives</h3>
-      <ul className="sd-gives">
-        {TIER_PERKS.map((t) => (
-          <li key={t.rarity} data-rarity={t.rarity}>
-            <span className="sd-gives__tier">{rarityInfo(t.rarity).label}</span>
-            <span className="sd-gives__what">
-              {t.title}
-              {t.soon && <em>Coming soon</em>}
-            </span>
-            <span className="sd-gives__line">{t.line}</span>
-          </li>
-        ))}
-      </ul>
-
-      <div className="sd-counter__foot">
-        <span>{stock === null ? 'Sale not read' : `${stock} on sale`}</span>
-        <Link href="/capsules/log" className="sd-counter__fair">
-          Checkable by anyone
-        </Link>
+        <div className="sd-counter__oddshead"><span>Odds per card</span><Link href="/capsules/log">Provably fair · verify ↗</Link></div>
+        <div className="sd-counter__distribution" aria-hidden="true">
+          {[...RARITIES].reverse().map((rarity) => <i key={rarity} style={{ flexGrow: tier.oddsBps[rarity], background: rarityInfo(rarity).color }} />)}
+        </div>
+        <ul className="sd-counter__odds">
+          {[...RARITIES].reverse().map((rarity) => (
+            <li key={rarity} style={{ '--r': rarityInfo(rarity).color } as CSSProperties}>
+              <span className="sd-counter__rarity"><i aria-hidden="true" />{rarityInfo(rarity).label}</span>
+              <span className="sd-counter__pct">{pct(tier.oddsBps[rarity])}</span>
+            </li>
+          ))}
+        </ul>
+        <div className="sd-counter__buy">
+          <button type="button" className="sd-btn sd-btn--light" disabled={stock === 0} onPointerEnter={loadSheet} onTouchStart={loadSheet} onFocus={loadSheet} onClick={() => setSheet(tier)}>
+            {stock === 0 ? 'None on sale' : `Open ${tier.name} capsule — $${tier.priceUsd}`}
+          </button>
+          <button type="button" className="sd-btn sd-counter__preview" onPointerEnter={loadReveal} onTouchStart={loadReveal} onFocus={loadReveal} onClick={() => start(tier)}>Preview opening</button>
+        </div>
+        <p className="sd-counter__note">Preview is free — nothing is charged. Telescope experiences are coming soon.</p>
       </div>
 
       {sheet && (

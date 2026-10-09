@@ -7,10 +7,12 @@ import { cardStatus } from '@/lib/stellar/almanac';
 import { cardPriceUsd } from '@/lib/stellar/economics';
 import { plateFor } from '@/lib/stellar/plate';
 import StellarCard from './card/StellarCard';
+import { ArrowLeft, ArrowRight, Diamond, X } from 'lucide-react';
+import { perkFor } from '@/lib/stellar/perks';
+import { rarityInfo } from '@/lib/rarity';
 
 type Zoom = { designation: string; price: string; from: HTMLAnchorElement };
 
-const FLIGHT = { duration: 560, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)' };
 const DEALT = ':is(.sd-fl__grid, .sd-showcase2__cards) > li';
 
 const calm = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -182,102 +184,96 @@ export default function StellarLiving() {
   return zoom ? <ZoomedCard key={zoom.designation} zoom={zoom} onClosed={() => setZoom(null)} /> : null;
 }
 
-/** A card lifted off the shelf: it flies from its place to the middle of the screen, and back when let go. */
 function ZoomedCard({ zoom, onClosed }: { zoom: Zoom; onClosed: () => void }) {
-  const plate = plateFor(zoom.designation)!;
-  const card = useRef<HTMLDivElement>(null);
+  const [active, setActive] = useState(zoom.from);
+  const designation = active.dataset.zoom!;
+  const plate = plateFor(designation)!;
+  const item = SET_001_CARD_BY_DESIGNATION.get(designation)!;
+  const perk = perkFor(designation, plate.rarity);
+  const price = active.dataset.zoomPrice ?? (cardStatus(item) === 'sealed' ? 'Sealed' : `$${cardPriceUsd(designation, plate.rarity)}`);
+  const left = active.dataset.zoomLeft;
   const dialog = useRef<HTMLDivElement>(null);
   const closer = useRef<HTMLButtonElement>(null);
-  const [state, setState] = useState<'flying' | 'open' | 'closing'>('flying');
-  const closing = useRef(false);
-  const thumb = zoom.from.querySelector<HTMLElement>('.sd-thumb')!;
-  const src = thumb.querySelector('img')?.currentSrc;
-
-  /** The transform that puts the held card exactly over its thumb on the shelf. */
-  const home = () => {
-    const a = thumb.getBoundingClientRect();
-    const b = card.current!.getBoundingClientRect();
-    return `translate(${a.left - b.left}px, ${a.top - b.top}px) scale(${a.width / b.width})`;
+  const [cards] = useState(() => {
+    const shelf = zoom.from.closest('.sd-fl__grid, .sd-showcase2__cards, .sd-herofan__deck') ?? zoom.from.parentElement!;
+    return [...shelf.querySelectorAll<HTMLAnchorElement>('a[data-zoom]')].filter((anchor) => !anchor.closest('[hidden]'));
+  });
+  const index = cards.indexOf(active);
+  const move = (direction: number) => {
+    const next = cards[index + direction];
+    if (next) setActive(next);
   };
 
   useLayoutEffect(() => {
     const root = document.documentElement;
     const overflow = root.style.overflow;
     root.style.overflow = 'hidden';
-    thumb.style.visibility = 'hidden';
+    const overlay = dialog.current!.parentElement!;
+    const siblings = [...overlay.parentElement!.children].filter((element): element is HTMLElement => element instanceof HTMLElement && element !== overlay);
+    const previous = siblings.map((element) => element.inert);
+    siblings.forEach((element) => { element.inert = true; });
     closer.current?.focus({ preventScroll: true });
-    if (calm()) setState('open');
-    else card.current!.animate([{ transform: home() }, { transform: 'none' }], FLIGHT).finished.then(() => setState('open'), () => {});
     return () => {
       root.style.overflow = overflow;
-      thumb.style.visibility = '';
-    };
-  }, []);
-
-  const close = () => {
-    if (closing.current) return;
-    closing.current = true;
-    setState('closing');
-    const done = () => {
-      thumb.style.visibility = '';
+      siblings.forEach((element, siblingIndex) => { element.inert = previous[siblingIndex]; });
       zoom.from.focus({ preventScroll: true });
-      onClosed();
     };
-    if (calm()) return done();
-    card.current!.animate([{ transform: 'none' }, { transform: home() }], { ...FLIGHT, duration: 440, fill: 'forwards' }).finished.then(done, done);
-  };
+  }, [zoom.from]);
 
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') return close();
-      if (e.key !== 'Tab' || !dialog.current) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') { event.preventDefault(); onClosed(); return; }
+      if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+        event.preventDefault();
+        move(event.key === 'ArrowRight' ? 1 : -1);
+      }
+      if (event.key !== 'Tab' || !dialog.current) return;
       const stops = [...dialog.current.querySelectorAll<HTMLElement>('a[href], button:not([disabled])')];
       const first = stops[0];
       const last = stops[stops.length - 1];
-      if (e.shiftKey && document.activeElement === first) {
-        e.preventDefault();
-        last.focus();
-      } else if (!e.shiftKey && document.activeElement === last) {
-        e.preventDefault();
-        first.focus();
-      }
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
     };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
   });
 
-  const href = `/card/${zoom.designation}`;
+  const href = `/card/${designation}`;
   return (
-    <div className="sd-zoom" data-state={state}>
-      <div className="sd-zoom__veil" onClick={close} aria-hidden="true" />
+    <div className="sd-zoom" data-state="open" data-rarity={plate.rarity}>
+      <div className="sd-zoom__veil" onClick={onClosed} aria-hidden="true" />
       <div ref={dialog} className="sd-zoom__panel" role="dialog" aria-modal="true" aria-labelledby="sd-zoom-name">
-        <button ref={closer} type="button" className="sd-zoom__close" aria-label="Close" onClick={close}>
-          <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
-            <path d="M3.5 3.5l9 9M12.5 3.5l-9 9" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-          </svg>
-        </button>
-        <div ref={card} className="sd-zoom__card">
-          <StellarCard designation={zoom.designation} hero />
-          {src && <img className="sd-zoom__ghost" src={src} alt="" />}
+        <header className="sd-zoom__toolbar">
+          <span className="sd-zoom__crumb">Genesis set <span>/</span> {plate.name}</span>
+          <div className="sd-zoom__navigation">
+            <button type="button" aria-label="Previous card" disabled={index <= 0} onClick={() => move(-1)}><ArrowLeft size={16} /></button>
+            <span aria-live="polite">{index + 1} of {cards.length}</span>
+            <button type="button" aria-label="Next card" disabled={index >= cards.length - 1} onClick={() => move(1)}><ArrowRight size={16} /></button>
+            <button ref={closer} type="button" className="sd-zoom__dismiss" aria-label="Close" onClick={onClosed}><X size={17} /></button>
+          </div>
+        </header>
+        <div className="sd-zoom__card">
+          <StellarCard key={designation} designation={designation} hero priority />
         </div>
         <div className="sd-zoom__info">
-          <p className="sd-zoom__rarity" data-rarity={plate.rarity}>
-            {plate.rname}
-          </p>
-          <h2 className="sd-zoom__name" id="sd-zoom-name">
-            {plate.name}
-          </h2>
-          <p className="sd-zoom__price">{zoom.price}</p>
-          <div className="sd-zoom__cta">
-            {zoom.price !== 'Sealed' && (
-              <Link href={`${href}#buy`} className="sd-btn sd-btn--light">
-                Buy
-              </Link>
-            )}
-            <Link href={href} className="sd-btn">
-              Details
-            </Link>
+          <p className="sd-zoom__rarity"><span aria-hidden="true">{'◆'.repeat(rarityInfo(plate.rarity).rank + 1)}</span> {plate.rname} · Genesis</p>
+          <h2 className="sd-zoom__name" id="sd-zoom-name">{plate.poster.title.replaceAll('\n', ' ')}</h2>
+          <p className="sd-zoom__line">{plate.poster.headline}</p>
+          <dl className="sd-zoom__facts">
+            <div><dt>Edition size</dt><dd>{item.seed.editionSize}</dd></div>
+            <div><dt>Left</dt><dd>{left ?? '—'}</dd></div>
+            <div><dt>Set number</dt><dd>{plate.num} / {plate.total}</dd></div>
+          </dl>
+          <div className="sd-zoom__perk">
+            <span className="sd-zoom__gem"><Diamond size={20} fill="currentColor" strokeWidth={1} /></span>
+            <div><span className="sd-zoom__label">Unlocks{perk.soon ? ' · Coming soon' : ''}</span><strong>{perk.short}</strong><p>{perk.line}</p></div>
           </div>
+          <div className="sd-zoom__pricing"><p className="sd-zoom__price">{price}</p>{left != null && <span><i />{left} of {item.seed.editionSize} left</span>}</div>
+          <div className="sd-zoom__cta">
+            {price !== 'Sealed' && <Link href={`${href}#buy`} className="sd-btn sd-btn--light" onClick={onClosed}>Buy — {price}</Link>}
+            <Link href={href} className="sd-btn" onClick={onClosed}>Details</Link>
+          </div>
+          <div className="sd-zoom__trust"><span>Numbered editions</span><Link href="/capsules/log" onClick={onClosed}>Provably fair · verify ↗</Link></div>
         </div>
       </div>
     </div>

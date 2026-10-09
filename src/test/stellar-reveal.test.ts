@@ -27,8 +27,8 @@ it('waits on the star for one press', () => {
 
 it('gives the scarcest card in the capsule', () => {
   const html = render([card('M31', 'rare', 0), card('SATURN', 'legendary', 1), card('EUROPA', 'common', 2)]);
-  expect(html).toContain('data-rarity="legendary"');
-  expect(html).not.toContain('data-rarity="common"');
+  expect(html).toContain('class="sn" data-rarity="legendary"');
+  expect(html).not.toContain('class="sn" data-rarity="common"');
 });
 
 it('keeps the other cards of an older two-card capsule beside it', () => {

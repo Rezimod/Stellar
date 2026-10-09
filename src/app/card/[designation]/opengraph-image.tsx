@@ -29,15 +29,15 @@ export default async function Image({ params }: { params: Promise<{ designation:
 
   return new ImageResponse(
     (
-      <div style={{ width: '100%', height: '100%', display: 'flex', position: 'relative', background: '#1a0906', fontFamily: 'Geist', overflow: 'hidden' }}>
+      <div style={{ width: '100%', height: '100%', display: 'flex', position: 'relative', background: '#0d0d0d', fontFamily: 'Geist', overflow: 'hidden' }}>
         <div
           style={{
             position: 'absolute', left: 560, top: -160, width: 760, height: 760, borderRadius: 760,
-            background: `radial-gradient(circle, ${rarity?.color ?? '#FFB347'}40 0%, rgba(26, 9, 6, 0) 70%)`,
+            background: `radial-gradient(circle, ${rarity?.color ?? '#D8B66F'}30 0%, rgba(13, 13, 13, 0) 70%)`,
           }}
         />
         <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 26, width: 700, padding: '0 80px' }}>
-          <div style={{ fontSize: 24, fontWeight: 600, letterSpacing: 10, color: '#FFB347' }}>STELLAR · GENESIS</div>
+          <div style={{ fontSize: 24, fontWeight: 600, letterSpacing: 10, color: '#ADADA8' }}>STELLAR · GENESIS</div>
           <div style={{ fontSize: name.length > 22 ? 58 : 72, fontWeight: 600, letterSpacing: -2, lineHeight: 1.04, color: '#FFFFFF' }}>{name}</div>
           {rarity && (
             <div style={{ fontSize: 22, fontWeight: 600, letterSpacing: 6, color: rarity.color }}>{rarity.label.toUpperCase()}</div>

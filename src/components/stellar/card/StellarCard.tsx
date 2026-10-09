@@ -1,6 +1,7 @@
 'use client';
 
-import { memo, useId, useRef, useState } from 'react';
+import { memo, useEffect, useId, useRef, useState } from 'react';
+import { RotateCcw } from 'lucide-react';
 import { editionLabel, plateFor } from '@/lib/stellar/plate';
 import CardBack from './CardBack';
 import CardFront from './CardFront';
@@ -29,6 +30,17 @@ function StellarCard({ designation, edition, capture, commitment, hero = false, 
   const stage = useRef<HTMLDivElement>(null);
   const [over, setOver] = useState(false);
   const ed = editionLabel(edition);
+  useEffect(() => {
+    if (!hero) return;
+    const onKey = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement;
+      if (event.key.toLowerCase() !== 'f' || event.metaKey || event.ctrlKey || event.altKey || target.closest('input, textarea, select, [contenteditable="true"]')) return;
+      event.preventDefault();
+      setOver((value) => !value);
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [hero]);
   // An edition of a card no longer in the set: its number, on a blank card.
   if (!plate)
     return (
@@ -65,7 +77,7 @@ function StellarCard({ designation, edition, capture, commitment, hero = false, 
       >
         <div className="sdc-tilt">
           <div className={`sdc-flip${over ? ' is-over' : ''}`}>
-            <div className="sdc-face" role="img" aria-label={`${plate.name}, ${plate.rname}, Genesis number ${plate.num}${edition != null ? `, edition ${ed} of ${plate.of}` : ''}`}>
+            <div className="sdc-face" aria-hidden={over} role="img" aria-label={`${plate.name}, ${plate.rname}, Genesis number ${plate.num}${edition != null ? `, edition ${ed} of ${plate.of}` : ''}`}>
               <CardFront plate={plate} capture={capture} lite={lite} priority={priority} u={u} />
             </div>
             {hero && (
@@ -78,8 +90,10 @@ function StellarCard({ designation, edition, capture, commitment, hero = false, 
       </div>
       {hero && <span className="sdc-shadow" aria-hidden="true" />}
       {hero && (
-        <button type="button" className="sd-btn sdc-turn" onClick={() => setOver((v) => !v)}>
-          {over ? 'Turn it back' : 'Turn it over'}
+        <button type="button" className="sd-btn sdc-turn" aria-pressed={over} aria-keyshortcuts="F" onClick={() => setOver((v) => !v)}>
+          <RotateCcw size={13} aria-hidden="true" />
+          {over ? 'Turn back' : 'Turn it over'} <kbd aria-hidden="true">F</kbd>
+          <span className="sdc-sides" aria-hidden="true"><i data-active={!over} /><i data-active={over} /></span>
         </button>
       )}
     </div>
