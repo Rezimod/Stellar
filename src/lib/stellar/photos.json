@@ -15,11 +15,11 @@
  "LUNAR-FRAGMENT": {
   "file": "/cards/photo/LUNAR-FRAGMENT.webp",
   "kind": "photo",
-  "credit": "Raimond Spekking",
-  "source": "Specimen NWA 10665",
-  "year": "2023",
-  "license": "CC BY-SA 4.0",
-  "url": "https://commons.wikimedia.org/wiki/File:Lunar_meteorite_NWA_10665%2C_Feldspathic_breccia-8937.jpg",
+  "credit": "NASA",
+  "source": "Apollo 16 lunar sample 68815 (S72-37155)",
+  "year": "1972",
+  "license": "Public domain",
+  "url": "https://commons.wikimedia.org/wiki/File:View_of_Apollo_16_lunar_sample_no_68815_(S72-37155).jpg",
   "focus": "50% 50%"
  },
  "TYCHO": {

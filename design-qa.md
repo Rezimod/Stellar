@@ -18,6 +18,8 @@ Reviewed browser captures at 1440px desktop and 390px mobile: the Genesis shelf,
 
 - 2026-10-09 later: the counter is back beside the shelf (owner's old layout); the rarity is a badge on the card, not in the baked face; thumbs re-baked (`?v=badge1`).
 
+- 2026-10-09 later still: 2001 typography (Michroma) on every face, fronts stripped to badge + name + number, Moon Rock = real Apollo 16 sample (NASA, public domain), new black sealed card; thumbs re-baked (`?v=odyssey1`).
+
 Screenshots: `qa/genesis-desktop.png`, `qa/genesis-mobile.png`, `qa/card-front-desktop.png`, `qa/card-back-desktop.png`, `qa/card-mobile.png`, `qa/card-saturn-desktop.png`, `qa/card-saturn-mobile.png`.
 
 Regression coverage: `e2e/card-design.spec.ts`.

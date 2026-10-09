@@ -16,13 +16,13 @@ export function generateStaticParams() {
 
 const read = (path: string) => readFile(join(process.cwd(), path));
 
-/** A card's link preview: its face on the site's dark ground, with its name. next/og cannot draw WebP, so the face goes in as PNG. */
+/** A card's link preview: its face on the site's dark ground, with its name. next/og cannot draw WebP, so the face goes in as a small JPEG, flattened onto the ground. */
 export default async function Image({ params }: { params: Promise<{ designation: string }> }) {
   const { designation } = await params;
   const card = SET_001_CARD_BY_DESIGNATION.get(designation.toUpperCase());
   const [g600, face] = await Promise.all([
     read('src/app/_og/geist-600.ttf'),
-    card ? read(`public/cards/plate/${card.seed.designation}/card.webp`).then((b) => sharp(b).resize({ height: 760 }).png().toBuffer()).catch(() => null) : null,
+    card ? read(`public/cards/plate/${card.seed.designation}/card.webp`).then((b) => sharp(b).resize({ height: 547 }).flatten({ background: '#0d0d0d' }).jpeg({ quality: 88 }).toBuffer()).catch(() => null) : null,
   ]);
   const name = card?.seed.name ?? 'Genesis';
   const rarity = card && isRarity(card.seed.rarity) ? rarityInfo(card.seed.rarity) : null;
@@ -45,7 +45,7 @@ export default async function Image({ params }: { params: Promise<{ designation:
         </div>
         {face && (
           <img
-            src={`data:image/png;base64,${face.toString('base64')}`}
+            src={`data:image/jpeg;base64,${face.toString('base64')}`}
             width={392}
             height={547}
             style={{ position: 'absolute', right: 110, top: 42, borderRadius: 18, boxShadow: '0 30px 80px rgba(0,0,0,0.85)' }}
