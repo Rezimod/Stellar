@@ -6,7 +6,6 @@ export default function RarityBadge({ rarity }: { rarity: Rarity }) {
   const info = rarityInfo(rarity);
   return (
     <span className="sd-badge" data-rarity={rarity} style={{ '--rarity': info.color } as CSSProperties} aria-hidden="true">
-      <i className="sd-badge__marks">{'◆'.repeat(info.rank + 1)}</i>
       {info.label}
       <b className="sd-badge__glint" />
     </span>

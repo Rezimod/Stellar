@@ -256,7 +256,7 @@ function ZoomedCard({ zoom, onClosed }: { zoom: Zoom; onClosed: () => void }) {
           <StellarCard key={designation} designation={designation} hero priority />
         </div>
         <div className="sd-zoom__info">
-          <p className="sd-zoom__rarity"><span aria-hidden="true">{'◆'.repeat(rarityInfo(plate.rarity).rank + 1)}</span> {plate.rname} · Genesis</p>
+          <p className="sd-zoom__rarity">{plate.rname} · Genesis</p>
           <h2 className="sd-zoom__name" id="sd-zoom-name">{plate.poster.title.replaceAll('\n', ' ')}</h2>
           <p className="sd-zoom__line">{plate.poster.headline}</p>
           <dl className="sd-zoom__facts">
