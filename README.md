@@ -1,170 +1,59 @@
-# ✦ Stellar — Astronomy, on chain.
+# Stellar — the cosmos, issued in editions
 
-> **Tether Frontier Hackathon Track — Winner (May 2026).** Stellar Field is the offline-mode Android companion proving on-device AI for astronomers at dark-sky sites. [Read more →](docs/qvac-integration.md)
+Stellar is a collectible card universe built on real astronomy. Every card is a
+real object — Jupiter, Betelgeuse, M42, Voyager 1 — held as a numbered edition.
+Cards arrive sealed in capsules; the reveal is a supernova. Every clear night
+the observatory photographs one object, the collection decides which, and every
+holder of that card receives the image.
 
-**The companion app for everyone with a sky above them and a camera in their pocket.**
+Live: [stellarr.club](https://stellarr.club) · Solana devnet · built by [Astroman](https://astroman.ge), Tbilisi.
 
-Get tonight's sky forecast, photograph what you see, earn rewards you can redeem for real telescopes and gear at [Astroman](https://astroman.ge), Georgia's first astronomy store. Built on Solana. Free to use.
+## The site
 
-[Live App](https://stellarr.club) · [Stellar Field APK](https://github.com/Rezimod/Stellar/releases/tag/v0.1.0-field) · [Tether Frontier Track Submission](docs/qvac-submission.md) · [Twitter/X](https://x.com/StellarClub26)
-
----
-
-## How It Works
-
-1. **Observe** — Open Stellar, see tonight's sky for your location: planet positions, cloud cover, dark window, what's worth pointing a telescope at.
-2. **Verify** — Photograph what you see. AI checks the photo against your coordinates, time, and the live oracle hash for your sky — it knows the difference between Saturn over Tbilisi and a screenshot.
-3. **Earn** — Verified observations mint a compressed NFT on Solana (~$0.000005/mint) and award Stars, the on-chain reward token.
-4. **Redeem** — Spend Stars at Astroman: telescopes, eyepieces, Barlow lenses, moon lamps, books. Real products from a real store.
-
-That's the loop. Optional layers — sky missions and ASTRA AI — sit on top.
-
----
-
-## How Stellar Compares
-
-| | SkySafari / Stellarium / Star Walk 2 | Stellar |
-|---|---|---|
-| **Shows you the sky** | ✓ | ✓ |
-| **Live forecast for your coordinates** | Partial | ✓ |
-| **Photo verification of what you saw** | — | ✓ (Gemini Vision + EXIF + oracle hash) |
-| **On-chain proof of observation** | — | ✓ (compressed NFT) |
-| **Rewards for going outside** | — | Stars (SPL token) |
-| **Connected to a real store** | — | Astroman (Tbilisi) — telescopes, gear |
-| **Cost** | $30–$60 one-time / subscription | Free |
-
-Sky atlases show you the sky. Stellar connects what you see to a real economy.
-
----
-
-## Features
-
-- **7-day sky forecast** — hourly cloud cover, seeing, transparency, dark window, Go/Maybe/Skip per night, location-aware (Open-Meteo + astronomy-engine).
-- **Live planet tracker** — Mercury–Saturn + Moon, rise/transit/set, altitude, naked-eye / binocular / telescope visibility.
-- **AI photo verification** — Google Gemini 2.5 Flash vision checks your capture against your GPS, timestamp, EXIF, and the deterministic Sky Oracle hash for your location and time. Cross-wallet hash dedup, reverse-image lookup, and visibility check via `astronomy-engine` round out the pipeline.
-- **Compressed NFT proofs** — every verified observation sealed on Solana via Metaplex Bubblegum. ~$0.000005 per mint.
-- **Stars SPL token** — real on-chain token (not localStorage points), redeemable at Astroman.
-- **ASTRA AI Companion** — ask "what can I see tonight?" and ASTRA answers with live planet positions, weather, and Bortle context for your coordinates. (OpenAI gpt-4o-mini on web with sky-data tool calls; on-device Llama 3.2 1B in Stellar Field for offline use.)
-- **Sky missions** — guided observations of the Moon, Jupiter, Saturn, Orion, Pleiades, Andromeda, the Crab. Each completion earns Stars + an NFT.
-- **Zero-crypto UX** — sign up with email via Privy, embedded Solana wallet, gasless transactions, no seed phrase, no Phantom install.
-
----
-
-## Stellar Field — On-Device AI for Dark Sites
-
-*Winner — Tether Frontier Hackathon Track, May 2026. ([technical writeup](docs/qvac-integration.md))*
-
-Astronomers travel to dark-sky sites — mountains, deserts, rural fields — where cell signal is exactly zero. The cloud AI in our web app dies the moment a user reaches the place they bought their telescope for. **Stellar Field** is the Android companion that runs Astra entirely on the phone, powered by Tether QVAC.
-
-- **Local LLM with RAG** — Llama 3.2 1B Q4_0 + a 72-chunk astronomy corpus (Messier catalog, constellation guide, telescope FAQ). Same Astra persona, no server. Hybrid retrieval — cosine similarity over QVAC embeddings + keyword overlap + season-relevance bonus. Citation chips below every answer. (`@qvac/llm-llamacpp` + `@qvac/embed-llamacpp`)
-- **Voice notes at the eyepiece** — press, speak the observation ("M31 Andromeda, 25mm at 100x, seeing 7/10"), release. Whisper transcribes on-device. A second pass extracts target, magnification, and seeing into a structured record. Queues for sync; optionally mints as a Discovery Attestation cNFT. (`@qvac/transcription-whispercpp`)
-
-Verified end-to-end on a Poco X3 NFC (Snapdragon 732G, 6GB RAM, 2026-05-07): APK installs, Llama streams chat tokens, Whisper transcribes, voice-log target auto-extraction works, **and airplane-mode chat still streams** — the prize-eligible artifact.
-
-The split is invisible to the user. Same Astra. Same Privy embedded wallet. Same Supabase observation history. Online she runs on cloud models (OpenAI gpt-4o-mini for chat, Gemini 2.5 Flash for vision), offline on QVAC (free per call, works in airplane mode). The existing web app is untouched — Field Mode is additive.
-
-[Download APK](https://stellarr.club/field) · [Technical writeup](docs/qvac-integration.md) · [Demo script](docs/qvac-demo-script.md) · [Submission body](docs/qvac-submission.md)
-
----
-
-## DePIN: Every Smartphone Is a Sky Sensor
-
-Stellar is a Decentralized Physical Infrastructure Network where the physical infrastructure is the night sky itself, and the nodes are people with phones, cameras, and telescopes.
-
-Every observation contributes a real datapoint — GPS coordinates, timestamp, photo, EXIF, AI-validated subject identification, weather hash. Each one becomes a compressed NFT on-chain: an immutable, geolocated record of what was visible from where, at what time, under what conditions.
-
-| Mission tier | Hardware | Example targets | Reward |
-|---|---|---|---|
-| **Beginner** | Smartphone, naked eye | Tonight's Sky, Moon, Pleiades | 25–60 ✦ |
-| **Intermediate** | Small telescope (4"+) | Jupiter, Saturn, Orion Nebula | 75–100 ✦ |
-| **Hard** | Telescope + dark skies | Andromeda Galaxy (M31) | 175 ✦ |
-| **Expert** | Large aperture (8"+) + Bortle ≤4 | Crab Nebula (M1) | 250 ✦ |
-
-The network grows itself: more observers in more places means denser sky coverage, which makes the data more useful — for ASTRA's recommendations and (eventually) for anyone who needs ground-truth observation data.
-
-Live network map: [stellarr.club/network](https://stellarr.club/network).
-
----
-
-## Tech Stack
-
-| Layer | Technology |
+| Route | What it is |
 |---|---|
-| Frontend | Next.js 15, React 19, TypeScript, Tailwind 4 |
-| Auth | Privy embedded Solana wallets (email/Google login) |
-| NFTs | Metaplex Bubblegum compressed NFTs |
-| Token | Stars SPL token (0 decimals) |
-| AI (online) | OpenAI gpt-4o-mini for ASTRA chat (sky-data tool calling) · Google Gemini 2.5 Flash for vision-based photo verification · Claude Haiku 4.5 for star-name moderation |
-| AI (offline, Field Mode) | Tether QVAC — Llama 3.2 1B + Whisper, on-device via `@qvac/sdk` (Expo / Android) |
-| Sky data | Open-Meteo (weather), astronomy-engine (celestial mechanics), NOAA SWPC (solar), IMO (meteors) |
-| Database | Neon Postgres via Drizzle ORM |
-| RPC | Helius |
-| Deploy | Vercel |
+| `/` | home: the founding set, odds, the flight plan |
+| `/genesis` | the founding set, card by card (`/set/001` redirects here) |
+| `/card/[designation]` | one card: object, rarity, edition sizes, what it unlocks |
+| `/capsules`, `/capsule/[id]`, `/capsules/log` | buy, open, and audit capsules (provable fairness) |
+| `/collection` | a holder's cards and the account |
+| `/tonight` | tonight's target and the holders' vote |
+| `/node` | Live Telescope V1 — commissioning |
+| `/voyage` | fly the solar system and land on its worlds |
+| `/invite` | the closed beta's gate |
 
----
+APIs live under `/api/stellar/*`; the nightly loop is `/api/cron/stellar-night`
+and `/api/stellar/capsules/release` (see `vercel.json`). Every other `/api/*`
+and `/m/*` path is proxied to the legacy app, because minted metadata and old
+links point at this domain.
 
-## On-Chain Addresses (Mainnet)
+## Stack
 
-- **Stars Token:** `CGTweUjzNBRCCqpPXEZTuAvWs2FRUAEe3bnNLaLn3DGW`
-- **Merkle Tree:** `3R9uV6aLb5dkb38Jg4KZjqR4MoCYXtKdeWXRqatf8zWe`
-- **Collection:** `6Pt5BNk1nzL4rhG2z1SuDCn18vjN1uAvFTU8oK6uhsXm`
-- **Fee Payer:** `9jAYpQYZiZm4eJcj6q2UppN2Jc6Xr6KCuNafiETYhTDz`
-- **Merchant:** `AgZdk4K5hwsJneQ2ptZNQkuT8ACkMcuNHFFt4pnzk8xy`
+Next.js 15, React 19, TypeScript, Tailwind 4 · Privy (email sign-in, embedded
+Solana wallets) · Drizzle + Neon Postgres · Upstash rate limiting · Three.js
+for the voyage · Vitest, Playwright · Vercel (`stellar-cards` project).
 
----
-
-## Distribution: Astroman
-
-Stellar isn't built in a vacuum. It's built on top of [Astroman](https://astroman.ge), Georgia's first astronomy e-commerce store:
-
-- Physical retail in Tbilisi
-- 45K+ telescope buyers since 2018
-- 70K+ active social audience
-- Revenue-share with Bresser, Levenhuk, Celestron (20% commission, no inventory held)
-- Direct relationships with Georgian schools, astronomy clubs, observers
-- A founder who answers "is tonight good?" calls every day
-
-Every Astroman customer is a potential Stellar user. Every Stellar observer becomes an Astroman customer when their Stars get spent.
-
----
-
-## On-Chain Evidence
-
-Every Discovery Attestation is a compressed NFT in the collection above — anyone
-can enumerate them with a DAS-capable RPC and verify each one on Solscan,
-without taking our word for anything.
-
-[`docs/grant-evidence/mints-report.md`](docs/grant-evidence/mints-report.md) is
-generated from live chain data by [`scripts/mint-report.mjs`](scripts/mint-report.mjs)
-(`npm run report:mints`) and committed as-is — including the mints it excludes
-and the gaps it can't explain. The row-level data is in
-[`mints-report.csv`](docs/grant-evidence/mints-report.csv).
-
-Grant applications, security audit reports and internal working notes are not in
-this repository — they are business and ops material, kept in a private repo and
-shared with reviewers on request. Reporting evidence stays public.
-
----
-
-## Running Locally
+## Running locally
 
 ```bash
-git clone https://github.com/Rezimod/Stellar.git
-cd Stellar
 npm install
-cp .env.example .env.local  # Fill in your keys
-npm run dev
+cp .env.example .env.local   # fill in Privy, DATABASE_URL, CAPSULE_SEAL_KEY
+npm run dev                  # http://localhost:3000 — Privy only allows port 3000
+npm test                     # unit
+npm run build && npm run test:smoke   # browser tests against a production build
 ```
 
-Required environment variables: see `.env.example`.
+Card data scripts are `npm run stellar:*`; every one refuses to touch a
+database that is not the `stellar-cards` Neon branch (`scripts/stellar-guard.ts`).
 
----
+## Rules
 
-## Builder
+Read `docs/stellar/RULES.md` before changing anything. Tone, vocabulary and the
+things that must never change (on-chain names, storage keys) are there.
 
-**Rezi (Revaz Modebadze)** — Founder of [Astroman](https://astroman.ge). Built solo.
+## The legacy app
 
-- **Winner — Tether Frontier Hackathon Track (May 2026)** — Superteam Earn
-- 2nd place + sponsor prize, Superteam Georgia Hackathon (March 2026)
-- [Twitter/X: @StellarClub26](https://x.com/StellarClub26)
-- Tbilisi, Georgia
+The astronomy companion this grew out of — sky forecast, photo-verified
+observations, ASTRA, marketplace, Stellar Field (Tether Frontier Hackathon
+winner, May 2026), explore mode, observatory network — lives on branch `legacy`
+and runs at [app.stellarr.club](https://app.stellarr.club).

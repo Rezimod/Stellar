@@ -2,26 +2,6 @@
   "framework": "nextjs",
   "crons": [
     {
-      "path": "/api/agent/draft-tweet?slot=midday",
-      "schedule": "1 8 * * *"
-    },
-    {
-      "path": "/api/agent/draft-tweet?slot=evening",
-      "schedule": "0 14 * * *"
-    },
-    {
-      "path": "/api/cron/push",
-      "schedule": "0 16 * * *"
-    },
-    {
-      "path": "/api/cron/settle",
-      "schedule": "20 3 * * *"
-    },
-    {
-      "path": "/api/cron/capture-requests",
-      "schedule": "0 21 * * *"
-    },
-    {
       "path": "/api/stellar/capsules/release",
       "schedule": "40 3 * * *"
     },

@@ -1,23 +1,32 @@
-# Stellar rebrand — standing rules
+# Stellar — standing rules
 
-This branch rebrands Stellar into a card product. `main` must stay deployable to
-stellarr.club at all times. Repository: Rezimod/Stellar only. The Darkview
-platform (Bekatsertsvadzee/Online-Observatory) is consumed over its HTTP
-contract; nothing is pushed there and no Darkview source is copied here.
+This repository is the card product, and nothing else. The astronomy app it
+grew out of (sky forecast, observations, ASTRA, marketplace, Stellar Field,
+explore mode, observatory network) lives on branch `legacy` and deploys to
+app.stellarr.club from the Vercel project `stellar`. stellarr.club is the
+card product, deployed from the Vercel project `stellar-cards`.
+Repository: Rezimod/Stellar only. The Darkview platform
+(Bekatsertsvadzee/Online-Observatory) is consumed over its HTTP contract;
+nothing is pushed there and no Darkview source is copied here.
+
+Transition (October 2026): until `stellar-cards` has been pushed to `main`
+(see `~/Desktop/Stellar/plans/legacy-cut/HANDOVER.md`), work on
+`stellar-cards`. After that, `main` is the only working branch.
 
 Source plan: `~/Desktop/Stellar/plans/stellar-rebrand-migration-plan.md`.
 Execution plan with corrections: `docs/stellar/EXECUTION.md`.
 
 ## Never
-- Commit to `main`, or rebase/force-push it. Check `git branch --show-current`
-  before any commit; if it is not `stellar-cards` or `stellar-cards/*`, STOP and report.
+- Commit to `legacy`, merge from it, or rebase/force-push anything. Check
+  `git branch --show-current` before any commit; if it is not `stellar-cards`,
+  `stellar-cards/*` or `main`, STOP and report.
 - Delete `docs/grant-evidence/` — grant evidence, not code.
-- Touch `anchor/` — the on-chain program is out of scope.
 - Translate into `src/messages/ka.json` — v1 is English-only; archive it instead.
 - Run migrations or `db:push` against the production database. Only the
   `stellar-cards` Neon branch.
-- Delete on-chain-referenced routes: `src/app/m/o`, `api/observe/photo/[hash]`,
-  `api/nft-image`, `api/passport`, `api/metadata/*`. Minted cNFTs point at them.
+- Remove the rewrites in `next.config.ts` that proxy `/api/*` and `/m/*` to
+  the legacy origin. Minted cNFTs and old links point at stellarr.club, and
+  the legacy app answers them.
 - Rename group (d) identifiers (see `docs/stellar-inventory.md`): collection
   name `Stellar Observations`, symbol `STLR`, Anchor `stellar_observations`,
   env `STELLAR_PAUSED`, cookie `stellar_locale`, every `stellar_*` /

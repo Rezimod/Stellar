@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import { getRarityInfo } from '@/lib/nft-rarity';
 import { getNode } from '@/lib/observatory/nodes';
 import { DEEP_SKY_BY_ID } from '@/lib/observatory/sky-field';
 import { SIM_TARGET_BY_ID } from '@/lib/observatory/sim-targets';
@@ -186,11 +185,5 @@ describe('rarity', () => {
     expect(RARITIES.map((r) => rarityInfo(r).rank)).toEqual([0, 1, 2, 3]);
     expect(rarityInfo('legendary')).toMatchObject({ label: 'Legendary', glyph: '✦' });
     expect(isRarity('Stellar')).toBe(false);
-  });
-
-  it('still reads the tiers written into minted Stellar observations', () => {
-    expect(getRarityInfo('Stellar').label).toBe('Stellar');
-    expect(getRarityInfo('Celestial').label).toBe('Celestial');
-    expect(getRarityInfo('unknown').rarity).toBe('Common');
   });
 });
