@@ -159,8 +159,8 @@
 
 /* ── Hero: the hidden sky ─────────────────────────────────────────
    The words sit centred in the black. Twelve real objects hide in the sky
-   round them and the pointer reveals the one beneath it (SkyReveal). On a
-   phone the sky is a block above the words and tours its objects itself. */
+   round them and the pointer reveals the one beneath it (SkyReveal). A phone
+   has no sky: only the words and a Launch button, centred in the black. */
 .stellar .sd-hero3 {
   position: relative; isolation: isolate; overflow: clip; display: grid; place-items: center; background: var(--sd-canvas);
   min-height: clamp(560px, calc(100svh - var(--sd-bar-h)), 900px);
@@ -195,17 +195,18 @@
 .stellar .sd-hero3__title em { font-style: normal; color: var(--sd-accent); }
 .stellar .sd-hero3__sub { margin: 24px auto 0; max-width: 44ch; color: rgba(244, 232, 204, 0.84); font-size: clamp(16px, 1.3vw, 19px); font-weight: 500; line-height: 1.5; }
 .stellar .sd-hero3__cta { display: flex; justify-content: center; margin-top: 34px; }
+.stellar .sd-hero3__cta-phone { display: none; }
 @media (prefers-reduced-motion: no-preference) {
   .stellar .sd-hero3__copy > * { animation: sd-arrive 700ms var(--sd-ease) both; }
   .stellar .sd-hero3__copy > :nth-child(2) { animation-delay: 90ms; }
   .stellar .sd-hero3__copy > :nth-child(3) { animation-delay: 180ms; }
 }
 @media (max-width: 559px) {
-  .stellar .sd-hero3 { display: flex; flex-direction: column; align-items: stretch; min-height: 0; }
-  .stellar .sd-hero3 .sd-sky { position: relative; width: 100%; height: clamp(380px, 112vw, 540px); touch-action: pan-y; -webkit-tap-highlight-color: transparent; }
-  .stellar .sd-sky__hint { right: 16px; bottom: 14px; }
-  .stellar .sd-hero3__copy { padding-block: 8px 40px; }
-  .stellar .sd-hero3__cta .sd-btn { width: 100%; }
+  .stellar .sd-hero3 { min-height: clamp(460px, calc(100svh - var(--sd-bar-h)), 760px); }
+  .stellar .sd-hero3 .sd-sky { display: none; }
+  .stellar .sd-hero3__cta .sd-btn { min-width: 220px; }
+  .stellar .sd-hero3__cta-wide { display: none; }
+  .stellar .sd-hero3__cta-phone { display: inline; }
 }
 
 /* ── Phones ───────────────────────────────────────────────────── */

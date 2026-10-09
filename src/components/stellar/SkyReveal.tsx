@@ -28,12 +28,6 @@ const OBJECTS: SkyObject[] = [
   { id: 'sgra', name: 'Sagittarius A*', des: 'SGR-A', x: 0.58, y: 0.86, s: 0.09, feather: 0.55 },
   { id: 'mercury', name: 'Mercury', des: 'MERCURY', x: 0.965, y: 0.42, s: 0.032, feather: 0.8 },
 ];
-/** On a phone the sky is a tall block above the words: the same objects, laid out for a portrait screen and drawn large. */
-const PORTRAIT: Record<string, [x: number, y: number, s: number]> = {
-  moon: [0.5, 0.36, 0.42], m42: [0.22, 0.2, 0.36], m31: [0.76, 0.18, 0.4], saturn: [0.26, 0.66, 0.38],
-  jupiter: [0.76, 0.62, 0.26], m57: [0.5, 0.84, 0.2], mars: [0.84, 0.86, 0.16], venus: [0.16, 0.88, 0.15],
-  neptune: [0.86, 0.38, 0.13], uranus: [0.12, 0.42, 0.13], sgra: [0.56, 0.58, 0.26], mercury: [0.4, 0.1, 0.11],
-};
 const TOUR = ['moon', 'm42', 'sgra', 'saturn', 'm31', 'jupiter', 'm57', 'venus', 'mars', 'neptune', 'uranus', 'mercury'];
 const CREAM = '244, 232, 204';
 
@@ -55,7 +49,8 @@ const smooth = (t: number) => t * t * (3 - 2 * t);
  * The black sky behind the home words. Twelve real objects sit in it unseen;
  * the pointer reveals the one beneath it, which ignites, settles into its true
  * colours and is named. One canvas, redrawn only while something still moves.
- * On a phone, with no pointer, the sky tours its objects on its own.
+ * On a tablet, with no pointer, the sky tours its objects on its own. A phone
+ * has no sky at all: the hero is just the words and the button.
  */
 export default function SkyReveal() {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -71,7 +66,7 @@ export default function SkyReveal() {
     const starsCanvas = starsRef.current;
     const foundEl = foundRef.current;
     const hero = root?.parentElement;
-    if (!root || !canvas || !starsCanvas || !foundEl || !hero) return;
+    if (!root || !canvas || !starsCanvas || !foundEl || !hero || matchMedia('(max-width: 559px)').matches) return;
     const ctx = canvas.getContext('2d', { desynchronized: true });
     if (!ctx) return;
 
@@ -92,7 +87,7 @@ export default function SkyReveal() {
     let touring = false, tourIdx = 0, tourTimer = 0;
     let rectCache: DOMRect | null = null;
     let target = '';
-    let portrait = false, swallowClick = false;
+    let swallowClick = false;
 
     // Each photo feathered into the black once, kept as a bitmap.
     for (const o of objects) {
@@ -151,16 +146,11 @@ export default function SkyReveal() {
       dpr = Math.min(window.devicePixelRatio || 1, 2, Math.sqrt(3.2e6 / (W * H)));
       canvas!.width = W * dpr; canvas!.height = H * dpr;
       wasDirty = [0, 0, W, H];
-      portrait = W < 560;
-      labelFont = `300 ${portrait ? 18 : 24}px ${getComputedStyle(root!).getPropertyValue('--sd-spaced').trim() || 'sans-serif'}`;
-      if (portrait) {
-        R = W * 0.3;
-        for (const o of objects) { const [x, y, sz] = PORTRAIT[o.id]; o.cx = x * W; o.cy = y * H; o.r = (sz * W) / 2; }
-      } else {
-        R = Math.max(80, Math.min(140, W * 0.085));
-        const base = Math.min(W, H * 1.6);
-        for (const o of objects) { o.cx = o.x * W; o.cy = o.y * H; o.r = (o.s * base) / 2; }
-      }
+      labelFont = `300 24px ${getComputedStyle(root!).getPropertyValue('--sd-spaced').trim() || 'sans-serif'}`;
+      // The reach of the light: wide enough that pointing near an object shows most of it.
+      R = Math.max(170, Math.min(300, W * 0.17));
+      const base = Math.min(W, H * 1.6);
+      for (const o of objects) { o.cx = o.x * W; o.cy = o.y * H; o.r = (o.s * base) / 2; }
       buildStars();
       wake();
     }
@@ -197,7 +187,7 @@ export default function SkyReveal() {
       for (const o of objects) {
         if (!o.bmp) continue;
         const d = Math.hypot(cur.x - o.cx, cur.y - o.cy);
-        const inner = o.r * 0.4 + 12;
+        const inner = o.r * 0.9 + 24;
         let a = d <= inner ? 1 : 1 - (d - inner) / R;
         a = a <= 0 ? 0 : Math.pow(smooth(Math.min(1, a)), 0.7) * gain;
         if (a > 0.9 && !o.found) { o.found = true; found++; foundEl!.textContent = String(found); }

@@ -100,7 +100,8 @@ export default async function HomePage() {
           </p>
           <div className="sd-hero3__cta">
             <Link href="/genesis" className="sd-btn sd-btn--light">
-              Detonate a star
+              <span className="sd-hero3__cta-wide">Detonate a star</span>
+              <span className="sd-hero3__cta-phone">Launch</span>
             </Link>
           </div>
         </div>
