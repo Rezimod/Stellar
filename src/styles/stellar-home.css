@@ -165,7 +165,7 @@
    round them and the pointer reveals the one beneath it (SkyReveal). On a
    phone the sky is a block above the words and tours its objects itself. */
 .stellar .sd-hero3 {
-  position: relative; isolation: isolate; overflow: clip; display: grid; place-items: center;
+  position: relative; isolation: isolate; overflow: clip; display: grid; place-items: center; background: var(--sd-canvas);
   min-height: clamp(560px, calc(100svh - var(--sd-bar-h)), 900px);
 }
 .stellar .sd-sky { position: absolute; inset: 0; z-index: 0; }
@@ -190,7 +190,7 @@
 .stellar .sd-hero3__copy { position: relative; z-index: 2; width: 100%; padding-block: 48px; text-align: center; pointer-events: none; }
 .stellar .sd-hero3__copy a { pointer-events: auto; }
 .stellar .sd-hero3__title {
-  margin: 0; font-family: var(--sd-display); font-weight: 400; font-size: clamp(27px, 5vw, 76px); line-height: 1;
+  margin: 0; font-family: var(--font-anton), Impact, sans-serif; font-weight: 400; font-size: clamp(27px, 5vw, 76px); line-height: 1;
   letter-spacing: 0.01em; text-transform: uppercase; white-space: nowrap; color: var(--sd-ink);
   text-shadow: 0.05em 0.055em 0 var(--sd-print);
 }
