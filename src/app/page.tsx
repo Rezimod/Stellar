@@ -3,9 +3,9 @@ import Link from 'next/link';
 import { eq } from 'drizzle-orm';
 import CardThumb from '@/components/stellar/CardThumb';
 import FlightPlan, { type FlightStep } from '@/components/stellar/FlightPlan';
-import HomePrint from '@/components/stellar/HomePrint';
 import OddsBoard from '@/components/stellar/OddsBoard';
 import OrbitRing from '@/components/stellar/OrbitRing';
+import SkyReveal from '@/components/stellar/SkyReveal';
 import Sunburst from '@/components/stellar/Sunburst';
 import StellarShell from '@/components/stellar/StellarShell';
 import StellarView from '@/components/stellar/StellarView';
@@ -89,38 +89,19 @@ export default async function HomePage() {
     <StellarShell>
       <StellarView step="landing" />
 
-      <section className="sd-hero2">
-        <div className="sd-container sd-hero2__grid">
-          <HomePrint />
-          <div className="sd-hero2__copy">
-            <h1 className="sd-hero2__title">
-              <span>Hold a piece of</span>{' '}
-              <span>
-                <em>the cosmos</em>
-              </span>
-            </h1>
-            <p className="sd-hero2__sub">
-              Real objects, numbered editions. A card is a seat at the telescope — and, for some, an object you can hold.
-            </p>
-            <div className="sd-hero2__cta">
-              <Link href="/genesis" className="sd-btn sd-btn--light">
-                Detonate a star — from ${FROM_USD}
-              </Link>
-            </div>
-            <dl className="sd-hero2__stats">
-              <div>
-                <dt>From</dt>
-                <dd>${FROM_USD}</dd>
-              </div>
-              <div>
-                <dt>Card per capsule</dt>
-                <dd>1</dd>
-              </div>
-              <div>
-                <dt>Published</dt>
-                <dd>Odds</dd>
-              </div>
-            </dl>
+      <section className="sd-hero3">
+        <SkyReveal />
+        <div className="sd-container sd-hero3__copy">
+          <h1 className="sd-hero3__title">
+            Hold a piece of <em>the cosmos</em>
+          </h1>
+          <p className="sd-hero3__sub">
+            Real objects, numbered editions. A card is a seat at the telescope — and, for some, an object you can hold.
+          </p>
+          <div className="sd-hero3__cta">
+            <Link href="/genesis" className="sd-btn sd-btn--light">
+              Detonate a star
+            </Link>
           </div>
         </div>
       </section>

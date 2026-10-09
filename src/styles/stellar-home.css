@@ -161,6 +161,56 @@
 }
 .stellar .sd-closer2 .sd-home-sec__lede { color: rgba(244, 232, 204, 0.82); }
 
+/* ── Hero: the hidden sky ─────────────────────────────────────────
+   The words sit centred in the black. Twelve real objects hide in the sky
+   round them and the pointer reveals the one beneath it (SkyReveal). On a
+   phone the sky is a block above the words and tours its objects itself. */
+.stellar .sd-hero3 {
+  position: relative; isolation: isolate; overflow: clip; display: grid; place-items: center;
+  min-height: clamp(560px, calc(100svh - var(--sd-bar-h)), 900px);
+}
+.stellar .sd-sky { position: absolute; inset: 0; z-index: 0; }
+.stellar .sd-sky canvas { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+.stellar .sd-sky__vignette {
+  position: absolute; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(90% 80% at 50% 50%, transparent 50%, rgba(0, 0, 0, 0.5) 100%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.25), transparent 18%, transparent 80%, rgba(0, 0, 0, 0.5));
+}
+.stellar .sd-sky__grain {
+  position: absolute; inset: 0; pointer-events: none; opacity: 0.07;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 0.95 0 0 0 0 0.85 0 0 0 0.9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.stellar .sd-sky__hint {
+  position: absolute; right: clamp(16px, 4vw, 48px); bottom: 26px; margin: 0; pointer-events: none;
+  display: inline-flex; align-items: center; gap: 12px; color: var(--sd-gold);
+  font: 400 11px/1 var(--sd-spaced); letter-spacing: 0.22em; text-transform: uppercase;
+}
+.stellar .sd-sky__hint::before { content: ''; width: 28px; height: 1px; background: linear-gradient(90deg, transparent, var(--sd-gold)); }
+.stellar .sd-sky__hint b { font-weight: 500; color: var(--sd-ink); font-variant-numeric: tabular-nums; }
+.stellar .sd-hero3__copy { position: relative; z-index: 2; width: 100%; padding-block: 48px; text-align: center; pointer-events: none; }
+.stellar .sd-hero3__copy a { pointer-events: auto; }
+.stellar .sd-hero3__title {
+  margin: 0; font-family: var(--sd-display); font-weight: 400; font-size: clamp(27px, 5vw, 76px); line-height: 1;
+  letter-spacing: 0.01em; text-transform: uppercase; white-space: nowrap; color: var(--sd-ink);
+  text-shadow: 0.05em 0.055em 0 var(--sd-print);
+}
+.stellar .sd-hero3__title em { font-style: normal; color: var(--sd-accent); }
+.stellar .sd-hero3__sub { margin: 24px auto 0; max-width: 44ch; color: rgba(244, 232, 204, 0.84); font-size: clamp(16px, 1.3vw, 19px); font-weight: 500; line-height: 1.5; }
+.stellar .sd-hero3__cta { display: flex; justify-content: center; margin-top: 34px; }
+@media (prefers-reduced-motion: no-preference) {
+  .stellar .sd-hero3__copy > * { animation: sd-arrive 700ms var(--sd-ease) both; }
+  .stellar .sd-hero3__copy > :nth-child(2) { animation-delay: 90ms; }
+  .stellar .sd-hero3__copy > :nth-child(3) { animation-delay: 180ms; }
+}
+@media (max-width: 559px) {
+  .stellar .sd-hero3 { display: flex; flex-direction: column; min-height: 0; }
+  .stellar .sd-sky { position: relative; height: clamp(300px, 80vw, 460px); }
+  .stellar .sd-sky__hint { right: 16px; bottom: 14px; }
+  .stellar .sd-hero3__copy { padding-block: 8px 40px; }
+  .stellar .sd-hero3__cta .sd-btn { width: 100%; }
+}
+
 /* ── Phones ───────────────────────────────────────────────────── */
 @media (max-width: 559px) {
   .stellar .sd-hero2 { padding-bottom: 40px; }
