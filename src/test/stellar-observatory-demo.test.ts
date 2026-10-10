@@ -2,6 +2,9 @@ import { act, createElement } from 'react';
 import { createRoot } from 'react-dom/client';
 import { expect, it, vi } from 'vitest';
 
+// The whole console renders here; on a busy machine that outruns the default five seconds.
+vi.setConfig({ testTimeout: 20_000 });
+
 // The account chip needs a Privy session and the feed a canvas; this test is about what the console says it is.
 vi.mock('@/components/stellar/StellarAccount', () => ({ default: () => null }));
 vi.mock('@/components/observatory/LiveView', () => ({ default: () => null }));
