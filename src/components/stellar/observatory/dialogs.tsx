@@ -264,7 +264,7 @@ function useHistogram(src: string) {
   return bins;
 }
 
-export function CaptureDialog({ night, frame, timezone, onClose }: { night: boolean; frame: Frame; timezone: string; onClose: () => void }) {
+export function CaptureDialog({ night, frame, timezone, onClose, live = false }: { night: boolean; frame: Frame; timezone: string; onClose: () => void; live?: boolean }) {
   const bins = useHistogram(frame.dataUrl);
   const [copied, setCopied] = useState(false);
   const max = bins ? Math.max(...bins) || 1 : 1;
@@ -282,7 +282,7 @@ export function CaptureDialog({ night, frame, timezone, onClose }: { night: bool
       <div className="sdo-capture">
         <div className="sdo-capture__img">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={frame.dataUrl} alt={`${frame.targetName}, simulated frame ${frame.n}`} />
+          <img src={frame.dataUrl} alt={`${frame.targetName}, ${live ? '' : 'simulated '}frame ${frame.n}`} />
           <span className="sdo-hud sdo-glass sdo-hud--tl">#{frame.n} · stack {frame.subs} × {frame.exposureSec} s</span>
         </div>
         <div className="sdo-capture__info">
@@ -316,7 +316,7 @@ export function CaptureDialog({ night, frame, timezone, onClose }: { night: bool
               ['Optics', frame.optics],
               ['Seeing', frame.seeing],
               ['Scale', frame.scale],
-              ['Provenance', 'Simulated'],
+              ['Provenance', live ? 'Live Telescope V1' : 'Simulated'],
             ] as const).map(([k, v]) => (
               <div key={k}>
                 <dt className="sdo-lbl">{k}</dt>

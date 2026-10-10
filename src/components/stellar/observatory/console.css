@@ -475,3 +475,51 @@
   .sdo { padding-bottom: calc(104px + var(--sd-tabs-h, 0px)); }
   .sdo-pdock { bottom: var(--sd-tabs-h, 0px); padding-bottom: 14px; }
 }
+
+/* ── One screen on a desktop: the grid fills the window under the header, nothing below it ── */
+@media (min-width: 1280px) {
+  .sdo-grid { height: calc(100vh - 64px - var(--sdo-bar, 41px)); min-height: 640px; padding: 12px 18px 14px; gap: 12px; }
+  .sdo.is-film .sdo-grid { --sdo-bar: 0px; }
+  .sdo-col.sdo-desk { overflow-y: auto; scrollbar-width: none; gap: 12px; }
+  .sdo-col.sdo-desk::-webkit-scrollbar { display: none; }
+  /* The steps and their buttons in one strip: five compact steps on the left, the next action on the right. */
+  .sdo-flowbar { flex-direction: row; align-items: center; gap: 18px; padding: 10px 14px; flex: none; }
+  .sdo-flowbar > .sdo-hr { display: none; }
+  .sdo-flow { flex: 1; min-width: 0; display: flex; gap: 4px; }
+  .sdo-flow::before { display: none; }
+  .sdo-flow > li { flex: 1; min-width: 0; }
+  .sdo-fs { flex-direction: row; justify-content: flex-start; gap: 8px; padding: 6px 8px; border-radius: 10px; }
+  .sdo-fs.is-now { background: rgba(227, 72, 44, .1); box-shadow: inset 0 0 0 1px rgba(227, 72, 44, .35); }
+  .sdo-fs .sdo-fs__dot { flex: none; width: 26px; height: 26px; font-size: 11px; }
+  .sdo-fs__nm { font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sdo-fs__tm { display: none; }
+  .sdo-act { flex: none; }
+  .sdo-act__hint { display: none; }
+  .sdo-act__btns .sdo-btn--xl { height: 44px; }
+  .sdo-act__btns .sdo-sec { height: 44px; }
+}
+
+/* ── Film: the console as it will be once the telescope is live ── */
+.sdo-pill--live { color: #fff; background: rgba(46, 204, 113, .12); border: 1px solid rgba(46, 204, 113, .55); box-shadow: 0 0 18px -6px rgba(46, 204, 113, .6); }
+.sdo-pill--live .sdo-led { background: #2ecc71; box-shadow: 0 0 0 3px rgba(46, 204, 113, .2), 0 0 10px #2ecc71; }
+/* A photograph on black, screened onto the live star field, a little smaller than the field, with the air moving over it. */
+.sdo-art--photo { display: grid; place-items: center; mix-blend-mode: screen; }
+.sdo-art--photo img { width: auto; height: auto; max-width: 70%; max-height: 74%; object-fit: contain; filter: contrast(1.08) saturate(.92); }
+@media (prefers-reduced-motion: no-preference) {
+  .sdo-art--photo img { animation: sdo-seeing 2.6s ease-in-out infinite; }
+  .sdo-view.is-slewing .sdo-view__feed { animation: sdo-slew .9s ease-in-out infinite alternate; }
+}
+@keyframes sdo-seeing {
+  0%, 100% { translate: 0 0; filter: contrast(1.08) saturate(.92) blur(0.25px); }
+  20% { translate: 0.6px -0.4px; filter: contrast(1.08) saturate(.92) blur(0.6px); }
+  45% { translate: -0.5px 0.5px; filter: contrast(1.08) saturate(.92) blur(0.2px); }
+  70% { translate: 0.3px 0.6px; filter: contrast(1.08) saturate(.92) blur(0.5px); }
+}
+/* While the mount slews, the stars smear along the move. */
+@keyframes sdo-slew { 0% { translate: 0 0; filter: blur(1.2px); } 100% { translate: -14px 6px; filter: blur(2.4px); } }
+.sdo.is-film .sdo-note--firstlight { display: none; }
+/* Where the strip is tight, only the step in hand keeps its name. */
+@media (min-width: 1280px) and (max-width: 1599px) {
+  .sdo-fs:not(.is-now) .sdo-fs__nm { display: none; }
+  .sdo-flow > li:has(.is-now) { flex: 2.4; }
+}

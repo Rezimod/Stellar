@@ -6,6 +6,8 @@ import { plateArt } from './sky';
 
 export type Train = 'reducer' | 'native' | 'barlow2';
 export const TRAIN_K: Record<Train, number> = { reducer: 0.7, native: 1, barlow2: 1.9 };
+/** How much of the field a photograph fills at native focus. */
+export const PHOTO_SCALE = 0.46;
 const TRAIN_LABEL: Record<Train, [string, string]> = { reducer: ['0.63×', 'Focal reducer'], native: ['1×', 'Native'], barlow2: ['2×', 'Barlow'] };
 
 const RULER = (() => {
@@ -57,6 +59,9 @@ export type ViewStageProps = {
   hudTarget: [string, string] | null;
   hudField: [string, string];
   idle: { title: string; text: string } | null;
+  /** The object in the eyepiece: a drawn plate, or in film mode its photograph. */
+  objectSrc: string | null;
+  film?: boolean;
 };
 
 function ViewStage(p: ViewStageProps) {
@@ -75,14 +80,14 @@ function ViewStage(p: ViewStageProps) {
   );
 
   return (
-    <section className={`sdo-view${p.full ? ' is-full' : ''}${p.status.go ? ' is-go' : ''}`} aria-label="Telescope view">
+    <section className={`sdo-view${p.full ? ' is-full' : ''}${p.status.go ? ' is-go' : ''}${p.film && p.art === 'blur' ? ' is-slewing' : ''}`} aria-label="Telescope view">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img className="sdo-view__sky" src={p.backdrop} alt="" />
       <div className="sdo-view__feed" ref={p.viewRef}>{p.feed}</div>
-      {p.plate && p.art !== 'none' && (
-        <div className="sdo-art" style={artStyle}>
+      {p.objectSrc && p.art !== 'none' && (
+        <div className={`sdo-art${p.film ? ' sdo-art--photo' : ''}${p.art === 'blur' ? ' is-slewing' : ''}`} style={artStyle}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={plateArt(p.plate, 'object')} alt="" />
+          <img src={p.objectSrc} alt="" />
         </div>
       )}
       {p.reticle && p.art !== 'none' && <Reticle />}
