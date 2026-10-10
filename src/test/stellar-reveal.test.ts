@@ -38,10 +38,11 @@ it('keeps the other cards of an older two-card capsule beside it', () => {
   expect(render([card('M31', 'rare', 0)])).not.toContain('Also in this capsule');
 });
 
-it('comes out face down, with the sealed back', () => {
+it('comes out of the capsule face up, with no sealed back', () => {
   const html = render([card('SATURN', 'epic', 0)]);
-  expect(html).toContain('sn-face--back');
-  expect(html).toContain('/cards/sealed.webp?v=capsule1');
+  expect(html).toContain('/cards/capsule.webp');
+  expect(html).toContain('sdc-card--back');
+  expect(html).not.toContain('sealed.webp');
 });
 
 it('shows a First Light card as the printed card, with its edition in plain text', () => {

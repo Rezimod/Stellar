@@ -9,21 +9,11 @@ type Props = {
   plate: Plate;
   edition?: number | null;
   commitment?: string | null;
-  sealed?: boolean;
   priority?: boolean;
   u: string;
 };
 
-export const SEALED_SRC = '/cards/sealed.webp?v=capsule1';
-
-function CardBack({ plate, edition, commitment, sealed = false, priority = false }: Props) {
-  if (sealed) return (
-    <div className="sdc-card sdc-card--sealed">
-      <img className="sdc-sealed" src={SEALED_SRC} alt="" decoding="async" fetchPriority={priority ? 'high' : undefined} />
-      <div className="sdc-glare" />
-    </div>
-  );
-
+function CardBack({ plate, edition, commitment, priority = false }: Props) {
   const photo = photoFor(plate.designation);
   const card = SET_001_CARD_BY_DESIGNATION.get(plate.designation)!;
   const rows = [

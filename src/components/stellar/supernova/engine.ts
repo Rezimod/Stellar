@@ -2,7 +2,7 @@
  * The supernova. One press: a red giant's heartbeat quickens and the camera
  * closes in; it collapses to a point and the room goes dark and silent; it
  * detonates; the camera drifts into the nebula it leaves; out of the light at
- * the nebula's heart the sealed card comes slowly forward, then turns over.
+ * the nebula's heart a capsule splits and the card comes forward, face up.
  *
  * Everything is a function of one clock, t, the seconds since the press. The
  * sky is drawn in WebGL (./shaders); the card is the page's own markup, moved
@@ -109,8 +109,6 @@ export function startSupernova(root: HTMLElement, opts: SupernovaOptions): Super
   const shake = q('shake');
   const wrap = q('wrap');
   const flip = q('flip');
-  const back = q('back');
-  const veil = q('veil');
   const burn = q('burn');
   const sheen = q('sheen');
   const halo = q('halo');
@@ -524,7 +522,6 @@ export function startSupernova(root: HTMLElement, opts: SupernovaOptions): Super
     gl.drawArrays(gl.TRIANGLES, 0, 3);
   }
 
-  // The sealed card comes up out of the core: far, small, soft and lit by the gas; then near, sharp and its own colour. Then it turns.
   // A capsule leaves the core first (the first 55% of the approach), cracks along its seam, splits, and the card comes out of it.
   const C_ARRIVE = 0.55, C_CRACK = 0.7, C_OPEN = 0.9;
   function capsule(t: number, now: number) {
@@ -553,7 +550,6 @@ export function startSupernova(root: HTMLElement, opts: SupernovaOptions): Super
     if (t < T.TE) {
       wrap.style.opacity = '0';
       if (halo) halo.style.opacity = '0';
-      root.dataset.sealed = '1';
       return;
     }
     // The card exists only once the capsule has split: it starts small inside it and comes forward.
@@ -561,22 +557,18 @@ export function startSupernova(root: HTMLElement, opts: SupernovaOptions): Super
     if ((t - T.TE) / p.em < C_CRACK) {
       wrap.style.opacity = '0';
       if (halo) halo.style.opacity = '0';
-      root.dataset.sealed = '1';
       return;
     }
     const s = 0.32 + 0.68 / (1 + 3 * Math.pow(1 - e, 1.6)) - 0.17 * (1 - e);
     const sway = 1 - e;
-    const ang = kf <= 0 ? 0 : 180 * eio(kf);
+    // Face up from the moment it leaves the capsule: no sealed back, no turn.
+    const ang = 180;
     const lift = kf > 0 && kf < 1 ? Math.sin(Math.PI * kf) * 0.05 : 0;
     const bob = Math.sin(now * 1.05) * 4 * sm(T.TD + 0.4, T.TD + 1.4, t);
     const op = sm(0, 0.18, k);
     wrap.style.opacity = op >= 0.999 ? '1' : op.toFixed(3);
     wrap.style.transform = `translateY(${(bob + 20 * sway).toFixed(2)}px) scale(${(s * (1 + lift)).toFixed(4)}) rotateZ(${(-7 * sway * Math.cos(k * 2.2)).toFixed(2)}deg)`;
     flip.style.transform = `rotateY(${(ang + 16 * sway * Math.sin(k * 2.6)).toFixed(2)}deg) rotateX(${(10 * sway).toFixed(2)}deg)`;
-    // Until it turns, only the sealed back is ever seen.
-    root.dataset.sealed = ang < 90 ? '1' : '0';
-    if (back) back.style.filter = `blur(${(2 * Math.pow(1 - e, 1.3)).toFixed(2)}px) brightness(${(0.92 + 0.08 * e).toFixed(3)})`;
-    if (veil) veil.style.opacity = (0.35 * Math.pow(1 - e, 1.25)).toFixed(3);
     if (burn) burn.style.opacity = (kf > 0 ? Math.exp(-Math.max(0, kf - 0.5) / 0.25) : 0).toFixed(3);
     if (sheen) sheen.style.setProperty('--sn-sx', `${lerp(160, -60, sm(0.85, 1.9, kf)).toFixed(1)}%`);
     if (halo) halo.style.opacity = ((0.35 + 0.45 * e) * sm(0, 0.3, k) * (1 + 0.6 * Math.exp(-Math.pow((kf - 0.45) / 0.2, 2)))).toFixed(3);

@@ -899,18 +899,6 @@ html:has(.stellar) #stellar-main { padding-top: 0; padding-bottom: 0; }
 @keyframes sd-tier-arrive { from { opacity: 0; transform: translateY(14px) scale(0.92) rotate(-6deg); } }
 @keyframes sd-tier-breathe { 0%, 100% { opacity: 0.55; transform: scale(0.96); } 50% { opacity: 0.85; transform: scale(1.04); } }
 
-/* Behind it, the jump to light speed: thin streaks rushing out from the centre. */
-.sd-hyper {
-  position: absolute; inset: -30%; pointer-events: none;
-  background:
-    repeating-conic-gradient(from 0deg at 50% 46%, rgba(255, 244, 222, 0.5) 0deg 0.35deg, transparent 0.35deg 3.1deg),
-    repeating-conic-gradient(from 1.4deg at 50% 46%, color-mix(in srgb, var(--tier) 55%, transparent) 0deg 0.25deg, transparent 0.25deg 4.7deg);
-  -webkit-mask-image: radial-gradient(circle at 50% 46%, transparent 0 9%, #000 26%, transparent 58%);
-  mask-image: radial-gradient(circle at 50% 46%, transparent 0 9%, #000 26%, transparent 58%);
-}
-@media (prefers-reduced-motion: no-preference) { .sd-hyper { animation: sd-hyper 3.2s cubic-bezier(0.55, 0, 0.75, 0.4) infinite; } }
-@keyframes sd-hyper { from { transform: scale(0.55); opacity: 0; } 25% { opacity: 1; } to { transform: scale(1.6); opacity: 0; } }
-
 /* ── A tier's sheet: the capsule, its odds, buy and open ───────── */
 .sd-sheet {
   position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 16px;

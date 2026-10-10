@@ -64,9 +64,6 @@
 .sdc-sides i[data-active='true'] { width: 10px; background: #efefed; }
 .sdc-shadow { display: none; }
 .sdc-card--blank { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; border: 1px dashed #ffffff40; font: 13px var(--font-mono), monospace; }
-.sdc-card--sealed { background: transparent; }
-.sdc-card--sealed::after, .sdc-card--sealed::before { display: none; }
-.sdc-sealed { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
 @media (prefers-reduced-motion: no-preference) {
   .sdc--hero .sdc-tilt { animation: sdc-float 10s ease-in-out infinite; }
   .sdc--hero .sdc-stage.is-live .sdc-tilt { animation-play-state: paused; }

@@ -54,9 +54,10 @@ function split(cards: RevealedCard[]) {
   return { flown: best, rest: cards.filter((c) => c !== best) };
 }
 
-function SealedBack({ designation, u }: { designation: string; u: string }) {
+/** The card's own back, for a press that turns it over once it is down. */
+function Back({ designation, edition, u }: { designation: string; edition: number; u: string }) {
   const plate = plateFor(designation);
-  return plate ? <CardBack plate={plate} sealed priority u={u} /> : null;
+  return plate ? <CardBack plate={plate} edition={edition} u={u} /> : null;
 }
 
 /** The capsule out of the star: a cut-out return capsule; it splits at the heat-shield rim. */
@@ -70,8 +71,8 @@ const SHARDS: [number, number, number, number][] = Array.from({ length: 14 }, (_
 });
 
 /**
- * Ignite: a star goes supernova, and out of the nebula it leaves the card
- * comes forward face down and turns over on its own. One press starts it;
+ * Ignite: a star goes supernova, a capsule comes out of the nebula and splits,
+ * and the card comes out of it face up. One press starts it;
  * Skip goes straight to the card; Escape or Close leaves it.
  *
  * The sky is drawn by ./supernova/engine on the stage this component lays
@@ -387,14 +388,12 @@ export default function StellarReveal({
               <div className={`sn-tilt${turned ? ' is-turned' : ''}`} ref={tilt}>
                 <div
                   className="sn-face sn-face--back"
-                  data-sn="back"
                   aria-hidden="true"
                   onClick={() => {
                     if (done) setTurned((v) => !v);
                   }}
                 >
-                  <SealedBack designation={flown.designation} u={`${u}b`} />
-                  <div className="sn-veil" data-sn="veil" />
+                  <Back designation={flown.designation} edition={flown.editionNumber} u={`${u}b`} />
                 </div>
                 <div
                   className="sn-face sn-face--front"
