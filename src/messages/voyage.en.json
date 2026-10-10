@@ -440,8 +440,8 @@
       }
     },
     "moon": {
-      "place": "Stellar Base · Moon",
-      "descending": "Descending to Stellar Base",
+      "place": "Skychaser Base · Moon",
+      "descending": "Descending to Skychaser Base",
       "touchdown": "Touchdown in {n} s",
       "returnOrbit": "Return to orbit",
       "gravity": "Gravity",
@@ -483,7 +483,7 @@
         "lander": "Descent stage of the first crew",
         "flag": "Flag of Georgia",
         "seismometer": "Passive seismometer",
-        "sign": "Stellar Base — founded by Astroman, Tbilisi",
+        "sign": "Skychaser Base — founded by Astroman, Tbilisi",
         "ourLander": "Your descent vehicle",
         "science": "Geology lab — bench and sample store",
         "logistics": "Rover bay and charger",
@@ -722,7 +722,7 @@
         },
         "observed": {
           "line": "{target} · {alt}° above the horizon",
-          "earth": "Earth never sets over Stellar Base: the near side always faces home.",
+          "earth": "Earth never sets over Skychaser Base: the near side always faces home.",
           "jupiter": "Jupiter turns once in under ten hours — the fastest day of any planet.",
           "saturn": "Saturn's rings are mostly water ice, and only tens of metres thick.",
           "mars": "Mars has two moons, Phobos and Deimos, both likely captured asteroids.",
@@ -789,7 +789,7 @@
           "title": "Records",
           "note": "Kept on this device. Nothing was awarded.",
           "tonight": "See {target} over your sky tonight",
-          "first_steps": "First bootprints at Stellar Base",
+          "first_steps": "First bootprints at Skychaser Base",
           "earthrise_photo": "Earthrise photographed from the ridge",
           "power_restored": "Base power restored",
           "telescope_calibrated": "Telescope platform calibrated",
@@ -807,7 +807,7 @@
     "loading": {
       "title": "Opening the solar system",
       "detail": "Charting every orbit for today",
-      "moon": "Descending to Stellar Base",
+      "moon": "Descending to Skychaser Base",
       "moonDetail": "Preparing the surface",
       "gpu": "The graphics card reset — rebuilding the scene",
       "preflight": "Preflight",
@@ -1090,7 +1090,7 @@
     "missions": "Missions",
     "settings": "Settings",
     "controls": "Controls",
-    "exit": "Back to Stellar",
+    "exit": "Back to Skychaser",
     "paused": "Paused",
     "resume": "Resume",
     "restart": "Restart checkpoint",
@@ -1102,7 +1102,7 @@
       "ready": "Ready",
       "scene": {
         "orbit": "Charting the orbits",
-        "moon": "Descending to Stellar Base",
+        "moon": "Descending to Skychaser Base",
         "mars": "Descending to Mars",
         "proximaB": "Descending to Proxima b",
         "earth": "Descending to Tbilisi"
@@ -1128,7 +1128,7 @@
       "shell": "Esc — pause · Tab — mission panel (coming) · M — sound"
     },
     "missionsPanel": {
-      "moon": "Stellar Base expedition",
+      "moon": "Skychaser Base expedition",
       "stage": {
         "survey": "Survey the mare",
         "drill": "Take the core",
@@ -1139,7 +1139,7 @@
       },
       "jobs": "{n} of {total} base jobs done",
       "discoveries": "{n} of {total} discoveries logged",
-      "empty": "Nothing logged yet. Land at Stellar Base to begin."
+      "empty": "Nothing logged yet. Land at Skychaser Base to begin."
     },
     "qualityDrop": "Detail reduced to hold the frame rate — change it in Settings."
   }

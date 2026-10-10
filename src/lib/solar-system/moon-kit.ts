@@ -210,7 +210,7 @@ export function makeKit(lite: boolean): Kit {
     ctx.fillStyle = '#171a1f';
     ctx.textBaseline = 'middle';
     ctx.font = '600 58px "JetBrains Mono", ui-monospace, monospace';
-    ctx.fillText('STELLAR', 128, 68);
+    ctx.fillText('SKYCHASER', 128, 68);
   }, true));
   const logo = std({ map: logoTex, roughness: 0.6, metalness: 0 });
 

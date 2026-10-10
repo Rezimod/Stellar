@@ -28,8 +28,8 @@ export default function CollectionHead({ wallet, cards }: { wallet: string; card
       {cards > 0 && (
         <div className="sd-coll__share">
           <ShareCard
-            title="My Stellar collection"
-            text={address === wallet ? `My Stellar collection: ${cards} ${cards === 1 ? 'card' : 'cards'} of the cosmos, each a numbered edition.` : `A Stellar collection: ${cards} ${cards === 1 ? 'card' : 'cards'} of the cosmos.`}
+            title="My Skychaser collection"
+            text={address === wallet ? `My Skychaser collection: ${cards} ${cards === 1 ? 'card' : 'cards'} of the cosmos, each a numbered edition.` : `A Skychaser collection: ${cards} ${cards === 1 ? 'card' : 'cards'} of the cosmos.`}
             url={`https://stellarr.club/collection?wallet=${wallet}`}
           />
         </div>

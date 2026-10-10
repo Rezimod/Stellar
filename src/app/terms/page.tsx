@@ -4,8 +4,8 @@ import StellarShell from '@/components/stellar/StellarShell';
 import Chapter from '@/components/stellar/ui/Chapter';
 
 export const metadata: Metadata = {
-  title: 'Terms — Stellar',
-  description: 'The terms for holding Stellar cards and opening capsules.',
+  title: 'Terms — Skychaser',
+  description: 'The terms for holding Skychaser cards and opening capsules.',
   alternates: { canonical: '/terms' },
 };
 
@@ -16,9 +16,9 @@ export default function TermsPage() {
         <p className="sd-label">Last updated 23 September 2026</p>
 
         <section className="sd-chapter-block">
-          <Chapter n="01" title="What Stellar is" />
+          <Chapter n="01" title="What Skychaser is" />
           <p>
-            Stellar is a set of collectible cards, each a numbered edition of a real object or a dated event in the sky. It is run
+            Skychaser is a set of collectible cards, each a numbered edition of a real object or a dated event in the sky. It is run
             by Astroman (astroman.ge). The Live Telescope, the telescope that will photograph the night&rsquo;s card, sees first light in November 2026: until it
             is operational, no photograph is promised.
           </p>
@@ -75,7 +75,7 @@ export default function TermsPage() {
         <section className="sd-chapter-block">
           <Chapter n="07" title="Changes" />
           <p>
-            These terms change as Stellar does. The date above moves when they do, and continuing to use Stellar after a change
+            These terms change as Skychaser does. The date above moves when they do, and continuing to use Skychaser after a change
             means accepting it. Questions go to <Link href="/contact">Contact</Link>.
           </p>
         </section>

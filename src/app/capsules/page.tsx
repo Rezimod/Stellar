@@ -43,7 +43,7 @@ export default async function CapsulesPage() {
             <span className="sd-sealed__card" />
             <span className="sd-sealed__card" />
             <span className="sd-sealed__card sd-sealed__card--front">
-              <span className="sd-sealed__mark">Stellar</span>
+              <span className="sd-sealed__mark">Skychaser</span>
               <span className="sd-sealed__label">Sealed · {CARDS_PER_CAPSULE === 1 ? 'one card' : `${CARDS_PER_CAPSULE} cards`}</span>
               {sealed && <span className="sd-sealed__hash">{sealed.commitment.slice(0, 16)}…</span>}
             </span>

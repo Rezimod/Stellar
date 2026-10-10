@@ -19,7 +19,7 @@ export function TitleScreen({ onStart }: TitleScreenProps) {
   return (
     <GameMenu className="game-title" ariaLabel={t('title')}>
       <div className="game-title__mark">
-        <p className="game-title__brand">Stellar</p>
+        <p className="game-title__brand">Skychaser</p>
         <h1 className="game-title__name font-display">{t('title')}</h1>
         <p className="game-title__tagline">{t('tagline')}</p>
       </div>

@@ -3,8 +3,8 @@ import StellarShell from '@/components/stellar/StellarShell';
 import DataRow from '@/components/stellar/ui/DataRow';
 
 export const metadata: Metadata = {
-  title: 'Contact — Stellar',
-  description: 'How to reach the people behind Stellar and the Live Telescope.',
+  title: 'Contact — Skychaser',
+  description: 'How to reach the people behind Skychaser and the Live Telescope.',
   alternates: { canonical: '/contact' },
 };
 
@@ -13,7 +13,7 @@ export default function ContactPage() {
     <StellarShell title="Contact">
       <article className="sd-container sd-top sd-legal">
         <p className="sd-lede">
-          Stellar is run by Astroman. Email is the fastest way to reach us; a reply can take a day or two. For a
+          Skychaser is run by Astroman. Email is the fastest way to reach us; a reply can take a day or two. For a
           payment, include the transaction signature.
         </p>
         <DataRow

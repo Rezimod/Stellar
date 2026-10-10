@@ -11,7 +11,7 @@ import { tonightView } from '@/lib/stellar/night';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'Observatory — demo · Stellar',
+  title: 'Observatory — demo · Skychaser',
   description:
     'A demo of the observatory console: park, calibrate, choose a target, point and capture. Simulated frames of the real sky until first light in November 2026.',
 };

@@ -23,13 +23,13 @@ export default function Wordmark({ size = 'sm', href, asHeading = false, classNa
   const inner = (
     <>
       <img src="/brand/logo-mark.svg" alt="" width={px} height={px} aria-hidden="true" />
-      <span>Stellar</span>
+      <span>Skychaser</span>
     </>
   );
 
   if (href) {
     return (
-      <Link href={href} className={cls} aria-label="Stellar, home">
+      <Link href={href} className={cls} aria-label="Skychaser, home">
         {inner}
       </Link>
     );

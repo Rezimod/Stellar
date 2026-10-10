@@ -13,7 +13,7 @@ const LINKS = [
 export default function StellarNavLinks() {
   const pathname = usePathname();
   return (
-    <nav aria-label="Stellar" className="sd-bar__links">
+    <nav aria-label="Skychaser" className="sd-bar__links">
       {LINKS.map((l) => {
         const current = l.match.some((p) => pathname.startsWith(p));
         return (

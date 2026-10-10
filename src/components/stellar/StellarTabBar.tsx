@@ -15,7 +15,7 @@ const TABS = [
 export default function StellarTabBar() {
   const pathname = usePathname();
   return (
-    <nav aria-label="Stellar sections" className="sd-tabs">
+    <nav aria-label="Skychaser sections" className="sd-tabs">
       {TABS.map(({ href, label, icon: Icon, match }) => {
         const current = match.some((p) => pathname.startsWith(p));
         return (

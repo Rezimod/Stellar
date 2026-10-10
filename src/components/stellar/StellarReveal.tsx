@@ -260,7 +260,7 @@ export default function StellarReveal({
         {outright ? 'Back to the set' : 'Detonate another'}
       </a>
       <ShareCard
-        title={`${flown.name} — Stellar`}
+        title={`${flown.name} — Skychaser`}
         text={`I detonated a star and pulled ${flown.name} — No. ${pad(flown.editionNumber)} of ${flown.editionSize}.`}
         url={`https://stellarr.club/card/${flown.designation}`}
       />

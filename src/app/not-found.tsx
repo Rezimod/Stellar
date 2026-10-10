@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import StellarShell from '@/components/stellar/StellarShell';
 
-export const metadata: Metadata = { title: 'Not found — Stellar', robots: { index: false } };
+export const metadata: Metadata = { title: 'Not found — Skychaser', robots: { index: false } };
 
 export default function NotFound() {
   return (

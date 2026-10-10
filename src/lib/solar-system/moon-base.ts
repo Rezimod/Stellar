@@ -553,7 +553,7 @@ export function makeMoonBase(
       const lx = Math.sin(a) * 3.1; const lz = Math.cos(a) * 3.1;
       noShadow(mesh(g, new THREE.SphereGeometry(1.0, 10, 5, 0, Math.PI * 2, 0, Math.PI / 2), m.regolith, lx, -0.05, lz)).scale.set(1, 0.22, 1);
     }
-    noShadow(mesh(g, new THREE.PlaneGeometry(1.3, 0.34), kit.label(['STELLAR I · 2031'], { w: 256, h: 64 }), 0, 1.7, 1.96));
+    noShadow(mesh(g, new THREE.PlaneGeometry(1.3, 0.34), kit.label(['SKYCHASER I · 2031'], { w: 256, h: 64 }), 0, 1.7, 1.96));
     acquireModel(LANDER_MODEL, true).then((handle) => {
       if (disposed) { handle.release(); return; }
       releaseLander = handle.release;
@@ -584,7 +584,7 @@ export function makeMoonBase(
   {
     const g = place(px, pz + 12, 0);
     for (const s of [-1, 1]) kit.cyl(g, 0.04, 0.04, 2.2, m.steel, s * 1.3, 1.1, 0, 8);
-    const signMat = kit.label(['STELLAR BASE', 'ASTROMAN · TBILISI', '41.71 N · 44.83 E'], { w: 512, h: 256, px: 38 });
+    const signMat = kit.label(['SKYCHASER BASE', 'ASTROMAN · TBILISI', '41.71 N · 44.83 E'], { w: 512, h: 256, px: 38 });
     const face = noShadow(mesh(g, new THREE.PlaneGeometry(2.8, 1.4), signMat, 0, 1.75, -0.03));
     face.rotation.y = Math.PI;
     kit.box(g, 2.9, 1.5, 0.04, m.carbon, 0, 1.75, 0);

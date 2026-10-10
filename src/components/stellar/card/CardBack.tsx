@@ -35,7 +35,7 @@ function CardBack({ plate, edition, commitment, priority = false }: Props) {
         <p className="sdc-notes__story">{plate.story[0]}</p>
         {photo && (agencies.length ? <AgencyBadge agencies={agencies} label={photo.source} className="sdc-notes__agency" /> : <p className="sdc-notes__credit">{photo.kind === 'impression' ? 'Art' : 'Image'} · {photo.credit}</p>)}
         {commitment && <p className="sdc-notes__credit">Record · {commitment.slice(0, 8)}…{commitment.slice(-6)}</p>}
-        <footer className="sdc-notes__foot"><span>Stellar · Genesis</span><span>{plate.rname}</span></footer>
+        <footer className="sdc-notes__foot"><span>Skychaser · Genesis</span><span>{plate.rname}</span></footer>
       </div>
       <div className="sdc-glare" aria-hidden="true" />
     </div>

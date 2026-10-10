@@ -51,7 +51,7 @@ export function SolanaWalletProvider({ children }: { children: ReactNode }) {
           theme: 'dark',
           accentColor: '#EE8C3A',
           logo: '/brand/logo-mark.svg',
-          loginMessage: 'Log in to Stellar',
+          loginMessage: 'Log in to Skychaser',
           showWalletLoginFirst: false,
           walletChainType: 'solana-only',
           walletList: ['phantom', 'solflare', 'backpack', 'detected_solana_wallets'],

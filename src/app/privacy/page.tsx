@@ -4,8 +4,8 @@ import StellarShell from '@/components/stellar/StellarShell';
 import Chapter from '@/components/stellar/ui/Chapter';
 
 export const metadata: Metadata = {
-  title: 'Privacy — Stellar',
-  description: 'What Stellar keeps about a holder, why, and how to remove it.',
+  title: 'Privacy — Skychaser',
+  description: 'What Skychaser keeps about a holder, why, and how to remove it.',
   alternates: { canonical: '/privacy' },
 };
 

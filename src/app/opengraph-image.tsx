@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { ImageResponse } from 'next/og';
 
-export const alt = 'Stellar — the cosmos, issued in editions';
+export const alt = 'Skychaser — the cosmos, issued in editions';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
@@ -43,7 +43,7 @@ export default async function Image() {
           width: 780,
           padding: '0 80px',
         }}>
-          <div style={{ fontSize: 28, fontWeight: 600, letterSpacing: 14, color: '#FFB347' }}>STELLAR</div>
+          <div style={{ fontSize: 28, fontWeight: 600, letterSpacing: 14, color: '#FFB347' }}>SKYCHASER</div>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <div style={{ fontSize: 66, fontWeight: 600, letterSpacing: -2.5, lineHeight: 1.06, color: '#FFFFFF' }}>
               The cosmos,

@@ -5,7 +5,7 @@ import sharp from 'sharp';
 import { SET_001_CARD_BY_DESIGNATION } from '@/lib/sets/set-001';
 import { isRarity, rarityInfo } from '@/lib/rarity';
 
-export const alt = 'A Stellar card from Genesis';
+export const alt = 'A Skychaser card from Genesis';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
@@ -36,7 +36,7 @@ export default async function Image({ params }: { params: Promise<{ designation:
           }}
         />
         <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 26, width: 700, padding: '0 80px' }}>
-          <div style={{ fontSize: 24, fontWeight: 600, letterSpacing: 10, color: '#ADADA8' }}>STELLAR · GENESIS</div>
+          <div style={{ fontSize: 24, fontWeight: 600, letterSpacing: 10, color: '#ADADA8' }}>SKYCHASER · GENESIS</div>
           <div style={{ fontSize: name.length > 22 ? 58 : 72, fontWeight: 600, letterSpacing: -2, lineHeight: 1.04, color: '#FFFFFF' }}>{name}</div>
           {rarity && (
             <div style={{ fontSize: 22, fontWeight: 600, letterSpacing: 6, color: rarity.color }}>{rarity.label.toUpperCase()}</div>

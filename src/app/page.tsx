@@ -22,7 +22,7 @@ import { siteNightDate } from '@/lib/stellar/target';
 export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title: 'Stellar — the cosmos, issued in editions',
+  title: 'Skychaser — the cosmos, issued in editions',
   description:
     'Genesis: real objects of the cosmos, each held as a numbered edition. Opened from sealed capsules, from $5.',
 };

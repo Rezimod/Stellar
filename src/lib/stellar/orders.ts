@@ -112,7 +112,7 @@ export function paymentUrl(input: { recipient: PublicKey; amountSol: number; ref
     reference: new PublicKey(input.reference),
     label: input.label,
     memo: input.orderId,
-    message: `Stellar · ${input.label}`,
+    message: `Skychaser · ${input.label}`,
   }).toString();
 }
 

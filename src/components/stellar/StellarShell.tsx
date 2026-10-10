@@ -136,7 +136,7 @@ export default function StellarShell({
                   </Link>
                 ))}
               </nav>
-              <span>© {new Date().getFullYear()} Stellar</span>
+              <span>© {new Date().getFullYear()} Skychaser</span>
             </div>
           </div>
         </footer>

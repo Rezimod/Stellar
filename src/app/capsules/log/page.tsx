@@ -10,7 +10,7 @@ import { readFullLog } from '@/lib/stellar/capsule';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'Public log — Stellar',
+  title: 'Public log — Skychaser',
   description: 'Every capsule listed, bought, opened, released and withdrawn, in the order it happened.',
 };
 
