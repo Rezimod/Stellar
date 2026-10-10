@@ -158,16 +158,7 @@
 .sdo-tg.is-on::after { left: 19px; background: #151515; }
 .sdo-glass { background: rgba(8, 8, 12, .78); backdrop-filter: blur(10px); border: 1px solid var(--o-line); border-radius: 8px; }
 .sdo-pill { display: inline-flex; align-items: center; gap: 8px; height: 30px; padding: 0 12px; border-radius: 30px; font: 600 12px/1 var(--o-cond); letter-spacing: .18em; text-transform: uppercase; white-space: nowrap; }
-.sdo-pill--sim { color: #fff; background: rgba(227, 72, 44, .14); border: 1px solid rgba(227, 72, 44, .55); box-shadow: 0 0 18px -6px var(--o-hal-glow); }
-.sdo-pill--sim .sdo-led { background: var(--o-hal); box-shadow: 0 0 0 3px rgba(227, 72, 44, .2), 0 0 10px var(--o-hal); }
 /* The demo banner: one ruled strip under the bar, so no one takes the console for the telescope itself. */
-.sdo-demo { position: relative; z-index: 4; display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; padding: 9px 22px; text-align: center;
-  border-bottom: 1px solid rgba(227, 72, 44, .35); background: linear-gradient(90deg, transparent, rgba(227, 72, 44, .16) 30%, rgba(227, 72, 44, .16) 70%, transparent), rgba(5, 5, 8, .7); }
-.sdo-demo__tag { display: inline-flex; align-items: center; height: 22px; padding: 0 9px; border-radius: 4px; font: 600 12px/1 var(--o-cond); letter-spacing: .2em; text-transform: uppercase; color: #fff;
-  background: linear-gradient(180deg, var(--o-hal-hi), var(--o-hal) 52%, #b8321f); box-shadow: 0 0 0 1px rgba(0, 0, 0, .6), 0 0 16px -4px var(--o-hal-glow); }
-.sdo-demo__text { margin: 0; font: 500 13px/1.4 var(--o-cond); letter-spacing: .12em; text-transform: uppercase; color: var(--o-ink); }
-.sdo-demo a { font: 500 13px/1.4 var(--o-cond); letter-spacing: .12em; text-transform: uppercase; color: var(--o-amber-ink); }
-.sdo-demo a:hover { color: #fff; }
 .sdo-sec { white-space: nowrap; height: 36px; padding: 0 13px; border-radius: 6px; border: 1px solid var(--o-line-hi); background: rgba(255, 255, 255, .025); color: rgba(244, 244, 242, .85); font: 600 13px/1 var(--o-cond); letter-spacing: .14em; text-transform: uppercase; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
 .sdo-sec:hover:not(:disabled) { border-color: rgba(255, 255, 255, .5); background: rgba(255, 255, 255, .06); color: #fff; }
 .sdo-sec:disabled { opacity: .5; cursor: not-allowed; }
@@ -309,23 +300,6 @@
 .sdo-mh__t { display: flex; align-items: center; gap: 10px; margin: 0; font: 500 14px/1 var(--o-cond); letter-spacing: .18em; text-transform: uppercase; }
 /* min-height: 0 lets the body shrink and scroll; without it a tall dialog is clipped. */
 .sdo-mb { overflow: auto; min-height: 0; overscroll-behavior: contain; }
-.sdo-welcome { position: relative; padding: 28px 30px 30px; display: flex; flex-direction: column; gap: 24px; overflow: hidden; }
-.sdo-welcome__art { position: absolute; right: -250px; top: -190px; width: 520px; height: 520px; opacity: .42; pointer-events: none;
-  -webkit-mask-image: radial-gradient(closest-side, #000 55%, transparent); mask-image: radial-gradient(closest-side, #000 55%, transparent); }
-.sdo-welcome__art img { width: 100%; height: 100%; object-fit: cover; }
-.sdo-welcome h2 { margin: 0; font: 400 40px/1.02 var(--o-title); letter-spacing: .01em; text-transform: uppercase; }
-.sdo-welcome h2 em { font-style: normal; color: var(--o-hal); }
-.sdo-welcome__lede { position: relative; display: flex; flex-direction: column; gap: 12px; max-width: 560px; }
-.sdo-welcome__lede p { margin: 0; font-size: 16px; line-height: 1.6; color: rgba(244, 244, 242, .7); }
-.sdo-welcome__steps { position: relative; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; margin: 0; padding: 0; list-style: none; }
-.sdo-welcome__steps li { padding: 14px 12px; border-radius: 10px; background: var(--o-ticks), rgba(0, 0, 0, .35); border: 1px solid var(--o-line); display: flex; flex-direction: column; gap: 8px; }
-.sdo-welcome__steps .sdo-mono { font-size: 11px; color: var(--o-lilac); }
-.sdo-welcome__steps b { font: 500 15px/1 var(--o-cond); letter-spacing: .16em; text-transform: uppercase; }
-.sdo-welcome__steps span:last-child { font-size: 12px; line-height: 1.45; color: rgba(244, 244, 242, .6); }
-.sdo-welcome__foot { position: relative; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
-.sdo-welcome__foot > span { flex: 1 1 200px; font: 400 11px var(--o-mono); letter-spacing: .08em; color: rgba(244, 244, 242, .55); }
-.sdo-welcome__foot > div { display: flex; gap: 10px; flex-wrap: wrap; flex-shrink: 0; }
-@media (hover: none) { .sdo-welcome__foot > span { display: none; } }
 
 .sdo-targets { padding: 18px 22px 22px; display: flex; flex-direction: column; gap: 14px; min-height: 0; }
 .sdo-targets__top { display: flex; gap: 10px; align-items: center; }
@@ -416,8 +390,6 @@
   .sdo-pbar { position: absolute; left: 10px; right: 10px; bottom: 10px; z-index: 2; display: flex; justify-content: space-between; align-items: center; padding: 6px; }
   .sdo-pbar .sdo-seg { border: 0; background: transparent; }
   .sdo-pbar > div:last-child { display: flex; gap: 4px; }
-  .sdo-demo { padding: 8px 16px; gap: 8px; }
-  .sdo-demo__text, .sdo-demo a { font-size: 12px; letter-spacing: .08em; }
   .sdo-phead { position: relative; height: 56px; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; }
   .sdo-phead__t { margin: 0; font: 400 19px/1 var(--o-title); letter-spacing: .01em; text-transform: uppercase; }
   .sdo-phead > div { display: flex; gap: 8px; align-items: center; }
@@ -444,16 +416,6 @@
   .sdo-pdock > .sdo-btn:first-child { width: 56px; height: 56px; padding: 0; border-radius: 14px; flex-shrink: 0; }
   .sdo-pdock > .sdo-btn--primary { flex-grow: 1; height: 56px; border-radius: 14px; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
   .sdo-psheet { padding: 16px; display: flex; flex-direction: column; gap: 14px; }
-  .sdo-welcome { padding: 20px 18px 22px; gap: 18px; }
-  .sdo-welcome h2 { font-size: 32px; }
-  .sdo-welcome__steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .sdo-welcome__steps li:last-child { grid-column: 1 / -1; }
-  .sdo-welcome__steps span:last-child { display: none; }
-  .sdo-welcome__steps b { font-size: 13px; }
-  .sdo-welcome__steps li { padding: 8px 10px; gap: 4px; flex-direction: row; align-items: baseline; }
-  .sdo-welcome__foot > div { flex: 1 1 100%; flex-direction: column-reverse; }
-  .sdo-welcome__foot > div { min-width: 0; }
-  .sdo-welcome__foot .sdo-btn { flex: 1 1 auto; justify-content: center; min-width: 0; white-space: normal; text-align: center; height: auto; min-height: 48px; padding-block: 10px; line-height: 1.25; }
   .sdo-tgt { grid-template-columns: 40px minmax(0, 1fr) 56px 84px; gap: 10px; }
   .sdo-tgt__curve { display: none; }
   .sdo-capture { grid-template-columns: 1fr; }
@@ -478,8 +440,7 @@
 
 /* ── One screen on a desktop: the grid fills the window under the header, nothing below it ── */
 @media (min-width: 1280px) {
-  .sdo-grid { height: calc(100vh - 64px - var(--sdo-bar, 41px)); min-height: 640px; padding: 12px 18px 14px; gap: 12px; }
-  .sdo.is-film .sdo-grid { --sdo-bar: 0px; }
+  .sdo-grid { height: calc(100vh - 64px); min-height: 640px; padding: 12px 18px 14px; gap: 12px; }
   .sdo-col.sdo-desk { overflow-y: auto; scrollbar-width: none; gap: 12px; }
   .sdo-col.sdo-desk::-webkit-scrollbar { display: none; }
   /* The steps and their buttons in one strip: five compact steps on the left, the next action on the right. */
@@ -517,7 +478,6 @@
 }
 /* While the mount slews, the stars smear along the move. */
 @keyframes sdo-slew { 0% { translate: 0 0; filter: blur(1.2px); } 100% { translate: -14px 6px; filter: blur(2.4px); } }
-.sdo.is-film .sdo-note--firstlight { display: none; }
 /* Where the strip is tight, only the step in hand keeps its name. */
 @media (min-width: 1280px) and (max-width: 1599px) {
   .sdo-fs:not(.is-now) .sdo-fs__nm { display: none; }

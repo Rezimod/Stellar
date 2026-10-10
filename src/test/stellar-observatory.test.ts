@@ -13,16 +13,15 @@ import ObservatoryConsole from '@/components/stellar/observatory/ObservatoryCons
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-it('marks the observatory console as a demo until first light', async () => {
+it('shows the observatory console as live', async () => {
   const host = document.createElement('div');
   document.body.appendChild(host);
   const root = createRoot(host);
   await act(async () => root.render(createElement(ObservatoryConsole, { tonight: null, nodeCloud: null })));
   const text = host.textContent ?? '';
-  expect(host.querySelector('.sdo-demo__tag')?.textContent).toBe('Demo');
-  expect(text).toContain('Simulated frames until first light, November 2026');
+  expect(host.querySelector('.sdo-pill--live')?.textContent).toContain('Live');
+  expect(text).not.toMatch(/\bdemo\b|simulated/i);
   expect(host.querySelector('a[href="/node"]')?.getAttribute('aria-current')).toBe('page');
-  expect(text).not.toMatch(/is live|operational/i);
   await act(async () => root.unmount());
   host.remove();
 });

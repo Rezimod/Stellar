@@ -15,7 +15,7 @@ import { SESSION_MINUTES, STATIONS as SIM_STATIONS, skyStateAt, type Station } f
 import { localSiderealHours } from '@/lib/observatory/site-time';
 import { skyObjectsNear } from '@/lib/observatory/sky-field';
 import { TELESCOPE_TARGET_BY_ID, targetPosition, targetTitle, type TelescopeTarget } from '@/lib/observatory/telescope-targets';
-import { CaptureDialog, RefusedDialog, SheetDialog, TargetsDialog, WelcomeDialog, displayName, type Frame, type Refusal } from './dialogs';
+import { CaptureDialog, RefusedDialog, SheetDialog, TargetsDialog, displayName, type Frame, type Refusal } from './dialogs';
 import Icon from './icons';
 import { Camera, FrameThumbs, Frames, HandControl, Pointing, QuickStart, Session, StationList, Telescopes, type StationRow } from './panels';
 import { photoFor } from '@/lib/stellar/photos';
@@ -28,7 +28,7 @@ export type TonightCard = { designation: string; name: string; targetId: string;
 
 type RunState = 'todo' | 'running' | 'done';
 type Slew = { from: AltAz; to: AltAz; startedAtMs: number; endsAtMs: number };
-type Modal = 'welcome' | 'targets' | 'refused' | 'capture' | 'stations' | 'hand' | 'details' | null;
+type Modal = 'targets' | 'refused' | 'capture' | 'stations' | 'hand' | 'details' | null;
 
 /** Where a freshly connected instrument happens to be pointing. */
 const HANDOVER: AltAz = { altitude: 55, azimuth: 200 };
@@ -39,7 +39,6 @@ const SETTLE_MS = 3_000;
 const CALIBRATE_MS = 6_000;
 const OBJECT_RADIUS_DEG = 1.5;
 const TICK_MS = 250;
-const WELCOMED_KEY = 'stellar.telescope.welcomed';
 const NIGHT_KEY = 'stellar.observatory.night';
 const NODE_ID = 'tbilisi-01';
 /** Parking from the handover position, settling, then aligning. */
@@ -92,8 +91,7 @@ function loadImage(src: string) {
  * same engine the simulator runs; every frame is drawn by the sky model and
  * says so. A target that is a First Light card is drawn with its card's plate.
  */
-/** `film`: the console as it will look once the telescope is live — no demo labels, real photographs in the eyepiece. Used only by the unlisted /node/film page. */
-export default function ObservatoryConsole({ tonight, nodeCloud, film = false }: { tonight: TonightCard; nodeCloud: number | null; film?: boolean }) {
+export default function ObservatoryConsole({ tonight, nodeCloud }: { tonight: TonightCard; nodeCloud: number | null }) {
   const [clockMs, setClockMs] = useState<number | null>(null);
   const now = clockMs ?? 0;
   // The sky the demo draws: tonight's, while the Sun is up at the telescope.
@@ -145,10 +143,9 @@ export default function ObservatoryConsole({ tonight, nodeCloud, film = false }:
     setSkyAheadMs(settleSkyClock(STATIONS.find((s) => s.id === NODE_ID)!));
     setClockMs(Date.now());
     try {
-      if (!film && localStorage.getItem(WELCOMED_KEY) !== '1') setModal('welcome');
       setNight(localStorage.getItem(NIGHT_KEY) === '1');
     } catch {
-      if (!film) setModal('welcome');
+      /* storage can be blocked; day mode stands */
     }
     const id = setInterval(() => setClockMs(Date.now()), TICK_MS);
     return () => clearInterval(id);
@@ -386,11 +383,6 @@ export default function ObservatoryConsole({ tonight, nodeCloud, film = false }:
     if (!t) return;
     const node = STATIONS.find((s) => s.id === NODE_ID)!;
     setModal(null);
-    try {
-      localStorage.setItem(WELCOMED_KEY, '1');
-    } catch {
-      /* private mode */
-    }
     if (station?.id === NODE_ID && cal === 'done') {
       pointAt(t);
       return;
@@ -413,7 +405,7 @@ export default function ObservatoryConsole({ tonight, nodeCloud, film = false }:
       let composed = false;
       if (plate) {
         try {
-          const real = film ? photoFor(plate)?.file : undefined;
+          const real = photoFor(plate)?.file;
           const img = await loadImage(real ?? plateArt(plate, 'object'));
           if (real) {
             // A photograph on black: screened onto the stars, at the size the eyepiece shows it.
@@ -498,16 +490,9 @@ export default function ObservatoryConsole({ tonight, nodeCloud, film = false }:
   }, [second]);
 
   const closeModal = useCallback(() => {
-    if (modal === 'welcome') {
-      try {
-        localStorage.setItem(WELCOMED_KEY, '1');
-      } catch {
-        /* private mode: shown again next time */
-      }
-    }
     setModal(null);
     setViewing(null);
-  }, [modal]);
+  }, []);
 
   const toggleNight = useCallback(() => {
     setNight((v) => {
@@ -559,7 +544,7 @@ export default function ObservatoryConsole({ tonight, nodeCloud, film = false }:
       : [{ label: 'Re-centre', run: () => target && pointAt(target) }, { label: 'Change target', run: () => setModal('targets') }];
   }
   const hints = [
-    skyAheadMs && !film ? 'Daytime at the telescope — the demo runs on tonight’s sky. Connect to start.' : 'Connect to Live Telescope V1 to start.',
+    'Connect to Live Telescope V1 to start.',
     'Park at zenith, then calibrate to start the feed.',
     `Select a target that has risen.${tonight ? ` Tonight’s card is ${tonight.name}.` : ''}`,
     `GoTo, plate-solve and centre. About ${pointEstimate} seconds.`,
@@ -713,7 +698,7 @@ export default function ObservatoryConsole({ tonight, nodeCloud, film = false }:
   );
 
   return (
-    <div className={`sdo${night ? ' is-night' : ''}${film ? ' is-film' : ''}`}>
+    <div className={`sdo${night ? ' is-night' : ''}`}>
       <div className="sdo-atmo" aria-hidden="true">
         <div className="sdo-atmo__glow" />
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -736,34 +721,22 @@ export default function ObservatoryConsole({ tonight, nodeCloud, film = false }:
         <StellarNavLinks />
         <div className="sdo-head__right">
           <div className="sdo-clocks">
-            <span><span className="sdo-lbl">{skyAheadMs > 0 && !film ? 'Sky UTC' : 'UTC'}</span><b>{clock(skyMs, 'UTC', true)}</b></span>
-            <span><span className="sdo-lbl">{skyAheadMs > 0 && !film ? 'Tonight’s sky' : selected.site.split(',')[0]}</span><b>{clock(skyMs, selected.timezone, true)}</b></span>
+            <span><span className="sdo-lbl">UTC</span><b>{clock(skyMs, 'UTC', true)}</b></span>
+            <span><span className="sdo-lbl">{selected.site.split(',')[0]}</span><b>{clock(skyMs, selected.timezone, true)}</b></span>
             <span><span className="sdo-lbl">{dark[0]}</span><b>{dark[1]}</b></span>
           </div>
-          {film ? (
             <span className="sdo-pill sdo-pill--live"><span className="sdo-led is-go sdo-blink" />Live<span className="sdo-pill__long">&nbsp;· Live Telescope V1</span></span>
-          ) : (
-            <span className="sdo-pill sdo-pill--sim"><span className="sdo-led" />Demo<span className="sdo-pill__long">&nbsp;· simulated</span></span>
-          )}
           <button className={`sdo-ib${night ? ' is-on' : ''}`} type="button" onClick={toggleNight} aria-pressed={night} aria-label="Night mode" title="Night mode"><Icon name="moon" /></button>
-          {!film && <button className="sdo-ib" type="button" onClick={() => setModal('welcome')} aria-label="Guide" title="Guide"><Icon name="help" /></button>}
           <StellarAccount />
         </div>
       </header>
 
-      {!film && <div className="sdo-demo" role="note">
-        <span className="sdo-demo__tag">Demo</span>
-        <p className="sdo-demo__text">
-          Simulated frames until first light, November 2026{skyAheadMs > 0 && <span className="sdo-demo__sky"> · daytime at the telescope, so the demo shows tonight’s sky</span>}
-        </p>
-        <Link href="/tonight">Tonight’s vote</Link>
-      </div>}
 
       <div className="sdo-phone">
         <div className="sdo-phead">
           <p className="sdo-phead__t">Observatory</p>
           <div>
-            {film ? <span className="sdo-pill sdo-pill--live"><span className="sdo-led is-go sdo-blink" />Live</span> : <span className="sdo-pill sdo-pill--sim"><span className="sdo-led" />Demo</span>}
+            <span className="sdo-pill sdo-pill--live"><span className="sdo-led is-go sdo-blink" />Live</span>
             <button className={`sdo-ib${night ? ' is-on' : ''}`} type="button" onClick={toggleNight} aria-pressed={night} aria-label="Night mode"><Icon name="moon" /></button>
           </div>
         </div>
@@ -780,9 +753,9 @@ export default function ObservatoryConsole({ tonight, nodeCloud, film = false }:
       </div>
 
       <main className="sdo-grid">
-        <h1 className="sdo-sr">{film ? 'Observatory — Live Telescope V1' : 'Observatory — demo, simulated frames until first light'}</h1>
+        <h1 className="sdo-sr">Observatory — Live Telescope V1</h1>
         <div className="sdo-col sdo-desk">
-          <QuickStart name={quickName} designation={tonight?.designation ?? null} rarity={tonight?.rarity ?? null} onStart={quickStart} film={film} />
+          <QuickStart name={quickName} designation={tonight?.designation ?? null} rarity={tonight?.rarity ?? null} onStart={quickStart} />
           <Telescopes rows={rows} selectedId={selectedId} onPick={pick} sky={skyRow} />
           <Session elapsed={sessionTime} connected={station !== null} onEnd={disconnect} />
         </div>
@@ -803,9 +776,8 @@ export default function ObservatoryConsole({ tonight, nodeCloud, film = false }:
             full={full}
             onFull={() => setFullView(!full)}
             status={{ text: statusText, go: onTarget || stacking, blink: inGoto || connecting || park === 'running' || cal === 'running' }}
-            hudLive={[cameraOn ? (film ? 'Live' : 'Simulated') : 'Standby', stationName, opticsLine]}
-            objectSrc={plate ? (film ? photoFor(plate)?.file : undefined) ?? plateArt(plate, 'object') : null}
-            film={film}
+            hudLive={[cameraOn ? 'Live' : 'Standby', stationName, opticsLine]}
+            objectSrc={plate ? photoFor(plate)?.file ?? plateArt(plate, 'object') : null}
             hudTarget={target && targetNow ? [shortName(target), `RA ${raShort(targetNow.raHours)} · DEC ${decShort(targetNow.decDeg)}`] : null}
             hudField={[fovText, scaleText]}
             idle={idle}
@@ -891,14 +863,13 @@ export default function ObservatoryConsole({ tonight, nodeCloud, film = false }:
         </div>
       </main>
 
-      {modal === 'welcome' && <WelcomeDialog night={night} quickName={quickName} onQuick={quickStart} onClose={closeModal} />}
       {modal === 'targets' && station && (
         <TargetsDialog night={night} station={station} tonightId={tonightTarget?.id ?? null} onPoint={pointAt} onClose={closeModal} />
       )}
       {modal === 'refused' && refusal && station && (
         <RefusedDialog night={night} station={station} refusal={refusal} onChoose={() => setModal('targets')} onClose={closeModal} />
       )}
-      {modal === 'capture' && viewing && <CaptureDialog night={night} frame={viewing} timezone={(station ?? selected).timezone} onClose={closeModal} live={film} />}
+      {modal === 'capture' && viewing && <CaptureDialog night={night} frame={viewing} timezone={(station ?? selected).timezone} onClose={closeModal} />}
       {modal === 'stations' && (
         <SheetDialog night={night} title="Telescopes" onClose={closeModal}>
           <StationList rows={rows} selectedId={selectedId} onPick={pick} />

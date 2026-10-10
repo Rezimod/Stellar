@@ -1,5 +1,4 @@
 User-agent: *
 Allow: /
-Disallow: /node/film
 
 Sitemap: https://stellarr.club/sitemap.xml

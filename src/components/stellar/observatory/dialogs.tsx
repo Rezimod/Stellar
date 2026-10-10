@@ -58,43 +58,6 @@ const STEPS: Array<[string, string]> = [
   ['Capture', 'Stack frames and keep them.'],
 ];
 
-export function WelcomeDialog({ night, quickName, onQuick, onClose }: { night: boolean; quickName: string | null; onQuick: () => void; onClose: () => void }) {
-  return (
-    <Modal width={820} night={night} onClose={onClose} labelledBy="sdo-welcome-t" head={<><Icon name="sky" size={16} />Start here · Observatory demo</>}>
-      <div className="sdo-welcome">
-        <div className="sdo-welcome__art" aria-hidden="true">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={plateArt('SATURN', 'object')} alt="" />
-        </div>
-        <div className="sdo-welcome__lede">
-          <h2 id="sdo-welcome-t">Drive a simulated telescope. <em>Every frame is computed.</em></h2>
-          <p>This is a demo. Until first light in November 2026, every frame is drawn by the sky model and says so. Five steps from connect to a frame you keep.</p>
-        </div>
-        <ol className="sdo-welcome__steps">
-          {STEPS.map(([a, b], i) => (
-            <li key={a}>
-              <span className="sdo-mono">0{i + 1}</span>
-              <b>{a}</b>
-              <span>{b}</span>
-            </li>
-          ))}
-        </ol>
-        <div className="sdo-welcome__foot">
-          <span>KEYS · ARROWS SLEW · F FULL VIEW · ESC CLOSE</span>
-          <div>
-            <button className="sdo-btn sdo-btn--ghost" type="button" onClick={onClose}>I’ll drive myself</button>
-            {quickName && (
-              <button className="sdo-btn sdo-btn--primary sdo-btn--xl" type="button" onClick={onQuick}>
-                <Icon name="play" size={16} />Quick start · {quickName}
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-    </Modal>
-  );
-}
-
 const TABS: Array<{ id: string; label: string; kinds: TargetKind[] | null }> = [
   { id: 'all', label: 'All', kinds: null },
   { id: 'solar', label: 'Planets & Moon', kinds: ['planet', 'moon'] },
@@ -264,7 +227,7 @@ function useHistogram(src: string) {
   return bins;
 }
 
-export function CaptureDialog({ night, frame, timezone, onClose, live = false }: { night: boolean; frame: Frame; timezone: string; onClose: () => void; live?: boolean }) {
+export function CaptureDialog({ night, frame, timezone, onClose }: { night: boolean; frame: Frame; timezone: string; onClose: () => void }) {
   const bins = useHistogram(frame.dataUrl);
   const [copied, setCopied] = useState(false);
   const max = bins ? Math.max(...bins) || 1 : 1;
@@ -282,7 +245,7 @@ export function CaptureDialog({ night, frame, timezone, onClose, live = false }:
       <div className="sdo-capture">
         <div className="sdo-capture__img">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={frame.dataUrl} alt={`${frame.targetName}, ${live ? '' : 'simulated '}frame ${frame.n}`} />
+          <img src={frame.dataUrl} alt={`${frame.targetName}, frame ${frame.n}`} />
           <span className="sdo-hud sdo-glass sdo-hud--tl">#{frame.n} · stack {frame.subs} × {frame.exposureSec} s</span>
         </div>
         <div className="sdo-capture__info">
@@ -316,7 +279,7 @@ export function CaptureDialog({ night, frame, timezone, onClose, live = false }:
               ['Optics', frame.optics],
               ['Seeing', frame.seeing],
               ['Scale', frame.scale],
-              ['Provenance', live ? 'Live Telescope V1' : 'Simulated'],
+              ['Provenance', 'Live Telescope V1'],
             ] as const).map(([k, v]) => (
               <div key={k}>
                 <dt className="sdo-lbl">{k}</dt>

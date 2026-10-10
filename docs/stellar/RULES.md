@@ -50,7 +50,7 @@ One capture serves all editions of a card — there is no per-customer queue.
 ## Tone, applied to every string you write
 Quiet, institutional, an observatory logbook. Never exclamation marks, never
 rocket emoji, never "wen"/"LFG"/"GM"/"floor". Never claim the observatory is
-operational — Live Telescope V1 is `commissioning`.
+operational — Live Telescope V1 is `commissioning`. Exception, by the owner's decision on 2026-10-10: the /node observatory console is presented as live (no Demo labels).
 Vocabulary: capsule (not pack/box), card (not NFT/token), set (not drop),
 observation (not shoot/session), Live Telescope V1 — the telescope in Tbilisi (not "Node 01", not "Live Telescope V1", not "our telescope"), Founding set for First Light’s set label (not "Set 001"; the code SET001 stays; the page lives at /genesis, and /set/001 redirects there), Collection
 (not portfolio/bag), holder (not user/degen), edition number (not mint number).

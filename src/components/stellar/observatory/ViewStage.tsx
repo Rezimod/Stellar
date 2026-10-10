@@ -59,9 +59,8 @@ export type ViewStageProps = {
   hudTarget: [string, string] | null;
   hudField: [string, string];
   idle: { title: string; text: string } | null;
-  /** The object in the eyepiece: a drawn plate, or in film mode its photograph. */
+  /** The object in the eyepiece: its photograph, or the drawn plate where there is none. */
   objectSrc: string | null;
-  film?: boolean;
 };
 
 function ViewStage(p: ViewStageProps) {
@@ -80,12 +79,12 @@ function ViewStage(p: ViewStageProps) {
   );
 
   return (
-    <section className={`sdo-view${p.full ? ' is-full' : ''}${p.status.go ? ' is-go' : ''}${p.film && p.art === 'blur' ? ' is-slewing' : ''}`} aria-label="Telescope view">
+    <section className={`sdo-view${p.full ? ' is-full' : ''}${p.status.go ? ' is-go' : ''}${p.art === 'blur' ? ' is-slewing' : ''}`} aria-label="Telescope view">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img className="sdo-view__sky" src={p.backdrop} alt="" />
       <div className="sdo-view__feed" ref={p.viewRef}>{p.feed}</div>
       {p.objectSrc && p.art !== 'none' && (
-        <div className={`sdo-art${p.film ? ' sdo-art--photo' : ''}${p.art === 'blur' ? ' is-slewing' : ''}`} style={artStyle}>
+        <div className={`sdo-art sdo-art--photo${p.art === 'blur' ? ' is-slewing' : ''}`} style={artStyle}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={p.objectSrc} alt="" />
         </div>

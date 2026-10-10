@@ -11,14 +11,14 @@ import Icon from './icons';
 import { photoFor } from '@/lib/stellar/photos';
 import { plateArt, type PathPoint } from './sky';
 
-function QuickStartBase({ name, designation, rarity, onStart, film = false }: { name: string | null; designation: string | null; rarity: Rarity | null; onStart: () => void; film?: boolean }) {
+function QuickStartBase({ name, designation, rarity, onStart }: { name: string | null; designation: string | null; rarity: Rarity | null; onStart: () => void }) {
   const tier = rarity ? rarityInfo(rarity) : null;
   return (
     <section className="sdo-panel sdo-quick" aria-labelledby="sdo-quick-t" style={tier ? ({ '--rarity': tier.color } as CSSProperties) : undefined}>
       {designation && (
         <span className="sdo-quick__planet" aria-hidden="true">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={(film ? photoFor(designation)?.file : undefined) ?? plateArt(designation, 'object')} alt="" />
+          <img src={photoFor(designation)?.file ?? plateArt(designation, 'object')} alt="" />
         </span>
       )}
       <div className="sdo-ph"><h2 className="sdo-ph__t"><Icon name="bolt" size={15} />Quick start</h2></div>
@@ -26,7 +26,7 @@ function QuickStartBase({ name, designation, rarity, onStart, film = false }: { 
         <p id="sdo-quick-t" className="sdo-quick__title">Observe tonight’s card</p>
         {tier && name && <span className="sdo-quick__rarity">{tier.glyph} {tier.label} · {name}</span>}
         <p className="sdo-quick__text">
-          {name ? `Connect, calibrate and point Live Telescope V1 at ${name} in one go${film ? '' : ', simulated'}. About a minute.` : 'Tonight’s card is not above the horizon from Live Telescope V1 yet.'}
+          {name ? `Connect, calibrate and point Live Telescope V1 at ${name} in one go. About a minute.` : 'Tonight’s card is not above the horizon from Live Telescope V1 yet.'}
         </p>
         <button className="sdo-btn sdo-btn--primary" type="button" onClick={onStart} disabled={!name} style={{ width: '100%' }}>
           <Icon name="play" size={16} />Start{name ? ` · ${name}` : ''}<span className="sdo-kbd">S</span>
