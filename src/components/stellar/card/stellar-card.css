@@ -11,19 +11,20 @@
 .sdc-face--back { transform: rotateY(180deg); visibility: hidden; }
 .sdc-flip.is-over .sdc-face { visibility: hidden; }
 .sdc-flip.is-over .sdc-face--back { visibility: visible; }
+.sdc-card, .sdc-card *, .sdc-card *::before, .sdc-card *::after { box-sizing: border-box; }
 .sdc-card {
-  --card-accent: #939393; --rarity: #939393;
+  --card-accent: #939393;
   position: relative; width: 100%; aspect-ratio: 630 / 880; container-type: inline-size;
   overflow: hidden; isolation: isolate; border-radius: 5.5% / 3.9%; background: #050505;
-  color: #f5f5f3; box-shadow: 0 0 0 1px #000, 0 0 5cqw -1cqw color-mix(in srgb, var(--card-accent) 55%, transparent), 0 10px 30px #0007;
+  color: #f5f5f3; box-shadow: 0 0 0 1px #000, 0 0 18px -4px color-mix(in srgb, var(--card-accent) 55%, transparent), 0 10px 30px #0007;
 }
 /* The rim: one hairline in the object's own light, brighter at two corners, with a soft bleed inward. */
 .sdc-card::after { content: ''; position: absolute; inset: 0; z-index: 5; pointer-events: none; border-radius: inherit; padding: max(1.5px, .55cqw); background: linear-gradient(155deg, color-mix(in srgb, var(--card-accent) 55%, #fff) 0%, var(--card-accent) 22%, color-mix(in srgb, var(--card-accent) 55%, #000) 50%, var(--card-accent) 78%, color-mix(in srgb, var(--card-accent) 55%, #fff) 100%); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); }
 .sdc-card::before { content: ''; position: absolute; inset: 0; z-index: 4; pointer-events: none; border-radius: inherit; box-shadow: inset 0 0 4cqw -1cqw color-mix(in srgb, var(--card-accent) 45%, transparent); }
-.sdc-card--front { display: flex; flex-direction: column; padding: 4.2cqw 4.2cqw 4.6cqw; background: radial-gradient(120% 60% at 50% 0%, color-mix(in srgb, var(--card-accent) 9%, #070707), #050505 70%); }
+.sdc-card--front { display: flex; flex-direction: column; padding: 4.2% 4.2% 4.6%; background: radial-gradient(120% 60% at 50% 0%, color-mix(in srgb, var(--card-accent) 9%, #070707), #050505 70%); }
 .sdc-top { display: flex; justify-content: space-between; align-items: center; gap: 2cqw; height: 7cqw; padding: 0 1.4cqw; flex: none; }
 .sdc-no { color: var(--card-accent); font: 500 max(7px, 3.1cqw)/1 var(--font-mono), monospace; letter-spacing: .24em; text-transform: uppercase; }
-.sdc-tier { padding: .9cqw 2.2cqw .8cqw; border-radius: .9cqw; background: linear-gradient(180deg, color-mix(in srgb, var(--rarity) 70%, #fff), var(--rarity) 55%, color-mix(in srgb, var(--rarity) 80%, #000)); color: #0b0906; font: 600 max(6.5px, 2.75cqw)/1 var(--font-oswald), sans-serif; letter-spacing: .2em; text-transform: uppercase; box-shadow: 0 0 3cqw -.5cqw color-mix(in srgb, var(--rarity) 70%, transparent); }
+.sdc-tier { padding: .9cqw 2.2cqw .8cqw; border-radius: .9cqw; background: linear-gradient(180deg, color-mix(in srgb, var(--card-accent) 70%, #fff), var(--card-accent) 55%, color-mix(in srgb, var(--card-accent) 80%, #000)); color: #0b0906; font: 600 max(6.5px, 2.75cqw)/1 var(--font-oswald), sans-serif; letter-spacing: .2em; text-transform: uppercase; box-shadow: 0 0 3cqw -.5cqw color-mix(in srgb, var(--card-accent) 70%, transparent); }
 .sdc-panel { position: relative; display: flex; flex-direction: column; flex: 1; min-height: 0; margin-top: 2.2cqw; overflow: hidden; border-radius: 3.6cqw; border: 1px solid color-mix(in srgb, var(--card-accent) 34%, #ffffff14); background: #060606; box-shadow: inset 0 0 0 1px #0009; }
 .sdc-art { position: relative; flex: 1; min-height: 0; overflow: hidden; background: #000; }
 .sdc-art img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; }

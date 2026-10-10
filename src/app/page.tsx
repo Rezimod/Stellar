@@ -43,10 +43,10 @@ const SUPPLY = Object.fromEntries(
 const FROM_USD = Math.min(...TIERS.map((t) => t.priceUsd));
 
 const PLAN: FlightStep[] = [
-  { title: 'Open', text: `${CARDS_PER_TIER === 1 ? 'One sealed card' : `${CARDS_PER_TIER} sealed cards`} in every capsule.`, tag: `From $${FROM_USD}`, live: true, href: '/genesis', icon: 'capsule' },
-  { title: 'Vote', text: 'Holders choose what the telescope looks at tonight.', live: true, href: '/tonight', icon: 'reticle' },
-  { title: 'Watch', text: 'Holders of the chosen card watch the telescope live.', tag: 'From November', live: false, href: '/node', icon: 'telescope' },
-  { title: 'Claim', text: 'Legendary cards come with a real meteorite you can hold.', tag: 'Legendary cards', live: false, href: '/genesis', icon: 'meteorite' },
+  { title: 'Open', text: `${CARDS_PER_TIER === 1 ? 'One sealed card' : `${CARDS_PER_TIER} sealed cards`} in every capsule.`, tag: `Open now · from $${FROM_USD}`, live: true, href: '/genesis' },
+  { title: 'Vote', text: 'Holders choose what the telescope looks at each night.', live: false },
+  { title: 'Watch', text: 'Holders of the chosen card watch the telescope live.', live: false },
+  { title: 'Claim', text: 'Legendary cards come with a real meteorite you can hold.', live: false },
 ];
 
 const GUARANTEES = [
@@ -111,7 +111,7 @@ export default async function HomePage() {
         <h2 className="sd-home-sec__title" id="how-title">
           What a card opens
         </h2>
-        <FlightPlan steps={tonightCard ? PLAN.map((p) => (p.icon === 'reticle' ? { ...p, tag: `Tonight: ${tonightCard.seed.name.replace(/^The /, '')}` } : p)) : PLAN} />
+        <FlightPlan steps={PLAN} />
       </section>
 
       <section className="sd-container sd-home-sec sd-pub" aria-labelledby="odds-title">

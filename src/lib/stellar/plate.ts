@@ -171,8 +171,7 @@ function warm(hex: string) {
   const r = hex.slice(1, 3), g = hex.slice(3, 5), b = hex.slice(5, 7);
   return parseInt(b, 16) > parseInt(r, 16) ? `#${b}${g}${r}` : hex;
 }
-/** The object's own colour, as it shines. */
-export const lightFor = (designation: string) => GLOW[designation] ?? SET_001_CARD_BY_DESIGNATION.get(designation)?.record.glow ?? '#ffd8bc';
-export const glowFor = (designation: string) => warm(lightFor(designation));
+export const glowFor = (designation: string) =>
+  warm(GLOW[designation] ?? SET_001_CARD_BY_DESIGNATION.get(designation)?.record.glow ?? '#ffd8bc');
 
 export const editionLabel = (n: number | null | undefined) => (n == null ? '—' : pad3(n));

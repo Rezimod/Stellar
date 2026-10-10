@@ -1,12 +1,12 @@
 import { memo, type CSSProperties, type ReactNode } from 'react';
 import FadeImg from '../FadeImg';
-import { lightFor, type Plate } from '@/lib/stellar/plate';
+import type { Plate } from '@/lib/stellar/plate';
 import { photoFor } from '@/lib/stellar/photos';
 import { perkFor } from '@/lib/stellar/perks';
 import { cardPriceUsd } from '@/lib/stellar/economics';
 import { SET_001_CARD_BY_DESIGNATION } from '@/lib/sets/set-001';
-import { rarityInfo } from '@/lib/rarity';
 import ART from '@/lib/stellar/art.json';
+import ACCENTS from '@/lib/stellar/accents.json';
 
 type Props = {
   plate: Plate;
@@ -29,16 +29,8 @@ function artFor(designation: string) {
   return photo ? { file: photo.file, focus: photo.focus ?? '50% 50%' } : null;
 }
 
-/** The object's light, made bold enough for a rim; the greys stay silver. */
-export function accentFor(designation: string) {
-  const hex = lightFor(designation);
-  const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
-  const max = Math.max(r, g, b), min = Math.min(r, g, b), l = (max + min) / 2;
-  const s = max === min ? 0 : (max - min) / (1 - Math.abs(2 * l - 1));
-  if (s < 0.2) return '#d9dde4';
-  const h = max === r ? ((g - b) / (max - min) + 6) % 6 : max === g ? (b - r) / (max - min) + 2 : (r - g) / (max - min) + 4;
-  return `hsl(${Math.round(h * 60)} 78% 60%)`;
-}
+/** The card's colour, sampled from its own picture (scripts/stellar-plates/accents.ts). */
+export const accentFor = (designation: string) => (ACCENTS as Record<string, string>)[designation] ?? '#dfe3ea';
 
 /** The pictures a full-size card face loads, to fetch ahead of opening it. */
 export function faceSources(plate: Plate) {
@@ -58,7 +50,7 @@ function CardFront({ plate, capture, priority = false, price, sub }: Props) {
     <div
       className="sdc-card sdc-card--front"
       data-rarity={plate.rarity}
-      style={{ '--card-accent': accentFor(plate.designation), '--rarity': rarityInfo(plate.rarity).color } as CSSProperties}
+      style={{ '--card-accent': accentFor(plate.designation) } as CSSProperties}
     >
       <header className="sdc-top">
         <span className="sdc-no">No. {plate.num}</span>

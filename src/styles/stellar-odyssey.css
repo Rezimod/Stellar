@@ -100,8 +100,7 @@
 .stellar .sd-badge[data-rarity='epic'] { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55), inset 0 -1px 0 rgba(0, 0, 0, 0.35), 0 0.4em 1em -0.3em #000e, 0 0 0 1px rgba(0, 0, 0, 0.7), 0 0 1.4em -0.1em var(--sd-hal-glow); }
 
 /* ── The card's outer light: a halo in its rarity's colour ── */
-.stellar .sd-tile .sd-thumb { box-shadow: 0 0 0 1px #0009, 0 22px 40px -22px #000, 0 0 46px -18px color-mix(in srgb, var(--rarity) var(--halo, 45%), transparent); }
-.stellar .sd-tile[data-rarity='epic'] { --halo: 60%; } .stellar .sd-tile[data-rarity='legendary'] { --halo: 72%; }
+.stellar .sd-tile .sd-thumb { box-shadow: 0 22px 40px -22px #000, 0 0 40px -16px color-mix(in srgb, var(--tile-glow) 60%, transparent); }
 .stellar :is(.sd-zoom__card, .sd-cardhero__plate) { position: relative; isolation: isolate; }
 .stellar :is(.sd-zoom__card, .sd-cardhero__plate)::before {
   content: ''; position: absolute; inset: -18% -26%; z-index: -1; pointer-events: none;
@@ -110,11 +109,7 @@
 .stellar :is(.sd-zoom, .sd-cardhero) .sdc--hero .sdc-card { box-shadow: inset 0 0 0 4px #0008, inset 0 0 26px -6px color-mix(in srgb, var(--card-accent) 30%, transparent), 0 40px 70px -30px #000, 0 0 60px -22px var(--card-accent); }
 
 /* ── The shelf ────────────────────────────────────────────────── */
-.stellar .sd-tile:is(:hover, :focus-visible) .sd-thumb { box-shadow: 0 0 0 1px color-mix(in srgb, var(--rarity) 70%, transparent), 0 0 34px -8px color-mix(in srgb, var(--rarity) 70%, transparent), 0 20px 30px -18px #000; }
-.stellar .sd-tile__foot { align-items: center; margin-top: 12px; }
-.stellar .sd-tile__price { font: 700 19px/1.1 var(--sd-sans); letter-spacing: -0.01em; color: color-mix(in srgb, var(--rarity) 55%, #fff); text-shadow: 0 0 18px color-mix(in srgb, var(--rarity) 55%, transparent); }
-.stellar .sd-tile[data-rarity='epic'] .sd-tile__price, .stellar .sd-tile[data-rarity='legendary'] .sd-tile__price { color: var(--rarity); }
-@media (max-width: 767px) { .stellar .sd-tile__price { font-size: 16px; } }
+.stellar .sd-tile:is(:hover, :focus-visible) .sd-thumb { box-shadow: 0 0 34px -8px color-mix(in srgb, var(--tile-glow) 75%, transparent), 0 20px 30px -18px #000; }
 
 /* ── The filter: a navigation console over the shelf ─────────── */
 .stellar .sd-fl__head {
@@ -170,27 +165,6 @@
   .stellar .sd-fl__head .sd-filter__count { grid-column: 1; grid-row: 2; margin-top: 8px; }
   .stellar .sd-fl__head:has(.sd-filter__count:not(:empty)) .sd-fl__meta { display: none; }
 }
-/* What a card opens: no frames, no numbers, no track. Four instruments lit in the login red, floating on the sky. */
-.stellar .sd-flight::before, .stellar .sd-flight::after, .stellar .sd-flight > li::before { display: none !important; content: none; }
-.stellar .sd-flight__step { border: 0 !important; background: none !important; box-shadow: none !important; }
-.stellar .sd-flight__icon {
-  position: relative; color: #fff; border: 0; background: radial-gradient(circle at 50% 38%, color-mix(in srgb, var(--sd-hal) 55%, #ffb199), var(--sd-hal) 45%, #7a160c 100%);
-  box-shadow: 0 0 0 1px rgba(255, 170, 140, 0.45), 0 0 0 7px rgba(227, 72, 44, 0.08), 0 0 36px -4px var(--sd-hal-glow), inset 0 1px 0 rgba(255, 230, 215, 0.55);
-  transition: box-shadow var(--sd-dur-base) var(--sd-ease), translate var(--sd-dur-base) var(--sd-ease);
-}
-.stellar .sd-flight__step:not(.sd-flight__step--live) .sd-flight__icon { color: rgba(255, 255, 255, 0.75); background: radial-gradient(circle at 50% 38%, #3a3a40, #17171b 70%); box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.14), 0 0 0 7px rgba(255, 255, 255, 0.025); }
-.stellar .sd-flight__step:hover .sd-flight__icon { box-shadow: 0 0 0 1px rgba(255, 190, 165, 0.7), 0 0 0 9px rgba(227, 72, 44, 0.12), 0 0 50px -2px var(--sd-hal-glow), inset 0 1px 0 rgba(255, 230, 215, 0.6); }
-.stellar .sd-flight__step:hover { translate: 0 -3px; }
-.stellar .sd-flight__step:hover .sd-flight__title { color: var(--sd-hal); }
-.stellar .sd-flight__title { font-family: var(--sd-display); text-shadow: none; }
-.stellar .sd-flight__tag { color: var(--sd-hal); box-shadow: inset 0 0 0 1px rgba(227, 72, 44, 0.4); background: rgba(227, 72, 44, 0.08); }
-.stellar .sd-flight__step:not(.sd-flight__step--live) .sd-flight__tag { color: rgba(255, 255, 255, 0.6); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14); background: none; }
-.stellar .sd-flight__tag::before { background: currentColor; box-shadow: 0 0 6px currentColor; }
-@media (max-width: 859px) { .stellar .sd-flight__tag { justify-self: start; width: fit-content; max-width: 100%; padding: 4px 9px 3px; border-radius: 7px; line-height: 1.35; } }
-
-/* The flight plan's tags, in the cockpit face, kept inside their pill. */
-.stellar .sd-flight__tag { font: 700 9.5px/1.3 var(--sd-spaced); letter-spacing: 0.12em; white-space: normal; border-radius: 8px; }
-
 /* ── The card page ────────────────────────────────────────────── */
 .stellar .sd-cardhero .sd-eyebrow { font: 600 10.5px var(--sd-spaced); letter-spacing: 0.24em; }
 .stellar .sd-facts { border-color: var(--sd-line); border-radius: 10px; background: var(--sd-ticks), rgba(0, 0, 0, 0.35); }

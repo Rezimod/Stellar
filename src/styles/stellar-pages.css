@@ -16,7 +16,7 @@
 /* ── A card as a picture ──────────────────────────────────────── */
 .sd-thumb {
   position: relative; display: block; overflow: hidden; aspect-ratio: 520 / 726;
-  border-radius: 6% / 4.3%; background: #090909;
+  border-radius: 5.5% / 3.9%; background: #050505;
   box-shadow: 0 12px 28px -18px #000;
 }
 .sd-thumb img { display: block; width: 100%; height: 100%; border-radius: inherit; }
@@ -271,15 +271,7 @@
 .sd-fl__grid > li[hidden] { display: none; }
 .sd-tile { position: relative; display: block; min-width: 0; text-decoration: none; color: var(--sd-ink); border-radius: 12px; }
 .sd-tile__stage { position: relative; display: block; }
-.sd-tile[data-rarity='legendary'] .sd-thumb { box-shadow: 0 0 30px -18px var(--rarity), 0 14px 24px -20px #000; }
-.sd-tile__tag { position: absolute; top: 12px; right: 10px; z-index: 2; padding: 5px 8px; border: 1px solid #ffffff40; border-radius: 99px; color: #eee; background: #0d0d0de8; font: 10px var(--sd-mono); }
-.sd-tile__foot { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px; margin-top: 12px; padding: 0 2px; }
-.sd-tile__perk { grid-column: 1 / -1; display: flex; align-items: center; flex-wrap: wrap; gap: 5px; color: #aaa; font: 400 10px/1.4 var(--sd-sans); }
-.sd-tile__perk em { padding: 1px 4px; border: 1px solid #ffffff26; border-radius: 4px; font: 400 8px/1.3 var(--sd-mono); text-transform: uppercase; }
-.sd-tile__price { color: #eee; font: 600 15px/1.2 var(--sd-sans); font-variant-numeric: tabular-nums; }
-.sd-tile__sub { display: flex; justify-content: flex-end; align-items: center; gap: 7px; color: #aaa; font: 400 10px/1.3 var(--sd-sans); text-align: right; }
-.sd-stock { width: 35px; height: 3px; flex: none; border-radius: 2px; background: #ffffff18; overflow: hidden; }
-.sd-stock i { display: block; height: 100%; background: var(--rarity); }
+.sd-tile__tag { position: absolute; top: 16%; right: 8%; z-index: 2; padding: 5px 8px; border: 1px solid #ffffff40; border-radius: 99px; color: #eee; background: #0d0d0de8; font: 10px var(--sd-mono); }
 .sd-tile__num { font: 11px var(--sd-mono); color: var(--sd-ink-3); }
 .sd-rtag { padding: 3px 7px; border: 1px solid color-mix(in srgb, var(--rarity) 30%, transparent); border-radius: 99px; color: var(--rarity); font: 10px var(--sd-mono); text-transform: uppercase; }
 
@@ -314,8 +306,6 @@
   .sd-filter__search input { font-size: 16px; }
   .sd-filter__chips { width: 100%; gap: 5px; }
   .sd-filter__chip { flex: 1; justify-content: center; padding-inline: 7px; font-size: 10px; }
-  .sd-tile__perk { font-size: 9px; min-height: 27px; align-content: start; }
-  .sd-tile__sub { font-size: 9px; gap: 4px; }
   .sd-stock { width: 20px; }
 }
 
@@ -353,7 +343,7 @@
 .sd-perk__line { grid-column: 1 / -1; margin: 0; font-size: 14.5px; line-height: 1.5; color: var(--sd-ink-2, var(--sd-ink)); }
 
 @media (prefers-reduced-motion: reduce) {
-  .sd-tile .sd-thumb, .sd-thumb::after, .sd-herofan__card, .sd-showcase2__cards a, .sd-flight__step, .sd-flight__icon { transition: none; }
+  .sd-tile .sd-thumb, .sd-thumb::after, .sd-herofan__card, .sd-showcase2__cards a { transition: none; }
 }
 
 /* ── Tonight: the object named like the home headline ─────────── */

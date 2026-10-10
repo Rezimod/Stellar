@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import CardThumb from './CardThumb';
 import type { Rarity } from '@/lib/rarity';
-import { glowFor } from '@/lib/stellar/plate';
+import { accentFor } from './card/CardFront';
 import type { CSSProperties, ReactNode } from 'react';
 
 export type ShopCardProps = {
@@ -30,7 +30,7 @@ export default function ShopCard({ designation, name, rarity, sub, price, tag, e
       data-zoom={designation}
       data-zoom-price={price}
       data-zoom-left={remaining}
-      style={{ '--tile-glow': glowFor(designation) } as CSSProperties}
+      style={{ '--tile-glow': accentFor(designation) } as CSSProperties}
     >
       <span className="sd-tile__stage">
         <CardThumb designation={designation} eager={eager} price={price} sub={sub} />
