@@ -2,14 +2,13 @@
 
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
-import { RARITIES, rarityInfo } from '@/lib/rarity';
-import { CARDS_PER_TIER, formatOdds, type Tier } from '@/lib/stellar/tiers';
+import { rarityInfo } from '@/lib/rarity';
+import { CARDS_PER_TIER, type Tier } from '@/lib/stellar/tiers';
 import StellarBuyCapsule from './StellarBuyCapsule';
 import TierCapsule from './TierCapsule';
+import OddsBar from './OddsBar';
 
 type OnSale = { id: string; sequence: number; commitment: string; priceUsd: number; cardsPerCapsule: number };
-
-const pct = (bps: number) => (bps === 0 ? '—' : formatOdds(bps));
 
 /**
  * One tier, taken off the shelf: its odds in full, and the next capsule of it
@@ -51,8 +50,6 @@ export default function CapsuleTierSheet({ tier, onClose }: { tier: Tier; onClos
     };
   }, [onClose]);
 
-  const top = Math.max(...RARITIES.map((r) => tier.oddsBps[r]));
-
   const sheet = (
     <div className="sd-sheet" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div
@@ -83,15 +80,7 @@ export default function CapsuleTierSheet({ tier, onClose }: { tier: Tier; onClos
           </div>
           <p className="sd-sheet__line">{tier.line}</p>
 
-          <ul className="sd-sheet__odds" aria-label="Odds per card">
-            {[...RARITIES].reverse().map((r) => (
-              <li key={r} data-zero={tier.oddsBps[r] === 0 || undefined} style={{ '--r': rarityInfo(r).color, '--w': tier.oddsBps[r] / top } as CSSProperties}>
-                <span className="sd-sheet__rarity">{rarityInfo(r).label}</span>
-                <span className="sd-sheet__bar" aria-hidden="true" />
-                <span className="sd-sheet__pct">{pct(tier.oddsBps[r])}</span>
-              </li>
-            ))}
-          </ul>
+          <OddsBar oddsBps={tier.oddsBps} />
 
           <div className="sd-sheet__buy">
             {failed ? (

@@ -5,6 +5,8 @@ import { createPortal } from 'react-dom';
 import CardPlate from './CardPlate';
 import CardBack from './card/CardBack';
 import StellarCard from './card/StellarCard';
+import { accentFor } from './card/CardFront';
+import { SET_001_CARD_BY_DESIGNATION } from '@/lib/sets/set-001';
 import type { Rarity } from '@/lib/rarity';
 import { RARITIES, isRarity, rarityInfo } from '@/lib/rarity';
 import { plateFor } from '@/lib/stellar/plate';
@@ -208,8 +210,10 @@ export default function StellarReveal({
       const top = el.querySelector('.sn-top')?.getBoundingClientRect().bottom ?? 0;
       const hud = el.querySelector('.sn-hud')?.getBoundingClientRect().top;
       if (!card || hud == null) return;
+      // On a wide screen the words stand beside the card, so the card has the full height.
+      const beside = window.matchMedia('(min-width: 1024px) and (min-height: 600px)').matches;
       const lo = top + 12;
-      const hi = hud - 16;
+      const hi = beside ? window.innerHeight - 28 : hud - 16;
       if (card.top >= lo && card.bottom <= hi) return;
       const s = Math.max(0.5, Math.min(1, (hi - lo) / card.height));
       el.style.setProperty('--sn-fit-s', s.toFixed(3));
@@ -297,6 +301,8 @@ export default function StellarReveal({
 
   const tag = (
     <p className="sn-tag" hidden={!done}>
+      <span className="sn-tag__kind">{SET_001_CARD_BY_DESIGNATION.get(flown.designation)?.seed.objectType ?? 'Genesis'}</span>
+      <strong className="sn-tag__name">{flown.name}</strong>
       <a className="sn-tag__line" href={`/card/${flown.designation}`} aria-label={`${flown.name}, ${info.label}, No. ${pad(flown.editionNumber)} of ${flown.editionSize}`}>
         <span className="sn-tag__rar" style={{ color: info.color }}>
           {info.label}
@@ -324,7 +330,7 @@ export default function StellarReveal({
       ref={root}
       className={`sn ${done ? 'is-done' : ''} ${phase === 'flying' ? 'is-cine' : ''}`.trim()}
       data-rarity={rarity}
-      style={{ '--sn-tone': info.color } as CSSProperties}
+      style={{ '--sn-tone': info.color, '--sn-accent': accentFor(flown.designation) } as CSSProperties}
       role="dialog"
       aria-modal={true}
       aria-label={label}
@@ -414,7 +420,7 @@ export default function StellarReveal({
       </div>
 
       <div className="sn-hud">
-        <div className="sn-pre" hidden={phase !== 'pad'}>
+        <div className="sn-pre" hidden={phase !== 'pad' || autoLaunch}>
           <span className="sn-pre__kicker">Ready to detonate</span>
           <h2 className="sn-pre__cap">{outright ? flown.name : `Capsule No. ${pad(sequence ?? 0)}`}</h2>
           <button type="button" className="sn-go" onClick={ignite} disabled={!ready} aria-busy={!ready}>

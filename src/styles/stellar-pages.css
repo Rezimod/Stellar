@@ -212,20 +212,6 @@
 .sd-counter__line { margin: -2px 2px 0; color: var(--sd-ink-3); font-size: 14px; }
 .sd-counter__buy { display: flex; flex-direction: column; gap: 2px; }
 .sd-counter__h { margin: 0; padding-top: 14px; border-top: 1px solid var(--sd-rule); font: 700 13px var(--sd-sans); letter-spacing: 0.08em; text-transform: uppercase; }
-.sd-counter__odds { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
-.sd-counter__odds li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: baseline; gap: 7px 12px; font-size: 14px; }
-.sd-counter__odds li[data-zero] { opacity: 0.45; }
-.sd-counter__rarity { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; }
-.sd-counter__rarity i { width: 7px; height: 7px; border-radius: 50%; background: var(--r); }
-.sd-counter__worth { font: 500 12px var(--sd-mono); color: var(--sd-ink-3); }
-.sd-counter__pct { font: 500 13px var(--sd-mono); text-align: right; font-variant-numeric: tabular-nums; }
-.sd-counter__bar { grid-column: 1 / -1; position: relative; height: 3px; overflow: hidden; border-radius: 3px; background: var(--sd-rule); }
-.sd-counter__bar::after {
-  content: ''; position: absolute; inset: 0; border-radius: inherit; background: var(--r);
-  transform-origin: left center; transform: scaleX(max(var(--w), 0.01));
-  transition: transform var(--sd-dur-slow) var(--sd-ease);
-}
-.sd-counter__odds li[data-zero] .sd-counter__bar::after { display: none; }
 .sd-counter__foot {
   display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 14px; border-top: 1px solid var(--sd-rule);
   font: 500 12px var(--sd-spaced); letter-spacing: 0.28em; text-transform: uppercase; color: var(--sd-ink-3);
@@ -506,3 +492,21 @@ img[data-fade][data-on] { opacity: 1; animation: none; }
 /* A held card: its rarity and edition under it, as on the shelf. */
 .sd-coll__meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 10px; }
 .sd-coll__meta .sd-rtag { margin-left: 0; }
+
+/* ── Odds per card: one bar, scarcest first, each rarity in its colour ── */
+.sd-oddsbar { display: grid; gap: 12px; }
+.sd-oddsbar__head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.sd-oddsbar__h { font: 600 12px var(--sd-mono); letter-spacing: .16em; text-transform: uppercase; color: #d6d5cf; }
+.sd-oddsbar__fair { color: #f1f0eb; font: 500 13px var(--sd-sans); text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 1px; white-space: nowrap; }
+.sd-oddsbar__fair:hover { color: #fff; }
+.sd-oddsbar__bar { display: flex; gap: 4px; height: 10px; }
+.sd-oddsbar__bar i { flex-basis: 0; min-width: 10px; border-radius: 99px; background: linear-gradient(180deg, color-mix(in srgb, var(--r) 70%, #fff), var(--r)); box-shadow: 0 0 12px -2px color-mix(in srgb, var(--r) 70%, transparent); }
+.sd-oddsbar__legend { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px 20px; }
+.sd-oddsbar__legend li { display: inline-flex; align-items: center; gap: 8px; color: #f3f2ed; font: 500 15px var(--sd-sans); }
+.sd-oddsbar__legend i { width: 10px; height: 10px; border-radius: 50%; background: var(--r); box-shadow: 0 0 8px color-mix(in srgb, var(--r) 70%, transparent); }
+.sd-oddsbar__legend b { color: #c9c8c2; font: 500 14px var(--sd-mono); font-variant-numeric: tabular-nums; }
+@media (prefers-reduced-motion: no-preference) {
+  .sd-oddsbar__bar i { animation: sd-odds-in 700ms cubic-bezier(.2,.9,.25,1) both; transform-origin: left; }
+}
+@keyframes sd-odds-in { from { transform: scaleX(0); opacity: 0; } to { transform: none; opacity: 1; } }
+.sd-counter .sd-oddsbar { padding-top: 14px; border-top: 1px solid var(--sd-rule); }

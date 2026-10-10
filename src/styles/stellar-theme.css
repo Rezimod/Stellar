@@ -951,17 +951,6 @@ html:has(.stellar) #stellar-main { padding-top: 0; padding-bottom: 0; }
 .sd-sheet__body > .sd-label { padding-right: 44px; }
 .sd-sheet__line { margin: -4px 0 0; font-size: 14px; color: var(--sd-ink-3); }
 
-.sd-sheet__odds { list-style: none; margin: 2px 0 0; padding: 10px 12px; display: grid; gap: 7px; border: 1px solid var(--sd-rule); border-radius: var(--sd-radius); background: rgba(7, 7, 7, 0.35); }
-.sd-sheet__odds li { display: grid; grid-template-columns: 78px minmax(0, 1fr) 44px; align-items: center; gap: 10px; font-family: var(--sd-mono); font-size: 12px; }
-.sd-sheet__rarity { color: var(--r); letter-spacing: 0.04em; }
-.sd-sheet__bar { height: 5px; border-radius: 3px; background: var(--sd-rule); overflow: hidden; position: relative; }
-.sd-sheet__bar::after { content: ''; position: absolute; inset: 0; width: max(calc(var(--w) * 100%), 3px); border-radius: inherit; background: var(--r); transform-origin: left; }
-.sd-sheet__pct { text-align: right; font-size: 13px; color: var(--sd-ink); font-variant-numeric: tabular-nums; }
-@media (prefers-reduced-motion: no-preference) {
-  .sd-sheet__bar::after { animation: sd-bar-in 700ms cubic-bezier(0.2, 0.9, 0.25, 1) 180ms both; }
-}
-.sd-sheet__odds li[data-zero] .sd-sheet__bar::after { display: none; }
-@keyframes sd-bar-in { from { transform: scaleX(0); } }
 
 .sd-sheet__buy { display: flex; flex-direction: column; gap: 8px; min-height: 124px; }
 .sd-sheet__lot { display: flex; justify-content: space-between; gap: 12px; margin: 0; font: 500 12px var(--sd-mono); letter-spacing: 0.04em; color: var(--sd-ink-3); }
@@ -989,8 +978,6 @@ html:has(.stellar) #stellar-main { padding-top: 0; padding-bottom: 0; }
   .sd-sheet__name { font-size: 24px; }
   .sd-sheet__price { font-size: 26px; }
   .sd-sheet__line { font-size: 13px; min-height: 26px; }
-  .sd-sheet__odds { padding: 9px 10px; gap: 6px; }
-  .sd-sheet__odds li { grid-template-columns: 72px minmax(0, 1fr) 40px; }
   .sd-sheet__buy { min-height: 116px; }
 }
 @keyframes sd-sheet-in { from { opacity: 0; } }

@@ -199,3 +199,32 @@
   opacity: calc(min(1, var(--co) * 8) * (1 - var(--cf)));
 }
 @media (prefers-reduced-motion: reduce) { .sn-cap { display: none; } }
+
+/* The reveal in the card's own colour: the buttons, the chip's edge and the name above it. */
+.sn-tag__kind, .sn-tag__name { display: none; }
+.sn { --sn-accent: var(--sn-tone); }
+.sn-tag__line { border-color: color-mix(in srgb, var(--sn-accent) 55%, transparent); }
+.sn-tag__line:hover { border-color: var(--sn-accent); }
+.stellar .sn-after .sd-pay__actions .sd-btn--primary {
+  border: 0; color: #120b06; text-shadow: 0 1px 0 #ffffff40;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--sn-accent) 68%, #fff), var(--sn-accent) 55%, color-mix(in srgb, var(--sn-accent) 70%, #000));
+  box-shadow: inset 0 1px 0 #ffffff80, 0 14px 36px -14px var(--sn-accent), 0 0 0 1px color-mix(in srgb, var(--sn-accent) 60%, #000);
+}
+.stellar .sn-after .sd-pay__actions .sd-btn--primary:hover { filter: brightness(1.08); }
+.stellar .sn-after .sd-pay__actions .sd-btn:not(.sd-btn--primary) { border-color: color-mix(in srgb, var(--sn-accent) 45%, #ffffff22); color: color-mix(in srgb, var(--sn-accent) 30%, #fff); }
+.stellar .sn-after .sd-pay__actions .sd-btn:not(.sd-btn--primary):hover { background: color-mix(in srgb, var(--sn-accent) 14%, rgba(8, 8, 12, 0.85)); }
+.sn-provenance a { color: color-mix(in srgb, var(--sn-accent) 55%, #fff); }
+
+/* Wide screens: the card on the left, everything about it on the right. */
+@media (min-width: 1024px) and (min-height: 600px) {
+  .sn.is-done .sn-center { left: 33%; transition: left 0.7s var(--sd-ease, ease), top 0.6s var(--sd-ease, ease), scale 0.6s var(--sd-ease, ease); }
+  .sn.is-done .sn-hud { left: 53%; right: auto; top: 50%; bottom: auto; width: min(480px, 40vw); translate: 0 -50%; justify-items: start; gap: 22px; padding: 0; }
+  .sn.is-done .sn-hud::before { left: -6vw; right: -100vw; top: -100vh; bottom: -100vh; background: linear-gradient(90deg, transparent, rgba(4, 4, 7, 0.72) 8vw, rgba(4, 4, 7, 0.86)); }
+  .sn.is-done .sn-tag { justify-items: start; text-align: left; gap: 14px; }
+  .sn.is-done .sn-tag__kind { display: block; color: color-mix(in srgb, var(--sn-accent) 70%, #fff); font: 600 13px/1 var(--sd-mono); letter-spacing: 0.22em; text-transform: uppercase; }
+  .sn.is-done .sn-tag__name { display: block; color: #fff; font: 400 clamp(44px, 4.6vw, 72px)/0.98 var(--font-anton), Impact, sans-serif; text-transform: uppercase; text-wrap: balance; text-shadow: 0 0 40px color-mix(in srgb, var(--sn-accent) 40%, transparent); }
+  .sn.is-done .sn-tag__perk { max-width: 40ch; font-size: 16px; }
+  .sn.is-done .sn-after { justify-items: start; width: 100%; gap: 16px; }
+  .sn.is-done .sn-provenance { justify-content: flex-start; font-size: 13px; }
+  .sn.is-done .sn-after .sd-pay__actions { width: 100%; }
+}

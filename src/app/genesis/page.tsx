@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { eq } from 'drizzle-orm';
 import AlmanacDate from '@/components/stellar/AlmanacDate';
-import CapsuleCounter, { type TierCard } from '@/components/stellar/CapsuleCounter';
+import CapsuleCounter from '@/components/stellar/CapsuleCounter';
 import ShelfFilter from '@/components/stellar/ShelfFilter';
 import ShopCard from '@/components/stellar/ShopCard';
 import StellarShell from '@/components/stellar/StellarShell';
@@ -65,16 +65,12 @@ export default async function FirstLightPage() {
   const sorted = [...SET_001_CARDS].sort(
     (a, b) => RARITIES.indexOf(b.seed.rarity as Rarity) - RARITIES.indexOf(a.seed.rarity as Rarity),
   );
-  // A sealed card is out of every capsule.
-  const tierCards: TierCard[] = sorted
-    .filter((c) => cardStatus(c, now) === 'open')
-    .map(({ seed }) => ({ designation: seed.designation, name: seed.name, rarity: seed.rarity as Rarity, editionSize: seed.editionSize }));
 
   return (
     <StellarShell>
       <StellarView step="set" />
       <div className="sd-fl">
-        <CapsuleCounter cards={tierCards} onSale={onSale} />
+        <CapsuleCounter onSale={onSale} />
 
         <section className="sd-fl__set" aria-labelledby="fl-title">
           <header className="sd-fl__head">

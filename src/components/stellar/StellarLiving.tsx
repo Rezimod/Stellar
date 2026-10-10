@@ -1,13 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import { SET_001_CARD_BY_DESIGNATION } from '@/lib/sets/set-001';
 import { cardStatus } from '@/lib/stellar/almanac';
 import { cardPriceUsd } from '@/lib/stellar/economics';
 import { plateFor } from '@/lib/stellar/plate';
 import StellarCard from './card/StellarCard';
-import { faceSources } from './card/CardFront';
+import { accentFor, faceSources } from './card/CardFront';
 import { ArrowLeft, ArrowRight, Diamond, X } from 'lucide-react';
 import { perkFor } from '@/lib/stellar/perks';
 import { rarityInfo } from '@/lib/rarity';
@@ -258,7 +258,7 @@ function ZoomedCard({ zoom, onClosed }: { zoom: Zoom; onClosed: () => void }) {
 
   const href = `/card/${designation}`;
   return (
-    <div className="sd-zoom" data-state="open" data-rarity={plate.rarity}>
+    <div className="sd-zoom" data-state="open" data-rarity={plate.rarity} style={{ '--accent': accentFor(designation) } as CSSProperties}>
       <div className="sd-zoom__veil" onClick={onClosed} aria-hidden="true" />
       <div ref={dialog} className="sd-zoom__panel" role="dialog" aria-modal="true" aria-labelledby="sd-zoom-name">
         <header className="sd-zoom__toolbar">

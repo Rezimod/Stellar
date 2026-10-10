@@ -126,28 +126,28 @@
 .sd-zoom__navigation .sd-zoom__dismiss { margin-left: 16px; }
 .sd-zoom__card { position: relative; width: min(100%, 340px); justify-self: center; }
 .sd-zoom__info { min-width: 0; padding-bottom: 54px; }
-.sd-zoom__rarity { display: inline-flex; align-items: center; gap: 6px; margin: 0 0 14px; padding: 5px 8px; border: 1px solid color-mix(in srgb, var(--rarity) 35%, transparent); border-radius: 99px; color: var(--rarity); font: 400 9px var(--sd-mono); letter-spacing: .08em; text-transform: uppercase; }
+.sd-zoom__rarity { display: inline-flex; align-items: center; gap: 6px; margin: 0 0 14px; padding: 6px 10px; border: 1px solid color-mix(in srgb, var(--rarity) 55%, transparent); border-radius: 99px; background: color-mix(in srgb, var(--rarity) 12%, transparent); color: color-mix(in srgb, var(--rarity) 80%, #fff); font: 600 10px var(--sd-mono); letter-spacing: .08em; text-transform: uppercase; }
 .stellar .sd-zoom__name { margin: 0; font: 400 clamp(36px, 4.3vw, 58px)/1.03 var(--sd-display); text-transform: uppercase; overflow-wrap: anywhere; }
 .sd-zoom__line { margin: 9px 0 24px; font-size: 13px; line-height: 1.5; color: #b1b1ac; }
-.sd-zoom__facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0 0 22px; padding: 12px 0; border: 1px solid #ffffff1a; border-radius: 9px; }
+.sd-zoom__facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0 0 22px; padding: 12px 0; border: 1px solid color-mix(in srgb, var(--accent, #fff) 26%, #ffffff10); border-radius: 9px; background: color-mix(in srgb, var(--accent, #000) 5%, transparent); }
 .sd-zoom__facts > div { padding: 0 12px; }
 .sd-zoom__facts > div + div { border-left: 1px solid #ffffff14; }
-.sd-zoom__facts dt { color: #aaa9a5; font: 9px var(--sd-mono); text-transform: uppercase; letter-spacing: .09em; }
+.sd-zoom__facts dt { color: color-mix(in srgb, var(--accent, #aaa) 45%, #d8d7d2); font: 500 10px var(--sd-mono); text-transform: uppercase; letter-spacing: .09em; }
 .sd-zoom__facts dd { margin: 6px 0 0; color: #eee; font: 500 13px var(--sd-mono); }
-.sd-zoom__perk { display: flex; align-items: center; gap: 12px; padding: 14px; border: 1px solid color-mix(in srgb, var(--rarity) 20%, transparent); border-radius: 9px; background: linear-gradient(110deg, color-mix(in srgb, var(--rarity) 14%, transparent), transparent); }
-.sd-zoom__gem { display: grid; place-items: center; width: 34px; height: 40px; flex: none; border-radius: 6px; background: color-mix(in srgb, var(--rarity) 16%, transparent); color: var(--rarity); }
-.sd-zoom__label { display: block; margin-bottom: 5px; font: 9px var(--sd-mono); letter-spacing: .09em; text-transform: uppercase; color: var(--rarity); }
+.sd-zoom__perk { display: flex; align-items: center; gap: 12px; padding: 14px; border: 1px solid color-mix(in srgb, var(--accent, var(--rarity)) 32%, transparent); border-radius: 9px; background: linear-gradient(110deg, color-mix(in srgb, var(--accent, var(--rarity)) 16%, transparent), transparent 75%); }
+.sd-zoom__gem { display: grid; place-items: center; width: 34px; height: 40px; flex: none; border-radius: 6px; background: color-mix(in srgb, var(--accent, var(--rarity)) 18%, transparent); color: var(--accent, var(--rarity)); }
+.sd-zoom__label { display: block; margin-bottom: 5px; font: 600 10px var(--sd-mono); letter-spacing: .09em; text-transform: uppercase; color: color-mix(in srgb, var(--accent, var(--rarity)) 75%, #fff); }
 .sd-zoom__perk strong { display: block; font-size: 13px; font-weight: 500; }
 .sd-zoom__perk p { margin: 5px 0 0; font-size: 11px; line-height: 1.5; color: #aaa9a4; }
 .sd-zoom__pricing { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin: 24px 0 14px; }
 .sd-zoom__price { margin: 0; font: 600 28px/1 var(--sd-sans); letter-spacing: -.03em; }
 .sd-zoom__pricing > span { display: flex; align-items: center; gap: 7px; color: #aaa9a4; font-size: 10px; }
-.sd-zoom__pricing i { width: 35px; height: 3px; background: var(--rarity); }
+.sd-zoom__pricing i { width: 35px; height: 3px; border-radius: 2px; background: var(--accent, var(--rarity)); box-shadow: 0 0 10px var(--accent, var(--rarity)); }
 .sd-zoom__cta { display: flex; gap: 8px; }
 .sd-zoom__cta .sd-btn:first-child { flex: 1; }
 .stellar .sd-zoom__cta .sd-btn { min-height: 46px; padding: 10px 16px; border-radius: 8px; font: 500 12px var(--sd-sans); letter-spacing: 0; text-transform: none; }
 .sd-zoom__trust { display: flex; justify-content: space-between; gap: 12px; margin-top: 12px; color: #969692; font-size: 9px; }
-.sd-zoom__trust a { color: #b3b3af; text-underline-offset: 3px; }
+.sd-zoom__trust a { color: color-mix(in srgb, var(--accent, #b3b3af) 65%, #fff); text-underline-offset: 3px; }
 @media (prefers-reduced-motion: no-preference) {
   .sd-zoom__veil { animation: sd-lv-fade 160ms ease-out both; }
   .sd-zoom__card { animation: sd-zoom-arrive 260ms var(--sd-ease-out) both; }
@@ -168,3 +168,17 @@
   .stellar .sd-zoom__name { font-size: 42px; }
   .sd-zoom__panel::before { inset: 50px -20px 45%; }
 }
+
+/* The zoom speaks in the card's own colour: the buy button, the frames, the price and the light behind the card. */
+.stellar .sd-zoom .sd-zoom__cta .sd-btn--light {
+  border: 0; color: #120b06; text-shadow: 0 1px 0 #ffffff40;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 70%, #fff), var(--accent) 55%, color-mix(in srgb, var(--accent) 72%, #000));
+  box-shadow: inset 0 1px 0 #ffffff80, 0 12px 30px -14px var(--accent), 0 0 0 1px color-mix(in srgb, var(--accent) 60%, #000);
+}
+.stellar .sd-zoom .sd-zoom__cta .sd-btn--light:hover:not(:disabled) { filter: brightness(1.08); box-shadow: inset 0 1px 0 #ffffff99, 0 14px 36px -12px var(--accent), 0 0 0 1px color-mix(in srgb, var(--accent) 70%, #000); }
+.stellar .sd-zoom .sd-zoom__cta .sd-btn:not(.sd-btn--light) { border-color: color-mix(in srgb, var(--accent) 45%, #ffffff20); color: color-mix(in srgb, var(--accent) 35%, #fff); }
+.stellar .sd-zoom .sd-zoom__cta .sd-btn:not(.sd-btn--light):hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.sd-zoom .sd-zoom__price { text-shadow: 0 0 24px color-mix(in srgb, var(--accent) 55%, transparent); }
+.sd-zoom .sd-zoom__pricing > span { color: #dcdbd6; font-size: 11px; }
+.stellar .sd-zoom .sd-zoom__card::before { background: radial-gradient(closest-side, color-mix(in srgb, var(--accent) 34%, transparent), transparent 80%); }
+.sd-zoom .sd-zoom__panel::before { background: radial-gradient(ellipse, color-mix(in srgb, var(--accent) 16%, transparent), transparent 70%); }

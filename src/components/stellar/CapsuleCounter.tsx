@@ -3,10 +3,10 @@
 import { useCallback, useEffect, useState, type CSSProperties } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { RARITIES, rarityInfo, type Rarity } from '@/lib/rarity';
-import { DIRECT_CARD_PRICE_USD, cardPriceUsd } from '@/lib/stellar/economics';
-import { CARDS_PER_TIER, TIERS, formatOdds, tierByKey, type Tier } from '@/lib/stellar/tiers';
+import { rarityInfo } from '@/lib/rarity';
+import { CARDS_PER_TIER, TIERS, tierByKey, type Tier } from '@/lib/stellar/tiers';
 import StarPulse from './StarPulse';
+import OddsBar from './OddsBar';
 import { TIER_PERKS } from '@/lib/stellar/perks';
 
 // The sheet carries the wallet and payment code; it is fetched on first
@@ -14,24 +14,12 @@ import { TIER_PERKS } from '@/lib/stellar/perks';
 const loadSheet = () => import('./CapsuleTierSheet');
 const CapsuleTierSheet = dynamic(loadSheet, { ssr: false });
 
-export type TierCard = { designation: string; name: string; rarity: Rarity; editionSize: number };
-
-const pct = (bps: number) => (bps === 0 ? '—' : formatOdds(bps));
-
 /**
  * The counter beside the set: the four capsules, cheapest first, one of them
  * on the counter with its price, its odds and how many are on sale. Buying
  * opens the sheet with the next capsule of that tier.
  */
-/** What a rarity's cards cost on their own: one price, or the span when specimens are among them. */
-function worth(cards: TierCard[], r: Rarity) {
-  const prices = cards.filter((c) => c.rarity === r).map((c) => cardPriceUsd(c.designation, r));
-  if (prices.length === 0) return `$${DIRECT_CARD_PRICE_USD[r]}`;
-  const lo = Math.min(...prices), hi = Math.max(...prices);
-  return lo === hi ? `$${lo}` : `$${lo}–${hi}`;
-}
-
-export default function CapsuleCounter({ cards, onSale }: { cards: TierCard[]; onSale: Record<string, number> | null }) {
+export default function CapsuleCounter({ onSale }: { onSale: Record<string, number> | null }) {
   const [tier, setTier] = useState<Tier>(TIERS[0]);
   const [sheet, setSheetState] = useState(false);
 
@@ -52,7 +40,6 @@ export default function CapsuleCounter({ cards, onSale }: { cards: TierCard[]; o
   }, []);
 
   const stock = onSale ? (onSale[tier.key] ?? 0) : null;
-  const top = Math.max(...RARITIES.map((r) => tier.oddsBps[r]));
 
   return (
     <aside className="sd-counter" id="capsules" aria-label="Capsules" style={{ '--tier': rarityInfo(tier.lit).color } as CSSProperties}>
@@ -105,24 +92,7 @@ export default function CapsuleCounter({ cards, onSale }: { cards: TierCard[]; o
         </button>
       </div>
 
-      <h3 className="sd-counter__h">Odds per card</h3>
-      <ul className="sd-counter__odds">
-        {[...RARITIES].reverse().map((r) => (
-          <li
-            key={r}
-            data-zero={tier.oddsBps[r] === 0 || undefined}
-            style={{ '--r': rarityInfo(r).color, '--w': tier.oddsBps[r] / top } as CSSProperties}
-          >
-            <span className="sd-counter__rarity">
-              <i aria-hidden="true" />
-              {rarityInfo(r).label}
-            </span>
-            <span className="sd-counter__worth">{worth(cards, r)} cards</span>
-            <span className="sd-counter__pct">{pct(tier.oddsBps[r])}</span>
-            <span className="sd-counter__bar" aria-hidden="true" />
-          </li>
-        ))}
-      </ul>
+      <OddsBar oddsBps={tier.oddsBps} />
 
       <details className="sd-gives-drop">
         <summary className="sd-counter__h">

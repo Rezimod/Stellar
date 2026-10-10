@@ -92,8 +92,10 @@ export default function StellarBuyCapsule({
     }
   };
 
+  // Buy & detonate is one press: once it is paid the star goes at once, with no second button.
   const confirmed = () => {
     setPaid(true);
+    setLaunchNow(true);
     void open();
   };
 
@@ -126,6 +128,7 @@ export default function StellarBuyCapsule({
         return;
       }
       setPaid(true);
+      setLaunchNow(true);
       setBusy('');
       await open();
     } catch {
