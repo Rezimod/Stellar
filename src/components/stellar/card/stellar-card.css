@@ -12,25 +12,33 @@
 .sdc-flip.is-over .sdc-face { visibility: hidden; }
 .sdc-flip.is-over .sdc-face--back { visibility: visible; }
 .sdc-card {
-  --card-accent: #939393; --rim-hi: color-mix(in srgb, var(--card-accent) 35%, #fff); --rim-lo: color-mix(in srgb, var(--card-accent) 40%, #000);
+  --card-accent: #939393; --rarity: #939393;
   position: relative; width: 100%; aspect-ratio: 630 / 880; container-type: inline-size;
-  overflow: hidden; isolation: isolate; border-radius: 6% / 4.3%; background: #090909;
-  color: #f5f5f3; box-shadow: inset 0 0 0 max(3px, 1cqw) #0008, inset 0 0 6cqw -1cqw color-mix(in srgb, var(--card-accent) 30%, transparent), 0 10px 30px #0007;
+  overflow: hidden; isolation: isolate; border-radius: 5.5% / 3.9%; background: #050505;
+  color: #f5f5f3; box-shadow: 0 0 0 1px #000, 0 0 5cqw -1cqw color-mix(in srgb, var(--card-accent) 55%, transparent), 0 10px 30px #0007;
 }
-.sdc-card::after { content: ''; position: absolute; inset: 0; z-index: 5; pointer-events: none; border-radius: inherit; padding: max(2.5px, .95cqw); background: linear-gradient(150deg, var(--rim-hi) 0%, var(--card-accent) 18%, var(--rim-lo) 38%, var(--card-accent) 55%, var(--rim-hi) 70%, var(--rim-lo) 86%, var(--card-accent) 100%); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); }
-.sdc-card::before { content: ''; position: absolute; inset: 0; z-index: 4; pointer-events: none; border-radius: inherit; background: linear-gradient(112deg, transparent 38%, #ffffff10 46%, #ffffff05 52%, transparent 60%); translate: calc((var(--px, .5) - .5) * 30%) 0; }
-.sdc-art { position: absolute; inset: 0; }
-.sdc-art img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; border-radius: 0; }
-.sdc-art--photo { bottom: 15%; }
-.sdc-art--whole { bottom: 20%; background: #000; }
-.sdc-art--whole img { object-fit: contain; }
-.sdc-art__object { transform: scale(1.07) translateY(-2%); }
-.sdc-atmosphere { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse 62% 44% at 50% 40%, color-mix(in srgb, var(--card-accent) var(--inner, 18%), transparent), transparent 70%), linear-gradient(180deg, #0005, transparent 20%, transparent 50%, #08080866 66%, #080808f2 84%, #080808 100%); }
-.sdc-card[data-rarity='rare'] { --inner: 22%; } .sdc-card[data-rarity='epic'] { --inner: 26%; } .sdc-card[data-rarity='legendary'] { --inner: 32%; }
-.sdc-caption { position: absolute; left: 7%; right: 7%; bottom: 5.5%; display: flex; flex-direction: column; }
-.sdc-name { font: 400 var(--card-name-size, 11.8cqw)/1.06 var(--font-anton), Impact, sans-serif; letter-spacing: .01em; text-transform: uppercase; text-wrap: balance; text-shadow: 0 2px 14px #000c; }
-.sdc-headline { margin-top: 1.8cqw; color: #c2c1bb; font: 400 4.3cqw/1.35 var(--font-geist), sans-serif; text-shadow: 0 1px 8px #000c; }
-.sdc-number { align-self: stretch; margin-top: 3.4cqw; padding-top: 2.8cqw; border-top: 1px solid color-mix(in srgb, var(--card-accent) 40%, transparent); color: #b4b3ae; font: 400 3.3cqw/1 var(--font-mono), monospace; letter-spacing: .14em; text-align: right; }
+/* The rim: one hairline in the object's own light, brighter at two corners, with a soft bleed inward. */
+.sdc-card::after { content: ''; position: absolute; inset: 0; z-index: 5; pointer-events: none; border-radius: inherit; padding: max(1.5px, .55cqw); background: linear-gradient(155deg, color-mix(in srgb, var(--card-accent) 55%, #fff) 0%, var(--card-accent) 22%, color-mix(in srgb, var(--card-accent) 55%, #000) 50%, var(--card-accent) 78%, color-mix(in srgb, var(--card-accent) 55%, #fff) 100%); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); }
+.sdc-card::before { content: ''; position: absolute; inset: 0; z-index: 4; pointer-events: none; border-radius: inherit; box-shadow: inset 0 0 4cqw -1cqw color-mix(in srgb, var(--card-accent) 45%, transparent); }
+.sdc-card--front { display: flex; flex-direction: column; padding: 4.2cqw 4.2cqw 4.6cqw; background: radial-gradient(120% 60% at 50% 0%, color-mix(in srgb, var(--card-accent) 9%, #070707), #050505 70%); }
+.sdc-top { display: flex; justify-content: space-between; align-items: center; gap: 2cqw; height: 7cqw; padding: 0 1.4cqw; flex: none; }
+.sdc-no { color: var(--card-accent); font: 500 max(7px, 3.1cqw)/1 var(--font-mono), monospace; letter-spacing: .24em; text-transform: uppercase; }
+.sdc-tier { padding: .9cqw 2.2cqw .8cqw; border-radius: .9cqw; background: linear-gradient(180deg, color-mix(in srgb, var(--rarity) 70%, #fff), var(--rarity) 55%, color-mix(in srgb, var(--rarity) 80%, #000)); color: #0b0906; font: 600 max(6.5px, 2.75cqw)/1 var(--font-oswald), sans-serif; letter-spacing: .2em; text-transform: uppercase; box-shadow: 0 0 3cqw -.5cqw color-mix(in srgb, var(--rarity) 70%, transparent); }
+.sdc-panel { position: relative; display: flex; flex-direction: column; flex: 1; min-height: 0; margin-top: 2.2cqw; overflow: hidden; border-radius: 3.6cqw; border: 1px solid color-mix(in srgb, var(--card-accent) 34%, #ffffff14); background: #060606; box-shadow: inset 0 0 0 1px #0009; }
+.sdc-art { position: relative; flex: 1; min-height: 0; overflow: hidden; background: #000; }
+.sdc-art img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; }
+/* The scene sinks into the black the words sit on. */
+.sdc-art::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, #0004, transparent 14%, transparent 62%, #060606cc 88%, #060606); }
+.sdc-caption { position: relative; display: flex; flex-direction: column; flex: none; margin-top: -9cqw; padding: 0 4.4cqw 4cqw; }
+.sdc-title { display: flex; align-items: flex-end; justify-content: space-between; gap: 3cqw; }
+.sdc-name { min-width: 0; font: 400 var(--card-name-size, 10.5cqw)/1 var(--font-anton), Impact, sans-serif; letter-spacing: .015em; text-transform: uppercase; text-wrap: balance; text-shadow: 0 2px 12px #000; }
+.sdc-price { flex: none; padding-bottom: .4cqw; font: 500 6.4cqw/1 var(--font-oswald), sans-serif; letter-spacing: .01em; font-variant-numeric: tabular-nums; text-shadow: 0 2px 10px #000; }
+.sdc-kind { margin-top: 1.6cqw; color: #c9c8c2; font: 400 max(6.5px, 2.7cqw)/1.3 var(--font-mono), monospace; letter-spacing: .26em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sdc-foot { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto auto; column-gap: 3cqw; row-gap: 1.3cqw; align-items: center; margin-top: 3.6cqw; padding-top: 3.4cqw; border-top: 1px solid #ffffff2b; }
+.sdc-perk { color: var(--card-accent); font: 500 max(6.5px, 2.7cqw)/1.2 var(--font-mono), monospace; letter-spacing: .24em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sdc-left { grid-row: 2; color: #bdbcb6; font: 400 max(7px, 3cqw)/1.2 var(--font-geist), sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sdc-go { grid-row: 1 / 3; grid-column: 2; display: grid; place-items: center; width: 9.6cqw; aspect-ratio: 1; border-radius: 50%; border: max(1px, .35cqw) solid color-mix(in srgb, var(--card-accent) 75%, #fff); color: color-mix(in srgb, var(--card-accent) 75%, #fff); box-shadow: 0 0 3cqw -.6cqw color-mix(in srgb, var(--card-accent) 70%, transparent); }
+.sdc-go svg { width: 55%; height: 55%; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .sdc-glare { position: absolute; inset: -50%; pointer-events: none; opacity: .4; background: radial-gradient(closest-side, #ffffff15, transparent); translate: calc((var(--px, .5) - .5) * 50%) calc((var(--py, .5) - .5) * 50%); }
 .sdc-card--back { background: linear-gradient(145deg, #1b1a17, #0c0c0b 65%); }
 .sdc-notes { position: absolute; inset: 6%; display: flex; flex-direction: column; }
@@ -56,7 +64,7 @@
 .sdc-shadow { display: none; }
 .sdc-card--blank { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; border: 1px dashed #ffffff40; font: 13px var(--font-mono), monospace; }
 .sdc-card--sealed { background: transparent; }
-.sdc-card--sealed::after { display: none; }
+.sdc-card--sealed::after, .sdc-card--sealed::before { display: none; }
 .sdc-sealed { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
 @media (prefers-reduced-motion: no-preference) {
   .sdc--hero .sdc-tilt { animation: sdc-float 10s ease-in-out infinite; }

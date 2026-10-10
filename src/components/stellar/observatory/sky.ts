@@ -1,4 +1,4 @@
-import { getTonightDarkWindow } from '@/lib/dark-window';
+import { getSunAltitude, getTonightDarkWindow } from '@/lib/dark-window';
 import type { Station } from '@/lib/observatory/sim-stations';
 import { targetPosition, type TelescopeTarget } from '@/lib/observatory/telescope-targets';
 import { SET_001_CARDS } from '@/lib/sets/set-001';
@@ -51,3 +51,26 @@ for (const c of SET_001_CARDS) {
 }
 export const cardForTarget = (id: string) => CARD_BY_TARGET.get(id) ?? null;
 export const plateArt = (designation: string, layer: 'sky' | 'object' | 'survey') => `/cards/plate/${designation}/${layer}.svg`;
+
+/**
+ * The demo's sky clock runs this far ahead of the wall clock. While the Sun is
+ * up at the telescope the demo moves the sky to tonight, so there is always
+ * something to point at; every timer still runs on the wall clock.
+ */
+let skyOffsetMs = 0;
+export const skyNow = () => Date.now() + skyOffsetMs;
+export const skyOffset = () => skyOffsetMs;
+
+/** Moves the sky clock to half an hour into the station's next dark, unless it is dark now. */
+export function settleSkyClock(station: Station, now = Date.now()): number {
+  const dark = (t: number) => getSunAltitude(station.lat, station.lon, new Date(t)) <= -15;
+  skyOffsetMs = 0;
+  if (dark(now)) return 0;
+  for (let t = now; t < now + 26 * 3_600_000; t += 10 * 60_000) {
+    if (dark(t)) {
+      skyOffsetMs = t + 30 * 60_000 - now;
+      break;
+    }
+  }
+  return skyOffsetMs;
+}

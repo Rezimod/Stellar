@@ -18,7 +18,7 @@ import { TELESCOPE_TARGET_BY_ID, targetPosition, targetTitle, type TelescopeTarg
 import { CaptureDialog, RefusedDialog, SheetDialog, TargetsDialog, WelcomeDialog, displayName, type Frame, type Refusal } from './dialogs';
 import Icon from './icons';
 import { Camera, FrameThumbs, Frames, HandControl, Pointing, QuickStart, Session, StationList, Telescopes, type StationRow } from './panels';
-import { altitudePath, bestOf, cardForTarget, clock, nightSpan, plateArt } from './sky';
+import { altitudePath, bestOf, cardForTarget, clock, nightSpan, plateArt, settleSkyClock, skyNow } from './sky';
 import ViewStage, { TRAIN_K, type Train } from './ViewStage';
 import './console.css';
 
@@ -47,7 +47,7 @@ const STATIONS: Station[] = SIM_STATIONS.map((s) =>
   s.id === NODE_ID
     ? { ...s, name: 'Live Telescope V1', site: 'Under the night sky' }
     : s.id === 'abastumani-sim'
-      ? { ...s, name: 'Mountain station (simulated)', site: 'A dark mountain ridge' }
+      ? { ...s, name: 'Mountain station', site: 'A dark mountain ridge' }
       : s,
 );
 
@@ -93,6 +93,9 @@ function loadImage(src: string) {
 export default function ObservatoryConsole({ tonight, nodeCloud }: { tonight: TonightCard; nodeCloud: number | null }) {
   const [clockMs, setClockMs] = useState<number | null>(null);
   const now = clockMs ?? 0;
+  // The sky the demo draws: tonight's, while the Sun is up at the telescope.
+  const [skyAheadMs, setSkyAheadMs] = useState(0);
+  const skyMs = now + skyAheadMs;
 
   const [selectedId, setSelectedId] = useState(NODE_ID);
   const [station, setStation] = useState<Station | null>(null);
@@ -136,6 +139,7 @@ export default function ObservatoryConsole({ tonight, nodeCloud }: { tonight: To
   const capturingRef = useRef(false);
 
   useEffect(() => {
+    setSkyAheadMs(settleSkyClock(STATIONS.find((s) => s.id === NODE_ID)!));
     setClockMs(Date.now());
     try {
       if (localStorage.getItem(WELCOMED_KEY) !== '1') setModal('welcome');
@@ -147,7 +151,7 @@ export default function ObservatoryConsole({ tonight, nodeCloud }: { tonight: To
     return () => clearInterval(id);
   }, []);
 
-  const date = useMemo(() => new Date(now), [now]);
+  const date = useMemo(() => new Date(skyMs), [skyMs]);
   const selected = STATIONS.find((s) => s.id === selectedId) ?? STATIONS[0];
   const connecting = station !== null && now < connectedAtMs + CONNECT_MS;
   const lstHours = useMemo(() => (station ? localSiderealHours(station.lon, date) : 0), [station, date]);
@@ -319,6 +323,7 @@ export default function ObservatoryConsole({ tonight, nodeCloud }: { tonight: To
   }, [disconnect]);
 
   const pick = useCallback((s: Station) => {
+    if (s.soon) return;
     if (station && station.id !== s.id) disconnect();
     setSelectedId(s.id);
     setModal((m) => (m === 'stations' ? null : m));
@@ -343,7 +348,7 @@ export default function ObservatoryConsole({ tonight, nodeCloud }: { tonight: To
 
   const pointAt = useCallback((next: TelescopeTarget) => {
     if (!station) return;
-    const at = new Date();
+    const at = new Date(skyNow());
     const to = targetPosition(next, station, at);
     const verdict = evaluateSafety(station, to, at);
     if (!verdict.ok) {
@@ -356,7 +361,7 @@ export default function ObservatoryConsole({ tonight, nodeCloud }: { tonight: To
     setTarget(next);
     setStack(null);
     setModal(null);
-    setAcquisition(planAcquisition({ targetId: next.id, targetName: targetTitle(next), from: drive.pointing, to, startedAtMs: at.getTime(), warm: true }));
+    setAcquisition(planAcquisition({ targetId: next.id, targetName: targetTitle(next), from: drive.pointing, to, startedAtMs: Date.now(), warm: true }));
   }, [station]);
 
   const cancelGoto = useCallback(() => {
@@ -542,7 +547,7 @@ export default function ObservatoryConsole({ tonight, nodeCloud }: { tonight: To
       : [{ label: 'Re-centre', run: () => target && pointAt(target) }, { label: 'Change target', run: () => setModal('targets') }];
   }
   const hints = [
-    'Pick a station where it is dark now, then connect.',
+    skyAheadMs ? 'Daytime at the telescope — the demo runs on tonight’s sky. Connect to start.' : 'Connect to Live Telescope V1 to start.',
     'Park at zenith, then calibrate to start the feed.',
     `Select a target that has risen.${tonight ? ` Tonight’s card is ${tonight.name}.` : ''}`,
     `GoTo, plate-solve and centre. About ${pointEstimate} seconds.`,
@@ -600,22 +605,19 @@ export default function ObservatoryConsole({ tonight, nodeCloud }: { tonight: To
 
   /* --- what the panels read -------------------------------------------- */
 
-  const span = useMemo(() => (station ? nightSpan(station, new Date(Math.floor(now / 60_000) * 60_000)) : null), [station, Math.floor(now / 60_000)]); // eslint-disable-line react-hooks/exhaustive-deps
+  const span = useMemo(() => (station ? nightSpan(station, new Date(Math.floor(skyMs / 60_000) * 60_000)) : null), [station, Math.floor(skyMs / 60_000)]); // eslint-disable-line react-hooks/exhaustive-deps
   const path = useMemo(() => (station && target && span ? altitudePath(target, station, span, 40) : null), [station, target, span]);
   const best = path ? bestOf(path) : null;
-  const darkWin = useMemo(() => getTonightDarkWindow(selected.lat, selected.lon, new Date(Math.floor(now / 60_000) * 60_000), selected.timezone), [selected, Math.floor(now / 60_000)]); // eslint-disable-line react-hooks/exhaustive-deps
+  const darkWin = useMemo(() => getTonightDarkWindow(selected.lat, selected.lon, new Date(Math.floor(skyMs / 60_000) * 60_000), selected.timezone), [selected, Math.floor(skyMs / 60_000)]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // The station list changes once a minute; the tick must not redraw it.
-  const minute = Math.floor(now / 60_000);
+  const minute = Math.floor(skyMs / 60_000);
   const stationRows = useMemo<StationRow[]>(() => {
     const at = new Date(minute * 60_000);
-    const graded = STATIONS.map((s) => {
+    return STATIONS.map((s) => {
       const state = skyStateAt(s, at);
-      return { station: s, dark: state === 'night', twilight: state === 'twilight', local: clock(at.getTime(), s.timezone), best: false };
+      return { station: s, dark: state === 'night', twilight: state === 'twilight', local: clock(at.getTime(), s.timezone) };
     });
-    const bestDark = graded.filter((r) => r.dark).sort((a, b) => a.station.bortle - b.station.bortle)[0];
-    if (bestDark) bestDark.best = true;
-    return graded;
   }, [minute]);
 
   if (clockMs === null) return <div className="sdo" aria-busy="true" />;
@@ -627,8 +629,8 @@ export default function ObservatoryConsole({ tonight, nodeCloud }: { tonight: To
     return [label, `${Math.floor(m / 60)} h ${pad2(m % 60)} m`] as const;
   };
   const dark = darkWin.isCurrentlyDark && darkWin.dawnEnd
-    ? hoursLeft('Dark left', darkWin.dawnEnd.getTime() - now)
-    : darkWin.duskStart && darkWin.duskStart.getTime() > now ? hoursLeft('Dark in', darkWin.duskStart.getTime() - now) : (['Dark left', '—'] as const);
+    ? hoursLeft('Dark left', darkWin.dawnEnd.getTime() - skyMs)
+    : darkWin.duskStart && darkWin.duskStart.getTime() > skyMs ? hoursLeft('Dark in', darkWin.duskStart.getTime() - skyMs) : (['Dark left', '—'] as const);
 
   const plate = target ? cardForTarget(target.id) : null;
   const art: 'none' | 'blur' | 'sharp' = !plate || !cameraOn ? 'none' : onTarget || gotoState === 'centring' ? 'sharp' : inGoto ? 'blur' : 'none';
@@ -722,8 +724,8 @@ export default function ObservatoryConsole({ tonight, nodeCloud }: { tonight: To
         <StellarNavLinks />
         <div className="sdo-head__right">
           <div className="sdo-clocks">
-            <span><span className="sdo-lbl">UTC</span><b>{clock(now, 'UTC', true)}</b></span>
-            <span><span className="sdo-lbl">{selected.site.split(',')[0]}</span><b>{clock(now, selected.timezone, true)}</b></span>
+            <span><span className="sdo-lbl">{skyAheadMs > 0 ? 'Sky UTC' : 'UTC'}</span><b>{clock(skyMs, 'UTC', true)}</b></span>
+            <span><span className="sdo-lbl">{skyAheadMs > 0 ? 'Tonight’s sky' : selected.site.split(',')[0]}</span><b>{clock(skyMs, selected.timezone, true)}</b></span>
             <span><span className="sdo-lbl">{dark[0]}</span><b>{dark[1]}</b></span>
           </div>
           <span className="sdo-pill sdo-pill--sim"><span className="sdo-led" />Demo<span className="sdo-pill__long">&nbsp;· simulated</span></span>
@@ -735,7 +737,9 @@ export default function ObservatoryConsole({ tonight, nodeCloud }: { tonight: To
 
       <div className="sdo-demo" role="note">
         <span className="sdo-demo__tag">Demo</span>
-        <p className="sdo-demo__text">Simulated frames until first light, November 2026</p>
+        <p className="sdo-demo__text">
+          Simulated frames until first light, November 2026{skyAheadMs > 0 && <span className="sdo-demo__sky"> · daytime at the telescope, so the demo shows tonight’s sky</span>}
+        </p>
         <Link href="/tonight">Tonight’s vote</Link>
       </div>
 
@@ -880,7 +884,7 @@ export default function ObservatoryConsole({ tonight, nodeCloud }: { tonight: To
       {modal === 'stations' && (
         <SheetDialog night={night} title="Telescopes" onClose={closeModal}>
           <StationList rows={rows} selectedId={selectedId} onPick={pick} />
-          <p className="sdo-note" style={{ padding: 0 }}>A lit dot means it is dark there now</p>
+          <p className="sdo-note" style={{ padding: 0 }}>One telescope is open; the rest come after first light</p>
         </SheetDialog>
       )}
       {modal === 'hand' && <SheetDialog night={night} title="Hand control" onClose={closeModal}>{hand}</SheetDialog>}

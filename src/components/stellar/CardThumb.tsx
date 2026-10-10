@@ -1,14 +1,22 @@
+import type { ReactNode } from 'react';
 import { plateFor } from '@/lib/stellar/plate';
+import CardFront from './card/CardFront';
 import FadeImg from './FadeImg';
-import RarityBadge from './RarityBadge';
 
-export default function CardThumb({ designation, eager = false }: { designation: string; eager?: boolean }) {
+type Props = {
+  designation: string;
+  eager?: boolean;
+  /** Given a price, the face is drawn live, with today's price and stock; otherwise the baked face loads. */
+  price?: string;
+  sub?: ReactNode;
+};
+
+export default function CardThumb({ designation, eager = false, price, sub }: Props) {
   const plate = plateFor(designation);
   if (!plate) return <span className="sd-thumb sd-thumb--blank" aria-hidden="true">{designation}</span>;
   return (
     <div className="sd-thumb" role="img" aria-label={`${plate.name}, ${plate.rname}, Genesis ${plate.num} of ${plate.total}`}>
-      <FadeImg src={`${plate.art}/card.webp?v=rich2`} width={520} height={726} priority={eager} />
-      <RarityBadge rarity={plate.rarity} />
+      {price ? <CardFront plate={plate} priority={eager} price={price} sub={sub} u="" /> : <FadeImg src={`${plate.art}/card.webp?v=specimen1`} width={520} height={726} priority={eager} />}
     </div>
   );
 }

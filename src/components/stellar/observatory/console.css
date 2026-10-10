@@ -192,6 +192,11 @@
 .sdo-stn { transition: background 120ms, border-color 120ms, transform 70ms; }
 .sdo-stn:hover { background: rgba(227, 72, 44, .08); }
 .sdo-stn:active { transform: scale(.985); }
+.sdo-stn.is-soon { cursor: default; opacity: .55; }
+.sdo-stn.is-soon:hover { background: transparent; }
+.sdo-stn.is-soon:active { transform: none; }
+.sdo-stn.is-soon { grid-template-columns: 8px minmax(0, 1fr); padding-block: 5px; }
+.sdo-stn .sdo-stn__soon { font-family: var(--o-mono); font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: rgba(244, 244, 242, .7); }
 .sdo-stn.is-on { background: linear-gradient(90deg, rgba(227, 72, 44, .14), rgba(227, 72, 44, .02)); border-color: rgba(227, 72, 44, .5); box-shadow: inset 2px 0 0 var(--o-hal); }
 .sdo-stn__name { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .sdo-stn__name b { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

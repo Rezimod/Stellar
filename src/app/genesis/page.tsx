@@ -102,7 +102,6 @@ export default async function FirstLightPage() {
                     name={seed.name}
                     rarity={rarity}
                     remaining={remaining.get(seed.designation) ?? seed.editionSize}
-                    editionSize={seed.editionSize}
                     sub={
                       record.section === 'almanac' ? (
                         <AlmanacDate startUtc={record.eventStartUtc!} endUtc={record.eventEndUtc!} countdown short />

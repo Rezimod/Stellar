@@ -1,8 +1,12 @@
-import { memo, type CSSProperties } from 'react';
+import { memo, type CSSProperties, type ReactNode } from 'react';
 import FadeImg from '../FadeImg';
-import type { Plate } from '@/lib/stellar/plate';
+import { lightFor, type Plate } from '@/lib/stellar/plate';
 import { photoFor } from '@/lib/stellar/photos';
+import { perkFor } from '@/lib/stellar/perks';
+import { cardPriceUsd } from '@/lib/stellar/economics';
+import { SET_001_CARD_BY_DESIGNATION } from '@/lib/sets/set-001';
 import { rarityInfo } from '@/lib/rarity';
+import ART from '@/lib/stellar/art.json';
 
 type Props = {
   plate: Plate;
@@ -10,42 +14,76 @@ type Props = {
   lite?: boolean;
   priority?: boolean;
   u: string;
+  /** '$8', or 'Sealed'. Defaults to the card's list price. */
+  price?: string;
+  /** The line at the foot: how many are left, or an Almanac card's date. */
+  sub?: ReactNode;
 };
 
-const DRAWN = new Set(['IMILAC', 'CHICXULUB', 'TUNGUSKA', 'JWST', 'SL9', 'VOYAGER-1', 'ARCTURUS', 'POLARIS', 'CMB']);
-const WHOLE = new Set(['SUN', 'EARTH', 'MOON', 'MERCURY', 'VENUS', 'MARS', 'JUPITER', 'SATURN', 'URANUS', 'NEPTUNE', 'PLUTO', 'IO', 'EUROPA', 'GANYMEDE', 'TITAN', 'ENCELADUS', 'BLOOD-MOON', 'HUNTERS-MOON', 'CHRISTMAS-SUPERMOON', 'SNOW-MOON-ECLIPSE']);
+const WITH_ART = new Set<string>(ART);
+
+/** The card's own art: a painted scene where there is one, the real photograph where not. */
+function artFor(designation: string) {
+  if (WITH_ART.has(designation)) return { file: `/cards/art/${designation}.webp`, focus: '50% 50%' };
+  const photo = photoFor(designation);
+  return photo ? { file: photo.file, focus: photo.focus ?? '50% 50%' } : null;
+}
+
+/** The object's light, made bold enough for a rim; the greys stay silver. */
+export function accentFor(designation: string) {
+  const hex = lightFor(designation);
+  const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
+  const max = Math.max(r, g, b), min = Math.min(r, g, b), l = (max + min) / 2;
+  const s = max === min ? 0 : (max - min) / (1 - Math.abs(2 * l - 1));
+  if (s < 0.2) return '#d9dde4';
+  const h = max === r ? ((g - b) / (max - min) + 6) % 6 : max === g ? (b - r) / (max - min) + 2 : (r - g) / (max - min) + 4;
+  return `hsl(${Math.round(h * 60)} 78% 60%)`;
+}
 
 /** The pictures a full-size card face loads, to fetch ahead of opening it. */
 export function faceSources(plate: Plate) {
-  const photo = DRAWN.has(plate.designation) ? null : photoFor(plate.designation);
-  return photo ? [photo.file] : [`${plate.art}/sky.svg`, `${plate.art}/object.svg`];
+  const art = artFor(plate.designation);
+  return art ? [art.file] : [];
 }
 
-function CardFront({ plate, capture, lite = false, priority = false }: Props) {
-  const photo = DRAWN.has(plate.designation) ? null : photoFor(plate.designation);
-  const title = plate.poster.title.replaceAll('\n', ' ');
-  const source = capture ?? photo?.file;
-  const extension = lite ? 'webp' : 'svg';
+function CardFront({ plate, capture, priority = false, price, sub }: Props) {
+  const art = artFor(plate.designation);
+  const source = capture ?? art?.file;
+  const seed = SET_001_CARD_BY_DESIGNATION.get(plate.designation)?.seed;
+  const perk = perkFor(plate.designation, plate.rarity);
+  const shown = price ?? `$${cardPriceUsd(plate.designation, plate.rarity)}`;
+  const foot = sub ?? `${Number(plate.of)} editions`;
 
   return (
-    <div className="sdc-card sdc-card--front" data-rarity={plate.rarity} style={{ '--card-accent': rarityInfo(plate.rarity).color } as CSSProperties}>
-      <div className={`sdc-art${source ? ' sdc-art--photo' : ''}${!capture && WHOLE.has(plate.designation) ? ' sdc-art--whole' : ''}`}>
-        {source ? (
-          <FadeImg src={source} alt="" priority={priority} style={{ objectPosition: photo?.focus ?? '50% 50%' }} />
-        ) : (
-          <>
-            <FadeImg className="sdc-art__sky" src={`${plate.art}/sky.${extension}`} alt="" priority={priority} />
-            <FadeImg className="sdc-art__object" src={`${plate.art}/object.${extension}`} alt="" priority={priority} />
-          </>
-        )}
+    <div
+      className="sdc-card sdc-card--front"
+      data-rarity={plate.rarity}
+      style={{ '--card-accent': accentFor(plate.designation), '--rarity': rarityInfo(plate.rarity).color } as CSSProperties}
+    >
+      <header className="sdc-top">
+        <span className="sdc-no">No. {plate.num}</span>
+        <span className="sdc-tier">{plate.rname}</span>
+      </header>
+      <div className="sdc-panel">
+        <div className="sdc-art">
+          {source && <FadeImg src={source} alt="" priority={priority} style={{ objectPosition: capture ? '50% 50%' : art?.focus }} />}
+        </div>
+        <div className="sdc-caption">
+          <div className="sdc-title">
+            <strong className="sdc-name" style={{ '--card-name-size': `${Math.min(10.5, 150 / plate.name.length)}cqw` } as CSSProperties}>{plate.name}</strong>
+            <span className="sdc-price">{shown}</span>
+          </div>
+          <span className="sdc-kind">{seed?.objectType ?? plate.poster.headline}</span>
+          <div className="sdc-foot">
+            <span className="sdc-perk">{perk.short}</span>
+            <span className="sdc-left">{foot}</span>
+            <span className="sdc-go" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M5 12h13m-5-5 5 5-5 5" /></svg>
+            </span>
+          </div>
+        </div>
       </div>
-      <div className="sdc-atmosphere" aria-hidden="true" />
-      <div className="sdc-caption">
-        <strong className="sdc-name" style={{ '--card-name-size': `${Math.min(11.8, 175 / title.length)}cqw` } as CSSProperties}>{title}</strong>
-        <span className="sdc-headline">{plate.poster.headline}</span>
-        <span className="sdc-number">{plate.num} / {plate.total}</span>
-      </div>
-      {!lite && <div className="sdc-glare" aria-hidden="true" />}
+      <div className="sdc-glare" aria-hidden="true" />
     </div>
   );
 }

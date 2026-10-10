@@ -6,7 +6,7 @@ import type { Station } from '@/lib/observatory/sim-stations';
 import { TELESCOPE_TARGETS, sortGraded, targetPosition, type TargetKind, type TargetOrder, type TelescopeTarget } from '@/lib/observatory/telescope-targets';
 import { AltCurve } from './charts';
 import Icon from './icons';
-import { altitudePath, bestOf, cardForTarget, clock, nightSpan, plateArt, risesAt } from './sky';
+import { altitudePath, bestOf, cardForTarget, clock, nightSpan, plateArt, risesAt, skyNow } from './sky';
 
 export type Frame = {
   id: string;
@@ -51,7 +51,7 @@ function Modal({ width, head, tone = '#f0785a', night, onClose, labelledBy, chil
 }
 
 const STEPS: Array<[string, string]> = [
-  ['Connect', 'Pick a station where it is dark now.'],
+  ['Connect', 'Live Telescope V1, the one telescope open.'],
   ['Calibrate', 'Park at zenith, then align.'],
   ['Target', 'Planets, nebulae, galaxies, clusters.'],
   ['Point', 'GoTo, plate-solve, centre.'],
@@ -119,7 +119,7 @@ const signed = (v: number, digits = 0) => `${v < 0 ? '−' : '+'}${Math.abs(v).t
 export function TargetsDialog({ night, station, tonightId, onPoint, onClose }: {
   night: boolean; station: Station; tonightId: string | null; onPoint: (t: TelescopeTarget) => void; onClose: () => void;
 }) {
-  const [at] = useState(() => Date.now());
+  const [at] = useState(skyNow);
   const [query, setQuery] = useState('');
   const [tab, setTab] = useState('all');
   const [order, setOrder] = useState<TargetOrder>('zenith');
@@ -203,7 +203,7 @@ export function TargetsDialog({ night, station, tonightId, onPoint, onClose }: {
 export type Refusal = { target: TelescopeTarget; reason: string };
 
 export function RefusedDialog({ night, station, refusal, onChoose, onClose }: { night: boolean; station: Station; refusal: Refusal; onChoose: () => void; onClose: () => void }) {
-  const [at] = useState(() => Date.now());
+  const [at] = useState(skyNow);
   const { target } = refusal;
   const altitude = targetPosition(target, station, new Date(at)).altitude;
   const span = useMemo(() => nightSpan(station, new Date(at)), [station, at]);

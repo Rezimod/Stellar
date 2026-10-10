@@ -17,11 +17,10 @@ export type ShopCardProps = {
   /** Near the top of the shelf: loads at once. */
   eager?: boolean;
   remaining?: number;
-  editionSize?: number;
 };
 
-/** A card on the shelf: the card on its object's own light, its rarity and number above it, its name and price, one line under. */
-export default function ShopCard({ designation, name, rarity, sub, price, tag, eager = false, remaining, editionSize }: ShopCardProps) {
+/** A card on the shelf: the live face, its price and stock printed on it. */
+export default function ShopCard({ designation, name, rarity, sub, price, tag, eager = false, remaining }: ShopCardProps) {
   return (
     <Link
       href={`/card/${designation}`}
@@ -34,15 +33,8 @@ export default function ShopCard({ designation, name, rarity, sub, price, tag, e
       style={{ '--tile-glow': glowFor(designation) } as CSSProperties}
     >
       <span className="sd-tile__stage">
-        <CardThumb designation={designation} eager={eager} />
+        <CardThumb designation={designation} eager={eager} price={price} sub={sub} />
         {tag && <span className="sd-tile__tag">{tag}</span>}
-      </span>
-      <span className="sd-tile__foot">
-        <span className="sd-tile__price">{price}</span>
-        <span className="sd-tile__sub">
-          {remaining != null && editionSize != null && <span className="sd-stock" aria-hidden="true"><i style={{ width: `${Math.max(0, Math.min(100, remaining / editionSize * 100))}%` }} /></span>}
-          {sub}
-        </span>
       </span>
     </Link>
   );

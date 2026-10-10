@@ -1,9 +1,8 @@
 /**
- * The telescopes the live console can connect to.
+ * The telescopes the live console lists.
  *
- * One is the network's real node; the rest are simulated stations spread
- * around the globe so that whatever the hour in Tbilisi, at least one sits
- * under a dark sky and shows a green dot. Every station is a full
+ * One is the network's real node and the only one that connects; the rest
+ * are stations still to come, listed as coming soon. Every station is a full
  * ObservatoryNode, so the safety envelope, the optics and the sky model all
  * run on it unchanged — the only thing simulated is the photons.
  */
@@ -17,6 +16,8 @@ export type Station = ObservatoryNode & {
   /** Metres above sea level, for the location readout. */
   elevationM: number;
   simulated: boolean;
+  /** Not open yet: listed, never connectable. */
+  soon?: boolean;
 };
 
 /** Minutes of telescope time a connection buys in the console. */
@@ -55,6 +56,7 @@ const simulated = (
   priceGel: 0,
   sessionMinutes: SESSION_MINUTES,
   simulated: true,
+  soon: true,
 });
 
 export const STATIONS: Station[] = [

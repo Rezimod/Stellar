@@ -36,12 +36,21 @@ function QuickStartBase({ name, designation, rarity, onStart }: { name: string |
   );
 }
 
-export type StationRow = { station: Station; dark: boolean; twilight: boolean; local: string; best: boolean };
+export type StationRow = { station: Station; dark: boolean; twilight: boolean; local: string };
 
 function StationListBase({ rows, selectedId, onPick }: { rows: StationRow[]; selectedId: string | null; onPick: (s: Station) => void }) {
   return (
     <div className="sdo-scopes__list">
-      {rows.map(({ station: s, dark, twilight, local, best }) => (
+      {rows.map(({ station: s, dark, twilight, local }) =>
+        s.soon ? (
+          <div key={s.id} className="sdo-stn is-soon" aria-disabled="true">
+            <span className="sdo-led" aria-hidden="true" />
+            <span className="sdo-stn__name">
+              <b>{s.name}</b>
+              <span className="sdo-stn__soon">Coming soon</span>
+            </span>
+          </div>
+        ) : (
         <button key={s.id} type="button" className={`sdo-stn${s.id === selectedId ? ' is-on' : ''}`} aria-pressed={s.id === selectedId} onClick={() => onPick(s)}>
           <span className={`sdo-led${dark ? ' is-go' : twilight ? ' is-hold' : ''}`} aria-label={dark ? 'Dark now' : twilight ? 'Twilight' : 'Daylight'} />
           <span className="sdo-stn__name">
@@ -50,10 +59,11 @@ function StationListBase({ rows, selectedId, onPick }: { rows: StationRow[]; sel
           </span>
           <span className="sdo-stn__meta">
             <span>{local}</span>
-            <span className={`sdo-badge${best ? ' sdo-badge--best' : ''}`}>B{s.bortle}{best ? ' · BEST' : ''}</span>
+            <span className="sdo-badge">B{s.bortle}</span>
           </span>
         </button>
-      ))}
+        ),
+      )}
     </div>
   );
 }
@@ -63,7 +73,7 @@ function TelescopesBase({ rows, selectedId, onPick, sky }: { rows: StationRow[];
     <section className="sdo-panel sdo-scopes" aria-labelledby="sdo-scopes-t">
       <div className="sdo-ph">
         <h2 id="sdo-scopes-t" className="sdo-ph__t"><Icon name="signal" size={15} />Telescopes</h2>
-        <span className="sdo-ph__id">{rows.length} stations</span>
+        <span className="sdo-ph__id">1 of {rows.length} open</span>
       </div>
       <StationList rows={rows} selectedId={selectedId} onPick={onPick} />
       <div className="sdo-hr" style={{ marginTop: 8 }} />
@@ -75,7 +85,7 @@ function TelescopesBase({ rows, selectedId, onPick, sky }: { rows: StationRow[];
           </div>
         ))}
       </div>
-      <p className="sdo-note">A lit dot means it is dark there now</p>
+      <p className="sdo-note">One telescope is open; the rest come after first light</p>
     </section>
   );
 }

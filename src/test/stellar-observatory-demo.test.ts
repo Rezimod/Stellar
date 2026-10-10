@@ -19,7 +19,22 @@ it('marks the observatory console as a demo until first light', async () => {
   expect(host.querySelector('.sdo-demo__tag')?.textContent).toBe('Demo');
   expect(text).toContain('Simulated frames until first light, November 2026');
   expect(host.querySelector('a[href="/node"]')?.getAttribute('aria-current')).toBe('page');
-  expect(text).not.toMatch(/coming soon|is live|operational/i);
+  expect(text).not.toMatch(/is live|operational/i);
+  await act(async () => root.unmount());
+  host.remove();
+});
+
+it('opens one telescope and lists the rest as coming soon', async () => {
+  const host = document.createElement('div');
+  document.body.appendChild(host);
+  const root = createRoot(host);
+  await act(async () => root.render(createElement(ObservatoryConsole, { tonight: null, nodeCloud: null })));
+  const open = [...host.querySelectorAll('button.sdo-stn')].map((b) => b.textContent);
+  expect(open).toHaveLength(1);
+  expect(open[0]).toContain('Live Telescope V1');
+  const soon = host.querySelectorAll('.sdo-stn.is-soon');
+  expect(soon).toHaveLength(4);
+  for (const row of soon) expect(row.textContent).toContain('Coming soon');
   await act(async () => root.unmount());
   host.remove();
 });

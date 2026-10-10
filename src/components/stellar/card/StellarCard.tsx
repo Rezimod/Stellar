@@ -5,7 +5,6 @@ import { RotateCcw } from 'lucide-react';
 import { editionLabel, plateFor } from '@/lib/stellar/plate';
 import CardBack from './CardBack';
 import CardFront from './CardFront';
-import RarityBadge from '../RarityBadge';
 import './stellar-card.css';
 
 type Props = {
@@ -92,7 +91,6 @@ function StellarCard({ designation, edition, capture, commitment, hero = false, 
           <div className={`sdc-flip${over ? ' is-over' : ''}`}>
             <div className="sdc-face" aria-hidden={over} role="img" aria-label={`${plate.name}, ${plate.rname}, Genesis number ${plate.num}${edition != null ? `, edition ${ed} of ${plate.of}` : ''}`}>
               <CardFront plate={plate} capture={capture} lite={lite} priority={priority} u={u} />
-              <RarityBadge rarity={plate.rarity} />
             </div>
             {hero && (
               <div className="sdc-face sdc-face--back" aria-hidden={!over}>
