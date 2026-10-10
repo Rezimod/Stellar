@@ -275,7 +275,7 @@ function ZoomedCard({ zoom, onClosed }: { zoom: Zoom; onClosed: () => void }) {
         </div>
         <div key={`${designation}-info`} className="sd-zoom__info">
           <p className="sd-zoom__rarity">{plate.rname} · Genesis</p>
-          <h2 className="sd-zoom__name" id="sd-zoom-name">{plate.poster.title.replaceAll('\n', ' ')}</h2>
+          <h2 className="sd-zoom__name" id="sd-zoom-name">{plate.name}</h2>
           <p className="sd-zoom__line">{plate.poster.headline}</p>
           <dl className="sd-zoom__facts">
             <div><dt>Edition size</dt><dd>{item.seed.editionSize}</dd></div>

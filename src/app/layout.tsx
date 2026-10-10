@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import type { Viewport } from 'next';
-import { Anton, Bowlby_One, Orbitron, Geist, JetBrains_Mono, Oswald } from 'next/font/google';
+import { Anton, Orbitron, Geist, JetBrains_Mono, Oswald } from 'next/font/google';
 import './stellar-base.css';
 import '../styles/stellar-theme.css';
 import '../styles/stellar-motion.css';
@@ -14,7 +14,7 @@ import '../styles/stellar-mobile.css';
 import { AnalyticsBoot } from '@/components/providers/AnalyticsBoot';
 import JsonLd from '@/components/shared/JsonLd';
 
-// Stellar's three faces: Orbitron for the wordmark and display, Geist for
+// Skychaser's faces: Orbitron for the wordmark and display, Geist for
 // text, JetBrains Mono for figures. The legacy pages add their own in app/(stellar).
 const orbitron = Orbitron({
   subsets: ['latin'],
@@ -28,15 +28,13 @@ const geist = Geist({
   weight: ['400', '500', '600', '700'],
   display: 'swap',
 });
-// The card poster's faces: Bowlby One for the striped title, Anton for the
-// condensed headlines and figures, Oswald for the spaced-out lines.
-const bowlby = Bowlby_One({ subsets: ['latin'], variable: '--font-bowlby', weight: '400', display: 'swap' });
+// Anton for every title and the card names, Oswald for the spaced-out labels and buttons.
 const anton = Anton({ subsets: ['latin'], variable: '--font-anton', weight: '400', display: 'swap' });
-const oswald = Oswald({ subsets: ['latin'], variable: '--font-oswald', weight: ['300', '400', '500'], display: 'swap' });
+const oswald = Oswald({ subsets: ['latin'], variable: '--font-oswald', weight: ['300', '400', '500', '600', '700'], display: 'swap' });
 const jetbrainsMono = JetBrains_Mono({
   subsets: ['latin'],
   variable: '--font-mono',
-  weight: ['400', '500', '700'],
+  weight: ['400', '500', '600', '700'],
   display: 'swap',
 });
 
@@ -49,7 +47,7 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: {
-    default: 'Stellar — the cosmos, issued in editions',
+    default: 'Skychaser — the cosmos, issued in editions',
     template: '%s',
   },
   metadataBase: new URL('https://stellarr.club'),
@@ -62,10 +60,10 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'Stellar',
+    title: 'Skychaser',
   },
   openGraph: {
-    siteName: 'Stellar',
+    siteName: 'Skychaser',
     type: 'website',
   },
   twitter: {
@@ -80,9 +78,9 @@ export const metadata: Metadata = {
  */
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${orbitron.variable} ${geist.variable} ${jetbrainsMono.variable} ${bowlby.variable} ${anton.variable} ${oswald.variable}`}>
+    <html lang="en" suppressHydrationWarning className={`${orbitron.variable} ${geist.variable} ${jetbrainsMono.variable} ${anton.variable} ${oswald.variable}`}>
       <head>
-        <meta name="apple-mobile-web-app-title" content="Stellar" />
+        <meta name="apple-mobile-web-app-title" content="Skychaser" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <JsonLd />
       </head>

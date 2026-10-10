@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import type { CSSProperties } from 'react';
+import { accentFor } from '@/components/stellar/card/CardFront';
 import { notFound } from 'next/navigation';
 import AlmanacDate from '@/components/stellar/AlmanacDate';
 import CardPlate from '@/components/stellar/CardPlate';
@@ -32,8 +34,8 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { designation } = await params;
   const card = SET_001_CARD_BY_DESIGNATION.get(designation.toUpperCase());
-  if (!card) return { title: 'Card not found — Stellar' };
-  return { title: `${card.seed.name} — Genesis · Stellar`, description: card.seed.blurb };
+  if (!card) return { title: 'Card not found — Skychaser' };
+  return { title: `${card.seed.name} — Genesis · Skychaser`, description: card.seed.blurb };
 }
 
 /** A selenographic degree, with a real minus sign rather than a hyphen. */
@@ -96,7 +98,7 @@ export default async function CardPage({ params }: { params: Promise<{ designati
           <span aria-hidden="true">/</span>
           <strong>{seed.designation}</strong>
         </nav>
-        <div className="sd-cardhero" data-rarity={rarity}>
+        <div className="sd-cardhero" data-rarity={rarity} style={{ '--accent': accentFor(seed.designation) } as CSSProperties}>
           <figure className="sd-cardhero__plate sd-figure">
             <CardPlate size="lg" hero priority designation={seed.designation} />
           </figure>
@@ -105,11 +107,7 @@ export default async function CardPage({ params }: { params: Promise<{ designati
             <p className="sd-eyebrow">
               {[seed.designation, ...seed.objectType.split(' · ').filter((t) => t.toUpperCase() !== seed.designation), rarityInfo(rarity).label].join(' · ')}
             </p>
-            <h2 className="sd-cardhero__title">
-              {(poster.title.replace('\n', ' ').length <= 14 ? [poster.title.replace('\n', ' ')] : poster.title.split('\n')).map((line) => (
-                <span key={line}>{line}</span>
-              ))}
-            </h2>
+            <h2 className="sd-cardhero__title">{seed.name}</h2>
             {/* The card beside it carries the epithet, quote and headline; the page adds what the card does not say. */}
             <p className="sd-cardhero__line">{record.line}</p>
             <div className="sd-perk" data-rarity={rarity}>
@@ -161,7 +159,7 @@ export default async function CardPage({ params }: { params: Promise<{ designati
               </Link>
             </div>
             <div className="sd-cardhero__share">
-              <ShareCard title={`${seed.name} — Stellar`} text={`${seed.name} — a Genesis card on Stellar. ${record.line}`} url={`https://stellarr.club/card/${seed.designation}`} />
+              <ShareCard title={`${seed.name} — Skychaser`} text={`${seed.name} — a Genesis card on Skychaser. ${record.line}`} url={`https://stellarr.club/card/${seed.designation}`} />
             </div>
           </div>
         </div>

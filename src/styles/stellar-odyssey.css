@@ -165,7 +165,7 @@
   .stellar .sd-fl__head:has(.sd-filter__count:not(:empty)) .sd-fl__meta { display: none; }
 }
 /* ── The card page ────────────────────────────────────────────── */
-.stellar .sd-cardhero .sd-eyebrow { font: 600 10.5px var(--sd-spaced); letter-spacing: 0.24em; }
+.stellar .sd-cardhero .sd-eyebrow { letter-spacing: 0.2em; }
 .stellar .sd-facts { border-color: var(--sd-line); border-radius: 10px; background: var(--sd-ticks), rgba(0, 0, 0, 0.35); }
 
 /* ── Phones and tablets ───────────────────────────────────────── */

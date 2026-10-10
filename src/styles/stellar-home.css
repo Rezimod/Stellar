@@ -6,13 +6,12 @@
 
 .stellar {
   --sd-orange: var(--sd-accent);   /* the accent line — the poster's flat vermilion */
-  --sd-print: #3a0f08;    /* the shadow every display line is printed over, a deep red on the black */
   --sd-ray: #e2b86a;      /* sunburst and orbit lines */
 }
 
-/* ── Display type: cream on a hard offset, the accent in flat orange ── */
+/* ── Display type: cream with a soft depth, the accent in flat orange ── */
 .stellar :is(.sd-hero2__title, .sd-home-sec__title, .sd-closer2__title) {
-  color: var(--sd-ink); text-shadow: 0.05em 0.055em 0 var(--sd-print);
+  color: var(--sd-ink); text-shadow: 0 2px 28px rgba(0, 0, 0, 0.55);
 }
 .stellar :is(.sd-hero2__title, .sd-closer2__title) em {
   color: var(--sd-orange); background: none; -webkit-background-clip: border-box; background-clip: border-box;
@@ -35,7 +34,7 @@
 .stellar .sd-hero2__sub { margin-top: 22px; max-width: 44ch; color: rgba(244, 232, 204, 0.84); font-size: 18px; }
 .stellar .sd-hero2__cta { align-items: center; gap: 14px 26px; }
 .stellar .sd-hero2__stats { margin-top: 40px; border-top-color: rgba(244, 232, 204, 0.16); }
-.stellar .sd-hero2__stats dd { color: var(--sd-ink); text-shadow: 0.05em 0.06em 0 var(--sd-print); }
+.stellar .sd-hero2__stats dd { color: var(--sd-ink); }
 .stellar .sd-hero2__stats dt { color: rgba(244, 232, 204, 0.6); }
 
 /* ── Partners and recognition, in the footer: one quiet band, every mark in the same cream ink ── */
@@ -131,7 +130,7 @@
 .stellar .sd-hero3__title {
   margin: 0; font-family: var(--font-anton), Impact, sans-serif; font-weight: 400; font-size: clamp(27px, 5vw, 76px); line-height: 1;
   letter-spacing: 0.01em; text-transform: uppercase; white-space: nowrap; color: var(--sd-ink);
-  text-shadow: 0.05em 0.055em 0 var(--sd-print);
+  text-shadow: 0 2px 30px rgba(0, 0, 0, 0.6);
 }
 .stellar .sd-hero3__title em { font-style: normal; color: var(--sd-accent); }
 .stellar .sd-hero3__sub { margin: 24px auto 0; max-width: 44ch; color: rgba(244, 232, 204, 0.84); font-size: clamp(16px, 1.3vw, 19px); font-weight: 500; line-height: 1.5; }

@@ -22,7 +22,7 @@
   --o-epic: #e3482c;
   --o-legendary: #d8b66f;
   --o-cond: var(--font-oswald), var(--font-geist), sans-serif;
-  --o-title: var(--font-bowlby), Impact, sans-serif;
+  --o-title: var(--font-anton), Impact, sans-serif;
   --o-display: var(--font-anton), Impact, sans-serif;
   --o-mono: var(--font-mono), ui-monospace, monospace;
   --o-sans: var(--font-geist), system-ui, sans-serif;
