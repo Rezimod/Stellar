@@ -30,7 +30,7 @@ const RECOGNITION = [
 ];
 
 const EXPLORE = [
-  { href: '/node', label: 'Telescope — coming soon' },
+  { href: '/node', label: 'Observatory' },
   { href: '/voyage', label: 'Voyage' },
 ];
 

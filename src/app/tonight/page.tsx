@@ -2,9 +2,9 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import CardPlate from '@/components/stellar/CardPlate';
 import ObjectArt from '@/components/stellar/ObjectArt';
+import StellarBallot from '@/components/stellar/StellarBallot';
 import StellarShell from '@/components/stellar/StellarShell';
 import StellarView from '@/components/stellar/StellarView';
-import StellarVote from '@/components/stellar/StellarVote';
 import TonightSkyChart from '@/components/stellar/TonightSkyChart';
 import Chapter from '@/components/stellar/ui/Chapter';
 import DataRow, { type Datum } from '@/components/stellar/ui/DataRow';
@@ -174,35 +174,16 @@ export default async function TonightPage() {
           ) : (
             <>
               <p className="sd-strip-note">One vote per holder · every card held adds to it: commons ×1 to ×3, rares ×4, epics and legendaries ×5</p>
-              <ol className="sd-ballot">
-                {candidates.map((c, i) => {
-                  const share = cast ? c.votes / cast : 0;
-                  return (
-                    <li key={c.designation} className="sd-ballot__row" data-rarity={rarityOf(c.rarity)}>
-                      <span className="sd-ballot__rank">{String(i + 1).padStart(2, '0')}</span>
-                      <ObjectArt designation={c.designation} className="sd-ballot__art" />
-                      <div className="sd-ballot__main">
-                        <Link href={`/card/${c.designation}`} className="sd-ballot__name">
-                          {c.name}
-                        </Link>
-                        <span className="sd-data">
-                          {c.altitudeDeg.toFixed(0)}° at {localTime(c.at)}
-                        </span>
-                        <span className="sd-ballot__bar" aria-hidden="true">
-                          <span style={{ width: `${Math.round(share * 100)}%` }} />
-                        </span>
-                      </div>
-                      <span className="sd-ballot__votes">
-                        {c.votes}
-                        <small>{cast ? `${Math.round(share * 100)}%` : 'votes'}</small>
-                      </span>
-                      <div className="sd-ballot__act">
-                        <StellarVote designation={c.designation} name={c.name} />
-                      </div>
-                    </li>
-                  );
-                })}
-              </ol>
+              <StellarBallot
+                night={view.voting.night}
+                candidates={candidates.map((c) => ({
+                  designation: c.designation,
+                  name: c.name,
+                  rarity: rarityOf(c.rarity),
+                  when: `${c.altitudeDeg.toFixed(0)}° at ${localTime(c.at)}`,
+                  votes: c.votes,
+                }))}
+              />
             </>
           )}
         </section>

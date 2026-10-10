@@ -161,8 +161,14 @@ export default function CapsuleCounter({ cards, onSale }: { cards: TierCard[]; o
         ))}
       </ul>
 
-      <h3 className="sd-counter__h">What each rarity gives</h3>
-      <ul className="sd-gives">
+      <details className="sd-gives-drop">
+        <summary className="sd-counter__h">
+          What each rarity gives
+          <svg viewBox="0 0 12 12" aria-hidden="true">
+            <path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </summary>
+        <ul className="sd-gives">
         {TIER_PERKS.map((t) => (
           <li key={t.rarity} data-rarity={t.rarity}>
             <span className="sd-gives__tier">{rarityInfo(t.rarity).label}</span>
@@ -173,7 +179,8 @@ export default function CapsuleCounter({ cards, onSale }: { cards: TierCard[]; o
             <span className="sd-gives__line">{t.line}</span>
           </li>
         ))}
-      </ul>
+        </ul>
+      </details>
 
       <div className="sd-counter__foot">
         <span>{stock === null ? 'Sale not read' : `${stock} on sale`}</span>

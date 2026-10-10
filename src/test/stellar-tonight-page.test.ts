@@ -9,7 +9,6 @@ vi.mock('@/lib/stellar/night', async (orig) => ({ ...(await orig<typeof import('
 vi.mock('@/components/stellar/StellarShell', () => ({
   default: ({ children }: { children: React.ReactNode }) => createElement('div', null, children),
 }));
-vi.mock('@/components/stellar/StellarVote', () => ({ default: () => createElement('button', null, 'Vote') }));
 vi.mock('@/components/stellar/StellarView', () => ({ default: () => null }));
 import TonightPage from '@/app/tonight/page';
 
@@ -39,6 +38,8 @@ it('opens the vote before the night is decided', async () => {
   expect(html).toContain('<p class="sd-lead">Saturn</p>');
   expect(html).toContain('Vote · 20 September');
   expect(html).toContain('41° at 23:15');
+  expect(html).toContain('aria-label="Log in to vote for Saturn"');
+  expect(html).toContain('transform:scaleX(1)');
   expect(html).toContain('lock tonight’s card at 13:00 UTC');
 });
 

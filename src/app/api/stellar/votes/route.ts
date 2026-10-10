@@ -1,8 +1,10 @@
+import { and, eq } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyPrivy } from '@/lib/api-auth';
 import { getDb } from '@/lib/db';
 import { paused } from '@/lib/kill-switch';
 import { getNode } from '@/lib/observatory/nodes';
+import { card, cardVote } from '@/lib/schema';
 import { stellarVoteRateLimit } from '@/lib/rate-limit';
 import { allCards, castVote, voteWeight, votingNight } from '@/lib/stellar/night';
 import { holderWallet, limited, NO_LINKED_WALLET } from '@/lib/stellar/route-guards';
@@ -48,4 +50,24 @@ export async function POST(req: NextRequest) {
 
   await castVote(db, { wallet: walletAddress, cardId: target.card.id, night, weight });
   return NextResponse.json({ ok: true, night, designation, weight });
+}
+
+/** The holder's vote for the voting night, if any, with the weight it was cast at, and the weight a vote of theirs carries now. */
+export async function GET(req: NextRequest) {
+  const privyId = await verifyPrivy(req);
+  if (!privyId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const walletAddress = await holderWallet(privyId, req.nextUrl.searchParams.get('wallet'));
+  if (!walletAddress) return NextResponse.json({ error: NO_LINKED_WALLET }, { status: 403 });
+  const db = getDb();
+  if (!db) return NextResponse.json({ error: 'Database not configured' }, { status: 503 });
+
+  const night = await votingNight(db, getNode('tbilisi-01')!, new Date());
+  const [mine] = await db
+    .select({ designation: card.designation, weight: cardVote.weight })
+    .from(cardVote)
+    .innerJoin(card, eq(card.id, cardVote.cardId))
+    .where(and(eq(cardVote.wallet, walletAddress), eq(cardVote.nightDate, night)))
+    .limit(1);
+  const weight = await voteWeight(db, walletAddress);
+  return NextResponse.json({ night, designation: mine?.designation ?? null, cast: mine?.weight ?? 0, weight });
 }

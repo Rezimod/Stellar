@@ -23,7 +23,7 @@ vi.mock('@/lib/stellar/night', () => ({
   votingNight: vi.fn(async () => '2026-09-20'),
 }));
 vi.mock('@/lib/stellar/target', () => ({ observableTonight: mocks.observable }));
-import { POST } from '@/app/api/stellar/votes/route';
+import { GET, POST } from '@/app/api/stellar/votes/route';
 
 const WALLET = '11111111111111111111111111111111';
 
@@ -69,4 +69,13 @@ it('records a holder’s weighted vote for the voting night', async () => {
 it('refuses a session with no Solana wallet linked', async () => {
   mocks.linked.mockResolvedValue([]);
   expect((await vote('SATURN')).status).toBe(403);
+});
+
+it('tells the holder where their vote is, and what it weighs', async () => {
+  mocks.weight.mockResolvedValue(5);
+  const chain = { from: () => chain, innerJoin: () => chain, where: () => chain, limit: async () => [{ designation: 'SATURN', weight: 3 }] };
+  mocks.db.mockReturnValue({ select: () => chain });
+  const res = await GET(new NextRequest(`http://localhost/api/stellar/votes?wallet=${WALLET}`));
+  expect(res.status).toBe(200);
+  expect(await res.json()).toEqual({ night: '2026-09-20', designation: 'SATURN', cast: 3, weight: 5 });
 });

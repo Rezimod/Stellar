@@ -1,8 +1,9 @@
 'use client';
 
-import { memo } from 'react';
+import { memo, type CSSProperties } from 'react';
 import Link from 'next/link';
 import type { Axis } from '@/lib/observatory/mount-drive';
+import { rarityInfo, type Rarity } from '@/lib/rarity';
 import type { AltAz } from '@/lib/observatory/safety';
 import type { Station } from '@/lib/observatory/sim-stations';
 import { Dial, Spark } from './charts';
@@ -10,9 +11,10 @@ import type { Frame } from './dialogs';
 import Icon from './icons';
 import { plateArt, type PathPoint } from './sky';
 
-function QuickStartBase({ name, designation, onStart }: { name: string | null; designation: string | null; onStart: () => void }) {
+function QuickStartBase({ name, designation, rarity, onStart }: { name: string | null; designation: string | null; rarity: Rarity | null; onStart: () => void }) {
+  const tier = rarity ? rarityInfo(rarity) : null;
   return (
-    <section className="sdo-panel sdo-quick" aria-labelledby="sdo-quick-t">
+    <section className="sdo-panel sdo-quick" aria-labelledby="sdo-quick-t" style={tier ? ({ '--rarity': tier.color } as CSSProperties) : undefined}>
       {designation && (
         <span className="sdo-quick__planet" aria-hidden="true">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -22,6 +24,7 @@ function QuickStartBase({ name, designation, onStart }: { name: string | null; d
       <div className="sdo-ph"><h2 className="sdo-ph__t"><Icon name="bolt" size={15} />Quick start</h2></div>
       <div className="sdo-quick__body">
         <p id="sdo-quick-t" className="sdo-quick__title">Observe tonight’s card</p>
+        {tier && name && <span className="sdo-quick__rarity">{tier.glyph} {tier.label} · {name}</span>}
         <p className="sdo-quick__text">
           {name ? `Connect, calibrate and point Live Telescope V1 at ${name} in one go, simulated. About a minute.` : 'Tonight’s card is not above the horizon from Live Telescope V1 yet.'}
         </p>
@@ -118,11 +121,11 @@ function PointingBase({ path, pointing, rows, rms, rmsHistory, seeing, seeingHis
       <div className="sdo-stats">
         <div className="sdo-stat">
           <div className="sdo-stat__row"><span className="sdo-lbl">Track RMS</span><span className="sdo-v sdo-v--sm">{rms}</span></div>
-          <Spark values={rmsHistory} color="#f4b113" lo={0} hi={1.4} />
+          <Spark values={rmsHistory} color="#e2b85a" lo={0} hi={1.4} />
         </div>
         <div className="sdo-stat">
           <div className="sdo-stat__row"><span className="sdo-lbl">Seeing</span><span className="sdo-v sdo-v--sm">{seeing}</span></div>
-          <Spark values={seeingHistory} color="#d6aa8b" lo={1} hi={5} />
+          <Spark values={seeingHistory} color="#f0785a" lo={1} hi={5} />
         </div>
         <div className="sdo-stat">
           <span className="sdo-lbl">Battery</span>

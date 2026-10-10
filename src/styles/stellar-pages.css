@@ -320,6 +320,15 @@
 }
 
 /* What each rarity gives, under the odds: the tier in its colour, the gift, one short line. */
+.sd-gives-drop > summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 2px; cursor: pointer; list-style: none; user-select: none; transition: color var(--sd-dur-fast) var(--sd-ease); }
+.sd-gives-drop > summary::-webkit-details-marker { display: none; }
+.sd-gives-drop > summary:hover, .sd-gives-drop > summary:focus-visible { color: var(--sd-hal, #e3482c); }
+.sd-gives-drop > summary svg { width: 14px; height: 14px; flex: none; transition: transform var(--sd-dur-base, 240ms) var(--sd-ease); }
+.sd-gives-drop[open] > summary svg { transform: rotate(180deg); }
+.sd-gives-drop .sd-gives { margin: 14px 0 4px; }
+.sd-gives-drop[open] .sd-gives { animation: sd-gives-in 260ms var(--sd-ease-out, ease-out); }
+@keyframes sd-gives-in { from { opacity: 0; transform: translateY(-6px); } }
+@media (prefers-reduced-motion: reduce) { .sd-gives-drop[open] .sd-gives { animation: none; } }
 .sd-gives { list-style: none; margin: 0 0 18px; padding: 0; display: grid; gap: 10px; }
 .sd-gives li {
   display: grid; grid-template-columns: auto 1fr; align-items: baseline; gap: 3px 10px; padding: 10px 12px;
@@ -486,12 +495,6 @@
   .sd-counter__stage { height: 214px; }
   /* Shelf tiles: the card fills its tile, the frame around it thins. */
 }
-
-/* /node before first light: the telescope's coming-soon page. */
-.stellar .sd-hero2.sd-soon { min-height: 0; padding-block: clamp(40px, 9vw, 120px); }
-.sd-soon .sd-container { max-width: 760px; }
-.sd-soon__perks { margin-top: 36px; }
-.sd-soon__perks li { grid-template-columns: 96px minmax(0, 1fr); align-items: baseline; }
 
 .sd-coll__head { margin-bottom: 24px; }
 .sd-coll__holder { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import LiveView, { type MountSample } from '@/components/observatory/LiveView';
 import StellarAccount from '@/components/stellar/StellarAccount';
 import StellarNavLinks from '@/components/stellar/StellarNavLinks';
+import type { Rarity } from '@/lib/rarity';
 import { getSunAltitude, getTonightDarkWindow } from '@/lib/dark-window';
 import { acquisitionStateAt, planAcquisition, pointingAt, slewMs, type Acquisition } from '@/lib/observatory/mission';
 import { ALT_TRAVEL, MountDrive, SPIN_DOWN_S, SPIN_UP_S, type Axis } from '@/lib/observatory/mount-drive';
@@ -21,7 +22,7 @@ import { altitudePath, bestOf, cardForTarget, clock, nightSpan, plateArt } from 
 import ViewStage, { TRAIN_K, type Train } from './ViewStage';
 import './console.css';
 
-export type TonightCard = { designation: string; name: string; targetId: string } | null;
+export type TonightCard = { designation: string; name: string; targetId: string; rarity: Rarity } | null;
 
 type RunState = 'todo' | 'running' | 'done';
 type Slew = { from: AltAz; to: AltAz; startedAtMs: number; endsAtMs: number };
@@ -725,18 +726,24 @@ export default function ObservatoryConsole({ tonight, nodeCloud }: { tonight: To
             <span><span className="sdo-lbl">{selected.site.split(',')[0]}</span><b>{clock(now, selected.timezone, true)}</b></span>
             <span><span className="sdo-lbl">{dark[0]}</span><b>{dark[1]}</b></span>
           </div>
-          <span className="sdo-pill sdo-pill--sim"><span className="sdo-led is-go" />Simulated<span className="sdo-pill__long">&nbsp;· captures free</span></span>
+          <span className="sdo-pill sdo-pill--sim"><span className="sdo-led" />Demo<span className="sdo-pill__long">&nbsp;· simulated</span></span>
           <button className={`sdo-ib${night ? ' is-on' : ''}`} type="button" onClick={toggleNight} aria-pressed={night} aria-label="Night mode" title="Night mode"><Icon name="moon" /></button>
           <button className="sdo-ib" type="button" onClick={() => setModal('welcome')} aria-label="Guide" title="Guide"><Icon name="help" /></button>
           <StellarAccount />
         </div>
       </header>
 
+      <div className="sdo-demo" role="note">
+        <span className="sdo-demo__tag">Demo</span>
+        <p className="sdo-demo__text">Simulated frames until first light, November 2026</p>
+        <Link href="/tonight">Tonight’s vote</Link>
+      </div>
+
       <div className="sdo-phone">
         <div className="sdo-phead">
-          <p className="sdo-phead__t">Live Telescope V1</p>
+          <p className="sdo-phead__t">Observatory</p>
           <div>
-            <span className="sdo-pill sdo-pill--sim"><span className="sdo-led is-go" />Simulated</span>
+            <span className="sdo-pill sdo-pill--sim"><span className="sdo-led" />Demo</span>
             <button className={`sdo-ib${night ? ' is-on' : ''}`} type="button" onClick={toggleNight} aria-pressed={night} aria-label="Night mode"><Icon name="moon" /></button>
           </div>
         </div>
@@ -753,9 +760,9 @@ export default function ObservatoryConsole({ tonight, nodeCloud }: { tonight: To
       </div>
 
       <main className="sdo-grid">
-        <h1 className="sdo-sr">Live Telescope V1</h1>
+        <h1 className="sdo-sr">Observatory — demo, simulated frames until first light</h1>
         <div className="sdo-col sdo-desk">
-          <QuickStart name={quickName} designation={tonight?.designation ?? null} onStart={quickStart} />
+          <QuickStart name={quickName} designation={tonight?.designation ?? null} rarity={tonight?.rarity ?? null} onStart={quickStart} />
           <Telescopes rows={rows} selectedId={selectedId} onPick={pick} sky={skyRow} />
           <Session elapsed={sessionTime} connected={station !== null} onEnd={disconnect} />
         </div>
@@ -776,7 +783,7 @@ export default function ObservatoryConsole({ tonight, nodeCloud }: { tonight: To
             full={full}
             onFull={() => setFullView(!full)}
             status={{ text: statusText, go: onTarget || stacking, blink: inGoto || connecting || park === 'running' || cal === 'running' }}
-            hudLive={[cameraOn ? 'Live' : 'Standby', stationName, opticsLine]}
+            hudLive={[cameraOn ? 'Simulated' : 'Standby', stationName, opticsLine]}
             hudTarget={target && targetNow ? [shortName(target), `RA ${raShort(targetNow.raHours)} · DEC ${decShort(targetNow.decDeg)}`] : null}
             hudField={[fovText, scaleText]}
             idle={idle}

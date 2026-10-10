@@ -164,9 +164,11 @@
 
 /* One row on a wide screen: the title, then the search and the chips. */
 @media (min-width: 1180px) {
-  .stellar .sd-fl__head { padding: 12px 14px 12px 20px; }
-  .stellar .sd-filter { flex-wrap: nowrap; }
-  .stellar .sd-filter__count { position: absolute; left: 20px; bottom: 6px; flex-basis: auto; }
+  .stellar .sd-fl__head { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; column-gap: 10px; padding: 12px 14px 12px 20px; }
+  .stellar .sd-fl__head .sd-filter { display: contents; }
+  .stellar .sd-fl__head .sd-filter__search, .stellar .sd-fl__head .sd-filter__chips { grid-row: 1 / span 2; align-self: center; }
+  .stellar .sd-fl__head .sd-filter__count { grid-column: 1; grid-row: 2; margin-top: 8px; }
+  .stellar .sd-fl__head:has(.sd-filter__count:not(:empty)) .sd-fl__meta { display: none; }
 }
 /* What a card opens: no frames, no numbers, no track. Four instruments lit in the login red, floating on the sky. */
 .stellar .sd-flight::before, .stellar .sd-flight::after, .stellar .sd-flight > li::before { display: none !important; content: none; }
@@ -208,7 +210,7 @@
   /* The capsule counter on a phone: what it is, what it costs, the button. The rarity guide lives on each card. */
   .stellar .sd-counter { padding: 12px; gap: 12px; border-radius: 12px; }
   .stellar .sd-counter__stage { height: 188px; }
-  .stellar .sd-counter__line, .stellar .sd-gives, .stellar .sd-counter__h:has(+ .sd-gives) { display: none; }
+  .stellar .sd-counter__line { display: none; }
   .stellar .sd-counter__odds { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 16px; }
   .stellar .sd-counter__odds li { font-size: 13px; }
   .stellar .sd-counter__worth { display: none; }

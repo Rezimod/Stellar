@@ -25,7 +25,7 @@ export type Frame = {
   stationName: string;
 };
 
-function Modal({ width, head, tone = '#d6aa8b', night, onClose, labelledBy, children }: {
+function Modal({ width, head, tone = '#f0785a', night, onClose, labelledBy, children }: {
   width: number; head: ReactNode; tone?: string; night: boolean; onClose: () => void; labelledBy: string; children: ReactNode;
 }) {
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -60,15 +60,15 @@ const STEPS: Array<[string, string]> = [
 
 export function WelcomeDialog({ night, quickName, onQuick, onClose }: { night: boolean; quickName: string | null; onQuick: () => void; onClose: () => void }) {
   return (
-    <Modal width={820} night={night} onClose={onClose} labelledBy="sdo-welcome-t" head={<><Icon name="sky" size={16} />Start here · Live Telescope V1</>}>
+    <Modal width={820} night={night} onClose={onClose} labelledBy="sdo-welcome-t" head={<><Icon name="sky" size={16} />Start here · Observatory demo</>}>
       <div className="sdo-welcome">
         <div className="sdo-welcome__art" aria-hidden="true">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={plateArt('SATURN', 'object')} alt="" />
         </div>
         <div className="sdo-welcome__lede">
-          <h2 id="sdo-welcome-t">Drive a simulated telescope. Every frame is computed.</h2>
-          <p>Five steps from connect to a frame you keep. Every frame is drawn by the sky model and says so.</p>
+          <h2 id="sdo-welcome-t">Drive a simulated telescope. <em>Every frame is computed.</em></h2>
+          <p>This is a demo. Until first light in November 2026, every frame is drawn by the sky model and says so. Five steps from connect to a frame you keep.</p>
         </div>
         <ol className="sdo-welcome__steps">
           {STEPS.map(([a, b], i) => (
@@ -179,7 +179,7 @@ export function TargetsDialog({ night, station, tonightId, onPoint, onClose }: {
                   </span>
                   <span className="sdo-tgt__col sdo-tgt__curve">
                     <span className="sdo-lbl">Tonight</span>
-                    <AltCurve path={paths.get(target.id) ?? []} span={span} now={at} color={low ? '#ff7a6b' : '#d6aa8b'} />
+                    <AltCurve path={paths.get(target.id) ?? []} span={span} now={at} color={low ? '#ff7a6b' : '#f0785a'} />
                   </span>
                   <span className="sdo-tgt__now">
                     <span className="sdo-lbl">Now</span>
@@ -278,7 +278,7 @@ export function CaptureDialog({ night, frame, timezone, onClose }: { night: bool
     }
   };
   return (
-    <Modal width={860} night={night} onClose={onClose} labelledBy="sdo-capture-t" tone="#f4b113" head={<><span className="sdo-led is-go" />Frame captured · stacked</>}>
+    <Modal width={860} night={night} onClose={onClose} labelledBy="sdo-capture-t" tone="#e2b85a" head={<><span className="sdo-led is-go" />Frame captured · stacked</>}>
       <div className="sdo-capture">
         <div className="sdo-capture__img">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -287,21 +287,21 @@ export function CaptureDialog({ night, frame, timezone, onClose }: { night: bool
         </div>
         <div className="sdo-capture__info">
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <span className="sdo-lbl" style={{ color: '#d6aa8b' }}>{frame.stationName}</span>
+            <span className="sdo-lbl" style={{ color: '#f0785a' }}>{frame.stationName}</span>
             <h2 id="sdo-capture-t">{frame.targetName}</h2>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <div className="sdo-stat__row">
               <span className="sdo-lbl">Stack</span>
-              <span className="sdo-mono" style={{ fontSize: 12, color: '#f4b113' }}>{frame.subs} / {frame.subs} FRAMES · COMPLETE</span>
+              <span className="sdo-mono" style={{ fontSize: 12, color: '#e2b85a' }}>{frame.subs} / {frame.subs} FRAMES · COMPLETE</span>
             </div>
             <div className="sdo-track"><i style={{ width: '100%' }} /></div>
           </div>
           <svg width="100%" height="54" viewBox="0 0 400 54" preserveAspectRatio="none" role="img" aria-label="Histogram of the frame">
             <defs>
               <linearGradient id="sdo-hg" x1="0" x2="1">
-                <stop offset="0" stopColor="#b5652d" />
-                <stop offset="1" stopColor="#f4b113" />
+                <stop offset="0" stopColor="#e3482c" />
+                <stop offset="1" stopColor="#e2b85a" />
               </linearGradient>
             </defs>
             {bins?.map((v, i) => {

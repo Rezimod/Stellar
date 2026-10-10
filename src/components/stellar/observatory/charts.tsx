@@ -25,15 +25,15 @@ export function Spark({ values, color, w = 124, h = 26, lo, hi }: { values: numb
 }
 
 /** Altitude from dusk to dawn, the horizon dashed, now as an amber line. */
-export function AltCurve({ path, span, now, color = '#d6aa8b', w = 150, h = 34 }: { path: PathPoint[]; span: Span; now: number; color?: string; w?: number; h?: number }) {
+export function AltCurve({ path, span, now, color = '#f0785a', w = 150, h = 34 }: { path: PathPoint[]; span: Span; now: number; color?: string; w?: number; h?: number }) {
   const x = (t: number) => ((t - span.start) / (span.end - span.start)) * w;
   const y = (alt: number) => h - 3 - (Math.max(-8, alt) / 90) * (h - 6);
   const nowX = Math.min(w, Math.max(0, x(now)));
   return (
     <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} aria-hidden="true">
-      <line x1="0" y1={h - 3} x2={w} y2={h - 3} stroke="rgba(255, 182, 143, .25)" strokeDasharray="2 3" />
+      <line x1="0" y1={h - 3} x2={w} y2={h - 3} stroke="rgba(255, 255, 255, .25)" strokeDasharray="2 3" />
       <polyline points={path.map((p) => `${x(p.t).toFixed(1)},${y(p.altitude).toFixed(1)}`).join(' ')} fill="none" stroke={color} strokeWidth="1.5" />
-      <line x1={nowX} y1="0" x2={nowX} y2={h} stroke="#a45528" strokeWidth="1" />
+      <line x1={nowX} y1="0" x2={nowX} y2={h} stroke="#b8321f" strokeWidth="1" />
     </svg>
   );
 }
@@ -50,7 +50,7 @@ function DialBase({ path, pointing }: { path: PathPoint[] | null; pointing: AltA
   const ticks = Array.from({ length: 72 }, (_, i) => {
     const a = (i * 5 * Math.PI) / 180;
     const L = i % 18 === 0 ? 6 : 3;
-    return <line key={i} x1={70 + R * Math.sin(a)} y1={70 - R * Math.cos(a)} x2={70 + (R - L) * Math.sin(a)} y2={70 - (R - L) * Math.cos(a)} stroke="rgba(240, 204, 190, .35)" strokeWidth=".7" />;
+    return <line key={i} x1={70 + R * Math.sin(a)} y1={70 - R * Math.cos(a)} x2={70 + (R - L) * Math.sin(a)} y2={70 - (R - L) * Math.cos(a)} stroke="rgba(244, 244, 242, .35)" strokeWidth=".7" />;
   });
   const up = path?.filter((p) => p.altitude > 0) ?? [];
   const at = pointing ? polar(pointing.altitude, pointing.azimuth) : null;
@@ -58,34 +58,34 @@ function DialBase({ path, pointing }: { path: PathPoint[] | null; pointing: AltA
     <svg width="140" height="140" viewBox="0 0 140 140" role="img" aria-label="Pointing: altitude and azimuth">
       <defs>
         <radialGradient id="sdo-dg" cx=".5" cy=".5" r=".5">
-          <stop offset="0" stopColor="#58241a" />
-          <stop offset="1" stopColor="#1e0a05" />
+          <stop offset="0" stopColor="#16161c" />
+          <stop offset="1" stopColor="#060609" />
         </radialGradient>
       </defs>
-      <circle cx="70" cy="70" r={R} fill="url(#sdo-dg)" stroke="rgba(255, 182, 143, .35)" />
+      <circle cx="70" cy="70" r={R} fill="url(#sdo-dg)" stroke="rgba(255, 255, 255, .35)" />
       {[41, 21].map((r) => (
-        <circle key={r} cx="70" cy="70" r={r} fill="none" stroke="rgba(255, 182, 143, .16)" strokeDasharray="2 3" />
+        <circle key={r} cx="70" cy="70" r={r} fill="none" stroke="rgba(255, 255, 255, .16)" strokeDasharray="2 3" />
       ))}
       {ticks}
       {(['N', 'E', 'S', 'W'] as const).map((t, i) => {
         const a = (i * 90 * Math.PI) / 180;
         return (
-          <text key={t} x={70 + (R - 13) * Math.sin(a)} y={70 - (R - 13) * Math.cos(a)} textAnchor="middle" dominantBaseline="middle" fill={t === 'N' ? '#a45528' : 'rgba(240, 204, 190, .6)'} style={{ font: '600 10px var(--o-cond)' }}>
+          <text key={t} x={70 + (R - 13) * Math.sin(a)} y={70 - (R - 13) * Math.cos(a)} textAnchor="middle" dominantBaseline="middle" fill={t === 'N' ? '#b8321f' : 'rgba(244, 244, 242, .6)'} style={{ font: '600 10px var(--o-cond)' }}>
             {t}
           </text>
         );
       })}
       {up.length > 1 && (
-        <polyline points={up.map((p) => polar(p.altitude, p.azimuth).map((v) => v.toFixed(1)).join(',')).join(' ')} fill="none" stroke="#d6aa8b" strokeWidth="1.3" strokeDasharray="3 3" />
+        <polyline points={up.map((p) => polar(p.altitude, p.azimuth).map((v) => v.toFixed(1)).join(',')).join(' ')} fill="none" stroke="#f0785a" strokeWidth="1.3" strokeDasharray="3 3" />
       )}
       {at && (
         <>
-          <line x1="70" y1="70" x2={at[0]} y2={at[1]} stroke="rgba(244, 177, 19,.55)" />
-          <circle cx={at[0]} cy={at[1]} r="5" fill="none" stroke="#f4b113" strokeWidth="1.5" />
-          <circle cx={at[0]} cy={at[1]} r="1.8" fill="#f4b113" />
+          <line x1="70" y1="70" x2={at[0]} y2={at[1]} stroke="rgba(226, 184, 90, .55)" />
+          <circle cx={at[0]} cy={at[1]} r="5" fill="none" stroke="#e2b85a" strokeWidth="1.5" />
+          <circle cx={at[0]} cy={at[1]} r="1.8" fill="#e2b85a" />
         </>
       )}
-      <circle cx="70" cy="70" r="1.6" fill="rgba(238,241,250,.8)" />
+      <circle cx="70" cy="70" r="1.6" fill="rgba(244, 244, 242, .8)" />
     </svg>
   );
 }
