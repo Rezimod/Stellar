@@ -15,9 +15,9 @@ const pct = (bps: number) => (bps === 0 ? '—' : formatOdds(bps));
  * One tier, taken off the shelf: its odds in full, and the next capsule of it
  * on sale — read at the moment the sheet opens, so the commitment the buyer
  * sends is the one published now. Everything, the buy button included, sits
- * on one screen. The preview stays one press away.
+ * on one screen.
  */
-export default function CapsuleTierSheet({ tier, onPreview, onClose }: { tier: Tier; onPreview: () => void; onClose: () => void }) {
+export default function CapsuleTierSheet({ tier, onClose }: { tier: Tier; onClose: () => void }) {
   const [next, setNext] = useState<OnSale | null | undefined>(undefined);
   const [failed, setFailed] = useState(false);
   const panel = useRef<HTMLDivElement>(null);
@@ -121,12 +121,6 @@ export default function CapsuleTierSheet({ tier, onPreview, onClose }: { tier: T
             )}
           </div>
 
-          <button type="button" className="sd-sheet__preview" onClick={onPreview}>
-            <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
-              <path d="M5 3.5v9l7-4.5z" fill="currentColor" />
-            </svg>
-            Preview the supernova — nothing is bought
-          </button>
         </div>
       </div>
     </div>

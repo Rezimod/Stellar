@@ -13,10 +13,10 @@ import StellarAccount from '@/components/stellar/StellarAccount';
 
 afterEach(() => vi.unstubAllGlobals());
 
-it('keeps SOL out of the header and shows it in the profile, behind a helmet', async () => {
+it('keeps balances out of the header and shows USDC in the profile, behind a helmet', async () => {
   vi.stubGlobal('fetch', vi.fn(async (url: string) => ({
     ok: true,
-    json: async () => (String(url).startsWith('/api/stellar/holder') ? { cards: 24 } : { result: { value: 1_500_000_000 } }),
+    json: async () => (String(url).startsWith('/api/stellar/holder') ? { cards: 24 } : { result: { value: [{ account: { data: { parsed: { info: { tokenAmount: { uiAmount: 12.5 } } } } } }] } }),
   })));
   const host = document.createElement('div');
   document.body.appendChild(host);
@@ -24,11 +24,11 @@ it('keeps SOL out of the header and shows it in the profile, behind a helmet', a
   await act(async () => root.render(createElement(StellarAccount)));
   await act(async () => {});
   expect(host.querySelector('.sd-acct')?.textContent).toContain('24');
-  expect(host.querySelector('.sd-acct')?.textContent).not.toMatch(/SOL/);
-  expect(host.querySelector('.sd-avatar svg')).not.toBeNull();
+  expect(host.querySelector('.sd-acct')?.textContent).not.toMatch(/SOL|USDC/);
+  expect(host.querySelector('.sd-avatar img')?.getAttribute('src')).toContain('/cards/helmet.webp');
   await act(async () => (host.querySelector('.sd-avatar') as HTMLButtonElement).click());
-  expect(host.querySelector('.sd-menu__sol')?.textContent).toContain('1.50');
-  expect(host.querySelector('.sd-menu__sol')?.textContent).toContain('SOL');
+  expect(host.querySelector('.sd-menu__usdc')?.textContent).toContain('12.50');
+  expect(host.querySelector('.sd-menu__usdc')?.textContent).toContain('USDC');
   await act(async () => root.unmount());
   host.remove();
 });

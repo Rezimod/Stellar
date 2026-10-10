@@ -5,8 +5,7 @@ import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { RARITIES, rarityInfo, type Rarity } from '@/lib/rarity';
 import { DIRECT_CARD_PRICE_USD, cardPriceUsd } from '@/lib/stellar/economics';
-import { CARDS_PER_TIER, TIERS, formatOdds, rarityAt, tierByKey, type Tier } from '@/lib/stellar/tiers';
-import type { Draw } from './StellarReveal';
+import { CARDS_PER_TIER, TIERS, formatOdds, tierByKey, type Tier } from '@/lib/stellar/tiers';
 import StarPulse from './StarPulse';
 import { TIER_PERKS } from '@/lib/stellar/perks';
 
@@ -14,36 +13,15 @@ import { TIER_PERKS } from '@/lib/stellar/perks';
 // intent (a pointer over the button, a touch) rather than with the page.
 const loadSheet = () => import('./CapsuleTierSheet');
 const CapsuleTierSheet = dynamic(loadSheet, { ssr: false });
-const loadReveal = () => import('./StellarReveal');
-const StellarReveal = dynamic(loadReveal, { ssr: false });
 
 export type TierCard = { designation: string; name: string; rarity: Rarity; editionSize: number };
 
 const pct = (bps: number) => (bps === 0 ? '—' : formatOdds(bps));
 
-/** A capsule's cards at a tier's odds, drawn here in the browser. Preview only. */
-function drawFrom(tier: Tier, cards: TierCard[]): Draw {
-  const picked = Array.from({ length: CARDS_PER_TIER }, (_, i) => {
-    const rarity = rarityAt(tier, Math.random());
-    const pool = cards.filter((c) => c.rarity === rarity);
-    const c = pool[Math.floor(Math.random() * pool.length)] ?? cards[0];
-    return {
-      drawIndex: i,
-      designation: c.designation,
-      name: c.name,
-      rarity: c.rarity,
-      editionNumber: 1 + Math.floor(Math.random() * c.editionSize),
-      editionSize: c.editionSize,
-    };
-  });
-  return { preview: tier.name, cards: picked };
-}
-
 /**
  * The counter beside the set: the four capsules, cheapest first, one of them
  * on the counter with its price, its odds and how many are on sale. Buying
- * opens the sheet with the next capsule of that tier; the preview draws its
- * card here in the browser — no account, no payment, nothing recorded.
+ * opens the sheet with the next capsule of that tier.
  */
 /** What a rarity's cards cost on their own: one price, or the span when specimens are among them. */
 function worth(cards: TierCard[], r: Rarity) {
@@ -56,8 +34,6 @@ function worth(cards: TierCard[], r: Rarity) {
 export default function CapsuleCounter({ cards, onSale }: { cards: TierCard[]; onSale: Record<string, number> | null }) {
   const [tier, setTier] = useState<Tier>(TIERS[0]);
   const [sheet, setSheetState] = useState(false);
-  const [open, setOpen] = useState<{ tier: Tier; draw: Draw; n: number } | null>(null);
-  const start = useCallback((t: Tier) => setOpen((o) => ({ tier: t, draw: drawFrom(t, cards), n: (o?.n ?? 0) + 1 })), [cards]);
 
   // The open sheet lives in the address (#iron): a reload, or a link sent on,
   // lands on the same capsule.
@@ -127,19 +103,6 @@ export default function CapsuleCounter({ cards, onSale }: { cards: TierCard[]; o
         >
           {stock === 0 ? 'None on sale' : `Buy & detonate — $${tier.priceUsd}`}
         </button>
-        <button
-          type="button"
-          className="sd-counter__preview"
-          onPointerEnter={loadReveal}
-          onTouchStart={loadReveal}
-          onFocus={loadReveal}
-          onClick={() => start(tier)}
-        >
-          <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true">
-            <path d="M5 3.5v9l7-4.5z" fill="currentColor" />
-          </svg>
-          Preview the supernova — nothing is bought
-        </button>
       </div>
 
       <h3 className="sd-counter__h">Odds per card</h3>
@@ -190,16 +153,8 @@ export default function CapsuleCounter({ cards, onSale }: { cards: TierCard[]; o
       </div>
 
       {sheet && (
-        <CapsuleTierSheet
-          tier={tier}
-          onClose={closeSheet}
-          onPreview={() => {
-            setSheet(null);
-            start(tier);
-          }}
-        />
+        <CapsuleTierSheet tier={tier} onClose={closeSheet} />
       )}
-      {open && <StellarReveal key={open.n} draw={open.draw} onClose={() => setOpen(null)} />}
     </aside>
   );
 }

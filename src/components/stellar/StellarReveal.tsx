@@ -27,8 +27,6 @@ export type RevealedCard = {
  * seed, which the provenance strip prints; a card bought outright has neither.
  */
 export type Draw = {
-  /** A preview draw from a named capsule: nothing bought, nothing recorded. */
-  preview?: string;
   sequence?: number;
   secret?: string;
   nonce?: string;
@@ -90,11 +88,11 @@ export default function StellarReveal({
   /** Ignite as soon as it is shown, for a press that already said so. */
   autoLaunch?: boolean;
 }) {
-  const { cards, sequence, secret, nonce, preview } = draw;
+  const { cards, sequence, secret, nonce } = draw;
   const { flown, rest } = useMemo(() => split(cards), [cards]);
   const rarity = rarityOf(flown);
   const info = rarityInfo(rarity);
-  const outright = secret === undefined && !preview;
+  const outright = secret === undefined;
   const u = `sn${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
 
   const [phase, setPhase] = useState<'pad' | 'flying' | 'done'>('pad');
@@ -235,15 +233,13 @@ export default function StellarReveal({
   }, []);
   useEffect(() => lay(turned), [turned, lay]);
 
-  const caption = preview ? `${preview} capsule · preview` : outright ? 'Bought outright · Genesis' : `Capsule No. ${pad(sequence ?? 0)} · Genesis`;
-  const label = preview ? `${preview} capsule, preview` : outright ? `${flown.name}, bought` : `Capsule ${sequence}, opening`;
+  const caption = outright ? 'Bought outright · Genesis' : `Capsule No. ${pad(sequence ?? 0)} · Genesis`;
+  const label = outright ? `${flown.name}, bought` : `Capsule ${sequence}, opening`;
 
   /* The provenance line, printed a character at a time once the card is down. */
-  const provenance: { text: string; href?: string }[] = preview
-    ? [{ text: 'Preview' }, { text: 'nothing bought, nothing recorded' }]
-    : outright
-      ? [{ text: `Edition No. ${pad(flown.editionNumber)} of ${flown.editionSize}` }, { text: 'bought outright' }]
-      : [{ text: `Draw ${sequence}` }, { text: `seed ${secret?.slice(0, 8)}` }, { text: `client ${nonce?.slice(0, 8)}` }, { text: 'verify', href: '/capsules/log' }];
+  const provenance: { text: string; href?: string }[] = outright
+    ? [{ text: `Edition No. ${pad(flown.editionNumber)} of ${flown.editionSize}` }, { text: 'bought outright' }]
+    : [{ text: `Draw ${sequence}` }, { text: `seed ${secret?.slice(0, 8)}` }, { text: `client ${nonce?.slice(0, 8)}` }, { text: 'verify', href: '/capsules/log' }];
   let ink = 500;
   const typed = provenance.map((p) => {
     const at = ink;
@@ -251,24 +247,7 @@ export default function StellarReveal({
     return { ...p, at };
   });
 
-  /** The preview is over: back to the capsules, to open a real one. */
-  const real = () => {
-    onClose?.();
-    const picker = document.getElementById('capsules');
-    if (picker) picker.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    else window.location.href = '/genesis#capsules';
-  };
-
-  const actions = preview ? (
-    <div className="sd-pay__actions">
-      <button type="button" className="sd-btn sd-btn--primary" onClick={real}>
-        Detonate a real one
-      </button>
-      <button type="button" className="sd-btn" onClick={onClose}>
-        Back to the shelf
-      </button>
-    </div>
-  ) : (
+  const actions = (
     <div className="sd-pay__actions">
       <a className="sd-btn sd-btn--primary" href="/collection">
         {outright ? 'See it in your Collection' : 'Add to Collection'}
@@ -437,11 +416,11 @@ export default function StellarReveal({
       <div className="sn-hud">
         <div className="sn-pre" hidden={phase !== 'pad'}>
           <span className="sn-pre__kicker">Ready to detonate</span>
-          <h2 className="sn-pre__cap">{preview ? `${preview} capsule` : outright ? flown.name : `Capsule No. ${pad(sequence ?? 0)}`}</h2>
+          <h2 className="sn-pre__cap">{outright ? flown.name : `Capsule No. ${pad(sequence ?? 0)}`}</h2>
           <button type="button" className="sn-go" onClick={ignite} disabled={!ready} aria-busy={!ready}>
             Detonate the star
           </button>
-          <span className="sn-pre__sub">{preview ? 'Preview · nothing is bought' : 'One card · Genesis'}</span>
+          <span className="sn-pre__sub">One card · Genesis</span>
         </div>
         {tag}
         {after}

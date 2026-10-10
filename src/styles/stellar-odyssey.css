@@ -62,12 +62,11 @@
 }
 .stellar .sd-chip--cta { border-radius: 6px; }
 /* The quiet button: a lit outline on the dark. */
-.stellar .sd-btn:not(.sd-btn--primary, .sd-btn--light, .sdc-turn, .sd-counter__preview) {
+.stellar .sd-btn:not(.sd-btn--primary, .sd-btn--light, .sdc-turn) {
   font-family: var(--sd-spaced); font-weight: 600; font-size: 14px; letter-spacing: 0.14em; text-transform: uppercase;
   border-radius: 6px; border-color: var(--sd-line-hi); background: rgba(255, 255, 255, 0.025); color: #e8e8ea;
 }
-.stellar .sd-btn:not(.sd-btn--primary, .sd-btn--light, .sdc-turn, .sd-counter__preview):hover { border-color: rgba(255, 255, 255, 0.5); background: rgba(255, 255, 255, 0.06); }
-.stellar .sd-counter__preview svg { color: var(--sd-hal); }
+.stellar .sd-btn:not(.sd-btn--primary, .sd-btn--light, .sdc-turn):hover { border-color: rgba(255, 255, 255, 0.5); background: rgba(255, 255, 255, 0.06); }
 
 /* ── Monolith panels ──────────────────────────────────────────── */
 .stellar :is(.sd-counter, .sd-pub__board, .sd-cardhero .sd-perk, .sd-zoom__panel .sd-perk) {

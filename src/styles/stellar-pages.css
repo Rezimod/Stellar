@@ -211,12 +211,6 @@
 .sd-counter__price span { font: 500 12px var(--sd-spaced); letter-spacing: 0.28em; text-transform: uppercase; color: var(--sd-ink-3); }
 .sd-counter__line { margin: -2px 2px 0; color: var(--sd-ink-3); font-size: 14px; }
 .sd-counter__buy { display: flex; flex-direction: column; gap: 2px; }
-.sd-counter__preview {
-  display: inline-flex; align-self: center; align-items: center; gap: 8px; min-height: 40px; padding: 8px 12px; border: 0; border-radius: 8px;
-  background: none; color: var(--sd-ink-3); font: 500 13px var(--sd-sans); cursor: pointer; transition: color var(--sd-dur-fast) var(--sd-ease);
-}
-.sd-counter__preview:hover { color: var(--sd-ink); }
-.sd-counter__preview svg { color: var(--tier); }
 .sd-counter__h { margin: 0; padding-top: 14px; border-top: 1px solid var(--sd-rule); font: 700 13px var(--sd-sans); letter-spacing: 0.08em; text-transform: uppercase; }
 .sd-counter__odds { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
 .sd-counter__odds li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: baseline; gap: 7px 12px; font-size: 14px; }

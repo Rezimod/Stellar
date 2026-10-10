@@ -701,11 +701,11 @@ html:has(.stellar) #stellar-main { padding-top: 0; padding-bottom: 0; }
 .sd-acct__in { display: inline-flex; align-items: baseline; gap: 6px; animation: sd-acct-in 360ms var(--sd-ease) both; }
 .sd-acct__in strong { font: 500 14px/1 var(--sd-mono); letter-spacing: 0.02em; color: var(--sd-ink); font-variant-numeric: tabular-nums; }
 .sd-acct__in span { font: 500 10.5px/1 var(--sd-spaced); letter-spacing: 0.16em; text-transform: uppercase; color: var(--sd-ink-3); }
-.sd-menu__sol i { flex: none; width: 6px; height: 6px; border-radius: 50%; background: #ff5a4a; box-shadow: 0 0 0 3px rgba(255, 90, 74, 0.14); }
-.sd-menu__sol i.is-funded { background: var(--sd-teal); box-shadow: 0 0 0 3px color-mix(in srgb, var(--sd-teal) 16%, transparent); }
+.sd-menu__usdc i { flex: none; width: 6px; height: 6px; border-radius: 50%; background: #ff5a4a; box-shadow: 0 0 0 3px rgba(255, 90, 74, 0.14); }
+.sd-menu__usdc i.is-funded { background: var(--sd-teal); box-shadow: 0 0 0 3px color-mix(in srgb, var(--sd-teal) 16%, transparent); }
 @keyframes sd-acct-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: no-preference) {
-  .sd-menu__sol i.is-funded { animation: sd-acct-pulse 3.2s ease-in-out infinite; }
+  .sd-menu__usdc i.is-funded { animation: sd-acct-pulse 3.2s ease-in-out infinite; }
 }
 @keyframes sd-acct-pulse { 0%, 100% { box-shadow: 0 0 0 3px color-mix(in srgb, var(--sd-teal) 16%, transparent); } 50% { box-shadow: 0 0 0 5px color-mix(in srgb, var(--sd-teal) 8%, transparent); } }
 .sd-avatar {
@@ -715,14 +715,14 @@ html:has(.stellar) #stellar-main { padding-top: 0; padding-bottom: 0; }
   border: 0;
 }
 .sd-avatar:hover, .sd-avatar[aria-expanded='true'] { transform: scale(1.05); box-shadow: inset 0 0 0 1px var(--sd-gold), 0 0 0 3px rgba(226, 184, 106, 0.16); }
-.sd-avatar svg { display: block; width: 100%; height: 100%; }
+.sd-avatar img { display: block; width: 100%; height: 100%; object-fit: cover; }
 /* Narrower: a smaller count beside the helmet. */
 @media (max-width: 1023px) {
   .sd-acct { height: 36px; }
   .sd-acct__seg { padding: 0 12px; gap: 7px; }
   .sd-avatar { width: 36px; height: 36px; }
 }
-@media (prefers-reduced-motion: reduce) { .sd-acct, .sd-acct__in, .sd-menu__sol i.is-funded { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .sd-acct, .sd-acct__in, .sd-menu__usdc i.is-funded { animation: none; } }
 @media (min-width: 1024px) and (max-width: 1279px) {
   .sd-bar__inner { column-gap: 24px; }
   .sd-bar__links { gap: 20px; }
@@ -742,8 +742,8 @@ html:has(.stellar) #stellar-main { padding-top: 0; padding-bottom: 0; }
 .sd-menu__copy { background: none; border: 1px solid var(--sd-rule); border-radius: 6px; padding: 3px 8px; color: var(--sd-ink-2); font: 600 12px var(--sd-mono); letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; }
 .sd-menu__copy:hover { border-color: var(--sd-accent); color: var(--sd-accent-ink); }
 .sd-menu__bal { margin: -4px 0 14px; align-items: center; }
-.sd-menu__sol { display: inline-flex; align-items: center; gap: 8px; font: 500 14px/1 var(--sd-mono); color: var(--sd-ink); font-variant-numeric: tabular-nums; }
-.sd-menu__sol small { font: 500 10.5px var(--sd-spaced); letter-spacing: 0.16em; color: var(--sd-ink-3); }
+.sd-menu__usdc { display: inline-flex; align-items: center; gap: 8px; font: 500 14px/1 var(--sd-mono); color: var(--sd-ink); font-variant-numeric: tabular-nums; }
+.sd-menu__usdc small { font: 500 10.5px var(--sd-spaced); letter-spacing: 0.16em; color: var(--sd-ink-3); }
 .sd-menu__addr { margin: 8px 12px 14px; font: 500 12px/1.5 var(--sd-mono); color: var(--sd-ink-2); word-break: break-all; }
 .sd-menu__rule { height: 1px; background: var(--sd-rule); margin: 0 4px 6px; }
 .sd-menu a, .sd-menu > button {
@@ -969,13 +969,6 @@ html:has(.stellar) #stellar-main { padding-top: 0; padding-bottom: 0; }
 .sd-sheet__wait span { height: 52px; border-radius: 999px; background: linear-gradient(90deg, var(--sd-plate) 0%, rgba(255, 255, 255, 0.07) 50%, var(--sd-plate) 100%); background-size: 200% 100%; animation: sd-shimmer 1.2s linear infinite; }
 .sd-sheet__wait span:last-child { height: 14px; width: 60%; }
 @keyframes sd-shimmer { to { background-position: -200% 0; } }
-.sd-sheet__preview {
-  display: inline-flex; align-items: center; gap: 8px; align-self: center; margin-top: 2px; padding: 8px 10px; border: 0; border-radius: 999px;
-  background: none; color: var(--sd-ink-2); font: inherit; font-size: 13px; cursor: pointer;
-  transition: color var(--sd-dur-fast) var(--sd-ease), background var(--sd-dur-fast) var(--sd-ease);
-}
-.sd-sheet__preview svg { color: var(--tier); }
-.sd-sheet__preview:hover, .sd-sheet__preview:focus-visible { color: var(--sd-ink); background: rgba(255, 255, 255, 0.05); }
 
 /* Phones: a sheet from the bottom, the capsule small beside its name. */
 @media (max-width: 719px) {
