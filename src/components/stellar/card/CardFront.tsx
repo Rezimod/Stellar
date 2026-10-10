@@ -20,7 +20,7 @@ type Props = {
 };
 
 /** The card's painted scene (scripts/stellar-plates/art-prompts.json). */
-export const artFor = (designation: string) => `/cards/art/${designation}.webp?v=2`;
+export const artFor = (designation: string) => `/cards/art/${designation}.webp?v=3`;
 
 /** The card's colour, sampled from its own picture (scripts/stellar-plates/accents.ts). */
 export const accentFor = (designation: string) => (ACCENTS as Record<string, string>)[designation] ?? '#dfe3ea';
@@ -45,7 +45,7 @@ function CardFront({ plate, capture, priority = false, price, sub }: Props) {
     >
       <header className="sdc-top">
         <span className="sdc-no">No. {plate.num}</span>
-        <span className="sdc-tier">{plate.rname}</span>
+        <span className="sdc-tier">{plate.rname}<i aria-hidden="true" /></span>
       </header>
       <div className="sdc-panel">
         <div className="sdc-art">
@@ -61,9 +61,6 @@ function CardFront({ plate, capture, priority = false, price, sub }: Props) {
           <div className="sdc-foot">
             <span className="sdc-perk">{perk.short}</span>
             <span className="sdc-left">{foot}</span>
-            <span className="sdc-go" aria-hidden="true">
-              <svg viewBox="0 0 24 24"><path d="M5 12h13m-5-5 5 5-5 5" /></svg>
-            </span>
           </div>
         </div>
       </div>
