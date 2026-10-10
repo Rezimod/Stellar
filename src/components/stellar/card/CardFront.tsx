@@ -1,11 +1,9 @@
 import { memo, type CSSProperties, type ReactNode } from 'react';
 import FadeImg from '../FadeImg';
 import type { Plate } from '@/lib/stellar/plate';
-import { photoFor } from '@/lib/stellar/photos';
 import { perkFor } from '@/lib/stellar/perks';
 import { cardPriceUsd } from '@/lib/stellar/economics';
 import { SET_001_CARD_BY_DESIGNATION } from '@/lib/sets/set-001';
-import ART from '@/lib/stellar/art.json';
 import ACCENTS from '@/lib/stellar/accents.json';
 
 type Props = {
@@ -20,27 +18,19 @@ type Props = {
   sub?: ReactNode;
 };
 
-const WITH_ART = new Set<string>(ART);
-
-/** The card's own art: a painted scene where there is one, the real photograph where not. */
-function artFor(designation: string) {
-  if (WITH_ART.has(designation)) return { file: `/cards/art/${designation}.webp`, focus: '50% 50%' };
-  const photo = photoFor(designation);
-  return photo ? { file: photo.file, focus: photo.focus ?? '50% 50%' } : null;
-}
+/** The card's painted scene (scripts/stellar-plates/art-prompts.json). */
+export const artFor = (designation: string) => `/cards/art/${designation}.webp`;
 
 /** The card's colour, sampled from its own picture (scripts/stellar-plates/accents.ts). */
 export const accentFor = (designation: string) => (ACCENTS as Record<string, string>)[designation] ?? '#dfe3ea';
 
 /** The pictures a full-size card face loads, to fetch ahead of opening it. */
 export function faceSources(plate: Plate) {
-  const art = artFor(plate.designation);
-  return art ? [art.file] : [];
+  return [artFor(plate.designation)];
 }
 
 function CardFront({ plate, capture, priority = false, price, sub }: Props) {
-  const art = artFor(plate.designation);
-  const source = capture ?? art?.file;
+  const source = capture ?? artFor(plate.designation);
   const seed = SET_001_CARD_BY_DESIGNATION.get(plate.designation)?.seed;
   const perk = perkFor(plate.designation, plate.rarity);
   const shown = price ?? `$${cardPriceUsd(plate.designation, plate.rarity)}`;
@@ -58,7 +48,7 @@ function CardFront({ plate, capture, priority = false, price, sub }: Props) {
       </header>
       <div className="sdc-panel">
         <div className="sdc-art">
-          {source && <FadeImg src={source} alt="" priority={priority} style={{ objectPosition: capture ? '50% 50%' : art?.focus }} />}
+          <FadeImg src={source} alt="" priority={priority} />
         </div>
         <div className="sdc-caption">
           <div className="sdc-title">

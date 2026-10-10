@@ -16,7 +16,7 @@ import { plateFor } from '@/lib/stellar/plate';
 const PUBLIC = path.resolve('public');
 const ORIGIN = 'http://cards.local';
 const FONTS =
-  'https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Anton&family=Bowlby+One&family=Oswald:wght@300;400;500&display=block';
+  'https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Anton&family=Bowlby+One&family=Oswald:wght@300;400;500;600&display=block';
 const only = process.argv.slice(2);
 const names = only.length ? only : SET_001_CARDS.map((c) => c.seed.designation);
 
