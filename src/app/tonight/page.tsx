@@ -78,22 +78,44 @@ export default async function TonightPage() {
     <StellarShell>
       <StellarView step="tonight" />
 
-      <section className="sd-poster sd-top sd-tonight">
+
+      {view && (
+        <section className="sd-container sd-top sd-vote-block">
+          <Chapter
+            n="01"
+            title={`Tonight’s vote · ${nightLabel(view.voting.night)}`}
+            aside={`${cast} weighted ${cast === 1 ? 'vote' : 'votes'}`}
+          />
+          {view.voting.carried ? (
+            <p className="sd-note">
+              {view.voting.carried} takes this night, carried from a night lost to cloud. Votes count from the next.
+            </p>
+          ) : candidates.length === 0 ? (
+            <p className="sd-note">Nothing in the set clears the horizon for the Live Telescope that night.</p>
+          ) : (
+            <>
+              <p className="sd-strip-note">One vote per holder · every card held adds to it: commons ×1 to ×3, rares ×4, epics and legendaries ×5</p>
+              <StellarBallot
+                night={view.voting.night}
+                candidates={candidates.map((c) => ({
+                  designation: c.designation,
+                  name: c.name,
+                  rarity: rarityOf(c.rarity),
+                  when: `${c.altitudeDeg.toFixed(0)}° at ${localTime(c.at)}`,
+                  votes: c.votes,
+                }))}
+              />
+            </>
+          )}
+        </section>
+      )}
+
+      <section className="sd-poster sd-tonight">
         <div className="sd-sky" aria-hidden="true" />
         <div className="sd-container">
 
           <div className="sd-poster__grid">
             <div className="sd-poster__copy">
-              {view && (
-                <p className="sd-datestamp">
-                  <span className="sd-datestamp__day">{dateOf(view.night, { day: '2-digit' })}</span>
-                  <span className="sd-datestamp__rest">
-                    {dateOf(view.night, { month: 'short' })}
-                    <br />
-                    {dateOf(view.night, { year: 'numeric' })}
-                  </span>
-                </p>
-              )}
               <p className="sd-eyebrow">{d ? 'Tonight’s card' : leading ? (cast ? 'Leading the vote' : 'Highest tonight') : 'Live Telescope'}</p>
               <p className="sd-lead">{lead ? lead.name : 'A quiet sky.'}</p>
               <p className="sd-poster__sub">
@@ -143,37 +165,6 @@ export default async function TonightPage() {
           </div>
         </div>
       </section>
-
-      {view && (
-        <section className="sd-container sd-chapter-block">
-          <Chapter
-            n="01"
-            title={`Vote · ${nightLabel(view.voting.night)}`}
-            aside={`${cast} weighted ${cast === 1 ? 'vote' : 'votes'}`}
-          />
-          {view.voting.carried ? (
-            <p className="sd-note">
-              {view.voting.carried} takes this night, carried from a night lost to cloud. Votes count from the next.
-            </p>
-          ) : candidates.length === 0 ? (
-            <p className="sd-note">Nothing in the set clears the horizon for the Live Telescope that night.</p>
-          ) : (
-            <>
-              <p className="sd-strip-note">One vote per holder · every card held adds to it: commons ×1 to ×3, rares ×4, epics and legendaries ×5</p>
-              <StellarBallot
-                night={view.voting.night}
-                candidates={candidates.map((c) => ({
-                  designation: c.designation,
-                  name: c.name,
-                  rarity: rarityOf(c.rarity),
-                  when: `${c.altitudeDeg.toFixed(0)}° at ${localTime(c.at)}`,
-                  votes: c.votes,
-                }))}
-              />
-            </>
-          )}
-        </section>
-      )}
 
       {view?.voting.window && candidates.length > 0 && (
         <section className="sd-container sd-chapter-block">

@@ -36,7 +36,7 @@ it('opens the vote before the night is decided', async () => {
   });
   expect(html).toContain('Leading the vote');
   expect(html).toContain('<p class="sd-lead">Saturn</p>');
-  expect(html).toContain('Vote · 20 September');
+  expect(html).toContain('Tonight’s vote · 20 September');
   expect(html).toContain('41° at 23:15');
   expect(html).toContain('aria-label="Log in to vote for Saturn"');
   expect(html).toContain('transform:scaleX(1)');

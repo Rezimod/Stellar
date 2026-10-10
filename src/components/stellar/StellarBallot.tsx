@@ -1,8 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useRef, useState } from 'react';
-import ObjectArt from './ObjectArt';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import CardThumb from './CardThumb';
+import { accentFor, accentInkFor } from './card/CardFront';
 import { usePrivySafe as usePrivy } from './usePrivySafe';
 import { useStellarHolder } from './useStellarHolder';
 
@@ -106,49 +107,49 @@ export default function StellarBallot({ night, candidates }: { night: string; ca
   };
 
   const cast = candidates.reduce((sum, c) => sum + (tally[c.designation] ?? 0), 0);
+  const lead = Math.max(0, ...candidates.map((c) => tally[c.designation] ?? 0));
 
   return (
     <>
-      <ol className="sd-ballot">
-        {candidates.map((c, i) => {
+      <ol className="sd-ballot sd-votes">
+        {candidates.map((c) => {
           const votes = tally[c.designation] ?? 0;
           const share = cast ? votes / cast : 0;
           const chosen = mine?.designation === c.designation || pending === c.designation;
+          const leading = lead > 0 && votes === lead;
           return (
             <li
               key={c.designation}
-              className="sd-ballot__row"
+              className="sd-vote"
               data-rarity={c.rarity}
               data-mine={chosen || undefined}
+              data-lead={leading || undefined}
               aria-busy={pending === c.designation || undefined}
+              style={{ '--tile-glow': accentFor(c.designation), '--btn': accentFor(c.designation), '--btn-ink': accentInkFor(c.designation) } as CSSProperties}
             >
-              <span className="sd-ballot__rank">{String(i + 1).padStart(2, '0')}</span>
-              <ObjectArt designation={c.designation} className="sd-ballot__art" />
-              <div className="sd-ballot__main">
-                <Link href={`/card/${c.designation}`} className="sd-ballot__name">
-                  {c.name}
-                </Link>
-                <span className="sd-data">{c.when}</span>
-                <span className="sd-ballot__bar" aria-hidden="true">
-                  <span style={{ transform: `scaleX(${share})` }} />
+              <Link href={`/card/${c.designation}`} className="sd-vote__card" aria-label={c.name}>
+                <CardThumb designation={c.designation} />
+                {leading && <span className="sd-vote__lead">Leading</span>}
+              </Link>
+              <div className="sd-vote__meta">
+                <span className="sd-vote__when">{c.when}</span>
+                <span className="sd-vote__count">
+                  <b>{votes}</b> {cast ? `${Math.round(share * 100)}%` : votes === 1 ? 'vote' : 'votes'}
                 </span>
               </div>
-              <span className="sd-ballot__votes">
-                {votes}
-                <small>{cast ? `${Math.round(share * 100)}%` : 'votes'}</small>
+              <span className="sd-vote__bar" aria-hidden="true">
+                <span style={{ transform: `scaleX(${share})` }} />
               </span>
-              <div className="sd-ballot__act">
-                <button
-                  type="button"
-                  className={`sd-btn${chosen ? ' sd-btn--primary' : ''}`}
-                  onClick={() => vote(c)}
-                  aria-disabled={(Boolean(pending) && !chosen) || undefined}
-                  aria-pressed={signedIn ? chosen : undefined}
-                  aria-label={signedIn ? `Vote for ${c.name}` : `Log in to vote for ${c.name}`}
-                >
-                  {chosen ? 'Voted' : 'Vote'}
-                </button>
-              </div>
+              <button
+                type="button"
+                className={`sd-btn sd-vote__btn${chosen ? ' sd-btn--primary' : ''}`}
+                onClick={() => vote(c)}
+                aria-disabled={(Boolean(pending) && !chosen) || undefined}
+                aria-pressed={signedIn ? chosen : undefined}
+                aria-label={signedIn ? `Vote for ${c.name}` : `Log in to vote for ${c.name}`}
+              >
+                {chosen ? 'Your vote' : 'Vote'}
+              </button>
             </li>
           );
         })}

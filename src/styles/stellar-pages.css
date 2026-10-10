@@ -542,3 +542,34 @@ img[data-fade][data-on] { opacity: 1; animation: none; }
   .stellar .sd-tonight .sd-facts { margin-top: 6px; }
   .stellar .sd-tonight + .sd-chapter-block { margin-top: 24px; }
 }
+
+/* ── Tonight's vote: each candidate as its card, its hour, its share and a button ── */
+.stellar .sd-vote-block { padding-top: 22px; }
+.stellar .sd-vote-block .sd-strip-note { margin: -8px 0 0; }
+.stellar .sd-votes { list-style: none; margin: 18px 0 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 14px; }
+@media (min-width: 760px) { .stellar .sd-votes { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px 18px; } }
+@media (min-width: 1100px) { .stellar .sd-votes { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.stellar .sd-vote { position: relative; display: flex; flex-direction: column; gap: 10px; min-width: 0; padding: 10px; border: 1px solid #ffffff12; border-radius: 16px; background: linear-gradient(180deg, color-mix(in srgb, var(--tile-glow) 7%, #0d0d0f), #0a0a0b); transition: border-color 200ms var(--sd-ease), box-shadow 200ms var(--sd-ease); }
+@media (hover: hover) { .stellar .sd-vote:hover { border-color: color-mix(in srgb, var(--tile-glow) 45%, transparent); } }
+.stellar .sd-vote[data-lead] { border-color: color-mix(in srgb, var(--tile-glow) 60%, transparent); box-shadow: 0 0 40px -18px var(--tile-glow); }
+.stellar .sd-vote[data-mine] { border-color: var(--tile-glow); box-shadow: 0 0 0 1px var(--tile-glow), 0 0 44px -16px var(--tile-glow); }
+.stellar .sd-vote__card { position: relative; display: block; border-radius: 12px; text-decoration: none; }
+.stellar .sd-vote__card .sd-thumb { box-shadow: 0 14px 30px -20px #000, 0 0 30px -18px var(--tile-glow); }
+.stellar .sd-vote__lead { position: absolute; top: -8px; left: 50%; translate: -50% 0; z-index: 3; padding: 5px 10px; border-radius: 99px; background: var(--tile-glow); color: #120b06; font: 700 10px/1 var(--sd-spaced); letter-spacing: .18em; text-transform: uppercase; box-shadow: 0 6px 18px -6px var(--tile-glow); }
+.stellar .sd-vote__meta { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding: 2px 2px 0; }
+.stellar .sd-vote__when { color: #d9d8d2; font: 500 12px var(--sd-mono); letter-spacing: .04em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.stellar .sd-vote__count { flex: none; color: #bdbcb6; font: 500 12px var(--sd-mono); }
+.stellar .sd-vote__count b { color: #fff; font-size: 18px; font-weight: 600; margin-right: 2px; font-variant-numeric: tabular-nums; }
+.stellar .sd-vote__bar { display: block; height: 4px; border-radius: 4px; background: #ffffff14; overflow: hidden; }
+.stellar .sd-vote__bar > span { display: block; height: 100%; border-radius: 4px; background: var(--tile-glow); transform-origin: left center; box-shadow: 0 0 10px var(--tile-glow); }
+.stellar .sd-vote__btn.sd-btn { width: 100%; min-height: 44px; justify-content: center; }
+.stellar .sd-vote__btn.sd-btn:not(.sd-btn--primary) { border-color: color-mix(in srgb, var(--tile-glow) 40%, #ffffff22); color: #fff; }
+.stellar .sd-vote__btn.sd-btn:not(.sd-btn--primary):hover { border-color: var(--tile-glow); }
+.stellar .sd-vote[aria-busy='true'] .sd-vote__btn { cursor: progress; }
+@media (prefers-reduced-motion: no-preference) {
+  .stellar .sd-vote__bar > span { transition: transform 420ms var(--sd-ease-out); }
+  .stellar .sd-vote[aria-busy='true'] .sd-vote__btn { animation: sd-vote-wait 1.1s var(--sd-ease-inout) infinite alternate; }
+}
+@keyframes sd-vote-wait { to { opacity: .72; } }
+/* Tonight's card sits under the vote now. */
+.stellar .sd-tonight { margin-top: 40px; }

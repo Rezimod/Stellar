@@ -27,10 +27,11 @@ function respond(post: () => Promise<Response>) {
 }
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+
 let root: Root;
 let host: HTMLElement;
 const button = (name: string) => host.querySelector<HTMLButtonElement>(`button[aria-label="Vote for ${name}"]`)!;
-const count = (name: string) => button(name).closest('li')!.querySelector('.sd-ballot__votes')!.firstChild!.textContent;
+const count = (name: string) => button(name).closest('li')!.querySelector('.sd-vote__count b')!.textContent;
 const status = () => host.querySelector('[role="status"]')!.textContent;
 async function mount() {
   host = document.body.appendChild(document.createElement('div'));
@@ -38,7 +39,11 @@ async function mount() {
   await act(async () => root.render(createElement(StellarBallot, { night: '2026-09-20', candidates })));
 }
 
-beforeEach(() => vi.clearAllMocks());
+beforeEach(() => {
+  vi.clearAllMocks();
+  // The card faces lazy-load their pictures; jsdom has no viewport to watch.
+  vi.stubGlobal('IntersectionObserver', class { observe() {} disconnect() {} });
+});
 afterEach(() => {
   act(() => root.unmount());
   host.remove();

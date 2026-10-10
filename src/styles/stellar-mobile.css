@@ -77,7 +77,6 @@
   .sd-filter__search { min-height: 48px; }
   .sd-filter__search input { min-height: 44px; }
   .sd-counter__fair { min-height: 44px; display: inline-flex; align-items: center; }
-  .sd-ballot__name { display: inline-flex; align-items: center; min-height: 44px; }
   .sd-log a { min-height: 44px; min-width: 32px; }
   .sd-legal__ledger a { display: inline-block; padding-block: 10px; }
 }
