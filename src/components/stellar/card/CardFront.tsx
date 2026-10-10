@@ -26,6 +26,22 @@ export const artFor = (designation: string) => `/cards/art/${designation}.webp?v
 /** The card's colour, sampled from its own picture (scripts/stellar-plates/accents.ts). */
 export const accentFor = (designation: string) => (ACCENTS as Record<string, string>)[designation] ?? '#dfe3ea';
 
+/** Ink for text set on the card's colour: near-black on a light colour, white on a dark one. */
+export function accentInkFor(designation: string) {
+  const c = accentFor(designation);
+  const m = c.match(/hsl\((\d+) (\d+)% (\d+)%\)/);
+  let r = 0.87, g = 0.89, b = 0.92;
+  if (m) {
+    const h = +m[1] / 360, s = +m[2] / 100, l = +m[3] / 100;
+    const q = l < 0.5 ? l * (1 + s) : l + s - l * s, p = 2 * l - q;
+    const ch = (t: number) => { t = (t + 1) % 1; return t < 1 / 6 ? p + (q - p) * 6 * t : t < 1 / 2 ? q : t < 2 / 3 ? p + (q - p) * (2 / 3 - t) * 6 : p; };
+    [r, g, b] = [ch(h + 1 / 3), ch(h), ch(h - 1 / 3)];
+  }
+  const lin = (v: number) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4);
+  const lum = 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+  return lum > 0.36 ? '#120b06' : '#ffffff';
+}
+
 /** The pictures a full-size card face loads, to fetch ahead of opening it. */
 export function faceSources(plate: Plate) {
   return [artFor(plate.designation)];

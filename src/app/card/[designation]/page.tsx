@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import type { CSSProperties } from 'react';
-import { accentFor } from '@/components/stellar/card/CardFront';
+import { accentFor, accentInkFor } from '@/components/stellar/card/CardFront';
 import { notFound } from 'next/navigation';
 import AlmanacDate from '@/components/stellar/AlmanacDate';
 import CardPlate from '@/components/stellar/CardPlate';
@@ -98,7 +98,7 @@ export default async function CardPage({ params }: { params: Promise<{ designati
           <span aria-hidden="true">/</span>
           <strong>{seed.designation}</strong>
         </nav>
-        <div className="sd-cardhero" data-rarity={rarity} style={{ '--accent': accentFor(seed.designation) } as CSSProperties}>
+        <div className="sd-cardhero" data-rarity={rarity} style={{ '--accent': accentFor(seed.designation), '--accent-ink': accentInkFor(seed.designation) } as CSSProperties}>
           <figure className="sd-cardhero__plate sd-figure">
             <CardPlate size="lg" hero priority designation={seed.designation} />
           </figure>

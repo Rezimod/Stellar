@@ -83,3 +83,14 @@
 }
 /* A full-screen telescope view owns the whole screen. */
 .stellar:has(.sdo-view.is-full) .sd-tabs { display: none; }
+
+/* Every filled button: one flat colour that holds under the pointer, its text bright on a dark fill and
+   dark on a light one. On a card (zoom, card page, reveal) the fill is the card's colour. */
+html body .stellar :is(.sd-btn.sd-btn--primary, .sd-btn.sd-btn--light, .sd-chip.sd-chip--cta, .sn-go.sn-go),
+html body .stellar :is(.sd-btn.sd-btn--primary, .sd-btn.sd-btn--light, .sd-chip.sd-chip--cta, .sn-go.sn-go):is(:hover, :focus-visible, :active):not(:disabled) {
+  background: var(--btn, #e3482c); color: var(--btn-ink, #ffffff); border: 1px solid transparent;
+  text-shadow: none; filter: none; box-shadow: 0 10px 26px -14px var(--btn, #e3482c);
+}
+html body .stellar :is(.sd-btn.sd-btn--primary, .sd-btn.sd-btn--light, .sd-chip.sd-chip--cta):disabled { background: var(--sd-plate); color: var(--sd-ink-3); box-shadow: none; }
+body .stellar :is(.sd-zoom, .sd-cardhero) { --btn: var(--accent); --btn-ink: var(--accent-ink); }
+body .stellar .sn { --btn: var(--sn-accent); --btn-ink: var(--accent-ink, #ffffff); }

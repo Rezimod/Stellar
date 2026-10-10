@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import CardPlate from './CardPlate';
 import CardBack from './card/CardBack';
 import StellarCard from './card/StellarCard';
-import { accentFor } from './card/CardFront';
+import { accentFor, accentInkFor } from './card/CardFront';
 import { SET_001_CARD_BY_DESIGNATION } from '@/lib/sets/set-001';
 import type { Rarity } from '@/lib/rarity';
 import { RARITIES, isRarity, rarityInfo } from '@/lib/rarity';
@@ -330,7 +330,7 @@ export default function StellarReveal({
       ref={root}
       className={`sn ${done ? 'is-done' : ''} ${phase === 'flying' ? 'is-cine' : ''}`.trim()}
       data-rarity={rarity}
-      style={{ '--sn-tone': info.color, '--sn-accent': accentFor(flown.designation) } as CSSProperties}
+      style={{ '--sn-tone': info.color, '--sn-accent': accentFor(flown.designation), '--accent-ink': accentInkFor(flown.designation) } as CSSProperties}
       role="dialog"
       aria-modal={true}
       aria-label={label}

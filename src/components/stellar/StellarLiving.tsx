@@ -7,7 +7,7 @@ import { cardStatus } from '@/lib/stellar/almanac';
 import { cardPriceUsd } from '@/lib/stellar/economics';
 import { plateFor } from '@/lib/stellar/plate';
 import StellarCard from './card/StellarCard';
-import { accentFor, faceSources } from './card/CardFront';
+import { accentFor, accentInkFor, faceSources } from './card/CardFront';
 import { ArrowLeft, ArrowRight, Diamond, X } from 'lucide-react';
 import { perkFor } from '@/lib/stellar/perks';
 import { rarityInfo } from '@/lib/rarity';
@@ -258,7 +258,7 @@ function ZoomedCard({ zoom, onClosed }: { zoom: Zoom; onClosed: () => void }) {
 
   const href = `/card/${designation}`;
   return (
-    <div className="sd-zoom" data-state="open" data-rarity={plate.rarity} style={{ '--accent': accentFor(designation) } as CSSProperties}>
+    <div className="sd-zoom" data-state="open" data-rarity={plate.rarity} style={{ '--accent': accentFor(designation), '--accent-ink': accentInkFor(designation) } as CSSProperties}>
       <div className="sd-zoom__veil" onClick={onClosed} aria-hidden="true" />
       <div ref={dialog} className="sd-zoom__panel" role="dialog" aria-modal="true" aria-labelledby="sd-zoom-name">
         <header className="sd-zoom__toolbar">

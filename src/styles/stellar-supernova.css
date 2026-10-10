@@ -205,12 +205,6 @@
 .sn { --sn-accent: var(--sn-tone); }
 .sn-tag__line { border-color: color-mix(in srgb, var(--sn-accent) 55%, transparent); }
 .sn-tag__line:hover { border-color: var(--sn-accent); }
-.stellar .sn-after .sd-pay__actions .sd-btn--primary {
-  border: 0; color: #120b06; text-shadow: 0 1px 0 #ffffff40;
-  background: linear-gradient(180deg, color-mix(in srgb, var(--sn-accent) 68%, #fff), var(--sn-accent) 55%, color-mix(in srgb, var(--sn-accent) 70%, #000));
-  box-shadow: inset 0 1px 0 #ffffff80, 0 14px 36px -14px var(--sn-accent), 0 0 0 1px color-mix(in srgb, var(--sn-accent) 60%, #000);
-}
-.stellar .sn-after .sd-pay__actions .sd-btn--primary:hover { filter: brightness(1.08); }
 .stellar .sn-after .sd-pay__actions .sd-btn:not(.sd-btn--primary) { border-color: color-mix(in srgb, var(--sn-accent) 45%, #ffffff22); color: color-mix(in srgb, var(--sn-accent) 30%, #fff); }
 .stellar .sn-after .sd-pay__actions .sd-btn:not(.sd-btn--primary):hover { background: color-mix(in srgb, var(--sn-accent) 14%, rgba(8, 8, 12, 0.85)); }
 .sn-provenance a { color: color-mix(in srgb, var(--sn-accent) 55%, #fff); }
