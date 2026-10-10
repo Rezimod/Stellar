@@ -5,6 +5,7 @@ import { perkFor } from '@/lib/stellar/perks';
 import { cardPriceUsd } from '@/lib/stellar/economics';
 import { SET_001_CARD_BY_DESIGNATION } from '@/lib/sets/set-001';
 import ACCENTS from '@/lib/stellar/accents.json';
+import AgencyBadge, { MISSION } from './AgencyBadge';
 
 type Props = {
   plate: Plate;
@@ -19,7 +20,7 @@ type Props = {
 };
 
 /** The card's painted scene (scripts/stellar-plates/art-prompts.json). */
-export const artFor = (designation: string) => `/cards/art/${designation}.webp`;
+export const artFor = (designation: string) => `/cards/art/${designation}.webp?v=2`;
 
 /** The card's colour, sampled from its own picture (scripts/stellar-plates/accents.ts). */
 export const accentFor = (designation: string) => (ACCENTS as Record<string, string>)[designation] ?? '#dfe3ea';
@@ -49,6 +50,7 @@ function CardFront({ plate, capture, priority = false, price, sub }: Props) {
       <div className="sdc-panel">
         <div className="sdc-art">
           <FadeImg src={source} alt="" priority={priority} />
+          {MISSION[plate.designation] && <AgencyBadge agencies={['NASA']} label={MISSION[plate.designation]} className="sdc-mission" />}
         </div>
         <div className="sdc-caption">
           <div className="sdc-title">

@@ -4,6 +4,7 @@ import { editionLabel, type Plate } from '@/lib/stellar/plate';
 import { photoFor } from '@/lib/stellar/photos';
 import { SET_001_CARD_BY_DESIGNATION } from '@/lib/sets/set-001';
 import { accentFor } from './CardFront';
+import AgencyBadge, { agenciesIn } from './AgencyBadge';
 
 type Props = {
   plate: Plate;
@@ -15,6 +16,7 @@ type Props = {
 
 function CardBack({ plate, edition, commitment, priority = false }: Props) {
   const photo = photoFor(plate.designation);
+  const agencies = photo ? agenciesIn(photo.credit) : [];
   const card = SET_001_CARD_BY_DESIGNATION.get(plate.designation)!;
   const rows = [
     ['Type', card.seed.objectType],
@@ -30,7 +32,7 @@ function CardBack({ plate, edition, commitment, priority = false }: Props) {
         <strong className="sdc-notes__name" style={{ fontSize: `${Math.min(9, 160 / plate.name.length)}cqw` }}>{plate.name}</strong>
         <dl className="sdc-notes__data">{rows.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
         <p className="sdc-notes__story">{plate.story[0]}</p>
-        {photo && <p className="sdc-notes__credit">{photo.kind === 'impression' ? 'Art' : 'Image'} · {photo.credit}</p>}
+        {photo && (agencies.length ? <AgencyBadge agencies={agencies} label={photo.source} className="sdc-notes__agency" /> : <p className="sdc-notes__credit">{photo.kind === 'impression' ? 'Art' : 'Image'} · {photo.credit}</p>)}
         {commitment && <p className="sdc-notes__credit">Record · {commitment.slice(0, 8)}…{commitment.slice(-6)}</p>}
         <footer className="sdc-notes__foot"><span>Stellar · Genesis</span><span>{plate.rname}</span></footer>
       </div>
