@@ -60,7 +60,7 @@ r0 = W * 3.2
 cxp, cyp = W * (0.1 if not flip else 0.9), H + r0 - H * 0.24
 d = np.sqrt((xx - cxp) ** 2 + (yy - cyp) ** 2) - r0          # <0 inside the planet
 air = np.exp(-np.maximum(d, 0) / 110.0) * (d > 0)
-sky += air[..., None] * np.array([0.55, 0.13, 0.03])
+sky += air[..., None] * np.array([0.32, 0.08, 0.02])
 sky += (np.exp(-np.abs(d) / 7.0))[..., None] * np.array([1.0, 0.62, 0.25]) * 0.9   # the thin bright limb
 depth = np.clip(-d / (H * 0.24), 0, 1)                      # 0 at the horizon, 1 at the foot
 cl = noise(W, H, 3, 16, 6)
@@ -155,7 +155,7 @@ emb = blur(streak, 0.9) * 2.4
 band_pre = np.clip(m - np.clip((blur(m, 14) - 0.55) / 0.3, 0, 1), 0, 1)
 
 # ── Light it all.
-glow = fire(np.clip(flame * 0.58 + halo * 0.5, 0, 1)) * np.clip(flame * 1.1 + halo * 0.8, 0, 1)[..., None]
+glow = fire(np.clip(flame * 0.5 + halo * 0.42, 0, 1)) * np.clip(flame * 0.7 + halo * 0.5, 0, 1)[..., None] * 0.8
 glow += fire(np.clip(emb, 0, 1) * 0.9 + 0.1) * np.clip(emb, 0, 1)[..., None]
 base = 1 - (1 - sky) * (1 - np.clip(glow, 0, 1))             # screen the fire over the sky
 
@@ -163,13 +163,13 @@ base = 1 - (1 - sky) * (1 - np.clip(glow, 0, 1))             # screen the fire o
 lum = rock.mean(-1, keepdims=True)
 edge_band = np.clip(m - np.clip((blur(m, 16) - 0.6) / 0.25, 0, 1), 0, 1)[..., None]
 rock = rock * (1 - edge_band) + lum * edge_band                  # no stray sky colour on the rim
-rock_lit = np.clip((rock * 0.85 + lum * 0.1) ** 1.35 * 1.15, 0, 1) * np.array([1.0, 0.72, 0.55])   # scorched, lit by fire not sunlight
+rock_lit = np.clip((rock * 0.9 + lum * 0.1) ** 1.2 * 1.2, 0, 1) * np.array([1.0, 0.82, 0.68])   # scorched, lit by fire not sunlight
 # Crevices on the hot side glow like lava.
 crev = np.clip((0.3 - lum[..., 0]) / 0.2, 0, 1) * np.clip(blur(lead, 40) * 3.5 + band_pre * 0.6, 0, 1)
 crev *= np.clip(noise(W, H, 40, 40, 3) * 1.6 - 0.3, 0, 1)
 rock_lit = rock_lit + fire(0.45 + crev * 0.5) * crev[..., None] * 1.3
 burn = fire(0.55 + heat * 0.45) * heat[..., None]
-rock_lit = rock_lit * (1 - heat[..., None] * 0.55) + burn * 1.25
+rock_lit = rock_lit * (1 - heat[..., None] * 0.4) + burn * 0.8
 # Light from the sheath spills over the trailing half.
 spill = blur(flame, 30)[..., None] * np.array([1.0, 0.45, 0.12]) * 0.35
 rock_lit = rock_lit + spill
@@ -178,11 +178,11 @@ out = base * (1 - m[..., None]) + np.clip(rock_lit, 0, 1) * m[..., None]
 band = np.clip(m - np.clip((blur(m, 9) - 0.55) / 0.3, 0, 1), 0, 1)
 crack = np.clip(noise(W, H, 30, 30, 4) - 0.45, 0, 1) * 3
 edgefire = np.clip(band * (0.7 + crack) + lead * m * 0.9, 0, 1)
-out = 1 - (1 - out) * (1 - fire(0.35 + edgefire * 0.6) * edgefire[..., None])
+out = 1 - (1 - out) * (1 - fire(0.35 + edgefire * 0.5) * edgefire[..., None] * 0.7)
 
 # Bloom from the hottest parts, then a slow vignette.
 hot = np.clip(out - 0.62, 0, 1)
-out = out + blur3(hot, 18) * 0.9 + blur3(hot, 60) * 0.5
+out = out + blur3(hot, 18) * 0.5 + blur3(hot, 60) * 0.25
 v = 1 - 0.35 * (((xx / W - 0.5) ** 2 + (yy / H - 0.5) ** 2) * 2.2)
 out = np.clip(out * v[..., None], 0, 1)
 out = 1 - np.exp(-out * 1.35)                              # soft shoulder on the highlights

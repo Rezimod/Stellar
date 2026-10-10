@@ -6,6 +6,7 @@ import { cardPriceUsd } from '@/lib/stellar/economics';
 import { SET_001_CARD_BY_DESIGNATION } from '@/lib/sets/set-001';
 import ACCENTS from '@/lib/stellar/accents.json';
 import AgencyBadge, { MISSION } from './AgencyBadge';
+import { rarityInfo } from '@/lib/rarity';
 
 type Props = {
   plate: Plate;
@@ -20,7 +21,7 @@ type Props = {
 };
 
 /** The card's painted scene (scripts/stellar-plates/art-prompts.json). */
-export const artFor = (designation: string) => `/cards/art/${designation}.webp?v=3`;
+export const artFor = (designation: string) => `/cards/art/${designation}.webp?v=4`;
 
 /** The card's colour, sampled from its own picture (scripts/stellar-plates/accents.ts). */
 export const accentFor = (designation: string) => (ACCENTS as Record<string, string>)[designation] ?? '#dfe3ea';
@@ -41,7 +42,7 @@ function CardFront({ plate, capture, priority = false, price, sub }: Props) {
     <div
       className="sdc-card sdc-card--front"
       data-rarity={plate.rarity}
-      style={{ '--card-accent': accentFor(plate.designation) } as CSSProperties}
+      style={{ '--card-accent': accentFor(plate.designation), '--rarity': rarityInfo(plate.rarity).color } as CSSProperties}
     >
       <header className="sdc-top">
         <span className="sdc-no">No. {plate.num}</span>

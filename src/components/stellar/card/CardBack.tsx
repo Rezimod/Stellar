@@ -4,6 +4,7 @@ import { editionLabel, type Plate } from '@/lib/stellar/plate';
 import { photoFor } from '@/lib/stellar/photos';
 import { SET_001_CARD_BY_DESIGNATION } from '@/lib/sets/set-001';
 import { accentFor } from './CardFront';
+import { rarityInfo } from '@/lib/rarity';
 import AgencyBadge, { agenciesIn } from './AgencyBadge';
 
 type Props = {
@@ -25,7 +26,7 @@ function CardBack({ plate, edition, commitment, priority = false }: Props) {
   ];
 
   return (
-    <div className="sdc-card sdc-card--back" data-rarity={plate.rarity} style={{ '--card-accent': accentFor(plate.designation) } as CSSProperties}>
+    <div className="sdc-card sdc-card--back" data-rarity={plate.rarity} style={{ '--card-accent': accentFor(plate.designation), '--rarity': rarityInfo(plate.rarity).color } as CSSProperties}>
       <div className="sdc-notes">
         <header className="sdc-notes__head"><span>Field notes</span><span>{plate.num} / {plate.total}</span></header>
         <div className="sdc-notes__image"><FadeImg src={photo?.file ?? `${plate.art}/object.webp`} alt="" priority={priority} style={{ objectPosition: photo?.focus ?? '50% 40%' }} /></div>
