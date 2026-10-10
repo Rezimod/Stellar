@@ -78,7 +78,7 @@ export default async function TonightPage() {
     <StellarShell>
       <StellarView step="tonight" />
 
-      <section className="sd-poster sd-top">
+      <section className="sd-poster sd-top sd-tonight">
         <div className="sd-sky" aria-hidden="true" />
         <div className="sd-container">
 
@@ -103,6 +103,9 @@ export default async function TonightPage() {
                     ? 'Holders’ votes lock tonight’s card at 13:00 UTC.'
                     : 'Nothing in the set clears the horizon for the Live Telescope.'}
               </p>
+            </div>
+
+            <div className="sd-tonight__more">
               {facts.length > 0 && <DataRow className="sd-facts" items={facts} />}
               {d && !d.capture && d.cloudForecast !== null && d.cloudForecast > CLOUD_LIMIT && (
                 <p className="sd-alert">
@@ -141,27 +144,10 @@ export default async function TonightPage() {
         </div>
       </section>
 
-      {view?.voting.window && candidates.length > 0 && (
-        <section className="sd-container sd-chapter-block">
-          <Chapter
-            n="01"
-            title="Tonight’s sky"
-            aside={`${localTime(view.voting.window.dusk)} – ${localTime(view.voting.window.dawn)}`}
-          />
-          <TonightSkyChart
-            window={view.voting.window}
-            candidates={candidates}
-            lead={lead?.designation ?? null}
-            timezone={node.timezone}
-            now={now}
-          />
-        </section>
-      )}
-
       {view && (
         <section className="sd-container sd-chapter-block">
           <Chapter
-            n="02"
+            n="01"
             title={`Vote · ${nightLabel(view.voting.night)}`}
             aside={`${cast} weighted ${cast === 1 ? 'vote' : 'votes'}`}
           />
@@ -186,6 +172,23 @@ export default async function TonightPage() {
               />
             </>
           )}
+        </section>
+      )}
+
+      {view?.voting.window && candidates.length > 0 && (
+        <section className="sd-container sd-chapter-block">
+          <Chapter
+            n="02"
+            title="Tonight’s sky"
+            aside={`${localTime(view.voting.window.dusk)} – ${localTime(view.voting.window.dawn)}`}
+          />
+          <TonightSkyChart
+            window={view.voting.window}
+            candidates={candidates}
+            lead={lead?.designation ?? null}
+            timezone={node.timezone}
+            now={now}
+          />
         </section>
       )}
 
