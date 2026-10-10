@@ -14,7 +14,7 @@ type Props = {
   u: string;
 };
 
-export const SEALED_SRC = '/cards/sealed.webp?v=odyssey1';
+export const SEALED_SRC = '/cards/sealed.webp?v=capsule1';
 
 function CardBack({ plate, edition, commitment, sealed = false, priority = false }: Props) {
   if (sealed) return (

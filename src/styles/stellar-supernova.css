@@ -144,40 +144,38 @@
    and the card comes out of it. The engine drives the custom properties. ── */
 .sn-cap {
   --cs: 0.06; --cz: 0deg; --cx: 0px; --cr: 0; --co: 0; --cf: 0; --ch: 0.4;
-  position: absolute; left: 50%; top: 50%; width: 54%; aspect-ratio: 100 / 160; z-index: 0;
-  max-width: 190px; opacity: 0; pointer-events: none;
+  position: absolute; left: 50%; top: 50%; width: 72%; aspect-ratio: 695 / 720; z-index: 0;
+  max-width: 300px; opacity: 0; pointer-events: none;
   translate: calc(-50% + var(--cx)) -50%; transform: scale(var(--cs)) rotate(var(--cz)); will-change: transform, opacity;
 }
 .sn-cap__glow {
-  position: absolute; inset: -55% -80%; border-radius: 50%;
+  position: absolute; inset: -40% -55%; border-radius: 50%;
   background: radial-gradient(closest-side, color-mix(in srgb, var(--sn-tone) 55%, #fff4e0), color-mix(in srgb, var(--sn-tone) 30%, transparent) 38%, transparent 72%);
-  opacity: calc(var(--ch) * 0.55 + var(--co) * (1 - var(--cf)) * 0.9); filter: blur(6px);
+  opacity: calc(var(--ch) * 0.45 + var(--co) * (1 - var(--cf)) * 0.9); filter: blur(6px);
 }
-.sn-cap__half { position: absolute; inset: 0; will-change: transform; }
-.sn-cap__half--top { clip-path: inset(-2% -2% 50% -2%); transform: translateY(calc(var(--co) * -62%)) translateX(calc(var(--co) * -14%)) rotate(calc(var(--co) * -32deg)); }
-.sn-cap__half--bot { clip-path: inset(50% -2% -2% -2%); transform: translateY(calc(var(--co) * 58%)) translateX(calc(var(--co) * 12%)) rotate(calc(var(--co) * 24deg)); }
-.sn-cap__shell {
-  position: absolute; inset: 0; border-radius: 999px; overflow: hidden;
-  background:
-    /* the seam ring, lit from inside */
-    linear-gradient(180deg, transparent 47.4%, color-mix(in srgb, var(--sn-tone) 60%, #fff) 48.8%, #fff 50%, color-mix(in srgb, var(--sn-tone) 60%, #fff) 51.2%, transparent 52.6%),
-    /* machined bands near each end */
-    linear-gradient(180deg, transparent 18%, #ffffff26 18.5%, #00000080 19.3%, transparent 20%, transparent 80%, #00000080 80.7%, #ffffff26 81.5%, transparent 82%),
-    /* the ends rounding away from the light */
-    radial-gradient(70% 22% at 50% 4%, #ffffff30, transparent 70%),
-    radial-gradient(80% 26% at 50% 100%, #000000b0, transparent 75%),
-    /* a polished cylinder: dark limbs, a hot streak, a soft second light from the core */
-    linear-gradient(90deg, #030305 0%, #1d1d23 12%, #4c4c56 24%, #e9e7ef 29%, #6a6a75 33%, #2a2a31 46%, #17171c 64%, color-mix(in srgb, var(--sn-tone) 30%, #2a2a31) 84%, color-mix(in srgb, var(--sn-tone) 45%, #444) 90%, #050507 100%);
-  box-shadow:
-    inset 0 0 0 1.5px color-mix(in srgb, var(--sn-tone) 55%, #ffffff50),
-    inset 0 0 22px color-mix(in srgb, var(--sn-tone) calc(var(--ch) * 45%), transparent),
-    0 0 calc(12px + var(--ch) * 30px) color-mix(in srgb, var(--sn-tone) 60%, transparent);
+.sn-cap__half {
+  position: absolute; inset: 0; will-change: transform;
+  /* Lit by the star behind it: a rim in the tier's colour, brighter as it cracks. On the half, so the glow follows the cut. */
+  filter: drop-shadow(0 0 calc(4px + var(--ch) * 14px) color-mix(in srgb, var(--sn-tone) 70%, transparent));
 }
-/* The lens on the seam: the pod's eye, burning brighter as it cracks. */
-.sn-cap__half--top .sn-cap__shell::after {
-  content: ''; position: absolute; left: 50%; top: 50%; width: 22%; aspect-ratio: 1; translate: -50% -50%; border-radius: 50%;
-  background: radial-gradient(circle, #fff 0 18%, color-mix(in srgb, var(--sn-tone) 70%, #fff) 30%, var(--sn-tone) 52%, #050507 72%);
-  box-shadow: 0 0 0 2px #0a0a0d, 0 0 0 3.5px color-mix(in srgb, var(--sn-tone) 60%, #fff), 0 0 calc(10px + var(--ch) * 26px) var(--sn-tone);
+/* The body lifts away up and to the left; the heat shield falls the other way. */
+.sn-cap__half--top .sn-cap__img {
+  clip-path: polygon(-5% -5%, 105% -5%, 105% 75%, 100% 75%, 87.5% 71.3%, 75% 68.8%, 62.5% 67.5%, 50% 67.2%, 37.5% 68.2%, 25% 70.3%, 12.5% 73.6%, 0 78%, -5% 78%);
+}
+.sn-cap__half--top {
+  transform-origin: 50% 70%;
+  transform: translate(calc(var(--co) * -16%), calc(var(--co) * -58%)) rotate(calc(var(--co) * -22deg));
+}
+.sn-cap__half--bot .sn-cap__img {
+  clip-path: polygon(-5% 78%, 0 78%, 12.5% 73.6%, 25% 70.3%, 37.5% 68.2%, 50% 67.2%, 62.5% 67.5%, 75% 68.8%, 87.5% 71.3%, 100% 75%, 105% 75%, 105% 105%, -5% 105%);
+}
+.sn-cap__half--bot {
+  transform-origin: 50% 70%;
+  transform: translate(calc(var(--co) * 14%), calc(var(--co) * 62%)) rotate(calc(var(--co) * 16deg));
+}
+.sn-cap__img {
+  display: block; width: 100%; height: 100%; object-fit: contain;
+  filter: brightness(calc(0.85 + var(--ch) * 0.25));
 }
 .sn-cap__cracks { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
 .sn-cap__cracks path {
@@ -186,7 +184,7 @@
   filter: drop-shadow(0 0 3px var(--sn-tone)) drop-shadow(0 0 8px var(--sn-tone));
 }
 .sn-cap__beam {
-  position: absolute; left: -90%; right: -90%; top: 50%; height: 34%; translate: 0 -50%; border-radius: 50%;
+  position: absolute; left: -90%; right: -90%; top: 69%; height: 34%; translate: 0 -50%; border-radius: 50%;
   background: radial-gradient(closest-side, #fffaf0, color-mix(in srgb, var(--sn-tone) 60%, #fff) 35%, transparent 75%);
   transform: scaleY(calc(0.05 + var(--co) * 1.6)) scaleX(calc(0.6 + var(--co) * 0.6)); opacity: calc(min(1, var(--co) * 4) * (1 - var(--cf)));
   mix-blend-mode: screen; filter: blur(2px);

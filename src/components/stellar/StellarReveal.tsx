@@ -59,6 +59,9 @@ function SealedBack({ designation, u }: { designation: string; u: string }) {
   return plate ? <CardBack plate={plate} sealed priority u={u} /> : null;
 }
 
+/** The capsule out of the star: a cut-out return capsule; it splits at the heat-shield rim. */
+const CAPSULE_SRC = '/cards/capsule.webp?v=1';
+
 /** The capsule's fragments when it cracks: how far each flies (px), its spin and its size. */
 const SHARDS: [number, number, number, number][] = Array.from({ length: 14 }, (_, i) => {
   const a = (i / 14) * Math.PI * 2 + (i % 2 ? 0.2 : -0.15);
@@ -366,14 +369,16 @@ export default function StellarReveal({
           <div className="sn-cap" data-sn="cap" aria-hidden="true">
             <div className="sn-cap__glow" />
             <div className="sn-cap__beam" />
-            <div className="sn-cap__half sn-cap__half--top"><div className="sn-cap__shell" /></div>
-            <div className="sn-cap__half sn-cap__half--bot"><div className="sn-cap__shell" /></div>
-            <svg className="sn-cap__cracks" viewBox="0 0 100 160" preserveAspectRatio="none">
-              <path pathLength={1} d="M50 80 L44 70 L47 58 L40 46 L43 33" />
-              <path pathLength={1} d="M50 80 L58 72 L55 61 L63 52 L60 40 L66 30" />
-              <path pathLength={1} d="M50 80 L41 89 L45 101 L38 113" />
-              <path pathLength={1} d="M50 80 L59 90 L56 104 L64 118 L61 128" />
-              <path pathLength={1} d="M4 80 L22 78 L34 82 L50 80 L66 78 L80 82 L96 80" />
+            <div className="sn-cap__half sn-cap__half--top">
+              <img className="sn-cap__img" src={CAPSULE_SRC} alt="" width={695} height={720} decoding="async" />
+            </div>
+            <div className="sn-cap__half sn-cap__half--bot">
+              <img className="sn-cap__img" src={CAPSULE_SRC} alt="" width={695} height={720} decoding="async" />
+            </div>
+            <svg className="sn-cap__cracks" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <path pathLength={1} d="M0 78 Q50 58 100 75" />
+              <path pathLength={1} d="M30 69.5 L27 60 L31 52" />
+              <path pathLength={1} d="M64 67.7 L68 59 L65 49" />
             </svg>
             {SHARDS.map((s, i) => <i key={i} className="sn-cap__shard" style={{ '--dx': `${s[0]}px`, '--dy': `${s[1]}px`, '--r': `${s[2]}deg`, '--w': `${s[3]}px` } as CSSProperties} />)}
           </div>
